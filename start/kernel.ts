@@ -30,6 +30,8 @@ router.use([
 ])
 
 export const middleware = router.named({
+  schoolContext: () => import('#middleware/school_context_middleware'),
   guest: () => import('#middleware/guest_middleware'),
   auth: () => import('#middleware/auth_middleware'),
+  inspection: () => import('#middleware/inspection_only_middleware'),
 })
