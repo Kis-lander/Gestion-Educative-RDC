@@ -8,7 +8,7 @@ export default class FeePaymentsSchema extends BaseSchema {
       table.uuid('id').primary().defaultTo(this.db.rawQuery('gen_random_uuid()').knexQuery)
       table.uuid('student_id').references('id').inTable('students').onDelete('CASCADE')
       table.uuid('fee_id').references('id').inTable('school_fees')
-      table.decimal('amount_paid', 12, 2).notNullable()
+      table.double('amount_paid').notNullable()
       table.string('currency', 3).defaultTo('USD')
       table.date('payment_date').notNullable()
       table.string('payment_method', 50)
@@ -17,7 +17,7 @@ export default class FeePaymentsSchema extends BaseSchema {
       table.text('notes')
       table.uuid('recorded_by').references('id').inTable('users')
       table.timestamps(true)
-      
+
       table.index(['student_id', 'payment_date'])
       table.index(['receipt_number'])
     })

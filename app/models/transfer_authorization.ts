@@ -9,7 +9,7 @@ import School from '#models/school'
 import User from '#models/user'
 
 export default class TransferAuthorization extends TransferAuthorizationSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
@@ -79,5 +79,5 @@ export default class TransferAuthorization extends TransferAuthorizationSchema {
       const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase()
       authorization.authorizationCode = `TRF-${datePart}-${randomPart}`
     }
- }
+  }
 }

@@ -4,13 +4,20 @@ import { randomBytes } from 'node:crypto'
 import { DateTime } from 'luxon'
 import School from '#models/school'
 import User from '#models/user'
-import { changePasswordValidator, loginValidator, updateProfileValidator } from '#validators/auth'
+import {
+  changePasswordValidator,
+  loginValidator,
+  updateProfileValidator,
+  forgotPasswordValidator,
+  resetPasswordValidator,
+} from '#validators/auth'
 
 export default class AuthController {
   /**
    * Connexion utilisateur via la session `web`.
    */
   public async login({ auth, request, response }: HttpContext) {
+    // Utilisation des données validées (email et password)
     const { email, password } = await request.validateUsing(loginValidator)
 
     try {
@@ -133,19 +140,19 @@ export default class AuthController {
    * Mot de passe oublie.
    */
   public async forgotPassword({ request, response }: HttpContext) {
-    const email = request.input('email')
-    const user = email ? await User.findBy('email', email) : null
+    // Utilisation du validateur pour s'assurer que l'email est correct
+    const { email } = await request.validateUsing(forgotPasswordValidator)
+    const user = await User.findBy('email', email)
 
     if (user) {
       const resetToken = randomBytes(32).toString('hex')
+      // Logique d'envoi d'email à implémenter ici
 
       return response.ok({
         success: true,
         message:
           'Si votre email existe dans notre systeme, vous recevrez un lien de reinitialisation',
-        data: {
-          resetToken,
-        },
+        data: { resetToken },
       })
     }
 
@@ -160,27 +167,15 @@ export default class AuthController {
    * Reinitialiser le mot de passe.
    */
   public async resetPassword({ request, response }: HttpContext) {
-    const token = request.input('token')
-    const newPassword = request.input('newPassword')
-    const newPasswordConfirmation = request.input('newPasswordConfirmation')
+    // Utilisation du validateur (vérifie la correspondance des mots de passe)
+    const { token, newPassword } = await request.validateUsing(resetPasswordValidator)
 
-    if (!token || !newPassword || !newPasswordConfirmation) {
-      return response.badRequest({
-        success: false,
-        message: 'Token et nouveau mot de passe requis',
-      })
-    }
-
-    if (newPassword !== newPasswordConfirmation) {
-      return response.badRequest({
-        success: false,
-        message: 'La confirmation du mot de passe ne correspond pas',
-      })
-    }
+    // Logique de recherche du token en base de données à implémenter ici
 
     return response.notImplemented({
       success: false,
       message: 'La reinitialisation de mot de passe n est pas encore implementee',
+      debug: { token, newPassword },
     })
   }
 

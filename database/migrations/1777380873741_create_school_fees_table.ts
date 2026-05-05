@@ -8,7 +8,7 @@ export default class SchoolFeesSchema extends BaseSchema {
       table.uuid('id').primary().defaultTo(this.db.rawQuery('gen_random_uuid()').knexQuery)
       table.uuid('school_id').references('id').inTable('schools').onDelete('CASCADE')
       table.string('fee_type', 100).notNullable()
-      table.decimal('amount', 12, 2).notNullable()
+      table.double('amount').notNullable()
       table.string('currency', 3).defaultTo('USD')
       table.string('academic_year', 20).notNullable()
       table.string('term', 20)

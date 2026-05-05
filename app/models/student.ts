@@ -12,7 +12,7 @@ import Discipline from '#models/discipline'
 import Parent from '#models/parent'
 
 export default class Student extends StudentSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

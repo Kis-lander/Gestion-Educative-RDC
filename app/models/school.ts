@@ -7,8 +7,7 @@ import Student from '#models/student'
 import Class from '#models/class'
 
 export default class School extends SchoolSchema {
-
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
@@ -61,5 +60,4 @@ export default class School extends SchoolSchema {
 
   @hasMany(() => Class)
   declare classes: HasMany<typeof Class>
-
 }

@@ -8,7 +8,7 @@ import User from '#models/user'
 import School from '#models/school'
 
 export default class Message extends MessageSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

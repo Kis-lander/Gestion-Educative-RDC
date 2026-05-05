@@ -156,7 +156,7 @@ export class FeePaymentSchema extends BaseModel {
   static $columns = ['amountPaid', 'createdAt', 'currency', 'feeId', 'id', 'notes', 'paymentDate', 'paymentMethod', 'receiptNumber', 'recordedBy', 'referenceNumber', 'studentId', 'updatedAt'] as const
   $columns = FeePaymentSchema.$columns
   @column()
-  declare amountPaid: string
+  declare amountPaid: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()
@@ -245,15 +245,15 @@ export class GradeSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: string
   @column()
-  declare maxScore: string | null
+  declare maxScore: number | null
   @column()
-  declare percentage: string | null
+  declare percentage: number | null
   @column()
   declare published: boolean | null
   @column.dateTime()
   declare publishedAt: DateTime | null
   @column()
-  declare score: string | null
+  declare score: number | null
   @column()
   declare studentId: string | null
   @column()
@@ -339,7 +339,7 @@ export class SchoolFeeSchema extends BaseModel {
   @column()
   declare academicYear: string
   @column()
-  declare amount: string
+  declare amount: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()

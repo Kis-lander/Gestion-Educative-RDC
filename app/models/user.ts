@@ -34,17 +34,17 @@ export default class User extends UserSchema {
   declare avatarUrl: string | null
 
   @column()
-  declare role: 
-    | 'inspection' 
-    | 'director' 
-    | 'finance_director' 
-    | 'teacher' 
-    | 'parent' 
-    | 'student' 
+  declare role:
+    | 'inspection'
+    | 'director'
+    | 'finance_director'
+    | 'teacher'
+    | 'parent'
+    | 'student'
     | 'discipline_director'
 
   @column()
-  declare status: 'active' | 'inactive' | 'suspended'
+  declare status: 'active' | 'inactive' | 'suspended' | 'pending'
 
   @column.dateTime()
   declare lastLogin: DateTime | null

@@ -8,7 +8,7 @@ import User from '#models/user'
 import Student from '#models/student'
 
 export default class Parent extends ParentSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

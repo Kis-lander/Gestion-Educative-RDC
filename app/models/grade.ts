@@ -9,7 +9,7 @@ import Class from '#models/class'
 import Subject from '#models/subject'
 
 export default class Grade extends GradeSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
@@ -30,13 +30,13 @@ export default class Grade extends GradeSchema {
   declare examType: string // ex: "Interrogation", "Examen", "Travail Journalier"
 
   @column()
-  declare score: string | null
+  declare score: number | null
 
   @column()
-  declare maxScore: string | null
+  declare maxScore: number
 
   @column()
-  declare percentage: string | null
+  declare percentage: number | null
 
   @column()
   declare teacherComments: string | null
@@ -74,12 +74,9 @@ export default class Grade extends GradeSchema {
    */
   @beforeSave()
   public static async calculatePercentage(grade: Grade) {
-    if (grade.score !== null && grade.score !== undefined && grade.maxScore) {
-      const score = Number(grade.score)
-      const maxScore = Number(grade.maxScore)
-
-      if (Number.isFinite(score) && Number.isFinite(maxScore) && maxScore > 0) {
-        grade.percentage = ((score / maxScore) * 100).toFixed(2)
+    if (grade.score !== null && grade.score !== undefined && grade.maxScore > 0) {
+      if (Number.isFinite(grade.score) && Number.isFinite(grade.maxScore)) {
+        grade.percentage = (grade.score / grade.maxScore) * 100
       }
     }
   }
