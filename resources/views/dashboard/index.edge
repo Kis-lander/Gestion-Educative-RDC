@@ -1,0 +1,138 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Tableau de bord - Gestion Éducative RDC{{# /section }}
+
+{{# section('dashboardTitle') }}Tableau de bord{{# /section }}
+{{# section('dashboardSubtitle') }}Bienvenue sur votre espace de travail{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Élèves</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.totalStudents || 0 }}</p>
+        <p class="text-xs text-green-600 mt-1">+{{ stats.newStudents || 0 }} ce mois</p>
+      </div>
+      <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+        <i class="fas fa-users text-blue-600 dark:text-blue-400"></i>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Enseignants</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.totalTeachers || 0 }}</p>
+      </div>
+      <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+        <i class="fas fa-chalkboard-user text-green-600 dark:text-green-400"></i>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Classes</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.totalClasses || 0 }}</p>
+      </div>
+      <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+        <i class="fas fa-chalkboard text-purple-600 dark:text-purple-400"></i>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Moyenne générale</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.averageGrade || '0.0' }}/20</p>
+      </div>
+      <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+        <i class="fas fa-star text-yellow-600 dark:text-yellow-400"></i>
+      </div>
+    </div>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Graphique performance -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <h3 class="font-semibold text-gray-800 dark:text-white mb-4">Performance par matière</h3>
+    <canvas id="performanceChart" height="200"></canvas>
+  </div>
+  
+  <!-- Activités récentes -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <h3 class="font-semibold text-gray-800 dark:text-white mb-4">Activités récentes</h3>
+    <div class="space-y-3">
+      @each(activity in recentActivities)
+      <div class="flex items-center gap-3 p-2 border-b dark:border-gray-700">
+        <i class="fas fa-circle text-xs text-primary"></i>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ activity.description }}</span>
+        <span class="text-xs text-gray-400">{{ activity.time }}</span>
+      </div>
+      @eachelse
+      <p class="text-gray-500 dark:text-gray-400 text-center py-4">Aucune activité récente</p>
+      @end
+    </div>
+  </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+  <h3 class="font-semibold text-gray-800 dark:text-white mb-3">Actions rapides</h3>
+  <div class="flex flex-wrap gap-3">
+    <a href="/academic/grades/add" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+      <i class="fas fa-plus mr-1"></i> Saisir notes
+    </a>
+    <a href="/students/create" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+      <i class="fas fa-user-plus mr-1"></i> Ajouter élève
+    </a>
+    <a href="/financial/payments/record" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm">
+      <i class="fas fa-coins mr-1"></i> Enregistrer paiement
+    </a>
+  </div>
+</div>
+
+<script>
+  // Graphique simple (Chart.js)
+  if (document.getElementById('performanceChart')) {
+    fetch('/api/academic/performance')
+      .then(res => res.json())
+      .then(data => {
+        const ctx = document.getElementById('performanceChart').getContext('2d')
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.subjects || [],
+            datasets: [{
+              label: 'Moyenne /20',
+              data: data.averages || [],
+              backgroundColor: '#2563eb',
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: { y: { max: 20, beginAtZero: true } }
+          }
+        })
+      })
+      .catch(() => console.log('Erreur chargement graphique'))
+  }
+</script>
+{{# /section }}
+
+{{# section('actions') }}
+<button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+  <i class="fas fa-download mr-2"></i> Exporter rapport
+</button>
+{{# /section }}
+
+{{# /layout }}

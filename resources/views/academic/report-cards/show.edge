@@ -1,0 +1,205 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Bulletin - {{ student.name }} - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Bulletin scolaire{{# /section }}
+{{# section('dashboardSubtitle') }}{{ student.name }} - {{ className }} - {{ term }} {{ academicYear }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+  <a href="/academic/report-cards/{{ reportId }}/pdf" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+    <i class="fas fa-file-pdf mr-2"></i> Télécharger PDF
+  </a>
+  @if(status === 'draft')
+  <button onclick="publishReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-check-circle mr-2"></i> Publier
+  </button>
+  @endif
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card-container">
+  <!-- En-tête du bulletin -->
+  <div class="text-center mb-6 pb-4 border-b">
+    <div class="flex justify-between items-start mb-2">
+      <div class="w-20"></div>
+      <div>
+        <h1 class="text-xl font-bold">RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</h1>
+        <h2 class="text-lg">Ministère de l'Enseignement Primaire, Secondaire et Technique</h2>
+        <h3 class="text-md font-semibold mt-1">{{ schoolName }}</h3>
+        <p class="text-sm">BULLETIN SCOLAIRE - {{ term === 'T1' ? 'PREMIER TRIMESTRE' : (term === 'T2' ? 'DEUXIÈME TRIMESTRE' : 'TROISIÈME TRIMESTRE') }}</p>
+        <p class="text-sm">Année académique {{ academicYear }}</p>
+      </div>
+      <div class="w-20">
+        @if(schoolLogo)
+        <img src="{{ schoolLogo }}" alt="Logo" class="h-16">
+        @endif
+      </div>
+    </div>
+  </div>
+  
+  <!-- Identité élève -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+    <div><span class="text-gray-500">Nom et prénom:</span> <strong>{{ student.name }}</strong></div>
+    <div><span class="text-gray-500">Matricule:</span> <span class="font-mono">{{ student.registrationNumber }}</span></div>
+    <div><span class="text-gray-500">Classe:</span> <strong>{{ className }}</strong></div>
+    <div><span class="text-gray-500">Date naissance:</span> {{ student.birthDate || '-' }}</div>
+    <div><span class="text-gray-500">Nationalité:</span> {{ student.nationality || 'Congolaise' }}</div>
+    <div><span class="text-gray-500">Redoublant:</span> {{ student.isRepeating ? 'Oui' : 'Non' }}</div>
+    <div class="col-span-2"><span class="text-gray-500">Tuteur:</span> {{ student.parentName || '-' }} ({{ student.parentPhone || '-' }})</div>
+  </div>
+  
+  <!-- Tableau des notes -->
+  <div class="mb-6">
+    <h4 class="font-semibold mb-2">RÉSULTATS PAR MATIÈRE</h4>
+    <div class="table-responsive">
+      <table class="w-full text-sm border">
+        <thead class="bg-gray-100 dark:bg-gray-700">
+          <tr>
+            <th class="px-3 py-2 text-left">DISCIPLINES</th>
+            <th class="px-3 py-2 text-center">NOTE /20</th>
+            <th class="px-3 py-2 text-center">COEFF.</th>
+            <th class="px-3 py-2 text-center">POINTS</th>
+            <th class="px-3 py-2 text-left">APPRÉCIATIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(grade in grades)
+          <tr class="border-b">
+            <td class="px-3 py-2 font-medium">{{ grade.subject }}</td>
+            <td class="px-3 py-2 text-center font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+              {{ grade.score }}
+            </td>
+            <td class="px-3 py-2 text-center">{{ grade.coefficient }}</td>
+            <td class="px-3 py-2 text-center">{{ (grade.score * grade.coefficient).toFixed(1) }}</td>
+            <td class="px-3 py-2">{{ grade.comment || '-' }}</td>
+          </tr>
+          @end
+        </tbody>
+        <tfoot class="bg-gray-50 dark:bg-gray-800 font-bold">
+          <tr>
+            <td class="px-3 py-2">TOTAUX</td>
+            <td class="px-3 py-2 text-center"></td>
+            <td class="px-3 py-2 text-center">{{ totalCoefficient }}</td>
+            <td class="px-3 py-2 text-center">{{ totalPoints.toFixed(1) }}</td>
+            <td class="px-3 py-2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Moyenne et décisions -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+      <p class="text-sm text-gray-500">MOYENNE GÉNÉRALE</p>
+      <p class="text-3xl font-bold {{ overallAverage >= 15 ? 'text-green-600' : (overallAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+        {{ overallAverage }}/20
+      </p>
+    </div>
+    <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+      <p class="text-sm text-gray-500">RANG / CLASSEMENT</p>
+      <p class="text-3xl font-bold text-primary">{{ rank }}/{{ totalStudents }}</p>
+    </div>
+    <div class="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+      <p class="text-sm text-gray-500">DÉCISION</p>
+      <p class="text-xl font-bold {{ decision === 'Admis' ? 'text-green-600' : (decision === 'Admis avec mention' ? 'text-blue-600' : 'text-red-600') }}">
+        {{ decision }}
+      </p>
+    </div>
+  </div>
+  
+  <!-- Appréciations -->
+  <div class="mb-6 p-3 border-l-4 border-primary bg-gray-50 dark:bg-gray-700 rounded-r-lg">
+    <p class="font-semibold mb-1">APPRÉCIATION GÉNÉRALE</p>
+    <p class="text-sm">{{ appreciation || 'Félicitations pour vos efforts ! Continuez ainsi.' }}</p>
+  </div>
+  
+  <!-- Comportement et présence -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="p-3 border rounded-lg">
+      <p class="font-semibold mb-1">COMPORTEMENT</p>
+      <div class="flex justify-between items-center">
+        <span>{{ behavior.grade || 'Satisfaisant' }}</span>
+        <div class="flex gap-1">
+          @for(i = 1; i <= 5; i++)
+          <i class="fas fa-star text-xs {{ i <= (behavior.rating || 3) ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+          @endfor
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-1">{{ behavior.comment || 'Élève discipliné et respectueux des règles.' }}</p>
+    </div>
+    <div class="p-3 border rounded-lg">
+      <p class="font-semibold mb-1">ASSIDUITÉ / PRÉSENCES</p>
+      <div class="flex justify-between items-center">
+        <span>{{ attendance.rate }}% de présence</span>
+        <div class="w-32 bg-gray-200 rounded-full h-2">
+          <div class="bg-green-500 rounded-full h-2" style="width: {{ attendance.rate }}%"></div>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-1">{{ attendance.absences }} absence(s) | {{ attendance.lates }} retard(s)</p>
+    </div>
+  </div>
+  
+  <!-- Signatures -->
+  <div class="grid grid-cols-3 gap-4 mt-6 pt-4 border-t text-center">
+    <div>
+      <p class="text-sm">L'Élève</p>
+      <div class="mt-8">_______________</div>
+    </div>
+    <div>
+      <p class="text-sm">Le Parent/Tuteur</p>
+      <div class="mt-8">_______________</div>
+    </div>
+    <div>
+      <p class="text-sm">Le Chef d'Établissement</p>
+      <div class="mt-8">_______________</div>
+      <p class="text-xs mt-1">{{ principalName || 'Signature' }}</p>
+    </div>
+  </div>
+  
+  <!-- Date d'émission -->
+  <div class="mt-4 text-right text-xs text-gray-400">
+    Généré le {{ generationDate }}
+  </div>
+</div>
+
+<script>
+  function publishReport() {
+    if (confirm('Publier ce bulletin ? Il deviendra visible par les parents et l\'élève.')) {
+      fetch('/academic/report-cards/{{ reportId }}/publish', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) {
+          location.reload()
+        } else {
+          alert('Erreur: ' + data.message)
+        }
+      })
+    }
+  }
+</script>
+
+<style>
+  @media print {
+    .sidebar, header, footer, .actions, .pagination, .no-print {
+      display: none !important;
+    }
+    body {
+      padding: 0;
+      margin: 0;
+    }
+    .report-card-container {
+      box-shadow: none;
+      padding: 0;
+    }
+  }
+</style>
+{{# /section }}
+
+{{# /layout }}

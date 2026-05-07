@@ -1,0 +1,173 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Modifier session - {{ session.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Modifier la session{{# /section }}
+{{# section('dashboardSubtitle') }}{{ session.name }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/academic/sessions/{{ session.id }}/transfer" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+    <i class="fas fa-exchange-alt mr-2"></i> Transférer les données
+  </a>
+  <button onclick="deleteSession()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    <i class="fas fa-trash mr-2"></i> Supprimer
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-3xl mx-auto">
+  <form method="POST" action="/academic/sessions/{{ session.id }}/update" x-data="{ loading: false }" @submit="loading = true">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="_method" value="PUT">
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la session *</label>
+        <input type="text" name="name" value="{{ session.name }}" required 
+               class="w-full px-3 py-2 border rounded-lg">
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début *</label>
+          <input type="date" name="startDate" value="{{ session.startDate }}" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
+          <input type="date" name="endDate" value="{{ session.endDate }}" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
+        <select name="status" class="w-full px-3 py-2 border rounded-lg">
+          <option value="upcoming" {{ session.status === 'upcoming' ? 'selected' : '' }}>À venir</option>
+          <option value="active" {{ session.status === 'active' ? 'selected' : '' }}>Active</option>
+          <option value="completed" {{ session.status === 'completed' ? 'selected' : '' }}>Terminée</option>
+          <option value="archived" {{ session.status === 'archived' ? 'selected' : '' }}>Archivée</option>
+        </select>
+      </div>
+      
+      <div class="border-t pt-4 mt-2">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-semibold">Trimestres / Périodes</h3>
+          <button type="button" onclick="addTerm()" class="text-primary text-sm hover:underline">
+            <i class="fas fa-plus mr-1"></i> Ajouter un trimestre
+          </button>
+        </div>
+        
+        <div id="termsContainer" class="space-y-3">
+          @each(term in terms)
+          <div class="term-item p-3 border rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-medium">{{ term.name }}</h4>
+              <button type="button" onclick="removeTerm(this, '{{ term.id }}')" class="text-red-500 text-sm">Supprimer</button>
+            </div>
+            <input type="hidden" name="terms[{{ term.index }}][id]" value="{{ term.id }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-gray-600 text-sm mb-1">Nom</label>
+                <input type="text" name="terms[{{ term.index }}][name]" value="{{ term.name }}" class="w-full px-2 py-1 border rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-gray-600 text-sm mb-1">Date début</label>
+                <input type="date" name="terms[{{ term.index }}][startDate]" value="{{ term.startDate }}" class="w-full px-2 py-1 border rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-gray-600 text-sm mb-1">Date fin</label>
+                <input type="date" name="terms[{{ term.index }}][endDate]" value="{{ term.endDate }}" class="w-full px-2 py-1 border rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-gray-600 text-sm mb-1">Début examens</label>
+                <input type="date" name="terms[{{ term.index }}][examStartDate]" value="{{ term.examStartDate }}" class="w-full px-2 py-1 border rounded text-sm">
+              </div>
+              <div>
+                <label class="block text-gray-600 text-sm mb-1">Fin examens</label>
+                <input type="date" name="terms[{{ term.index }}][examEndDate]" value="{{ term.examEndDate }}" class="w-full px-2 py-1 border rounded text-sm">
+              </div>
+            </div>
+          </div>
+          @end
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex gap-3 mt-8 pt-4 border-t">
+      <button type="submit" :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+        Enregistrer les modifications
+      </button>
+      <a href="/academic/sessions" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+        Annuler
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+  let termIndex = {{ terms.length }}
+  
+  function addTerm() {
+    const container = document.getElementById('termsContainer')
+    const termDiv = document.createElement('div')
+    termDiv.className = 'term-item p-3 border rounded-lg mt-3'
+    termDiv.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <h4 class="font-medium">Nouveau trimestre</h4>
+        <button type="button" onclick="removeTerm(this)" class="text-red-500 text-sm">Supprimer</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Nom</label>
+          <input type="text" name="terms[${termIndex}][name]" class="w-full px-2 py-1 border rounded text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Date début</label>
+          <input type="date" name="terms[${termIndex}][startDate]" class="w-full px-2 py-1 border rounded text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Date fin</label>
+          <input type="date" name="terms[${termIndex}][endDate]" class="w-full px-2 py-1 border rounded text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Début examens</label>
+          <input type="date" name="terms[${termIndex}][examStartDate]" class="w-full px-2 py-1 border rounded text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-600 text-sm mb-1">Fin examens</label>
+          <input type="date" name="terms[${termIndex}][examEndDate]" class="w-full px-2 py-1 border rounded text-sm">
+        </div>
+      </div>
+    `
+    container.appendChild(termDiv)
+    termIndex++
+  }
+  
+  function removeTerm(btn, termId = null) {
+    if (termId && confirm('Supprimer ce trimestre ? Toutes les notes associées seront impactées.')) {
+      fetch(`/academic/sessions/term/${termId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+    }
+    btn.closest('.term-item').remove()
+  }
+  
+  function deleteSession() {
+    if (confirm('⚠️ Supprimer définitivement cette session ? Toutes les données associées (notes, inscriptions, bulletins) seront également supprimées. Cette action est irréversible.')) {
+      fetch('/academic/sessions/{{ session.id }}', {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) window.location.href = '/academic/sessions'
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

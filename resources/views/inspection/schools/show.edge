@@ -1,0 +1,223 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Détails - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Détails de l'établissement{{# /section }}
+{{# section('dashboardSubtitle') }}{{ school.name }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  @if(school.status === 'pending')
+  <a href="/inspection/schools/{{ school.id }}/approve" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-check-circle mr-2"></i> Approuver
+  </a>
+  @endif
+  <button onclick="generateFullReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+    <i class="fas fa-file-pdf mr-2"></i> Rapport complet
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <p class="text-gray-500 dark:text-gray-400 text-sm">Élèves</p>
+    <p class="text-2xl font-bold">{{ stats.students || 0 }}</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <p class="text-gray-500 dark:text-gray-400 text-sm">Enseignants</p>
+    <p class="text-2xl font-bold">{{ stats.teachers || 0 }}</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <p class="text-gray-500 dark:text-gray-400 text-sm">Classes</p>
+    <p class="text-2xl font-bold">{{ stats.classes || 0 }}</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <p class="text-gray-500 dark:text-gray-400 text-sm">Moyenne école</p>
+    <p class="text-2xl font-bold">{{ stats.averageGrade || '-' }}/20</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Informations principales -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Informations générales</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <p class="text-gray-500 text-sm">Nom de l'école</p>
+        <p class="font-medium">{{ school.name }}</p>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Code établissement</p>
+        <p class="font-mono">{{ school.code }}</p>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Province</p>
+        <p class="font-medium">{{ school.province }}</p>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Territoire/Commune</p>
+        <p class="font-medium">{{ school.territory }}</p>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-gray-500 text-sm">Adresse</p>
+        <p class="font-medium">{{ school.address }}</p>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Téléphone</p>
+        <p class="font-medium">{{ school.phone }}</p>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Email</p>
+        <p class="font-medium">{{ school.email }}</p>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Statut</p>
+        <span class="px-2 py-1 rounded-full text-xs" :class="{
+          'bg-green-100 text-green-800': '{{ school.status }}' === 'active',
+          'bg-yellow-100 text-yellow-800': '{{ school.status }}' === 'pending',
+          'bg-red-100 text-red-800': '{{ school.status }}' === 'suspended'
+        }">
+          {{ school.status === 'active' ? 'Actif' : (school.status === 'pending' ? 'En attente' : 'Suspendu') }}
+        </span>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Date approbation</p>
+        <p class="font-medium">{{ school.approvedAt ? formatDate(school.approvedAt) : 'Non approuvée' }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Contact directeur -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Direction</h3>
+    @if(director)
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+        {{ director.firstName?.charAt(0) }}{{ director.lastName?.charAt(0) }}
+      </div>
+      <div>
+        <p class="font-semibold">{{ director.firstName }} {{ director.lastName }}</p>
+        <p class="text-xs text-gray-500">Directeur</p>
+      </div>
+    </div>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Email</span>
+        <span>{{ director.email }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Téléphone</span>
+        <span>{{ director.phone || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Dernière connexion</span>
+        <span>{{ director.lastLogin ? formatDate(director.lastLogin) : 'Jamais' }}</span>
+      </div>
+    </div>
+    <div class="mt-4 pt-3 border-t">
+      <button onclick="sendMessageToDirector()" class="w-full px-3 py-2 bg-primary text-white rounded-lg text-sm hover:bg-blue-700">
+        <i class="fas fa-envelope mr-2"></i> Contacter le directeur
+      </button>
+    </div>
+    @else
+    <p class="text-gray-500 text-center py-6">Aucun directeur associé</p>
+    @endif
+  </div>
+</div>
+
+<!-- Classes de l'école -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+    <h3 class="font-semibold">Classes de l'établissement</h3>
+    <a href="/inspection/schools/{{ school.id }}/classes" class="text-primary text-sm hover:underline">Voir tout</a>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2 text-left">Classe</th>
+          <th class="px-4 py-2 text-center">Niveau</th>
+          <th class="px-4 py-2 text-center">Élèves</th>
+          <th class="px-4 py-2 text-center">Moyenne</th>
+          <th class="px-4 py-2 text-center">Enseignant principal</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(classObj in classes)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2 font-medium">{{ classObj.name }}</td>
+          <td class="px-4 py-2 text-center">{{ classObj.level }} - {{ classObj.gradeLevel }}</td>
+          <td class="px-4 py-2 text-center">{{ classObj.studentsCount || 0 }}/{{ classObj.maxCapacity }}</td>
+          <td class="px-4 py-2 text-center">{{ classObj.averageGrade || '-' }}/20</td>
+          <td class="px-4 py-2">{{ classObj.teacherName || 'Non assigné' }}</td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="5" class="text-center py-8 text-gray-500">Aucune classe enregistrée</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Historique des inspections -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Historique des inspections</h3>
+  </div>
+  <div class="divide-y dark:divide-gray-700">
+    @each(inspection in inspections)
+    <div class="p-4">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="font-medium">{{ inspection.date }} - {{ inspection.inspector }}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ inspection.report }}</p>
+          @if(inspection.rating)
+          <div class="flex items-center gap-1 mt-2">
+            <span class="text-xs text-gray-500">Note:</span>
+            <div class="flex">
+              @for(i = 0; i < 5; i++)
+              <i class="fas fa-star text-xs {{ i < inspection.rating ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+              @endfor
+            </div>
+          </div>
+          @endif
+        </div>
+        @if(inspection.recommendations)
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-xs max-w-xs">
+          <p class="font-medium">Recommandations:</p>
+          <p class="text-gray-600">{{ inspection.recommendations }}</p>
+        </div>
+        @endif
+      </div>
+    </div>
+    @eachelse
+    <div class="p-8 text-center text-gray-500">
+      <i class="fas fa-clipboard-list text-3xl mb-2 block"></i>
+      Aucune inspection enregistrée
+      <button onclick="startInspection()" class="block mx-auto mt-3 text-primary hover:underline">Démarrer une inspection</button>
+    </div>
+    @end
+  </div>
+</div>
+
+<script>
+  function generateFullReport() {
+    window.open(`/inspection/reports/school/{{ school.id }}?full=1`, '_blank')
+  }
+  
+  function sendMessageToDirector() {
+    window.location.href = `/communication/messages/send?receiver_id={{ director?.id }}`
+  }
+  
+  function startInspection() {
+    window.location.href = `/inspection/schools/{{ school.id }}/inspect`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

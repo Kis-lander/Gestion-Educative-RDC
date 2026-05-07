@@ -1,0 +1,178 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Paiements - {{ student.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Situation financière{{# /section }}
+{{# section('dashboardSubtitle') }}{{ student.name }} - {{ student.className }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/financial/payments/record?student_id={{ student.id }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Nouveau paiement
+  </a>
+  <button onclick="exportStudentPayments()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ formatCurrency(stats.totalDue, 'USD') }}</p>
+    <p class="text-sm text-gray-500">Total dû</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ formatCurrency(stats.totalPaid, 'USD') }}</p>
+    <p class="text-sm text-gray-500">Total payé</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold {{ stats.balance > 0 ? 'text-red-600' : 'text-green-600' }}">
+      {{ formatCurrency(stats.balance, 'USD') }}
+    </p>
+    <p class="text-sm text-gray-500">Solde</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.paymentCount || 0 }}</p>
+    <p class="text-sm text-gray-500">Nombre paiements</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Détail des frais -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail des frais à payer</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2 text-left">Type</th>
+          <th class="px-4 py-2 text-left">Trimestre</th>
+          <th class="px-4 py-2 text-right">Montant</th>
+          <th class="px-4 py-2 text-right">Payé</th>
+          <th class="px-4 py-2 text-right">Reste</th>
+          <th class="px-4 py-2 text-center">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(feeDetail in feeDetails)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2 font-medium">{{ feeDetail.type }}</td>
+          <td class="px-4 py-2">{{ feeDetail.term || 'Annuel' }}</td>
+          <td class="px-4 py-2 text-right">{{ formatCurrency(feeDetail.amount, feeDetail.currency) }}</td>
+          <td class="px-4 py-2 text-right text-green-600">{{ formatCurrency(feeDetail.paid, feeDetail.currency) }}</td>
+          <td class="px-4 py-2 text-right font-bold {{ feeDetail.balance > 0 ? 'text-red-600' : 'text-green-600' }}">
+            {{ formatCurrency(feeDetail.balance, feeDetail.currency) }}
+          </td>
+          <td class="px-4 py-2 text-center">
+            <span class="px-2 py-1 rounded-full text-xs {{ feeDetail.balance === 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+              {{ feeDetail.balance === 0 ? 'Soldé' : 'Partiel' }}
+            </span>
+          </td>
+        </tr>
+        @end
+      </tbody>
+      <tfoot class="bg-gray-50 dark:bg-gray-700 font-bold">
+        <tr>
+          <td colspan="2" class="px-4 py-2">TOTAL</td>
+          <td class="px-4 py-2 text-right">{{ formatCurrency(stats.totalDue, 'USD') }}</td>
+          <td class="px-4 py-2 text-right text-green-600">{{ formatCurrency(stats.totalPaid, 'USD') }}</td>
+          <td class="px-4 py-2 text-right text-red-600">{{ formatCurrency(stats.balance, 'USD') }}</td>
+          <td class="px-4 py-2 text-center"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- Historique des paiements -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Historique des paiements</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2 text-left">Date</th>
+          <th class="px-4 py-2 text-left">Reçu n°</th>
+          <th class="px-4 py-2 text-left">Type frais</th>
+          <th class="px-4 py-2 text-right">Montant</th>
+          <th class="px-4 py-2 text-left">Mode</th>
+          <th class="px-4 py-2 text-left">Enregistré par</th>
+          <th class="px-4 py-2 text-center">Reçu</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(payment in payments)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2">{{ formatDate(payment.paymentDate) }}</td>
+          <td class="px-4 py-2 font-mono text-xs">{{ payment.receiptNumber }}</td>
+          <td class="px-4 py-2">{{ payment.feeType }}</td>
+          <td class="px-4 py-2 text-right font-bold text-green-600">{{ formatCurrency(payment.amountPaid, payment.currency) }}</td>
+          <td class="px-4 py-2">
+            <span class="px-2 py-1 rounded-full text-xs {{ payment.paymentMethod === 'cash' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+              {{ payment.paymentMethod === 'cash' ? 'Espèces' : 'Virement' }}
+            </span>
+          </td>
+          <td class="px-4 py-2">{{ payment.recordedByName }}</td>
+          <td class="px-4 py-2 text-center">
+            <button onclick="printReceipt('{{ payment.id }}')" class="text-primary hover:underline text-sm">
+              <i class="fas fa-print"></i>
+            </button>
+          </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="7" class="text-center py-8 text-gray-500">Aucun paiement enregistré</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Graphique d'évolution -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Évolution des paiements</h3>
+  <canvas id="paymentChart" height="150"></canvas>
+</div>
+
+<script>
+  let paymentChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('paymentChart').getContext('2d')
+    paymentChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ paymentLabels|json_encode|raw }},
+        datasets: [{
+          label: 'Paiements cumulés',
+          data: {{ paymentCumulative|json_encode|raw }},
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+  }
+  
+  function printReceipt(paymentId) {
+    window.open(`/financial/payments/print-receipt/${paymentId}`, '_blank')
+  }
+  
+  function exportStudentPayments() {
+    window.location.href = `/api/students/{{ student.id }}/payments/export`
+  }
+  
+  renderChart()
+</script>
+{{# /section }}
+
+{{# /layout }}

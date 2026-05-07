@@ -1,0 +1,183 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Documentation - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Documentation technique{{# /section }}
+{{# section('dashboardSubtitle') }}Documentation complète de la plateforme{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <!-- Sidebar navigation -->
+  <div class="lg:col-span-1">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md sticky top-20">
+      <div class="p-4 border-b dark:border-gray-700">
+        <h3 class="font-semibold">Sommaire</h3>
+      </div>
+      <nav class="p-4 space-y-2 text-sm">
+        <a href="#getting-started" class="block text-gray-700 hover:text-primary">1. Démarrage</a>
+        <a href="#user-management" class="block text-gray-700 hover:text-primary pl-4">1.1 Gestion utilisateurs</a>
+        <a href="#school-management" class="block text-gray-700 hover:text-primary pl-4">1.2 Gestion écoles</a>
+        <a href="#academic" class="block text-gray-700 hover:text-primary">2. Module académique</a>
+        <a href="#financial" class="block text-gray-700 hover:text-primary">3. Module financier</a>
+        <a href="#discipline" class="block text-gray-700 hover:text-primary">4. Module discipline</a>
+        <a href="#communication" class="block text-gray-700 hover:text-primary">5. Communication</a>
+        <a href="#api" class="block text-gray-700 hover:text-primary">6. API</a>
+        <a href="#troubleshooting" class="block text-gray-700 hover:text-primary">7. Dépannage</a>
+      </nav>
+    </div>
+  </div>
+  
+  <!-- Contenu -->
+  <div class="lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <div id="getting-started">
+      <h2 class="text-2xl font-bold mb-4">1. Démarrage</h2>
+      <p>Bienvenue dans la documentation de la plateforme de gestion éducative RDC. Ce guide vous aidera à comprendre et utiliser toutes les fonctionnalités.</p>
+    </div>
+    
+    <div id="user-management" class="mt-8">
+      <h3 class="text-xl font-semibold mb-3">1.1 Gestion des utilisateurs</h3>
+      <p>La plateforme supporte plusieurs rôles : Inspection, Directeur, Directeur financier, Enseignant, Parent, Élève, Discipline.</p>
+      <ul class="list-disc list-inside mt-2 space-y-1">
+        <li><strong>Inspection :</strong> Supervision nationale, approbation des écoles</li>
+        <li><strong>Directeur :</strong> Gestion complète de l'école</li>
+        <li><strong>Enseignant :</strong> Gestion des classes, notes, devoirs</li>
+        <li><strong>Parent :</strong> Suivi des enfants, paiements</li>
+        <li><strong>Élève :</strong> Consultation des notes, devoirs</li>
+      </ul>
+    </div>
+    
+    <div id="school-management" class="mt-8">
+      <h3 class="text-xl font-semibold mb-3">1.2 Gestion des écoles</h3>
+      <p>Les écoles peuvent s'inscrire via le formulaire public. L'inspection valide les inscriptions. Une fois approuvée, l'école reçoit ses identifiants de connexion.</p>
+    </div>
+    
+    <div id="academic" class="mt-8">
+      <h2 class="text-2xl font-bold mb-4">2. Module académique</h2>
+      <p>Le module académique permet de gérer :</p>
+      <ul class="list-disc list-inside mt-2 space-y-1">
+        <li>Classes et matières</li>
+        <li>Notes des élèves (saisie, modification, publication)</li>
+        <li>Bulletins scolaires</li>
+        <li>Examens et calendrier académique</li>
+        <li>Sessions académiques et trimestres</li>
+      </ul>
+    </div>
+    
+    <div id="financial" class="mt-8">
+      <h2 class="text-2xl font-bold mb-4">3. Module financier</h2>
+      <p>Le module financier permet de :</p>
+      <ul class="list-disc list-inside mt-2 space-y-1">
+        <li>Définir les frais scolaires</li>
+        <li>Enregistrer les paiements et générer des reçus</li>
+        <li>Gérer les bourses et réductions</li>
+        <li>Créer des plans de paiement</li>
+        <li>Générer des rapports financiers</li>
+      </ul>
+    </div>
+    
+    <div id="discipline" class="mt-8">
+      <h2 class="text-2xl font-bold mb-4">4. Module discipline</h2>
+      <p>Le module discipline permet de :</p>
+      <ul class="list-disc list-inside mt-2 space-y-1">
+        <li>Signaler des incidents</li>
+        <li>Appliquer des sanctions</li>
+        <li>Gérer les appels</li>
+        <li>Générer des rapports disciplinaires</li>
+      </ul>
+    </div>
+    
+    <div id="communication" class="mt-8">
+      <h2 class="text-2xl font-bold mb-4">5. Communication</h2>
+      <p>La plateforme intègre :</p>
+      <ul class="list-disc list-inside mt-2 space-y-1">
+        <li>Messagerie interne</li>
+        <li>Notifications (email, push)</li>
+        <li>Groupes de discussion</li>
+        <li>Forum pédagogique</li>
+      </ul>
+    </div>
+    
+    <div id="api" class="mt-8">
+      <h2 class="text-2xl font-bold mb-4">6. API</h2>
+      <p>La plateforme expose une API RESTful pour l'intégration avec des systèmes externes.</p>
+      <pre class="bg-gray-100 p-3 rounded text-sm mt-2 overflow-x-auto">
+<code>// Authentification
+POST /api/login
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+
+// Récupérer les notes d'un élève
+GET /api/students/{id}/grades
+
+// Enregistrer un paiement
+POST /api/payments
+{
+  "studentId": "uuid",
+  "amount": 100,
+  "method": "cash"
+}</code></pre>
+      <p class="mt-2">Documentation complète de l'API disponible sur demande.</p>
+    </div>
+    
+    <div id="troubleshooting" class="mt-8">
+      <h2 class="text-2xl font-bold mb-4">7. Dépannage</h2>
+      
+      <div class="space-y-4">
+        <div class="border rounded-lg p-3">
+          <p class="font-medium">Problème : Je n'arrive pas à me connecter</p>
+          <p class="text-sm text-gray-600 mt-1">Solution : Vérifiez vos identifiants. Utilisez la fonction "Mot de passe oublié". Contactez l'administrateur de votre école.</p>
+        </div>
+        
+        <div class="border rounded-lg p-3">
+          <p class="font-medium">Problème : Les notes ne s'affichent pas</p>
+          <p class="text-sm text-gray-600 mt-1">Solution : Vérifiez que les notes ont été publiées par l'enseignant. Contactez votre professeur.</p>
+        </div>
+        
+        <div class="border rounded-lg p-3">
+          <p class="font-medium">Problème : La plateforme est lente</p>
+          <p class="text-sm text-gray-600 mt-1">Solution : Vérifiez votre connexion internet. Videz le cache de votre navigateur. Réessayez plus tard.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Feedback -->
+    <div class="mt-8 pt-4 border-t">
+      <p class="text-sm text-gray-500">Cette documentation vous a-t-elle été utile ?</p>
+      <div class="flex gap-2 mt-2">
+        <button onclick="feedback(true)" class="px-3 py-1 border rounded-lg text-sm hover:bg-green-50">👍 Oui</button>
+        <button onclick="feedback(false)" class="px-3 py-1 border rounded-lg text-sm hover:bg-red-50">👎 Non</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function feedback(helpful) {
+    fetch('/api/help/documentation/feedback', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrfToken }}'
+      },
+      body: JSON.stringify({ helpful, page: 'documentation' })
+    }).then(() => {
+      alert('Merci pour votre retour !')
+    })
+  }
+  
+  // Anchors smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault()
+      const target = document.querySelector(this.getAttribute('href'))
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' })
+      }
+    })
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,192 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Direction - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Direction de l'école{{# /section }}
+{{# section('dashboardSubtitle') }}{{ school.name }}{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Élèves</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.students || 0 }}</p>
+      </div>
+      <i class="fas fa-users text-blue-500 text-xl"></i>
+    </div>
+    <p class="text-xs text-green-600 mt-2">+{{ stats.newStudents || 0 }} ce mois</p>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Enseignants</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.teachers || 0 }}</p>
+      </div>
+      <i class="fas fa-chalkboard-user text-green-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Classes</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.classes || 0 }}</p>
+      </div>
+      <i class="fas fa-chalkboard text-purple-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Taux présence</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.attendanceRate || 0 }}%</p>
+      </div>
+      <i class="fas fa-calendar-check text-yellow-500 text-xl"></i>
+    </div>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Actions rapides -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <h3 class="font-semibold text-gray-800 dark:text-white mb-3">Actions rapides</h3>
+    <div class="space-y-2">
+      <a href="/academic/classes/create" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        <i class="fas fa-plus-circle text-green-500 w-5"></i>
+        <span class="text-gray-700 dark:text-gray-300">Nouvelle classe</span>
+      </a>
+      <a href="/teachers/create" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        <i class="fas fa-user-plus text-blue-500 w-5"></i>
+        <span class="text-gray-700 dark:text-gray-300">Ajouter enseignant</span>
+      </a>
+      <a href="/students/create" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        <i class="fas fa-user-graduate text-purple-500 w-5"></i>
+        <span class="text-gray-700 dark:text-gray-300">Inscrire élève</span>
+      </a>
+      <a href="/academic/grades/add" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        <i class="fas fa-star text-yellow-500 w-5"></i>
+        <span class="text-gray-700 dark:text-gray-300">Saisir notes</span>
+      </a>
+      <a href="/financial/payments/record" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        <i class="fas fa-coins text-green-600 w-5"></i>
+        <span class="text-gray-700 dark:text-gray-300">Enregistrer paiement</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Alertes importantes -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <h3 class="font-semibold text-gray-800 dark:text-white mb-3">Alertes</h3>
+    <div class="space-y-2">
+      @each(alert in alerts)
+      <div class="p-3 rounded-lg border-l-4" :class="{
+        'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20': '{{ alert.type }}' === 'warning',
+        'border-red-500 bg-red-50 dark:bg-red-900/20': '{{ alert.type }}' === 'danger',
+        'border-blue-500 bg-blue-50 dark:bg-blue-900/20': '{{ alert.type }}' === 'info'
+      }">
+        <p class="text-sm text-gray-700 dark:text-gray-300">{{ alert.message }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ alert.time }}</p>
+      </div>
+      @eachelse
+      <p class="text-gray-500 dark:text-gray-400 text-center py-6">Aucune alerte</p>
+      @end
+    </div>
+  </div>
+  
+  <!-- Calendrier / Événements -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <h3 class="font-semibold text-gray-800 dark:text-white mb-3">Événements à venir</h3>
+    <div class="space-y-3">
+      @each(event in upcomingEvents)
+      <div class="flex items-center gap-3 p-2 border-b dark:border-gray-700">
+        <div class="text-center bg-gray-100 dark:bg-gray-700 rounded-lg p-2 min-w-[60px]">
+          <div class="text-xs text-gray-500">{{ event.day }}</div>
+          <div class="font-bold text-lg">{{ event.date }}</div>
+        </div>
+        <div class="flex-1">
+          <p class="font-medium text-gray-800 dark:text-white text-sm">{{ event.title }}</p>
+          <p class="text-xs text-gray-500">{{ event.time }}</p>
+        </div>
+      </div>
+      @eachelse
+      <p class="text-gray-500 dark:text-gray-400 text-center py-6">Aucun événement planifié</p>
+      @end
+    </div>
+    <a href="/academic/calendar" class="block text-center text-primary text-sm mt-3 hover:underline">
+      Voir calendrier complet
+    </a>
+  </div>
+</div>
+
+<!-- Performance récente -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="font-semibold text-gray-800 dark:text-white">Performance académique</h3>
+    <select id="classSelect" class="text-sm border rounded-lg px-2 py-1">
+      <option value="">Toutes les classes</option>
+      @each(classObj in classes)
+      <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+      @end
+    </select>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-3 py-2 text-left">Classe</th>
+          <th class="px-3 py-2 text-center">Effectif</th>
+          <th class="px-3 py-2 text-center">Moyenne</th>
+          <th class="px-3 py-2 text-center">Taux présence</th>
+          <th class="px-3 py-2 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(classPerf in classPerformance)
+        <tr>
+          <td class="px-3 py-2 font-medium">{{ classPerf.name }}</td>
+          <td class="px-3 py-2 text-center">{{ classPerf.studentsCount }}</td>
+          <td class="px-3 py-2 text-center">
+            <span :class="{
+              'text-green-600 font-bold': {{ classPerf.averageGrade }} >= 15,
+              'text-yellow-600': {{ classPerf.averageGrade }} >= 10 && {{ classPerf.averageGrade }} < 15,
+              'text-red-600': {{ classPerf.averageGrade }} < 10
+            }">{{ classPerf.averageGrade || '-' }}/20</span>
+          </td>
+          <td class="px-3 py-2 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                <div class="bg-green-500 rounded-full h-1.5" style="width: {{ classPerf.attendanceRate || 0 }}%"></div>
+              </div>
+              <span class="text-xs">{{ classPerf.attendanceRate || 0 }}%</span>
+            </div>
+          </td>
+          <td class="px-3 py-2 text-center">
+            <a href="/academic/classes/{{ classPerf.id }}" class="text-primary hover:underline text-xs">Voir</a>
+          </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="5" class="text-center py-6 text-gray-500">Aucune donnée disponible</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.getElementById('classSelect')?.addEventListener('change', function(e) {
+    const classId = e.target.value
+    if (classId) {
+      window.location.href = `/academic/classes/${classId}`
+    }
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,157 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Espace Enseignant - Gestion Éducative RDC{{# /section }}
+
+{{# section('dashboardTitle') }}Espace Enseignant{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez vos classes, devoirs et notes{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Mes classes</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.myClasses || 0 }}</p>
+      </div>
+      <i class="fas fa-chalkboard text-blue-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Mes élèves</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.myStudents || 0 }}</p>
+      </div>
+      <i class="fas fa-users text-green-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Devoirs publiés</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.assignments || 0 }}</p>
+      </div>
+      <i class="fas fa-tasks text-purple-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Soumissions à noter</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.pendingSubmissions || 0 }}</p>
+      </div>
+      <i class="fas fa-clock text-yellow-500 text-xl"></i>
+    </div>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Mes classes -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-semibold text-gray-800 dark:text-white">Mes classes</h3>
+      <a href="/teacher/classes" class="text-primary text-sm hover:underline">Voir tout</a>
+    </div>
+    <div class="space-y-3">
+      @each(classObj in myClasses)
+      <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div>
+          <p class="font-medium text-gray-800 dark:text-white">{{ classObj.name }}</p>
+          <p class="text-xs text-gray-500">{{ classObj.studentsCount || 0 }} élèves</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="/teacher/classes/{{ classObj.id }}/attendance" class="text-primary text-sm hover:underline" title="Présences">
+            <i class="fas fa-calendar-check"></i>
+          </a>
+          <a href="/academic/grades/add?class_id={{ classObj.id }}" class="text-green-600 text-sm hover:underline" title="Notes">
+            <i class="fas fa-star"></i>
+          </a>
+          <a href="/teacher/classes/{{ classObj.id }}" class="text-blue-600 text-sm hover:underline" title="Détails">
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      @eachelse
+      <p class="text-gray-500 dark:text-gray-400 text-center py-6">Aucune classe assignée</p>
+      @end
+    </div>
+  </div>
+  
+  <!-- Devoirs récents -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-semibold text-gray-800 dark:text-white">Devoirs récents</h3>
+      <a href="/teacher/assignments/create" class="text-primary text-sm hover:underline">
+        <i class="fas fa-plus mr-1"></i> Nouveau
+      </a>
+    </div>
+    <div class="space-y-3 max-h-80 overflow-y-auto">
+      @each(assignment in recentAssignments)
+      <div class="flex justify-between items-center p-3 border-b dark:border-gray-700">
+        <div class="flex-1">
+          <p class="font-medium text-gray-800 dark:text-white">{{ assignment.title }}</p>
+          <p class="text-xs text-gray-500">{{ assignment.className }} - {{ assignment.subjectName }}</p>
+          <p class="text-xs text-gray-400 mt-1">Rendu: {{ assignment.dueDate }}</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+            {{ assignment.submissionsCount || 0 }}/{{ assignment.totalStudents }} rendus
+          </span>
+          <div class="mt-1">
+            <a href="/teacher/assignments/{{ assignment.id }}" class="text-primary text-xs hover:underline">Voir</a>
+          </div>
+        </div>
+      </div>
+      @eachelse
+      <p class="text-gray-500 dark:text-gray-400 text-center py-6">Aucun devoir</p>
+      @end
+    </div>
+  </div>
+</div>
+
+<!-- Présences aujourd'hui -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="font-semibold text-gray-800 dark:text-white">Présences du jour</h3>
+    <button id="markAttendanceBtn" class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700">
+      <i class="fas fa-check-circle mr-1"></i> Marquer présences
+    </button>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    @each(classAttendance in todayAttendance)
+    <div class="border rounded-lg p-3">
+      <div class="flex justify-between items-center mb-2">
+        <p class="font-medium">{{ classAttendance.className }}</p>
+        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+          {{ classAttendance.presentCount }}/{{ classAttendance.totalStudents }} présents
+        </span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="bg-green-500 rounded-full h-1.5" style="width: {{ classAttendance.rate }}%"></div>
+      </div>
+    </div>
+    @eachelse
+    <p class="text-gray-500 dark:text-gray-400 text-center py-4 col-span-2">Aucune classe programmée aujourd'hui</p>
+    @end
+  </div>
+</div>
+
+<script>
+  document.getElementById('markAttendanceBtn')?.addEventListener('click', () => {
+    window.location.href = '/teacher/attendance/mark'
+  })
+</script>
+{{# /section }}
+
+{{# section('actions') }}
+<a href="/teacher/assignments/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+  <i class="fas fa-plus mr-2"></i> Nouveau devoir
+</a>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,247 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Gestion des paiements - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Paiements{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez tous les paiements de l'établissement{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/financial/payments/record" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Nouveau paiement
+  </a>
+  <button onclick="exportPayments()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
+    <p class="text-sm text-gray-500">Paiements</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ formatCurrency(stats.totalAmount, 'USD') }}</p>
+    <p class="text-sm text-gray-500">Montant total</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ formatCurrency(stats.averagePayment, 'USD') }}</p>
+    <p class="text-sm text-gray-500">Paiement moyen</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.todayCount || 0 }}</p>
+    <p class="text-sm text-gray-500">Aujourd'hui</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Mode</label>
+      <select id="filterMethod" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="cash">Espèces</option>
+        <option value="bank_transfer">Virement</option>
+        <option value="mobile_money">Mobile Money</option>
+        <option value="check">Chèque</option>
+        <option value="card">Carte</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type frais</label>
+      <select id="filterFeeType" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="Inscription">Inscription</option>
+        <option value="Minerval">Minerval</option>
+        <option value="Assurance">Assurance</option>
+        <option value="Transport">Transport</option>
+        <option value="Cantine">Cantine</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input type="text" id="searchInput" placeholder="Élève, reçu..." 
+               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+      </div>
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau des paiements -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left">Date</th>
+          <th class="px-4 py-3 text-left">Reçu n°</th>
+          <th class="px-4 py-3 text-left">Élève</th>
+          <th class="px-4 py-3 text-left">Type</th>
+          <th class="px-4 py-3 text-right">Montant</th>
+          <th class="px-4 py-3 text-left">Mode</th>
+          <th class="px-4 py-3 text-left">Enregistré par</th>
+          <th class="px-4 py-3 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(payment in payments)
+        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-3">{{ formatDate(payment.paymentDate) }}</td>
+          <td class="px-4 py-3 font-mono text-xs">{{ payment.receiptNumber }}</td>
+          <td class="px-4 py-3 font-medium">{{ payment.studentName }}<br><span class="text-xs text-gray-500">{{ payment.registrationNumber }}</span></td>
+          <td class="px-4 py-3">{{ payment.feeType }}</td>
+          <td class="px-4 py-3 text-right font-bold text-green-600">{{ formatCurrency(payment.amountPaid, payment.currency) }}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded-full text-xs {{ payment.paymentMethod === 'cash' ? 'bg-green-100 text-green-800' : (payment.paymentMethod === 'bank_transfer' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
+              {{ payment.paymentMethod === 'cash' ? 'Espèces' : (payment.paymentMethod === 'bank_transfer' ? 'Virement' : (payment.paymentMethod === 'mobile_money' ? 'Mobile Money' : (payment.paymentMethod === 'check' ? 'Chèque' : 'Carte'))) }}
+            </span>
+          </td>
+          <td class="px-4 py-3">{{ payment.recordedByName || '-' }}</td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex justify-center gap-2">
+              <button onclick="viewReceipt('{{ payment.id }}')" class="text-primary hover:text-blue-700" title="Voir reçu">
+                <i class="fas fa-receipt"></i>
+              </button>
+              <button onclick="printReceipt('{{ payment.id }}')" class="text-green-600 hover:text-green-800" title="Imprimer reçu">
+                <i class="fas fa-print"></i>
+              </button>
+              <button onclick="deletePayment('{{ payment.id }}')" class="text-red-500 hover:text-red-700" title="Supprimer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="8" class="text-center py-12 text-gray-500">
+            <i class="fas fa-receipt text-4xl mb-3 block"></i>
+            Aucun paiement trouvé
+            <div class="mt-3">
+              <a href="/financial/payments/record" class="text-primary hover:underline">
+                Enregistrer le premier paiement
+              </a>
+            </div>
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/financial/payments' })
+</div>
+
+<!-- Sommaire par mode -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-2">Par mode de paiement</h3>
+    <div class="space-y-2">
+      <div class="flex justify-between"><span>Espèces</span><span class="font-bold">{{ formatCurrency(stats.byMethod?.cash, 'USD') }}</span></div>
+      <div class="flex justify-between"><span>Virement bancaire</span><span class="font-bold">{{ formatCurrency(stats.byMethod?.bank_transfer, 'USD') }}</span></div>
+      <div class="flex justify-between"><span>Mobile Money</span><span class="font-bold">{{ formatCurrency(stats.byMethod?.mobile_money, 'USD') }}</span></div>
+      <div class="flex justify-between"><span>Chèque</span><span class="font-bold">{{ formatCurrency(stats.byMethod?.check, 'USD') }}</span></div>
+    </div>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-2">Par type de frais</h3>
+    <div class="space-y-2">
+      @each(byFee in stats.byFeeType)
+      <div class="flex justify-between"><span>{{ byFee.type }}</span><span class="font-bold">{{ formatCurrency(byFee.total, 'USD') }}</span></div>
+      @end
+    </div>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-2">Tendance</h3>
+    <div class="text-center">
+      <p class="text-3xl font-bold {{ stats.trend > 0 ? 'text-green-600' : (stats.trend < 0 ? 'text-red-600' : 'text-gray-600') }}">
+        {{ stats.trend > 0 ? '+' : '' }}{{ stats.trend }}%
+      </p>
+      <p class="text-xs text-gray-500">par rapport au mois précédent</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const filterMethod = document.getElementById('filterMethod')
+  const filterFeeType = document.getElementById('filterFeeType')
+  const searchInput = document.getElementById('searchInput')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  // Dates par défaut (30 derniers jours)
+  const today = new Date()
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(today.getDate() - 30)
+  startDate.value = thirtyDaysAgo.toISOString().split('T')[0]
+  endDate.value = today.toISOString().split('T')[0]
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    if (filterMethod.value) params.set('method', filterMethod.value)
+    if (filterFeeType.value) params.set('fee_type', filterFeeType.value)
+    if (searchInput.value) params.set('search', searchInput.value)
+    window.location.href = `/financial/payments?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/financial/payments'
+  })
+  
+  function viewReceipt(paymentId) {
+    window.open(`/financial/payments/receipt/${paymentId}`, '_blank', 'width=800,height=600')
+  }
+  
+  function printReceipt(paymentId) {
+    window.open(`/financial/payments/print-receipt/${paymentId}`, '_blank')
+  }
+  
+  function deletePayment(paymentId) {
+    if (confirm('Supprimer ce paiement ? Cette action est irréversible.')) {
+      fetch(`/financial/payments/${paymentId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) location.reload()
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+  
+  function exportPayments() {
+    const params = new URLSearchParams()
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    if (filterMethod.value) params.set('method', filterMethod.value)
+    window.location.href = `/api/payments/export?${params.toString()}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

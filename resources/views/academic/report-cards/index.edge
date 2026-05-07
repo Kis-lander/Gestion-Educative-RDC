@@ -1,0 +1,187 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Bulletins scolaires - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Bulletins scolaires{{# /section }}
+{{# section('dashboardSubtitle') }}Consultez et gérez les bulletins des élèves{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/academic/report-cards/generate" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Générer un bulletin
+  </a>
+  <button onclick="exportAll()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter tous
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
+    <p class="text-sm text-gray-500">Bulletins générés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.published || 0 }}</p>
+    <p class="text-sm text-gray-500">Publiés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.pending || 0 }}</p>
+    <p class="text-sm text-gray-500">En attente</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.average || '0.0' }}/20</p>
+    <p class="text-sm text-gray-500">Moyenne générale</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+      <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        @each(classObj in classes)
+        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Élève</label>
+      <input type="text" id="filterStudent" placeholder="Nom, matricule..."
+             class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+      <select id="filterTerm" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="T1">Trimestre 1</option>
+        <option value="T2">Trimestre 2</option>
+        <option value="T3">Trimestre 3</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année académique</label>
+      <select id="filterYear" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        <option value="{{ currentYear }}">{{ currentYear }}</option>
+        <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
+      </select>
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Liste des bulletins -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="table-responsive">
+    <table class="w-full text-sm" id="reportCardsTable">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left">Élève</th>
+          <th class="px-4 py-3 text-left">Classe</th>
+          <th class="px-4 py-3 text-center">Moyenne</th>
+          <th class="px-4 py-3 text-center">Trimestre</th>
+          <th class="px-4 py-3 text-center">Année</th>
+          <th class="px-4 py-3 text-center">Statut</th>
+          <th class="px-4 py-3 text-center">Date génération</th>
+          <th class="px-4 py-3 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="reportCardsBody">
+        @each(report in reportCards)
+        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-3 font-medium">{{ report.studentName }}<br><span class="text-xs text-gray-500 font-mono">{{ report.registrationNumber }}</span></td>
+          <td class="px-4 py-3">{{ report.className }}</td>
+          <td class="px-4 py-3 text-center font-bold {{ report.average >= 15 ? 'text-green-600' : (report.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ report.average }}/20
+          </td>
+          <td class="px-4 py-3 text-center">{{ report.term }}</td>
+          <td class="px-4 py-3 text-center">{{ report.academicYear }}</td>
+          <td class="px-4 py-3 text-center">
+            <span class="px-2 py-1 rounded-full text-xs {{ report.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+              {{ report.status === 'published' ? 'Publié' : 'Brouillon' }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">{{ formatDate(report.generatedAt) }}</td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex justify-center gap-2">
+              <a href="/academic/report-cards/{{ report.id }}/show" class="text-primary hover:text-blue-700" title="Voir">
+                <i class="fas fa-eye"></i>
+              </a>
+              <a href="/academic/report-cards/{{ report.id }}/print" class="text-green-600 hover:text-green-800" title="Imprimer" target="_blank">
+                <i class="fas fa-print"></i>
+              </a>
+              <button onclick="downloadPDF('{{ report.id }}')" class="text-purple-600 hover:text-purple-800" title="PDF">
+                <i class="fas fa-file-pdf"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="8" class="text-center py-12 text-gray-500">
+            <i class="fas fa-file-alt text-4xl mb-3 block"></i>
+            Aucun bulletin trouvé
+            <div class="mt-3">
+              <a href="/academic/report-cards/generate" class="text-primary hover:underline">
+                Générer le premier bulletin
+              </a>
+            </div>
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/academic/report-cards' })
+</div>
+
+<script>
+  const filterClass = document.getElementById('filterClass')
+  const filterStudent = document.getElementById('filterStudent')
+  const filterTerm = document.getElementById('filterTerm')
+  const filterYear = document.getElementById('filterYear')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterClass.value) params.set('class_id', filterClass.value)
+    if (filterStudent.value) params.set('student', filterStudent.value)
+    if (filterTerm.value) params.set('term', filterTerm.value)
+    if (filterYear.value) params.set('year', filterYear.value)
+    window.location.href = `/academic/report-cards?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/academic/report-cards'
+  })
+  
+  function downloadPDF(reportId) {
+    window.open(`/academic/report-cards/${reportId}/pdf`, '_blank')
+  }
+  
+  function exportAll() {
+    const params = new URLSearchParams()
+    if (filterClass.value) params.set('class_id', filterClass.value)
+    if (filterTerm.value) params.set('term', filterTerm.value)
+    if (filterYear.value) params.set('year', filterYear.value)
+    window.location.href = `/api/report-cards/export?${params.toString()}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

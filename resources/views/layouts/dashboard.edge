@@ -1,0 +1,26 @@
+{{# layout('layouts/app') }}
+
+{{# section('content') }}
+<div class="space-y-6">
+  <!-- En-tête avec titre et actions -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
+        {{ dashboardTitle }}
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">{{ dashboardSubtitle }}</p>
+    </div>
+    <div class="flex gap-2">
+      {{ await $slots.actions() }}
+    </div>
+  </div>
+  
+  <!-- Statistiques Cards -->
+  {{ await $slots.stats() }}
+  
+  <!-- Contenu principal -->
+  {{ await $slots.content() }}
+</div>
+{{# /section }}
+
+{{# /layout }}

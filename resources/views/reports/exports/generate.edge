@@ -1,0 +1,228 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Générer exportation - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Générer une exportation{{# /section }}
+{{# section('dashboardSubtitle') }}Créez un rapport personnalisé{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/reports/exports/generate" x-data="{ loading: false, reportType: 'academic' }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de rapport *</label>
+          <select name="reportType" required x-model="reportType" class="w-full px-3 py-2 border rounded-lg">
+            <option value="academic">Académique</option>
+            <option value="financial">Financier</option>
+            <option value="disciplinary">Disciplinaire</option>
+            <option value="administrative">Administratif</option>
+            <option value="custom">Personnalisé</option>
+          </select>
+        </div>
+        
+        <!-- Options Académique -->
+        <div x-show="reportType === 'academic'" x-cloak>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique</label>
+              <select name="academicYear" class="w-full px-3 py-2 border rounded-lg">
+                <option value="{{ currentYear }}">{{ currentYear }}</option>
+                <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre</label>
+              <select name="term" class="w-full px-3 py-2 border rounded-lg">
+                <option value="T1">Trimestre 1</option>
+                <option value="T2">Trimestre 2</option>
+                <option value="T3">Trimestre 3</option>
+                <option value="all">Tous</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Niveau</label>
+              <select name="level" class="w-full px-3 py-2 border rounded-lg">
+                <option value="">Tous</option>
+                <option value="Primaire">Primaire</option>
+                <option value="Secondaire">Secondaire</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Inclure</label>
+              <select name="academicInclude" class="w-full px-3 py-2 border rounded-lg">
+                <option value="all">Toutes les données</option>
+                <option value="grades">Notes uniquement</option>
+                <option value="attendance">Présences uniquement</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Options Financier -->
+        <div x-show="reportType === 'financial'" x-cloak>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Période début</label>
+              <input type="date" name="startDate" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Période fin</label>
+              <input type="date" name="endDate" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type données</label>
+              <select name="financialType" class="w-full px-3 py-2 border rounded-lg">
+                <option value="all">Toutes</option>
+                <option value="income">Revenus</option>
+                <option value="expenses">Dépenses</option>
+                <option value="balance">Bilan</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Options Disciplinaire -->
+        <div x-show="reportType === 'disciplinary'" x-cloak>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Période début</label>
+              <input type="date" name="startDate" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Période fin</label>
+              <input type="date" name="endDate" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type incidents</label>
+              <select name="incidentType" class="w-full px-3 py-2 border rounded-lg">
+                <option value="">Tous</option>
+                <option value="absence">Absences</option>
+                <option value="late">Retards</option>
+                <option value="misconduct">Inconduites</option>
+                <option value="violence">Violences</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Format -->
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Format d'export *</label>
+          <div class="grid grid-cols-4 gap-2">
+            <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+              <input type="radio" name="format" value="pdf" checked class="w-4 h-4">
+              <i class="fas fa-file-pdf text-red-500"></i>
+              <span class="text-sm">PDF</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+              <input type="radio" name="format" value="excel" class="w-4 h-4">
+              <i class="fas fa-file-excel text-green-500"></i>
+              <span class="text-sm">Excel</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+              <input type="radio" name="format" value="csv" class="w-4 h-4">
+              <i class="fas fa-file-csv text-blue-500"></i>
+              <span class="text-sm">CSV</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50">
+              <input type="radio" name="format" value="json" class="w-4 h-4">
+              <i class="fas fa-file-code text-yellow-500"></i>
+              <span class="text-sm">JSON</span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Options supplémentaires -->
+        <div>
+          <h4 class="font-semibold mb-2">Options</h4>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="includeCharts" class="w-4 h-4">
+              <span class="text-sm">Inclure les graphiques (PDF uniquement)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="includeRawData" class="w-4 h-4">
+              <span class="text-sm">Inclure les données brutes</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="compress" class="w-4 h-4">
+              <span class="text-sm">Compresser le fichier (ZIP)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="emailWhenReady" class="w-4 h-4">
+              <span class="text-sm">M'envoyer un email lorsque l'export est prêt</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Générer l'export
+        </button>
+        <a href="/reports/exports" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Informations -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Formats disponibles</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2"><i class="fas fa-file-pdf text-red-500"></i> <strong>PDF:</strong> Rapport imprimable</li>
+        <li class="flex gap-2"><i class="fas fa-file-excel text-green-500"></i> <strong>Excel:</strong> Données analysables</li>
+        <li class="flex gap-2"><i class="fas fa-file-csv text-blue-500"></i> <strong>CSV:</strong> Compatibilité universelle</li>
+        <li class="flex gap-2"><i class="fas fa-file-code text-yellow-500"></i> <strong>JSON:</strong> Pour développeurs</li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Temps de génération</h3>
+      <div class="space-y-1 text-sm">
+        <div class="flex justify-between">
+          <span>Petit rapport (&lt;1000 lignes)</span>
+          <span class="text-green-600">~10 secondes</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Rapport moyen (1000-10000 lignes)</span>
+          <span class="text-yellow-600">~30 secondes</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Grand rapport (&gt;10000 lignes)</span>
+          <span class="text-red-600">~2 minutes</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+      <p class="text-sm flex gap-2">
+        <i class="fas fa-clock text-yellow-600"></i>
+        <span>Les exports volumineux sont traités en arrière-plan. Vous serez notifié une fois prêt.</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dates par défaut
+  const today = new Date()
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+  document.querySelectorAll('input[name="startDate"]').forEach(input => {
+    if (input) input.value = firstDay.toISOString().split('T')[0]
+  })
+  document.querySelectorAll('input[name="endDate"]').forEach(input => {
+    if (input) input.value = today.toISOString().split('T')[0]
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

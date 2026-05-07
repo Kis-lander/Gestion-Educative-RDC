@@ -1,0 +1,149 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Partager une pratique - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Partager une pratique{{# /section }}
+{{# section('dashboardSubtitle') }}Partagez votre expérience avec d'autres écoles{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/inter-school/best-practices/share" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
+          <input type="text" name="title" required 
+                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                 placeholder="Ex: Programme de tutorat par les pairs">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Catégorie *</label>
+          <select name="category" required class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Sélectionner</option>
+            <option value="pedagogy">Pédagogie</option>
+            <option value="technology">Technologie éducative</option>
+            <option value="management">Gestion scolaire</option>
+            <option value="discipline">Discipline et vie scolaire</option>
+            <option value="sports">Sports et activités physiques</option>
+            <option value="culture">Culture et arts</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Description *</label>
+          <textarea name="description" required rows="4" 
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Décrivez brièvement votre pratique..."></textarea>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Résultats obtenus *</label>
+          <textarea name="results" required rows="4" 
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Quels sont les résultats concrets de cette pratique ?"></textarea>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Tags (séparés par des virgules)</label>
+          <input type="text" name="tags" class="w-full px-3 py-2 border rounded-lg"
+                 placeholder="Ex: innovation, inclusivité, numérique">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Ressources / Documents joints</label>
+          <div class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
+               onclick="document.getElementById('resourcesInput').click()">
+            <input type="file" name="resources[]" id="resourcesInput" class="hidden" multiple accept=".pdf,.jpg,.png,.doc,.docx,.ppt">
+            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+            <p class="text-gray-500">Cliquez pour ajouter des fichiers (PDF, images, documents)</p>
+            <p class="text-xs text-gray-400 mt-1">Plusieurs fichiers acceptés</p>
+          </div>
+          <div id="resourcesList" class="mt-2 space-y-1"></div>
+        </div>
+        
+        <div>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="isPublic" checked class="w-4 h-4">
+            <span>Rendre cette pratique publique</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Partager la pratique
+        </button>
+        <a href="/inter-school/best-practices" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Informations -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Pourquoi partager ?</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Inspirez d'autres écoles</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Recevez des retours constructifs</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Développez votre réseau</li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Exemple de pratique</h3>
+      <div class="text-sm">
+        <p><strong>Titre:</strong> Club de lecture inter-écoles</p>
+        <p><strong>Description:</strong> Organisation de rencontres mensuelles entre élèves de différentes écoles pour discuter de livres...</p>
+        <p><strong>Résultats:</strong> +30% d'élèves lecteurs, amélioration des compétences en expression</p>
+      </div>
+    </div>
+    
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+      <p class="text-sm flex gap-2">
+        <i class="fas fa-info-circle text-yellow-600"></i>
+        <span>Les pratiques partagées sont modérées avant publication.</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('resourcesInput')
+  const resourcesList = document.getElementById('resourcesList')
+  let selectedFiles = []
+  
+  fileInput?.addEventListener('change', function() {
+    selectedFiles = Array.from(this.files)
+    resourcesList.innerHTML = selectedFiles.map(file => `
+      <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+        <span><i class="fas fa-file-alt mr-2"></i> ${file.name}</span>
+        <button type="button" onclick="removeFile('${file.name}')" class="text-red-500">✕</button>
+      </div>
+    `).join('')
+  })
+  
+  function removeFile(fileName) {
+    selectedFiles = selectedFiles.filter(f => f.name !== fileName)
+    // Reconstruire l'input file
+    const dt = new DataTransfer()
+    selectedFiles.forEach(f => dt.items.add(f))
+    fileInput.files = dt.files
+    resourcesList.innerHTML = selectedFiles.map(file => `
+      <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+        <span><i class="fas fa-file-alt mr-2"></i> ${file.name}</span>
+        <button type="button" onclick="removeFile('${file.name}')" class="text-red-500">✕</button>
+      </div>
+    `).join('')
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

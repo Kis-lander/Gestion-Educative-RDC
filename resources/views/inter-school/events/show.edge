@@ -1,0 +1,152 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}{{ event.title }} - Inter-school{{# /section }}
+
+{{# section('dashboardTitle') }}{{ event.title }}{{# /section }}
+{{# section('dashboardSubtitle') }}Organisé par {{ event.organizerSchoolName }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  @if(event.canRegister && event.status === 'upcoming')
+  <a href="/inter-school/events/{{ event.id }}/register" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-check-circle mr-2"></i> S'inscrire
+  </a>
+  @endif
+  @if(event.organizerSchoolId == schoolId)
+  <a href="/inter-school/events/{{ event.id }}/edit" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-edit mr-2"></i> Modifier
+  </a>
+  <button onclick="cancelEvent()" class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
+    <i class="fas fa-ban mr-2"></i> Annuler
+  </button>
+  @endif
+  <button onclick="shareEvent()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-share-alt mr-2"></i> Partager
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Détails principaux -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="relative">
+      <div class="h-40 bg-gradient-to-r 
+        {{ event.type === 'seminar' ? 'from-blue-500 to-blue-700' : 
+           (event.type === 'workshop' ? 'from-green-500 to-green-700' : 
+           (event.type === 'competition' ? 'from-purple-500 to-purple-700' : 
+           (event.type === 'sports' ? 'from-orange-500 to-orange-700' : 'from-yellow-500 to-yellow-700'))) }}">
+        <div class="absolute bottom-4 left-4">
+          <span class="px-3 py-1 rounded-full text-sm bg-white/20 text-white">
+            {{ event.typeLabel }}
+          </span>
+        </div>
+        <div class="absolute bottom-4 right-4">
+          <span class="px-3 py-1 rounded-full text-sm
+            {{ event.status === 'upcoming' ? 'bg-blue-500' : 
+               (event.status === 'ongoing' ? 'bg-green-500' : 
+               (event.status === 'completed' ? 'bg-gray-500' : 'bg-red-500')) }} text-white">
+            {{ event.status === 'upcoming' ? 'À venir' : 
+               (event.status === 'ongoing' ? 'En cours' : 
+               (event.status === 'completed' ? 'Terminé' : 'Annulé')) }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="p-5">
+      <h2 class="text-2xl font-bold mb-4">{{ event.title }}</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg mb-4">
+        <div><i class="fas fa-calendar w-6 text-gray-400"></i> {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}</div>
+        <div><i class="fas fa-map-marker-alt w-6 text-gray-400"></i> {{ event.location }}</div>
+        <div><i class="fas fa-users w-6 text-gray-400"></i> {{ event.participantsCount || 0 }}/{{ event.maxParticipants || '∞' }} participants</div>
+        <div><i class="fas fa-school w-6 text-gray-400"></i> Organisé par {{ event.organizerSchoolName }}</div>
+        @if(event.participationFee > 0)
+        <div><i class="fas fa-ticket-alt w-6 text-gray-400"></i> Frais: {{ formatCurrency(event.participationFee, 'USD') }} par participant</div>
+        @else
+        <div><i class="fas fa-gift w-6 text-gray-400"></i> Entrée gratuite</div>
+        @endif
+      </div>
+      
+      <div class="mb-4">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-2">Description</h3>
+        <p class="text-gray-700 whitespace-pre-wrap">{{ event.description }}</p>
+      </div>
+      
+      @if(event.additionalInfo)
+      <div class="mb-4">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-2">Informations pratiques</h3>
+        <p class="text-gray-700 whitespace-pre-wrap">{{ event.additionalInfo }}</p>
+      </div>
+      @endif
+    </div>
+  </div>
+  
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <h3 class="font-semibold border-b pb-2 mb-3">Participants</h3>
+      <div class="space-y-2 max-h-64 overflow-y-auto">
+        @each(participant in participants)
+        <div class="flex items-center gap-2 p-2 border-b">
+          <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold">
+            {{ participant.schoolName.charAt(0) }}
+          </div>
+          <div>
+            <p class="font-medium text-sm">{{ participant.schoolName }}</p>
+            <p class="text-xs text-gray-500">{{ participant.participantsCount }} participant(s)</p>
+          </div>
+        </div>
+        @eachelse
+        <p class="text-gray-500 text-center py-4">Aucun participant pour l'instant</p>
+        @end
+      </div>
+    </div>
+    
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h4 class="font-semibold">Contact</h4>
+      <p class="text-sm mt-2">Pour toute question sur cet événement :</p>
+      <button onclick="contactOrganizer()" class="mt-2 w-full px-3 py-2 bg-primary text-white rounded text-sm hover:bg-blue-700">
+        <i class="fas fa-envelope mr-1"></i> Contacter l'organisateur
+      </button>
+    </div>
+    
+    @if(event.status === 'upcoming')
+    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center">
+      <i class="fas fa-calendar-check text-green-600 text-2xl mb-2"></i>
+      <p class="font-semibold">Inscriptions ouvertes</p>
+      <p class="text-sm">Rejoignez cet événement !</p>
+      <a href="/inter-school/events/{{ event.id }}/register" class="mt-3 inline-block px-4 py-2 bg-green-600 text-white rounded-lg text-sm">
+        S'inscrire maintenant
+      </a>
+    </div>
+    @endif
+  </div>
+</div>
+
+<script>
+  function shareEvent() {
+    navigator.clipboard.writeText(window.location.href)
+    alert('Lien de l\'événement copié')
+  }
+  
+  function contactOrganizer() {
+    window.location.href = `/inter-school/contact?school_id={{ event.organizerSchoolId }}&subject=Question sur événement: {{ event.title }}`
+  }
+  
+  function cancelEvent() {
+    if (confirm('Annuler cet événement ? Cette action est irréversible.')) {
+      fetch('/inter-school/events/{{ event.id }}/cancel', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) window.location.href = '/inter-school/events'
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

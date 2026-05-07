@@ -5,10 +5,12 @@
 
 export const controllers = {
   Academics: () => import('#controllers/academics_controller'),
+  Admin: () => import('#controllers/admin_controller'),
   Auth: () => import('#controllers/auth_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Disciplines: () => import('#controllers/disciplines_controller'),
   Financials: () => import('#controllers/financials_controller'),
+  Help: () => import('#controllers/help_controller'),
   Inspections: () => import('#controllers/inspections_controller'),
   InterSchools: () => import('#controllers/inter_schools_controller'),
   Messages: () => import('#controllers/messages_controller'),
@@ -20,5 +22,5 @@ export const controllers = {
   Students: () => import('#controllers/students_controller'),
   Teachers: () => import('#controllers/teachers_controller'),
   Transfers: () => import('#controllers/transfers_controller'),
-  Admins: () => import('#controllers/admin_controller'),
+  Welcome: () => import('#controllers/welcome_controller'),
 }

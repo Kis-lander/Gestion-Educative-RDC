@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrfToken }}">
+  <meta name="theme-color" content="#2563eb">
+  <title>{{ title || 'Gestion Éducative RDC' }}</title>
+  
+  <!-- Tailwind CSS CDN (minifié pour low bandwidth) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Configuration Tailwind pour mode sombre -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            secondary: '#16a34a',
+            danger: '#dc2626',
+            warning: '#f59e0b',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome (version allégée) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <!-- Google Fonts - Inter (chargement optimisé) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { 
+      background-color: #f3f4f6;
+      transition: background-color 0.3s ease;
+    }
+    .dark body { background-color: #111827; }
+    
+    /* Loading spinner */
+    .spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #2563eb;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 50;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    /* Cards hover effect */
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Table responsive */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Focus visible pour accessibilité */
+    *:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+  </style>
+  
+  {{ style(s) }}
+</head>
+<body class="antialiased" x-data="{ 
+  sidebarOpen: true, 
+  darkMode: localStorage.getItem('darkMode') === 'true',
+  notifications: [],
+  showToast: false,
+  toastMessage: '',
+  toastType: 'success'
+}" 
+x-init="
+  if (darkMode) { document.documentElement.classList.add('dark') }
+  $watch('darkMode', val => {
+    if (val) { document.documentElement.classList.add('dark'); localStorage.setItem('darkMode', 'true') }
+    else { document.documentElement.classList.remove('dark'); localStorage.setItem('darkMode', 'false') }
+  })
+">
+  
+  <!-- Loading Overlay -->
+  <div x-show="$store.loading" x-cloak class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-8 flex flex-col items-center">
+      <div class="spinner"></div>
+      <p class="mt-4 text-gray-600 dark:text-gray-300">Chargement...</p>
+    </div>
+  </div>
+  
+  <!-- Toast Notification -->
+  <div x-show="showToast" x-cloak class="toast" x-transition>
+    <div :class="{
+      'bg-green-500': toastType === 'success',
+      'bg-red-500': toastType === 'error',
+      'bg-blue-500': toastType === 'info',
+      'bg-yellow-500': toastType === 'warning'
+    }" class="rounded-lg shadow-lg p-4 min-w-[300px]">
+      <div class="flex items-center">
+        <i :class="{
+          'fas fa-check-circle': toastType === 'success',
+          'fas fa-exclamation-circle': toastType === 'error',
+          'fas fa-info-circle': toastType === 'info',
+          'fas fa-exclamation-triangle': toastType === 'warning'
+        }" class="text-white mr-3"></i>
+        <p class="text-white text-sm" x-text="toastMessage"></p>
+      </div>
+    </div>
+  </div>
+  
+  @!include('partials/header')
+  @!include('partials/sidebar')
+  
+  <!-- Main Content -->
+  <main class="transition-all duration-300" :class="sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'">
+    <div class="p-4 md:p-6">
+      {{ await $slots.main() }}
+    </div>
+  </main>
+  
+  @!include('partials/footer')
+  @!include('partials/scripts')
+  
+  {{ script(s) }}
+</body>
+</html>

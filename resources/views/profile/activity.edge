@@ -1,0 +1,211 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Mon activité - {{ user.firstName }} {{ user.lastName }}{{# /section }}
+
+{{# section('dashboardTitle') }}Mon activité{{# /section }}
+{{# section('dashboardSubtitle') }}Historique complet de vos actions{{# /section }}
+
+{{# section('actions') }}
+<button onclick="exportActivity()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+  <i class="fas fa-download mr-2"></i> Exporter
+</button>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Total actions</p>
+    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Actions ce mois</p>
+    <p class="text-3xl font-bold">{{ stats.thisMonth || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Jours actifs</p>
+    <p class="text-3xl font-bold">{{ stats.activeDays || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Série actuelle</p>
+    <p class="text-3xl font-bold">{{ stats.currentStreak || 0 }} jours</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
+      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="login">Connexions</option>
+        <option value="message">Messages</option>
+        <option value="document">Documents</option>
+        <option value="grade">Notes</option>
+        <option value="payment">Paiements</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+      <input type="text" id="searchInput" placeholder="Action..."
+             class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Graphique d'activité -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <h3 class="font-semibold mb-3">Activité des 30 derniers jours</h3>
+  <canvas id="activityChart" height="150"></canvas>
+</div>
+
+<!-- Tableau des activités -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Date/Heure</th>
+          <th class="px-4 py-2">Action</th>
+          <th class="px-4 py-2">Description</th>
+          <th class="px-4 py-2">IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(activity in activities)
+        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-2">{{ formatDateTime(activity.createdAt) }}</td>
+          <td class="px-4 py-2">
+            <span class="px-2 py-1 rounded-full text-xs
+              {{ activity.action === 'login' ? 'bg-green-100 text-green-800' : 
+                 (activity.action === 'message' ? 'bg-blue-100 text-blue-800' : 
+                 (activity.action === 'create' ? 'bg-purple-100 text-purple-800' : 
+                 (activity.action === 'update' ? 'bg-yellow-100 text-yellow-800' : 
+                 (activity.action === 'delete' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')))) }}">
+              {{ activity.actionLabel }}
+            </span>
+          </td>
+          <td class="px-4 py-2">{{ activity.description }} </td>
+          <td class="px-4 py-2 font-mono text-xs">{{ activity.ip || '-' }} </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="4" class="text-center py-12 text-gray-500">
+            <i class="fas fa-history text-4xl mb-2 block"></i>
+            Aucune activité trouvée
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/profile/activity' })
+</div>
+
+<!-- Statistiques d'activité -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4">
+    <h4 class="font-semibold mb-2">Actions par type</h4>
+    <div class="space-y-1 text-sm">
+      <div class="flex justify-between"><span>Connexions</span><span>{{ stats.byType?.login || 0 }}</span></div>
+      <div class="flex justify-between"><span>Messages</span><span>{{ stats.byType?.message || 0 }}</span></div>
+      <div class="flex justify-between"><span>Créations</span><span>{{ stats.byType?.create || 0 }}</span></div>
+      <div class="flex justify-between"><span>Modifications</span><span>{{ stats.byType?.update || 0 }}</span></div>
+      <div class="flex justify-between"><span>Suppressions</span><span>{{ stats.byType?.delete || 0 }}</span></div>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4">
+    <h4 class="font-semibold mb-2">Jours de la semaine</h4>
+    <div class="space-y-1 text-sm">
+      <div class="flex justify-between"><span>Lundi</span><span>{{ stats.byDay?.monday || 0 }}</span></div>
+      <div class="flex justify-between"><span>Mardi</span><span>{{ stats.byDay?.tuesday || 0 }}</span></div>
+      <div class="flex justify-between"><span>Mercredi</span><span>{{ stats.byDay?.wednesday || 0 }}</span></div>
+      <div class="flex justify-between"><span>Jeudi</span><span>{{ stats.byDay?.thursday || 0 }}</span></div>
+      <div class="flex justify-between"><span>Vendredi</span><span>{{ stats.byDay?.friday || 0 }}</span></div>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4">
+    <h4 class="font-semibold mb-2">Heures d'activité</h4>
+    <div class="space-y-1 text-sm">
+      <div class="flex justify-between"><span>Matin (6h-12h)</span><span>{{ stats.byHour?.morning || 0 }}</span></div>
+      <div class="flex justify-between"><span>Après-midi (12h-18h)</span><span>{{ stats.byHour?.afternoon || 0 }}</span></div>
+      <div class="flex justify-between"><span>Soir (18h-0h)</span><span>{{ stats.byHour?.evening || 0 }}</span></div>
+      <div class="flex justify-between"><span>Nuit (0h-6h)</span><span>{{ stats.byHour?.night || 0 }}</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let activityChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('activityChart').getContext('2d')
+    activityChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{ chartLabels|json_encode|raw }},
+        datasets: [{
+          label: "Nombre d'actions",
+          data: {{ chartValues|json_encode|raw }},
+          backgroundColor: '#2563eb',
+          borderRadius: 8
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+  }
+  
+  const filterType = document.getElementById('filterType')
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const searchInput = document.getElementById('searchInput')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterType.value) params.set('type', filterType.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    if (searchInput.value) params.set('search', searchInput.value)
+    window.location.href = `/profile/activity?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/profile/activity'
+  })
+  
+  function exportActivity() {
+    const params = new URLSearchParams()
+    if (filterType.value) params.set('type', filterType.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    window.location.href = `/api/profile/activity/export?${params.toString()}`
+  }
+  
+  renderChart()
+</script>
+{{# /section }}
+
+{{# /layout }}

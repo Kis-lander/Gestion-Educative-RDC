@@ -1,0 +1,234 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Historique des transferts - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Historique des transferts{{# /section }}
+{{# section('dashboardSubtitle') }}Consultez tous les transferts traités{{# /section }}
+
+{{# section('actions') }}
+<button onclick="exportHistory()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+  <i class="fas fa-download mr-2"></i> Exporter
+</button>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.completed || 0 }}</p>
+    <p class="text-sm text-gray-500">Transferts complétés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-blue-600">{{ stats.approved || 0 }}</p>
+    <p class="text-sm text-gray-500">Approuvés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-red-600">{{ stats.rejected || 0 }}</p>
+    <p class="text-sm text-gray-500">Rejetés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.averageDays || 0 }}</p>
+    <p class="text-sm text-gray-500">Délai moyen (jours)</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
+      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="all">Tous</option>
+        <option value="outgoing">Sortants</option>
+        <option value="incoming">Entrants</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="completed">Complétés</option>
+        <option value="approved">Approuvés</option>
+        <option value="rejected">Rejetés</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-filter mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau historique -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left">Date</th>
+          <th class="px-4 py-3 text-left">Élève</th>
+          <th class="px-4 py-3 text-left">Direction</th>
+          <th class="px-4 py-3 text-left">Établissement</th>
+          <th class="px-4 py-3 text-center">Statut</th>
+          <th class="px-4 py-3 text-center">Délai</th>
+          <th class="px-4 py-3 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableBody">
+        @each(transfer in transfers)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-3">{{ formatDate(transfer.createdAt) }}</td>
+          <td class="px-4 py-3 font-medium">{{ transfer.studentName }}</td>
+          <td class="px-4 py-3">
+            <span class="flex items-center gap-1">
+              {{ transfer.direction === 'outgoing' ? 'Sortant' : 'Entrant' }}
+              <i class="fas fa-arrow-{{ transfer.direction === 'outgoing' ? 'right' : 'left' }} text-gray-400"></i>
+            </span>
+          </td>
+          <td class="px-4 py-3">{{ transfer.schoolName }}</td>
+          <td class="px-4 py-3 text-center">
+            <span class="px-2 py-1 rounded-full text-xs" :class="{
+              'bg-green-100 text-green-800': '{{ transfer.status }}' === 'completed',
+              'bg-blue-100 text-blue-800': '{{ transfer.status }}' === 'approved',
+              'bg-red-100 text-red-800': '{{ transfer.status }}' === 'rejected'
+            }">
+              {{ transfer.status === 'completed' ? 'Complété' : (transfer.status === 'approved' ? 'Approuvé' : 'Rejeté') }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">{{ transfer.processingDays || '-' }} j</td>
+          <td class="px-4 py-3 text-center">
+            <button onclick="viewDetails('{{ transfer.id }}')" class="text-primary hover:underline">
+              <i class="fas fa-eye"></i>
+            </button>
+          </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="7" class="text-center py-12 text-gray-500">
+            <i class="fas fa-history text-4xl mb-3 block"></i>
+            Aucun historique de transfert trouvé
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/schools/transfers/history' })
+</div>
+
+<!-- Modal Détails -->
+<div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Détails du transfert</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div id="detailsContent">
+      <!-- Contenu dynamique -->
+    </div>
+  </div>
+</div>
+
+<script>
+  const filterType = document.getElementById('filterType')
+  const filterStatus = document.getElementById('filterStatus')
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterType.value && filterType.value !== 'all') params.set('type', filterType.value)
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    window.location.href = `/schools/transfers/history?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/schools/transfers/history'
+  })
+  
+  async function viewDetails(transferId) {
+    const res = await fetch(`/api/transfers/${transferId}`)
+    const data = await res.json()
+    
+    const content = document.getElementById('detailsContent')
+    content.innerHTML = `
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Élève:</span>
+          <span class="font-medium">${data.studentName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Matricule:</span>
+          <span class="font-mono">${data.studentRegistrationNumber}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Classe d'origine:</span>
+          <span>${data.originalClassName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">De:</span>
+          <span>${data.fromSchoolName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Vers:</span>
+          <span>${data.toSchoolName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date demande:</span>
+          <span>${data.createdAt}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date traitement:</span>
+          <span>${data.processedAt || '-'}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Statut:</span>
+          <span class="px-2 py-0.5 rounded-full text-xs ${data.status === 'completed' ? 'bg-green-100 text-green-800' : (data.status === 'approved' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')}">
+            ${data.status === 'completed' ? 'Complété' : (data.status === 'approved' ? 'Approuvé' : 'Rejeté')}
+          </span>
+        </div>
+        ${data.reason ? `<div><span class="text-gray-500">Raison:</span><p class="mt-1 text-gray-600">${data.reason}</p></div>` : ''}
+        ${data.rejectionReason ? `<div><span class="text-gray-500">Raison rejet:</span><p class="mt-1 text-red-600">${data.rejectionReason}</p></div>` : ''}
+      </div>
+    `
+    document.getElementById('detailsModal').classList.remove('hidden')
+    document.getElementById('detailsModal').classList.add('flex')
+  }
+  
+  function closeModal() {
+    document.getElementById('detailsModal').classList.add('hidden')
+    document.getElementById('detailsModal').classList.remove('flex')
+  }
+  
+  function exportHistory() {
+    const params = new URLSearchParams()
+    if (filterType.value && filterType.value !== 'all') params.set('type', filterType.value)
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    window.location.href = `/api/transfers/export/history?${params.toString()}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,251 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Performance académique - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Performance académique{{# /section }}
+{{# section('dashboardSubtitle') }}Analyse des résultats scolaires{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    <i class="fas fa-file-pdf mr-2"></i> PDF
+  </button>
+  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-file-excel mr-2"></i> Excel
+  </button>
+  <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année académique</label>
+      <select id="academicYear" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="{{ currentYear }}">{{ currentYear }}</option>
+        <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+      <select id="term" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="T1">Trimestre 1</option>
+        <option value="T2">Trimestre 2</option>
+        <option value="T3">Trimestre 3</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+      <select id="classFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        @each(classObj in classes)
+        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Comparer avec</label>
+      <select id="compareYear" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Aucune</option>
+        <option value="{{ currentYear - 1 }}">Année précédente</option>
+        <option value="{{ currentYear - 2 }}">2 ans auparavant</option>
+      </select>
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-chart-line mr-2"></i> Générer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Indicateurs clés -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Moyenne générale</p>
+    <p class="text-3xl font-bold" id="avgGrade">0.0/20</p>
+    <p class="text-xs mt-1" id="avgTrend"></p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Taux réussite</p>
+    <p class="text-3xl font-bold" id="successRate">0%</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Mention TB</p>
+    <p class="text-3xl font-bold" id="excellentCount">0</p>
+  </div>
+  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">En difficulté</p>
+    <p class="text-3xl font-bold" id="difficultCount">0</p>
+  </div>
+</div>
+
+<!-- Graphiques -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Évolution des performances</h3>
+    <canvas id="performanceTrendChart" height="250"></canvas>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Performance par classe</h3>
+    <canvas id="classPerformanceChart" height="250"></canvas>
+  </div>
+</div>
+
+<!-- Performance par matière -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <h3 class="font-semibold mb-3">Performance par matière</h3>
+  <canvas id="subjectPerformanceChart" height="250"></canvas>
+</div>
+
+<!-- Tableau détaillé par classe -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail par classe</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2 text-left">Classe</th>
+          <th class="px-4 py-2 text-center">Effectif</th>
+          <th class="px-4 py-2 text-center">Moyenne</th>
+          <th class="px-4 py-2 text-center">Taux réussite</th>
+          <th class="px-4 py-2 text-center">TB</th>
+          <th class="px-4 py-2 text-center">B</th>
+          <th class="px-4 py-2 text-center">AB</th>
+          <th class="px-4 py-2 text-center">P</th>
+          <th class="px-4 py-2 text-center">Insuff.</th>
+        </tr>
+      </thead>
+      <tbody id="classDetailsTable">
+        <!-- Dynamique -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Distribution des notes -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Distribution des notes</h3>
+  <div id="distributionBars">
+    <!-- Dynamique -->
+  </div>
+</div>
+
+<script>
+  let trendChart, classChart, subjectChart
+  
+  async function loadReport() {
+    const year = document.getElementById('academicYear').value
+    const term = document.getElementById('term').value
+    const classId = document.getElementById('classFilter').value
+    const compareYear = document.getElementById('compareYear').value
+    
+    const params = new URLSearchParams({ year, term })
+    if (classId) params.append('class_id', classId)
+    if (compareYear) params.append('compare_year', compareYear)
+    
+    const res = await fetch(`/api/reports/academic/performance?${params.toString()}`)
+    const data = await res.json()
+    
+    // Mise à jour indicateurs
+    document.getElementById('avgGrade').textContent = `${data.summary.average}/20`
+    document.getElementById('successRate').textContent = `${data.summary.successRate}%`
+    document.getElementById('excellentCount').textContent = data.summary.excellentCount || 0
+    document.getElementById('difficultCount').textContent = data.summary.difficultCount || 0
+    
+    if (data.summary.trend) {
+      document.getElementById('avgTrend').innerHTML = data.summary.trend > 0 
+        ? `<span class="text-green-300"><i class="fas fa-arrow-up"></i> +${data.summary.trend}%</span>`
+        : `<span class="text-red-300"><i class="fas fa-arrow-down"></i> ${data.summary.trend}%</span>`
+    }
+    
+    // Graphique tendance
+    if (trendChart) trendChart.destroy()
+    const trendCtx = document.getElementById('performanceTrendChart').getContext('2d')
+    trendChart = new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: data.trend.labels,
+        datasets: [
+          { label: 'Moyenne actuelle', data: data.trend.current, borderColor: '#2563eb', tension: 0.4, fill: false },
+          { label: 'Année précédente', data: data.trend.previous, borderColor: '#9ca3af', borderDash: [5, 5], tension: 0.4, fill: false }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 20 } } }
+    })
+    
+    // Graphique par classe
+    if (classChart) classChart.destroy()
+    const classCtx = document.getElementById('classPerformanceChart').getContext('2d')
+    classChart = new Chart(classCtx, {
+      type: 'bar',
+      data: {
+        labels: data.classPerformance.labels,
+        datasets: [{ label: 'Moyenne /20', data: data.classPerformance.values, backgroundColor: '#2563eb', borderRadius: 8 }]
+      },
+      options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 20 } } }
+    })
+    
+    // Graphique par matière
+    if (subjectChart) subjectChart.destroy()
+    const subjectCtx = document.getElementById('subjectPerformanceChart').getContext('2d')
+    subjectChart = new Chart(subjectCtx, {
+      type: 'bar',
+      data: {
+        labels: data.subjectPerformance.labels,
+        datasets: [{ label: 'Moyenne /20', data: data.subjectPerformance.values, backgroundColor: '#16a34a', borderRadius: 8 }]
+      },
+      options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 20 } } }
+    })
+    
+    // Tableau par classe
+    document.getElementById('classDetailsTable').innerHTML = data.classDetails.map(c => `
+      <tr class="border-b dark:border-gray-700">
+        <td class="px-4 py-2 font-medium">${c.className}</td>
+        <td class="px-4 py-2 text-center">${c.studentsCount}</td>
+        <td class="px-4 py-2 text-center font-bold ${c.average >= 15 ? 'text-green-600' : (c.average >= 10 ? 'text-yellow-600' : 'text-red-600')}">
+          ${c.average}/20
+        </td>
+        <td class="px-4 py-2 text-center">${c.successRate}%</td>
+        <td class="px-4 py-2 text-center">${c.excellentCount || 0}</td>
+        <td class="px-4 py-2 text-center">${c.goodCount || 0}</td>
+        <td class="px-4 py-2 text-center">${c.averageCount || 0}</td>
+        <td class="px-4 py-2 text-center">${c.passCount || 0}</td>
+        <td class="px-4 py-2 text-center text-red-600">${c.failCount || 0}</td>
+      </tr>
+    `).join('')
+    
+    // Distribution
+    document.getElementById('distributionBars').innerHTML = data.distribution.map(d => `
+      <div class="mb-2">
+        <div class="flex justify-between text-xs mb-1">
+          <span>${d.range}</span>
+          <span>${d.count} élèves (${d.percentage}%)</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-${d.color}-500 rounded-full h-2" style="width: ${d.percentage}%"></div>
+        </div>
+      </div>
+    `).join('')
+  }
+  
+  document.getElementById('applyFilters').addEventListener('click', loadReport)
+  
+  function exportReport(format) {
+    const year = document.getElementById('academicYear').value
+    const term = document.getElementById('term').value
+    const classId = document.getElementById('classFilter').value
+    window.location.href = `/api/reports/academic/performance/export?format=${format}&year=${year}&term=${term}&class_id=${classId}`
+  }
+  
+  loadReport()
+</script>
+{{# /section }}
+
+{{# /layout }}

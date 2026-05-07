@@ -1,0 +1,214 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Statut du transfert - {{ student.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Statut du transfert{{# /section }}
+{{# section('dashboardSubtitle') }}Suivi de votre demande{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Demandes</p>
+    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">En attente</p>
+    <p class="text-3xl font-bold">{{ stats.pending || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Approuvées</p>
+    <p class="text-3xl font-bold">{{ stats.approved || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Complétées</p>
+    <p class="text-3xl font-bold">{{ stats.completed || 0 }}</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="space-y-4">
+  @each(transfer in transfers)
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="border-l-4 
+      {{ transfer.status === 'pending' ? 'border-yellow-500' : 
+         (transfer.status === 'approved' ? 'border-green-500' : 
+         (transfer.status === 'used' ? 'border-blue-500' : 'border-red-500')) }}">
+      <div class="p-4">
+        <div class="flex flex-wrap justify-between items-start gap-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap">
+              <h3 class="font-bold text-lg">Transfert vers {{ transfer.targetSchoolName }}</h3>
+              <span class="px-2 py-1 rounded-full text-xs 
+                {{ transfer.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                   (transfer.status === 'approved' ? 'bg-green-100 text-green-800' : 
+                   (transfer.status === 'used' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')) }}">
+                {{ transfer.status === 'pending' ? 'En attente' : 
+                   (transfer.status === 'approved' ? 'Approuvé' : 
+                   (transfer.status === 'used' ? 'Complété' : 'Rejeté')) }}
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-sm">
+              <div><span class="text-gray-500">Date demande:</span> {{ formatDate(transfer.createdAt) }}</div>
+              <div><span class="text-gray-500">École destination:</span> {{ transfer.targetSchoolName }}</div>
+              <div><span class="text-gray-500">Code autorisation:</span> <span class="font-mono">{{ transfer.authorizationCode || '-' }}</span></div>
+            </div>
+            @if(transfer.reason)
+            <div class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+              <span class="text-gray-500">Motif:</span>
+              <p class="mt-1">{{ transfer.reason }}</p>
+            </div>
+            @endif
+            @if(transfer.rejectionReason)
+            <div class="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded text-sm">
+              <span class="text-red-600">Raison du rejet:</span>
+              <p class="mt-1">{{ transfer.rejectionReason }}</p>
+            </div>
+            @endif
+          </div>
+          <div class="flex gap-2">
+            @if(transfer.status === 'approved')
+            <button onclick="downloadAuthorization('{{ transfer.authorizationCode }}')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+              <i class="fas fa-download mr-1"></i> Télécharger
+            </button>
+            <button onclick="printAuthorization('{{ transfer.authorizationCode }}')" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">
+              <i class="fas fa-print mr-1"></i> Imprimer
+            </button>
+            @endif
+            <button onclick="viewDetails('{{ transfer.id }}')" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">
+              <i class="fas fa-eye mr-1"></i> Détails
+            </button>
+          </div>
+        </div>
+        
+        <!-- Timeline -->
+        <div class="mt-4 pt-3 border-t">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 text-center">
+              <div class="w-8 h-8 rounded-full {{ transfer.createdAt ? 'bg-green-500' : 'bg-gray-300' }} mx-auto flex items-center justify-center text-white text-xs">
+                <i class="fas fa-check"></i>
+              </div>
+              <p class="text-xs mt-1">Demande</p>
+              <p class="text-xs text-gray-400">{{ formatDate(transfer.createdAt) }}</p>
+            </div>
+            <div class="flex-1 text-center">
+              <div class="w-8 h-8 rounded-full {{ transfer.approvedAt ? 'bg-green-500' : 'bg-gray-300' }} mx-auto flex items-center justify-center text-white text-xs">
+                <i class="fas {{ transfer.approvedAt ? 'fa-check' : 'fa-clock' }}"></i>
+              </div>
+              <p class="text-xs mt-1">Approbation</p>
+              <p class="text-xs text-gray-400">{{ transfer.approvedAt ? formatDate(transfer.approvedAt) : 'En attente' }}</p>
+            </div>
+            <div class="flex-1 text-center">
+              <div class="w-8 h-8 rounded-full {{ transfer.completedAt ? 'bg-green-500' : 'bg-gray-300' }} mx-auto flex items-center justify-center text-white text-xs">
+                <i class="fas {{ transfer.completedAt ? 'fa-check' : 'fa-clock' }}"></i>
+              </div>
+              <p class="text-xs mt-1">Inscription</p>
+              <p class="text-xs text-gray-400">{{ transfer.completedAt ? formatDate(transfer.completedAt) : 'En attente' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @eachelse
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+    <i class="fas fa-exchange-alt text-5xl text-gray-400 mb-3"></i>
+    <p class="text-gray-500">Aucune demande de transfert</p>
+    <a href="/student/transfers/request" class="mt-3 inline-block text-primary hover:underline">
+      Faire une demande de transfert
+    </a>
+  </div>
+  @end
+</div>
+
+@include('partials/pagination', { pagination: pagination, url: '/student/transfers/status' })
+
+<!-- Modal Détails -->
+<div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Détails du transfert</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div id="detailsContent">
+      <!-- Contenu dynamique -->
+    </div>
+  </div>
+</div>
+
+<script>
+  async function viewDetails(transferId) {
+    const res = await fetch(`/api/student/transfers/${transferId}`)
+    const data = await res.json()
+    
+    const content = document.getElementById('detailsContent')
+    content.innerHTML = `
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Élève:</span>
+          <span class="font-medium">${data.studentName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Classe d'origine:</span>
+          <span>${data.originalClassName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">École d'origine:</span>
+          <span>${data.fromSchoolName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">École destination:</span>
+          <span>${data.toSchoolName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date demande:</span>
+          <span>${data.createdAt}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date approbation:</span>
+          <span>${data.approvedAt || '-'}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date expiration:</span>
+          <span>${data.validUntil || '-'}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Statut:</span>
+          <span class="px-2 py-0.5 rounded-full text-xs ${data.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                (data.status === 'approved' ? 'bg-green-100 text-green-800' : 
+                (data.status === 'used' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'))}">
+            ${data.status === 'pending' ? 'En attente' : 
+              (data.status === 'approved' ? 'Approuvé' : 
+              (data.status === 'used' ? 'Complété' : 'Rejeté'))}
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Code autorisation:</span>
+          <span class="font-mono">${data.authorizationCode || '-'}</span>
+        </div>
+        ${data.reason ? `<div><span class="text-gray-500">Motif:</span><p class="mt-1 text-gray-600">${data.reason}</p></div>` : ''}
+        ${data.rejectionReason ? `<div><span class="text-gray-500">Raison rejet:</span><p class="mt-1 text-red-600">${data.rejectionReason}</p></div>` : ''}
+      </div>
+    `
+    document.getElementById('detailsModal').classList.remove('hidden')
+    document.getElementById('detailsModal').classList.add('flex')
+  }
+  
+  function closeModal() {
+    document.getElementById('detailsModal').classList.add('hidden')
+    document.getElementById('detailsModal').classList.remove('flex')
+  }
+  
+  function downloadAuthorization(code) {
+    window.open(`/api/student/transfers/authorization/${code}/download`, '_blank')
+  }
+  
+  function printAuthorization(code) {
+    window.open(`/api/student/transfers/authorization/${code}/print`, '_blank')
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,200 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Gestion des notes - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Gestion des notes{{# /section }}
+{{# section('dashboardSubtitle') }}Consultez et gérez les notes de vos classes{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/teacher/grades/add" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Ajouter des notes
+  </a>
+  <button onclick="exportGrades()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.totalGrades || 0 }}</p>
+    <p class="text-sm text-gray-500">Notes saisies</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.published || 0 }}</p>
+    <p class="text-sm text-gray-500">Notes publiées</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.average || '0.0' }}/20</p>
+    <p class="text-sm text-gray-500">Moyenne générale</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.students || 0 }}</p>
+    <p class="text-sm text-gray-500">Élèves concernés</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+      <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        @each(classObj in classes)
+        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Matière</label>
+      <select id="filterSubject" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        @each(subject in subjects)
+        <option value="{{ subject.id }}">{{ subject.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+      <select id="filterTerm" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="T1">Trimestre 1</option>
+        <option value="T2">Trimestre 2</option>
+        <option value="T3">Trimestre 3</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="published">Publiées</option>
+        <option value="draft">Brouillon</option>
+      </select>
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Rechercher
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Liste des notes -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="table-responsive">
+    <table class="w-full text-sm" id="gradesTable">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left">Date</th>
+          <th class="px-4 py-3 text-left">Élève</th>
+          <th class="px-4 py-3 text-left">Classe</th>
+          <th class="px-4 py-3 text-left">Matière</th>
+          <th class="px-4 py-3 text-center">Note</th>
+          <th class="px-4 py-3 text-center">Trimestre</th>
+          <th class="px-4 py-3 text-center">Type</th>
+          <th class="px-4 py-3 text-center">Statut</th>
+          <th class="px-4 py-3 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="gradesTableBody">
+        @each(grade in grades)
+        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-3">{{ formatDate(grade.examDate) }}</td>
+          <td class="px-4 py-3 font-medium">{{ grade.studentName }}<br><span class="text-xs text-gray-500">{{ grade.registrationNumber }}</span></td>
+          <td class="px-4 py-3">{{ grade.className }}</td>
+          <td class="px-4 py-3">{{ grade.subjectName }}</td>
+          <td class="px-4 py-3 text-center">
+            <span class="font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+              {{ grade.score }}/{{ grade.maxScore }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">{{ grade.term }}</td>
+          <td class="px-4 py-3 text-center">{{ grade.examType }}</td>
+          <td class="px-4 py-3 text-center">
+            <span class="px-2 py-1 rounded-full text-xs {{ grade.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+              {{ grade.published ? 'Publiée' : 'Brouillon' }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex justify-center gap-2">
+              <a href="/teacher/grades/{{ grade.id }}/edit" class="text-primary hover:text-blue-700" title="Modifier">
+                <i class="fas fa-edit"></i>
+              </a>
+              <button onclick="deleteGrade('{{ grade.id }}')" class="text-red-500 hover:text-red-700" title="Supprimer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="9" class="text-center py-12 text-gray-500">
+            <i class="fas fa-star text-4xl mb-3 block"></i>
+            Aucune note trouvée
+            <div class="mt-3">
+              <a href="/teacher/grades/add" class="text-primary hover:underline">
+                Saisir des notes
+              </a>
+            </div>
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/teacher/grades' })
+</div>
+
+<script>
+  const filterClass = document.getElementById('filterClass')
+  const filterSubject = document.getElementById('filterSubject')
+  const filterTerm = document.getElementById('filterTerm')
+  const filterStatus = document.getElementById('filterStatus')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterClass.value) params.set('class_id', filterClass.value)
+    if (filterSubject.value) params.set('subject_id', filterSubject.value)
+    if (filterTerm.value) params.set('term', filterTerm.value)
+    if (filterStatus.value) params.set('published', filterStatus.value === 'published')
+    window.location.href = `/teacher/grades?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/teacher/grades'
+  })
+  
+  function deleteGrade(gradeId) {
+    if (confirm('Supprimer cette note ? Cette action est irréversible.')) {
+      fetch(`/teacher/grades/${gradeId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) location.reload()
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+  
+  function exportGrades() {
+    const params = new URLSearchParams()
+    if (filterClass.value) params.set('class_id', filterClass.value)
+    if (filterSubject.value) params.set('subject_id', filterSubject.value)
+    if (filterTerm.value) params.set('term', filterTerm.value)
+    window.location.href = `/api/teacher/grades/export?${params.toString()}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

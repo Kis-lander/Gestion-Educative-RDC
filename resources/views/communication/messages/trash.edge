@@ -1,0 +1,143 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Corbeille - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Corbeille{{# /section }}
+{{# section('dashboardSubtitle') }}Messages supprimés{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="emptyTrash()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    <i class="fas fa-trash-alt mr-2"></i> Vider la corbeille
+  </button>
+  <button onclick="restoreAll()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-undo mr-2"></i> Restaurer tout
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 mb-6 flex items-center justify-between">
+  <div>
+    <p class="text-yellow-800 dark:text-yellow-300 font-semibold">{{ stats.total || 0 }} message(s) dans la corbeille</p>
+    <p class="text-sm text-yellow-600 dark:text-yellow-400">Les messages sont supprimés automatiquement après 30 jours</p>
+  </div>
+  <i class="fas fa-trash-alt text-yellow-500 text-3xl"></i>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Liste des messages supprimés -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="divide-y dark:divide-gray-700">
+    @each(message in messages)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 flex-wrap">
+            <p class="font-medium text-gray-800 dark:text-white">{{ message.senderName || message.receiverName }}</p>
+            <span class="text-xs text-gray-400">{{ message.senderRole || message.receiverRole }}</span>
+            <span class="px-2 py-0.5 rounded-full text-xs
+              {{ message.type === 'official' ? 'bg-red-100 text-red-800' : 
+                 (message.type === 'parent_teacher' ? 'bg-green-100 text-green-800' : 
+                 (message.type === 'general' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
+              {{ message.type === 'official' ? 'Officiel' : 
+                 (message.type === 'parent_teacher' ? 'Parent-Enseignant' : 
+                 (message.type === 'general' ? 'Général' : 'Système')) }}
+            </span>
+            @if(message.isIncoming)
+            <span class="text-xs text-blue-600"><i class="fas fa-arrow-down"></i> Reçu</span>
+            @else
+            <span class="text-xs text-green-600"><i class="fas fa-arrow-up"></i> Envoyé</span>
+            @endif
+          </div>
+          <p class="font-semibold text-gray-800 dark:text-white mt-1">{{ message.subject }}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{{ message.preview }}</p>
+          <div class="flex gap-3 mt-2 text-xs text-gray-400">
+            <span><i class="fas fa-calendar mr-1"></i> Supprimé le {{ message.deletedAt }}</span>
+            <span><i class="fas fa-clock mr-1"></i> Expire dans {{ message.daysUntilExpiry }} jours</span>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="restoreMessage('{{ message.id }}')" class="text-green-600 hover:text-green-800" title="Restaurer">
+            <i class="fas fa-trash-restore"></i>
+          </button>
+          <button onclick="deletePermanently('{{ message.id }}')" class="text-red-500 hover:text-red-700" title="Supprimer définitivement">
+            <i class="fas fa-times-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    @eachelse
+    <div class="p-12 text-center text-gray-500">
+      <i class="fas fa-trash-alt text-5xl mb-3 block"></i>
+      <p>La corbeille est vide</p>
+    </div>
+    @end
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/communication/messages/trash' })
+</div>
+
+<script>
+  async function restoreMessage(messageId) {
+    const res = await fetch(`/api/messages/${messageId}/restore`, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    })
+    const data = await res.json()
+    if (data.success) {
+      location.reload()
+    } else {
+      alert('Erreur: ' + data.message)
+    }
+  }
+  
+  async function deletePermanently(messageId) {
+    if (confirm('Supprimer définitivement ce message ? Cette action est irréversible.')) {
+      const res = await fetch(`/api/messages/${messageId}/permanent`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      if (data.success) {
+        location.reload()
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+  
+  async function emptyTrash() {
+    if (confirm('Vider la corbeille ? Tous les messages seront définitivement supprimés.')) {
+      const res = await fetch('/api/messages/empty-trash', {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      if (data.success) {
+        location.reload()
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+  
+  async function restoreAll() {
+    if (confirm('Restaurer tous les messages de la corbeille ?')) {
+      const res = await fetch('/api/messages/restore-all', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      if (data.success) {
+        location.reload()
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

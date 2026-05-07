@@ -6,6 +6,84 @@ import type { ApiDefinition } from './tree.d.ts'
 const placeholder: any = {}
 
 const routes = {
+  'welcome.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/',
+    tokens: [{"old":"/","type":0,"val":"/","end":""}],
+    types: placeholder as Registry['welcome.index']['types'],
+  },
+  'about': {
+    methods: ["GET","HEAD"],
+    pattern: '/about',
+    tokens: [{"old":"/about","type":0,"val":"about","end":""}],
+    types: placeholder as Registry['about']['types'],
+  },
+  'welcome.landing': {
+    methods: ["GET","HEAD"],
+    pattern: '/welcome',
+    tokens: [{"old":"/welcome","type":0,"val":"welcome","end":""}],
+    types: placeholder as Registry['welcome.landing']['types'],
+  },
+  'welcome.about': {
+    methods: ["GET","HEAD"],
+    pattern: '/welcome/about',
+    tokens: [{"old":"/welcome/about","type":0,"val":"welcome","end":""},{"old":"/welcome/about","type":0,"val":"about","end":""}],
+    types: placeholder as Registry['welcome.about']['types'],
+  },
+  'welcome.features': {
+    methods: ["GET","HEAD"],
+    pattern: '/welcome/features',
+    tokens: [{"old":"/welcome/features","type":0,"val":"welcome","end":""},{"old":"/welcome/features","type":0,"val":"features","end":""}],
+    types: placeholder as Registry['welcome.features']['types'],
+  },
+  'welcome.contact': {
+    methods: ["GET","HEAD"],
+    pattern: '/welcome/contact',
+    tokens: [{"old":"/welcome/contact","type":0,"val":"welcome","end":""},{"old":"/welcome/contact","type":0,"val":"contact","end":""}],
+    types: placeholder as Registry['welcome.contact']['types'],
+  },
+  'welcome.terms': {
+    methods: ["GET","HEAD"],
+    pattern: '/welcome/terms',
+    tokens: [{"old":"/welcome/terms","type":0,"val":"welcome","end":""},{"old":"/welcome/terms","type":0,"val":"terms","end":""}],
+    types: placeholder as Registry['welcome.terms']['types'],
+  },
+  'help.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/help',
+    tokens: [{"old":"/help","type":0,"val":"help","end":""}],
+    types: placeholder as Registry['help.index']['types'],
+  },
+  'help.faq': {
+    methods: ["GET","HEAD"],
+    pattern: '/help/faq',
+    tokens: [{"old":"/help/faq","type":0,"val":"help","end":""},{"old":"/help/faq","type":0,"val":"faq","end":""}],
+    types: placeholder as Registry['help.faq']['types'],
+  },
+  'help.guides': {
+    methods: ["GET","HEAD"],
+    pattern: '/help/guides',
+    tokens: [{"old":"/help/guides","type":0,"val":"help","end":""},{"old":"/help/guides","type":0,"val":"guides","end":""}],
+    types: placeholder as Registry['help.guides']['types'],
+  },
+  'help.tutorial': {
+    methods: ["GET","HEAD"],
+    pattern: '/help/tutorial',
+    tokens: [{"old":"/help/tutorial","type":0,"val":"help","end":""},{"old":"/help/tutorial","type":0,"val":"tutorial","end":""}],
+    types: placeholder as Registry['help.tutorial']['types'],
+  },
+  'help.contact': {
+    methods: ["GET","HEAD"],
+    pattern: '/help/contact',
+    tokens: [{"old":"/help/contact","type":0,"val":"help","end":""},{"old":"/help/contact","type":0,"val":"contact","end":""}],
+    types: placeholder as Registry['help.contact']['types'],
+  },
+  'help.documentation': {
+    methods: ["GET","HEAD"],
+    pattern: '/help/documentation',
+    tokens: [{"old":"/help/documentation","type":0,"val":"help","end":""},{"old":"/help/documentation","type":0,"val":"documentation","end":""}],
+    types: placeholder as Registry['help.documentation']['types'],
+  },
   'schools.register_school': {
     methods: ["POST"],
     pattern: '/api/v1/register-school',
@@ -31,9 +109,9 @@ const routes = {
     types: placeholder as Registry['auth.reset_password']['types'],
   },
   'transfers.verify_authorization': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/verify-transfer/:code',
-    tokens: [{"old":"/api/v1/verify-transfer/:code","type":0,"val":"api","end":""},{"old":"/api/v1/verify-transfer/:code","type":0,"val":"v1","end":""},{"old":"/api/v1/verify-transfer/:code","type":0,"val":"verify-transfer","end":""},{"old":"/api/v1/verify-transfer/:code","type":1,"val":"code","end":""}],
+    methods: ["POST"],
+    pattern: '/api/v1/verify-transfer',
+    tokens: [{"old":"/api/v1/verify-transfer","type":0,"val":"api","end":""},{"old":"/api/v1/verify-transfer","type":0,"val":"v1","end":""},{"old":"/api/v1/verify-transfer","type":0,"val":"verify-transfer","end":""}],
     types: placeholder as Registry['transfers.verify_authorization']['types'],
   },
   'auth.logout': {
@@ -84,11 +162,17 @@ const routes = {
     tokens: [{"old":"/api/v1/inspection/schools/suspend/:id","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/schools/suspend/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/schools/suspend/:id","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/schools/suspend/:id","type":0,"val":"schools","end":""},{"old":"/api/v1/inspection/schools/suspend/:id","type":0,"val":"suspend","end":""},{"old":"/api/v1/inspection/schools/suspend/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['inspections.suspend_school']['types'],
   },
-  'inspections.generate_school_credentials': {
+  'inspections.inspect_school': {
+    methods: ["POST"],
+    pattern: '/api/v1/inspection/schools/inspect',
+    tokens: [{"old":"/api/v1/inspection/schools/inspect","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/schools/inspect","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/schools/inspect","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/schools/inspect","type":0,"val":"schools","end":""},{"old":"/api/v1/inspection/schools/inspect","type":0,"val":"inspect","end":""}],
+    types: placeholder as Registry['inspections.inspect_school']['types'],
+  },
+  'auth.generate_school_credentials': {
     methods: ["POST"],
     pattern: '/api/v1/inspection/schools/generate-credentials/:id',
     tokens: [{"old":"/api/v1/inspection/schools/generate-credentials/:id","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/schools/generate-credentials/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/schools/generate-credentials/:id","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/schools/generate-credentials/:id","type":0,"val":"schools","end":""},{"old":"/api/v1/inspection/schools/generate-credentials/:id","type":0,"val":"generate-credentials","end":""},{"old":"/api/v1/inspection/schools/generate-credentials/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['inspections.generate_school_credentials']['types'],
+    types: placeholder as Registry['auth.generate_school_credentials']['types'],
   },
   'inspections.send_global_communication': {
     methods: ["POST"],
@@ -96,17 +180,11 @@ const routes = {
     tokens: [{"old":"/api/v1/inspection/communications/global","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/communications/global","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/communications/global","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/communications/global","type":0,"val":"communications","end":""},{"old":"/api/v1/inspection/communications/global","type":0,"val":"global","end":""}],
     types: placeholder as Registry['inspections.send_global_communication']['types'],
   },
-  'inspections.send_school_communication': {
+  'inspection.send_school_communication': {
     methods: ["POST"],
-    pattern: '/api/v1/inspection/communications/school/:schoolId',
-    tokens: [{"old":"/api/v1/inspection/communications/school/:schoolId","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/communications/school/:schoolId","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/communications/school/:schoolId","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/communications/school/:schoolId","type":0,"val":"communications","end":""},{"old":"/api/v1/inspection/communications/school/:schoolId","type":0,"val":"school","end":""},{"old":"/api/v1/inspection/communications/school/:schoolId","type":1,"val":"schoolId","end":""}],
-    types: placeholder as Registry['inspections.send_school_communication']['types'],
-  },
-  'inspections.get_communication_history': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/inspection/communications/history',
-    tokens: [{"old":"/api/v1/inspection/communications/history","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/communications/history","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/communications/history","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/communications/history","type":0,"val":"communications","end":""},{"old":"/api/v1/inspection/communications/history","type":0,"val":"history","end":""}],
-    types: placeholder as Registry['inspections.get_communication_history']['types'],
+    pattern: '/api/v1/inspection/communications/school',
+    tokens: [{"old":"/api/v1/inspection/communications/school","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/communications/school","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/communications/school","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/communications/school","type":0,"val":"communications","end":""},{"old":"/api/v1/inspection/communications/school","type":0,"val":"school","end":""}],
+    types: placeholder as Registry['inspection.send_school_communication']['types'],
   },
   'inspections.get_global_stats': {
     methods: ["GET","HEAD"],
@@ -114,47 +192,17 @@ const routes = {
     tokens: [{"old":"/api/v1/inspection/stats/global","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/stats/global","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/stats/global","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/stats/global","type":0,"val":"stats","end":""},{"old":"/api/v1/inspection/stats/global","type":0,"val":"global","end":""}],
     types: placeholder as Registry['inspections.get_global_stats']['types'],
   },
-  'inspections.get_schools_stats': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/inspection/stats/schools',
-    tokens: [{"old":"/api/v1/inspection/stats/schools","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/stats/schools","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/stats/schools","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/stats/schools","type":0,"val":"stats","end":""},{"old":"/api/v1/inspection/stats/schools","type":0,"val":"schools","end":""}],
-    types: placeholder as Registry['inspections.get_schools_stats']['types'],
-  },
-  'inspections.get_performance_stats': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/inspection/stats/performance',
-    tokens: [{"old":"/api/v1/inspection/stats/performance","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/stats/performance","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/stats/performance","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/stats/performance","type":0,"val":"stats","end":""},{"old":"/api/v1/inspection/stats/performance","type":0,"val":"performance","end":""}],
-    types: placeholder as Registry['inspections.get_performance_stats']['types'],
-  },
-  'inspections.generate_schools_report': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/inspection/reports/schools',
-    tokens: [{"old":"/api/v1/inspection/reports/schools","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/reports/schools","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/reports/schools","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/reports/schools","type":0,"val":"reports","end":""},{"old":"/api/v1/inspection/reports/schools","type":0,"val":"schools","end":""}],
-    types: placeholder as Registry['inspections.generate_schools_report']['types'],
-  },
-  'inspections.generate_transfers_report': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/inspection/reports/transfers',
-    tokens: [{"old":"/api/v1/inspection/reports/transfers","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/reports/transfers","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/reports/transfers","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/reports/transfers","type":0,"val":"reports","end":""},{"old":"/api/v1/inspection/reports/transfers","type":0,"val":"transfers","end":""}],
-    types: placeholder as Registry['inspections.generate_transfers_report']['types'],
+  'inspections.generate_school_report': {
+    methods: ["POST"],
+    pattern: '/api/v1/inspection/reports/school',
+    tokens: [{"old":"/api/v1/inspection/reports/school","type":0,"val":"api","end":""},{"old":"/api/v1/inspection/reports/school","type":0,"val":"v1","end":""},{"old":"/api/v1/inspection/reports/school","type":0,"val":"inspection","end":""},{"old":"/api/v1/inspection/reports/school","type":0,"val":"reports","end":""},{"old":"/api/v1/inspection/reports/school","type":0,"val":"school","end":""}],
+    types: placeholder as Registry['inspections.generate_school_report']['types'],
   },
   'schools.dashboard': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/school/dashboard',
     tokens: [{"old":"/api/v1/school/dashboard","type":0,"val":"api","end":""},{"old":"/api/v1/school/dashboard","type":0,"val":"v1","end":""},{"old":"/api/v1/school/dashboard","type":0,"val":"school","end":""},{"old":"/api/v1/school/dashboard","type":0,"val":"dashboard","end":""}],
     types: placeholder as Registry['schools.dashboard']['types'],
-  },
-  'schools.get_school_stats': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/school/stats',
-    tokens: [{"old":"/api/v1/school/stats","type":0,"val":"api","end":""},{"old":"/api/v1/school/stats","type":0,"val":"v1","end":""},{"old":"/api/v1/school/stats","type":0,"val":"school","end":""},{"old":"/api/v1/school/stats","type":0,"val":"stats","end":""}],
-    types: placeholder as Registry['schools.get_school_stats']['types'],
-  },
-  'schools.get_school_profile': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/school/profile',
-    tokens: [{"old":"/api/v1/school/profile","type":0,"val":"api","end":""},{"old":"/api/v1/school/profile","type":0,"val":"v1","end":""},{"old":"/api/v1/school/profile","type":0,"val":"school","end":""},{"old":"/api/v1/school/profile","type":0,"val":"profile","end":""}],
-    types: placeholder as Registry['schools.get_school_profile']['types'],
   },
   'schools.update_school_profile': {
     methods: ["PUT"],
@@ -173,6 +221,12 @@ const routes = {
     pattern: '/api/v1/school/classes',
     tokens: [{"old":"/api/v1/school/classes","type":0,"val":"api","end":""},{"old":"/api/v1/school/classes","type":0,"val":"v1","end":""},{"old":"/api/v1/school/classes","type":0,"val":"school","end":""},{"old":"/api/v1/school/classes","type":0,"val":"classes","end":""}],
     types: placeholder as Registry['academics.create_class']['types'],
+  },
+  'academics.get_class_by_id': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/school/classes/:id',
+    tokens: [{"old":"/api/v1/school/classes/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/classes/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/classes/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/classes/:id","type":0,"val":"classes","end":""},{"old":"/api/v1/school/classes/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['academics.get_class_by_id']['types'],
   },
   'academics.update_class': {
     methods: ["PUT"],
@@ -198,35 +252,77 @@ const routes = {
     tokens: [{"old":"/api/v1/school/subjects","type":0,"val":"api","end":""},{"old":"/api/v1/school/subjects","type":0,"val":"v1","end":""},{"old":"/api/v1/school/subjects","type":0,"val":"school","end":""},{"old":"/api/v1/school/subjects","type":0,"val":"subjects","end":""}],
     types: placeholder as Registry['academics.get_subjects']['types'],
   },
-  'academics.add_subject_to_class': {
+  'academics.create_subject': {
     methods: ["POST"],
     pattern: '/api/v1/school/subjects',
     tokens: [{"old":"/api/v1/school/subjects","type":0,"val":"api","end":""},{"old":"/api/v1/school/subjects","type":0,"val":"v1","end":""},{"old":"/api/v1/school/subjects","type":0,"val":"school","end":""},{"old":"/api/v1/school/subjects","type":0,"val":"subjects","end":""}],
+    types: placeholder as Registry['academics.create_subject']['types'],
+  },
+  'academics.update_subject': {
+    methods: ["PUT"],
+    pattern: '/api/v1/school/subjects/:id',
+    tokens: [{"old":"/api/v1/school/subjects/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/subjects/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/subjects/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/subjects/:id","type":0,"val":"subjects","end":""},{"old":"/api/v1/school/subjects/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['academics.update_subject']['types'],
+  },
+  'academics.delete_subject': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/school/subjects/:id',
+    tokens: [{"old":"/api/v1/school/subjects/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/subjects/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/subjects/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/subjects/:id","type":0,"val":"subjects","end":""},{"old":"/api/v1/school/subjects/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['academics.delete_subject']['types'],
+  },
+  'academics.get_class_subjects': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/school/classes/:classId/subjects',
+    tokens: [{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"api","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"v1","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"school","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"classes","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":1,"val":"classId","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"subjects","end":""}],
+    types: placeholder as Registry['academics.get_class_subjects']['types'],
+  },
+  'academics.add_subject_to_class': {
+    methods: ["POST"],
+    pattern: '/api/v1/school/classes/:classId/subjects',
+    tokens: [{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"api","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"v1","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"school","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"classes","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":1,"val":"classId","end":""},{"old":"/api/v1/school/classes/:classId/subjects","type":0,"val":"subjects","end":""}],
     types: placeholder as Registry['academics.add_subject_to_class']['types'],
   },
-  'schools.get_teachers': {
+  'academics.get_grades_by_class': {
     methods: ["GET","HEAD"],
-    pattern: '/api/v1/school/teachers',
-    tokens: [{"old":"/api/v1/school/teachers","type":0,"val":"api","end":""},{"old":"/api/v1/school/teachers","type":0,"val":"v1","end":""},{"old":"/api/v1/school/teachers","type":0,"val":"school","end":""},{"old":"/api/v1/school/teachers","type":0,"val":"teachers","end":""}],
-    types: placeholder as Registry['schools.get_teachers']['types'],
+    pattern: '/api/v1/school/classes/:classId/grades',
+    tokens: [{"old":"/api/v1/school/classes/:classId/grades","type":0,"val":"api","end":""},{"old":"/api/v1/school/classes/:classId/grades","type":0,"val":"v1","end":""},{"old":"/api/v1/school/classes/:classId/grades","type":0,"val":"school","end":""},{"old":"/api/v1/school/classes/:classId/grades","type":0,"val":"classes","end":""},{"old":"/api/v1/school/classes/:classId/grades","type":1,"val":"classId","end":""},{"old":"/api/v1/school/classes/:classId/grades","type":0,"val":"grades","end":""}],
+    types: placeholder as Registry['academics.get_grades_by_class']['types'],
+  },
+  'academics.get_grades_by_student': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/school/students/:studentId/grades',
+    tokens: [{"old":"/api/v1/school/students/:studentId/grades","type":0,"val":"api","end":""},{"old":"/api/v1/school/students/:studentId/grades","type":0,"val":"v1","end":""},{"old":"/api/v1/school/students/:studentId/grades","type":0,"val":"school","end":""},{"old":"/api/v1/school/students/:studentId/grades","type":0,"val":"students","end":""},{"old":"/api/v1/school/students/:studentId/grades","type":1,"val":"studentId","end":""},{"old":"/api/v1/school/students/:studentId/grades","type":0,"val":"grades","end":""}],
+    types: placeholder as Registry['academics.get_grades_by_student']['types'],
+  },
+  'academics.add_grade': {
+    methods: ["POST"],
+    pattern: '/api/v1/school/grades',
+    tokens: [{"old":"/api/v1/school/grades","type":0,"val":"api","end":""},{"old":"/api/v1/school/grades","type":0,"val":"v1","end":""},{"old":"/api/v1/school/grades","type":0,"val":"school","end":""},{"old":"/api/v1/school/grades","type":0,"val":"grades","end":""}],
+    types: placeholder as Registry['academics.add_grade']['types'],
+  },
+  'academics.update_grade': {
+    methods: ["PUT"],
+    pattern: '/api/v1/school/grades/:id',
+    tokens: [{"old":"/api/v1/school/grades/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/grades/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/grades/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/grades/:id","type":0,"val":"grades","end":""},{"old":"/api/v1/school/grades/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['academics.update_grade']['types'],
+  },
+  'academics.delete_grade': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/school/grades/:id',
+    tokens: [{"old":"/api/v1/school/grades/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/grades/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/grades/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/grades/:id","type":0,"val":"grades","end":""},{"old":"/api/v1/school/grades/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['academics.delete_grade']['types'],
+  },
+  'academics.publish_grades': {
+    methods: ["POST"],
+    pattern: '/api/v1/school/grades/publish',
+    tokens: [{"old":"/api/v1/school/grades/publish","type":0,"val":"api","end":""},{"old":"/api/v1/school/grades/publish","type":0,"val":"v1","end":""},{"old":"/api/v1/school/grades/publish","type":0,"val":"school","end":""},{"old":"/api/v1/school/grades/publish","type":0,"val":"grades","end":""},{"old":"/api/v1/school/grades/publish","type":0,"val":"publish","end":""}],
+    types: placeholder as Registry['academics.publish_grades']['types'],
   },
   'schools.add_teacher': {
     methods: ["POST"],
     pattern: '/api/v1/school/teachers',
     tokens: [{"old":"/api/v1/school/teachers","type":0,"val":"api","end":""},{"old":"/api/v1/school/teachers","type":0,"val":"v1","end":""},{"old":"/api/v1/school/teachers","type":0,"val":"school","end":""},{"old":"/api/v1/school/teachers","type":0,"val":"teachers","end":""}],
     types: placeholder as Registry['schools.add_teacher']['types'],
-  },
-  'schools.update_teacher': {
-    methods: ["PUT"],
-    pattern: '/api/v1/school/teachers/:id',
-    tokens: [{"old":"/api/v1/school/teachers/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/teachers/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/teachers/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/teachers/:id","type":0,"val":"teachers","end":""},{"old":"/api/v1/school/teachers/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['schools.update_teacher']['types'],
-  },
-  'schools.remove_teacher': {
-    methods: ["DELETE"],
-    pattern: '/api/v1/school/teachers/:id',
-    tokens: [{"old":"/api/v1/school/teachers/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/teachers/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/teachers/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/teachers/:id","type":0,"val":"teachers","end":""},{"old":"/api/v1/school/teachers/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['schools.remove_teacher']['types'],
   },
   'transfers.request_transfer': {
     methods: ["POST"],
@@ -242,51 +338,39 @@ const routes = {
   },
   'transfers.approve_transfer': {
     methods: ["POST"],
-    pattern: '/api/v1/school/transfers/approve/:id',
-    tokens: [{"old":"/api/v1/school/transfers/approve/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/transfers/approve/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/transfers/approve/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/transfers/approve/:id","type":0,"val":"transfers","end":""},{"old":"/api/v1/school/transfers/approve/:id","type":0,"val":"approve","end":""},{"old":"/api/v1/school/transfers/approve/:id","type":1,"val":"id","end":""}],
+    pattern: '/api/v1/school/transfers/approve',
+    tokens: [{"old":"/api/v1/school/transfers/approve","type":0,"val":"api","end":""},{"old":"/api/v1/school/transfers/approve","type":0,"val":"v1","end":""},{"old":"/api/v1/school/transfers/approve","type":0,"val":"school","end":""},{"old":"/api/v1/school/transfers/approve","type":0,"val":"transfers","end":""},{"old":"/api/v1/school/transfers/approve","type":0,"val":"approve","end":""}],
     types: placeholder as Registry['transfers.approve_transfer']['types'],
   },
   'transfers.reject_transfer': {
     methods: ["POST"],
-    pattern: '/api/v1/school/transfers/reject/:id',
-    tokens: [{"old":"/api/v1/school/transfers/reject/:id","type":0,"val":"api","end":""},{"old":"/api/v1/school/transfers/reject/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/school/transfers/reject/:id","type":0,"val":"school","end":""},{"old":"/api/v1/school/transfers/reject/:id","type":0,"val":"transfers","end":""},{"old":"/api/v1/school/transfers/reject/:id","type":0,"val":"reject","end":""},{"old":"/api/v1/school/transfers/reject/:id","type":1,"val":"id","end":""}],
+    pattern: '/api/v1/school/transfers/reject',
+    tokens: [{"old":"/api/v1/school/transfers/reject","type":0,"val":"api","end":""},{"old":"/api/v1/school/transfers/reject","type":0,"val":"v1","end":""},{"old":"/api/v1/school/transfers/reject","type":0,"val":"school","end":""},{"old":"/api/v1/school/transfers/reject","type":0,"val":"transfers","end":""},{"old":"/api/v1/school/transfers/reject","type":0,"val":"reject","end":""}],
     types: placeholder as Registry['transfers.reject_transfer']['types'],
   },
-  'pedagogicals.get_grades': {
+  'transfers.complete_transfer': {
+    methods: ["POST"],
+    pattern: '/api/v1/school/transfers/:id/complete',
+    tokens: [{"old":"/api/v1/school/transfers/:id/complete","type":0,"val":"api","end":""},{"old":"/api/v1/school/transfers/:id/complete","type":0,"val":"v1","end":""},{"old":"/api/v1/school/transfers/:id/complete","type":0,"val":"school","end":""},{"old":"/api/v1/school/transfers/:id/complete","type":0,"val":"transfers","end":""},{"old":"/api/v1/school/transfers/:id/complete","type":1,"val":"id","end":""},{"old":"/api/v1/school/transfers/:id/complete","type":0,"val":"complete","end":""}],
+    types: placeholder as Registry['transfers.complete_transfer']['types'],
+  },
+  'academics.get_academic_stats': {
     methods: ["GET","HEAD"],
-    pattern: '/api/v1/pedagogical/grades',
-    tokens: [{"old":"/api/v1/pedagogical/grades","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/grades","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/grades","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/grades","type":0,"val":"grades","end":""}],
-    types: placeholder as Registry['pedagogicals.get_grades']['types'],
+    pattern: '/api/v1/school/stats/academic',
+    tokens: [{"old":"/api/v1/school/stats/academic","type":0,"val":"api","end":""},{"old":"/api/v1/school/stats/academic","type":0,"val":"v1","end":""},{"old":"/api/v1/school/stats/academic","type":0,"val":"school","end":""},{"old":"/api/v1/school/stats/academic","type":0,"val":"stats","end":""},{"old":"/api/v1/school/stats/academic","type":0,"val":"academic","end":""}],
+    types: placeholder as Registry['academics.get_academic_stats']['types'],
   },
-  'pedagogicals.add_grade': {
-    methods: ["POST"],
-    pattern: '/api/v1/pedagogical/grades',
-    tokens: [{"old":"/api/v1/pedagogical/grades","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/grades","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/grades","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/grades","type":0,"val":"grades","end":""}],
-    types: placeholder as Registry['pedagogicals.add_grade']['types'],
-  },
-  'pedagogicals.update_grade': {
-    methods: ["PUT"],
-    pattern: '/api/v1/pedagogical/grades/:id',
-    tokens: [{"old":"/api/v1/pedagogical/grades/:id","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/grades/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/grades/:id","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/grades/:id","type":0,"val":"grades","end":""},{"old":"/api/v1/pedagogical/grades/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['pedagogicals.update_grade']['types'],
-  },
-  'pedagogicals.publish_grades': {
-    methods: ["POST"],
-    pattern: '/api/v1/pedagogical/grades/publish/:classId',
-    tokens: [{"old":"/api/v1/pedagogical/grades/publish/:classId","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/grades/publish/:classId","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/grades/publish/:classId","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/grades/publish/:classId","type":0,"val":"grades","end":""},{"old":"/api/v1/pedagogical/grades/publish/:classId","type":0,"val":"publish","end":""},{"old":"/api/v1/pedagogical/grades/publish/:classId","type":1,"val":"classId","end":""}],
-    types: placeholder as Registry['pedagogicals.publish_grades']['types'],
+  'academics.get_progress_stats': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/school/stats/progress',
+    tokens: [{"old":"/api/v1/school/stats/progress","type":0,"val":"api","end":""},{"old":"/api/v1/school/stats/progress","type":0,"val":"v1","end":""},{"old":"/api/v1/school/stats/progress","type":0,"val":"school","end":""},{"old":"/api/v1/school/stats/progress","type":0,"val":"stats","end":""},{"old":"/api/v1/school/stats/progress","type":0,"val":"progress","end":""}],
+    types: placeholder as Registry['academics.get_progress_stats']['types'],
   },
   'pedagogicals.generate_report_card': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/pedagogical/report-cards/student/:studentId',
-    tokens: [{"old":"/api/v1/pedagogical/report-cards/student/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/report-cards/student/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/report-cards/student/:studentId","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/report-cards/student/:studentId","type":0,"val":"report-cards","end":""},{"old":"/api/v1/pedagogical/report-cards/student/:studentId","type":0,"val":"student","end":""},{"old":"/api/v1/pedagogical/report-cards/student/:studentId","type":1,"val":"studentId","end":""}],
+    methods: ["POST"],
+    pattern: '/api/v1/pedagogical/report-cards/student',
+    tokens: [{"old":"/api/v1/pedagogical/report-cards/student","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/report-cards/student","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/report-cards/student","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/report-cards/student","type":0,"val":"report-cards","end":""},{"old":"/api/v1/pedagogical/report-cards/student","type":0,"val":"student","end":""}],
     types: placeholder as Registry['pedagogicals.generate_report_card']['types'],
-  },
-  'pedagogicals.get_class_report_cards': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/pedagogical/report-cards/class/:classId',
-    tokens: [{"old":"/api/v1/pedagogical/report-cards/class/:classId","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/report-cards/class/:classId","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/report-cards/class/:classId","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/report-cards/class/:classId","type":0,"val":"report-cards","end":""},{"old":"/api/v1/pedagogical/report-cards/class/:classId","type":0,"val":"class","end":""},{"old":"/api/v1/pedagogical/report-cards/class/:classId","type":1,"val":"classId","end":""}],
-    types: placeholder as Registry['pedagogicals.get_class_report_cards']['types'],
   },
   'pedagogicals.get_class_timetable': {
     methods: ["GET","HEAD"],
@@ -294,23 +378,35 @@ const routes = {
     tokens: [{"old":"/api/v1/pedagogical/timetable/class/:classId","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/timetable/class/:classId","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/timetable/class/:classId","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/timetable/class/:classId","type":0,"val":"timetable","end":""},{"old":"/api/v1/pedagogical/timetable/class/:classId","type":0,"val":"class","end":""},{"old":"/api/v1/pedagogical/timetable/class/:classId","type":1,"val":"classId","end":""}],
     types: placeholder as Registry['pedagogicals.get_class_timetable']['types'],
   },
-  'pedagogicals.set_timetable': {
+  'pedagogicals.create_timetable': {
     methods: ["POST"],
     pattern: '/api/v1/pedagogical/timetable',
     tokens: [{"old":"/api/v1/pedagogical/timetable","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/timetable","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/timetable","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/timetable","type":0,"val":"timetable","end":""}],
-    types: placeholder as Registry['pedagogicals.set_timetable']['types'],
+    types: placeholder as Registry['pedagogicals.create_timetable']['types'],
   },
-  'pedagogicals.get_academic_stats': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/pedagogical/stats/academic',
-    tokens: [{"old":"/api/v1/pedagogical/stats/academic","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/stats/academic","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/stats/academic","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/stats/academic","type":0,"val":"stats","end":""},{"old":"/api/v1/pedagogical/stats/academic","type":0,"val":"academic","end":""}],
-    types: placeholder as Registry['pedagogicals.get_academic_stats']['types'],
+  'pedagogicals.publish_grades': {
+    methods: ["POST"],
+    pattern: '/api/v1/pedagogical/grades/publish',
+    tokens: [{"old":"/api/v1/pedagogical/grades/publish","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/grades/publish","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/grades/publish","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/grades/publish","type":0,"val":"grades","end":""},{"old":"/api/v1/pedagogical/grades/publish","type":0,"val":"publish","end":""}],
+    types: placeholder as Registry['pedagogicals.publish_grades']['types'],
   },
-  'pedagogicals.get_student_stats': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/pedagogical/stats/student/:studentId',
-    tokens: [{"old":"/api/v1/pedagogical/stats/student/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/stats/student/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/stats/student/:studentId","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/stats/student/:studentId","type":0,"val":"stats","end":""},{"old":"/api/v1/pedagogical/stats/student/:studentId","type":0,"val":"student","end":""},{"old":"/api/v1/pedagogical/stats/student/:studentId","type":1,"val":"studentId","end":""}],
-    types: placeholder as Registry['pedagogicals.get_student_stats']['types'],
+  'pedagogicals.create_academic_calendar': {
+    methods: ["POST"],
+    pattern: '/api/v1/pedagogical/calendar',
+    tokens: [{"old":"/api/v1/pedagogical/calendar","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/calendar","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/calendar","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/calendar","type":0,"val":"calendar","end":""}],
+    types: placeholder as Registry['pedagogicals.create_academic_calendar']['types'],
+  },
+  'pedagogicals.create_exam_schedule': {
+    methods: ["POST"],
+    pattern: '/api/v1/pedagogical/exam-schedules',
+    tokens: [{"old":"/api/v1/pedagogical/exam-schedules","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/exam-schedules","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/exam-schedules","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/exam-schedules","type":0,"val":"exam-schedules","end":""}],
+    types: placeholder as Registry['pedagogicals.create_exam_schedule']['types'],
+  },
+  'pedagogicals.get_student_progress': {
+    methods: ["POST"],
+    pattern: '/api/v1/pedagogical/students/progress',
+    tokens: [{"old":"/api/v1/pedagogical/students/progress","type":0,"val":"api","end":""},{"old":"/api/v1/pedagogical/students/progress","type":0,"val":"v1","end":""},{"old":"/api/v1/pedagogical/students/progress","type":0,"val":"pedagogical","end":""},{"old":"/api/v1/pedagogical/students/progress","type":0,"val":"students","end":""},{"old":"/api/v1/pedagogical/students/progress","type":0,"val":"progress","end":""}],
+    types: placeholder as Registry['pedagogicals.get_student_progress']['types'],
   },
   'financials.get_fees': {
     methods: ["GET","HEAD"],
@@ -336,12 +432,6 @@ const routes = {
     tokens: [{"old":"/api/v1/financial/fees/:id","type":0,"val":"api","end":""},{"old":"/api/v1/financial/fees/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/financial/fees/:id","type":0,"val":"financial","end":""},{"old":"/api/v1/financial/fees/:id","type":0,"val":"fees","end":""},{"old":"/api/v1/financial/fees/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['financials.delete_fees']['types'],
   },
-  'financials.get_payments': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/financial/payments',
-    tokens: [{"old":"/api/v1/financial/payments","type":0,"val":"api","end":""},{"old":"/api/v1/financial/payments","type":0,"val":"v1","end":""},{"old":"/api/v1/financial/payments","type":0,"val":"financial","end":""},{"old":"/api/v1/financial/payments","type":0,"val":"payments","end":""}],
-    types: placeholder as Registry['financials.get_payments']['types'],
-  },
   'financials.record_payment': {
     methods: ["POST"],
     pattern: '/api/v1/financial/payments',
@@ -354,29 +444,11 @@ const routes = {
     tokens: [{"old":"/api/v1/financial/payments/student/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/financial/payments/student/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/financial/payments/student/:studentId","type":0,"val":"financial","end":""},{"old":"/api/v1/financial/payments/student/:studentId","type":0,"val":"payments","end":""},{"old":"/api/v1/financial/payments/student/:studentId","type":0,"val":"student","end":""},{"old":"/api/v1/financial/payments/student/:studentId","type":1,"val":"studentId","end":""}],
     types: placeholder as Registry['financials.get_student_payments']['types'],
   },
-  'financials.generate_receipt': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/financial/payments/receipt/:id',
-    tokens: [{"old":"/api/v1/financial/payments/receipt/:id","type":0,"val":"api","end":""},{"old":"/api/v1/financial/payments/receipt/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/financial/payments/receipt/:id","type":0,"val":"financial","end":""},{"old":"/api/v1/financial/payments/receipt/:id","type":0,"val":"payments","end":""},{"old":"/api/v1/financial/payments/receipt/:id","type":0,"val":"receipt","end":""},{"old":"/api/v1/financial/payments/receipt/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['financials.generate_receipt']['types'],
-  },
   'financials.get_income_report': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/financial/reports/income',
     tokens: [{"old":"/api/v1/financial/reports/income","type":0,"val":"api","end":""},{"old":"/api/v1/financial/reports/income","type":0,"val":"v1","end":""},{"old":"/api/v1/financial/reports/income","type":0,"val":"financial","end":""},{"old":"/api/v1/financial/reports/income","type":0,"val":"reports","end":""},{"old":"/api/v1/financial/reports/income","type":0,"val":"income","end":""}],
     types: placeholder as Registry['financials.get_income_report']['types'],
-  },
-  'financials.get_outstanding_payments': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/financial/reports/outstanding',
-    tokens: [{"old":"/api/v1/financial/reports/outstanding","type":0,"val":"api","end":""},{"old":"/api/v1/financial/reports/outstanding","type":0,"val":"v1","end":""},{"old":"/api/v1/financial/reports/outstanding","type":0,"val":"financial","end":""},{"old":"/api/v1/financial/reports/outstanding","type":0,"val":"reports","end":""},{"old":"/api/v1/financial/reports/outstanding","type":0,"val":"outstanding","end":""}],
-    types: placeholder as Registry['financials.get_outstanding_payments']['types'],
-  },
-  'financials.get_student_financial_status': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/financial/reports/student/:studentId',
-    tokens: [{"old":"/api/v1/financial/reports/student/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/financial/reports/student/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/financial/reports/student/:studentId","type":0,"val":"financial","end":""},{"old":"/api/v1/financial/reports/student/:studentId","type":0,"val":"reports","end":""},{"old":"/api/v1/financial/reports/student/:studentId","type":0,"val":"student","end":""},{"old":"/api/v1/financial/reports/student/:studentId","type":1,"val":"studentId","end":""}],
-    types: placeholder as Registry['financials.get_student_financial_status']['types'],
   },
   'financials.get_financial_stats': {
     methods: ["GET","HEAD"],
@@ -390,12 +462,6 @@ const routes = {
     tokens: [{"old":"/api/v1/teacher/my-classes","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/my-classes","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/my-classes","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/my-classes","type":0,"val":"my-classes","end":""}],
     types: placeholder as Registry['teachers.get_my_classes']['types'],
   },
-  'teachers.get_my_subjects': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/teacher/my-subjects',
-    tokens: [{"old":"/api/v1/teacher/my-subjects","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/my-subjects","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/my-subjects","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/my-subjects","type":0,"val":"my-subjects","end":""}],
-    types: placeholder as Registry['teachers.get_my_subjects']['types'],
-  },
   'teachers.get_assignments': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/teacher/assignments',
@@ -408,89 +474,17 @@ const routes = {
     tokens: [{"old":"/api/v1/teacher/assignments","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/assignments","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/assignments","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/assignments","type":0,"val":"assignments","end":""}],
     types: placeholder as Registry['teachers.create_assignment']['types'],
   },
-  'teachers.update_assignment': {
-    methods: ["PUT"],
-    pattern: '/api/v1/teacher/assignments/:id',
-    tokens: [{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"assignments","end":""},{"old":"/api/v1/teacher/assignments/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['teachers.update_assignment']['types'],
-  },
-  'teachers.delete_assignment': {
-    methods: ["DELETE"],
-    pattern: '/api/v1/teacher/assignments/:id',
-    tokens: [{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/assignments/:id","type":0,"val":"assignments","end":""},{"old":"/api/v1/teacher/assignments/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['teachers.delete_assignment']['types'],
-  },
-  'teachers.publish_assignment': {
-    methods: ["POST"],
-    pattern: '/api/v1/teacher/assignments/:id/publish',
-    tokens: [{"old":"/api/v1/teacher/assignments/:id/publish","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/assignments/:id/publish","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/assignments/:id/publish","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/assignments/:id/publish","type":0,"val":"assignments","end":""},{"old":"/api/v1/teacher/assignments/:id/publish","type":1,"val":"id","end":""},{"old":"/api/v1/teacher/assignments/:id/publish","type":0,"val":"publish","end":""}],
-    types: placeholder as Registry['teachers.publish_assignment']['types'],
-  },
-  'teachers.get_submissions': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/teacher/assignments/:id/submissions',
-    tokens: [{"old":"/api/v1/teacher/assignments/:id/submissions","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/assignments/:id/submissions","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/assignments/:id/submissions","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/assignments/:id/submissions","type":0,"val":"assignments","end":""},{"old":"/api/v1/teacher/assignments/:id/submissions","type":1,"val":"id","end":""},{"old":"/api/v1/teacher/assignments/:id/submissions","type":0,"val":"submissions","end":""}],
-    types: placeholder as Registry['teachers.get_submissions']['types'],
-  },
   'teachers.grade_submission': {
     methods: ["POST"],
     pattern: '/api/v1/teacher/assignments/submissions/:id/grade',
     tokens: [{"old":"/api/v1/teacher/assignments/submissions/:id/grade","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/assignments/submissions/:id/grade","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/assignments/submissions/:id/grade","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/assignments/submissions/:id/grade","type":0,"val":"assignments","end":""},{"old":"/api/v1/teacher/assignments/submissions/:id/grade","type":0,"val":"submissions","end":""},{"old":"/api/v1/teacher/assignments/submissions/:id/grade","type":1,"val":"id","end":""},{"old":"/api/v1/teacher/assignments/submissions/:id/grade","type":0,"val":"grade","end":""}],
     types: placeholder as Registry['teachers.grade_submission']['types'],
   },
-  'teachers.get_grades': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/teacher/grades',
-    tokens: [{"old":"/api/v1/teacher/grades","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/grades","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/grades","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/grades","type":0,"val":"grades","end":""}],
-    types: placeholder as Registry['teachers.get_grades']['types'],
-  },
-  'teachers.add_grade': {
-    methods: ["POST"],
-    pattern: '/api/v1/teacher/grades',
-    tokens: [{"old":"/api/v1/teacher/grades","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/grades","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/grades","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/grades","type":0,"val":"grades","end":""}],
-    types: placeholder as Registry['teachers.add_grade']['types'],
-  },
-  'teachers.update_grade': {
-    methods: ["PUT"],
-    pattern: '/api/v1/teacher/grades/:id',
-    tokens: [{"old":"/api/v1/teacher/grades/:id","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/grades/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/grades/:id","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/grades/:id","type":0,"val":"grades","end":""},{"old":"/api/v1/teacher/grades/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['teachers.update_grade']['types'],
-  },
-  'teachers.get_forum_topics': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/teacher/forum/topics',
-    tokens: [{"old":"/api/v1/teacher/forum/topics","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"forum","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"topics","end":""}],
-    types: placeholder as Registry['teachers.get_forum_topics']['types'],
-  },
   'teachers.create_forum_topic': {
     methods: ["POST"],
     pattern: '/api/v1/teacher/forum/topics',
     tokens: [{"old":"/api/v1/teacher/forum/topics","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"forum","end":""},{"old":"/api/v1/teacher/forum/topics","type":0,"val":"topics","end":""}],
     types: placeholder as Registry['teachers.create_forum_topic']['types'],
-  },
-  'teachers.reply_to_topic': {
-    methods: ["POST"],
-    pattern: '/api/v1/teacher/forum/topics/:id/posts',
-    tokens: [{"old":"/api/v1/teacher/forum/topics/:id/posts","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/forum/topics/:id/posts","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/forum/topics/:id/posts","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/forum/topics/:id/posts","type":0,"val":"forum","end":""},{"old":"/api/v1/teacher/forum/topics/:id/posts","type":0,"val":"topics","end":""},{"old":"/api/v1/teacher/forum/topics/:id/posts","type":1,"val":"id","end":""},{"old":"/api/v1/teacher/forum/topics/:id/posts","type":0,"val":"posts","end":""}],
-    types: placeholder as Registry['teachers.reply_to_topic']['types'],
-  },
-  'teachers.pin_topic': {
-    methods: ["PUT"],
-    pattern: '/api/v1/teacher/forum/topics/:id/pin',
-    tokens: [{"old":"/api/v1/teacher/forum/topics/:id/pin","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/forum/topics/:id/pin","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/forum/topics/:id/pin","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/forum/topics/:id/pin","type":0,"val":"forum","end":""},{"old":"/api/v1/teacher/forum/topics/:id/pin","type":0,"val":"topics","end":""},{"old":"/api/v1/teacher/forum/topics/:id/pin","type":1,"val":"id","end":""},{"old":"/api/v1/teacher/forum/topics/:id/pin","type":0,"val":"pin","end":""}],
-    types: placeholder as Registry['teachers.pin_topic']['types'],
-  },
-  'teachers.lock_topic': {
-    methods: ["PUT"],
-    pattern: '/api/v1/teacher/forum/topics/:id/lock',
-    tokens: [{"old":"/api/v1/teacher/forum/topics/:id/lock","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/forum/topics/:id/lock","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/forum/topics/:id/lock","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/forum/topics/:id/lock","type":0,"val":"forum","end":""},{"old":"/api/v1/teacher/forum/topics/:id/lock","type":0,"val":"topics","end":""},{"old":"/api/v1/teacher/forum/topics/:id/lock","type":1,"val":"id","end":""},{"old":"/api/v1/teacher/forum/topics/:id/lock","type":0,"val":"lock","end":""}],
-    types: placeholder as Registry['teachers.lock_topic']['types'],
-  },
-  'teachers.get_attendance': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/teacher/attendance/class/:classId',
-    tokens: [{"old":"/api/v1/teacher/attendance/class/:classId","type":0,"val":"api","end":""},{"old":"/api/v1/teacher/attendance/class/:classId","type":0,"val":"v1","end":""},{"old":"/api/v1/teacher/attendance/class/:classId","type":0,"val":"teacher","end":""},{"old":"/api/v1/teacher/attendance/class/:classId","type":0,"val":"attendance","end":""},{"old":"/api/v1/teacher/attendance/class/:classId","type":0,"val":"class","end":""},{"old":"/api/v1/teacher/attendance/class/:classId","type":1,"val":"classId","end":""}],
-    types: placeholder as Registry['teachers.get_attendance']['types'],
   },
   'teachers.mark_attendance': {
     methods: ["POST"],
@@ -504,47 +498,17 @@ const routes = {
     tokens: [{"old":"/api/v1/parent/children","type":0,"val":"api","end":""},{"old":"/api/v1/parent/children","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/children","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/children","type":0,"val":"children","end":""}],
     types: placeholder as Registry['parents.get_children']['types'],
   },
-  'parents.get_child_details': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/parent/children/:id',
-    tokens: [{"old":"/api/v1/parent/children/:id","type":0,"val":"api","end":""},{"old":"/api/v1/parent/children/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/children/:id","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/children/:id","type":0,"val":"children","end":""},{"old":"/api/v1/parent/children/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['parents.get_child_details']['types'],
-  },
   'parents.get_child_grades': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/parent/grades/child/:studentId',
     tokens: [{"old":"/api/v1/parent/grades/child/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/parent/grades/child/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/grades/child/:studentId","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/grades/child/:studentId","type":0,"val":"grades","end":""},{"old":"/api/v1/parent/grades/child/:studentId","type":0,"val":"child","end":""},{"old":"/api/v1/parent/grades/child/:studentId","type":1,"val":"studentId","end":""}],
     types: placeholder as Registry['parents.get_child_grades']['types'],
   },
-  'parents.get_child_report_card': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/parent/report-card/child/:studentId',
-    tokens: [{"old":"/api/v1/parent/report-card/child/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/parent/report-card/child/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/report-card/child/:studentId","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/report-card/child/:studentId","type":0,"val":"report-card","end":""},{"old":"/api/v1/parent/report-card/child/:studentId","type":0,"val":"child","end":""},{"old":"/api/v1/parent/report-card/child/:studentId","type":1,"val":"studentId","end":""}],
-    types: placeholder as Registry['parents.get_child_report_card']['types'],
-  },
-  'parents.get_child_discipline': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/parent/discipline/child/:studentId',
-    tokens: [{"old":"/api/v1/parent/discipline/child/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/parent/discipline/child/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/discipline/child/:studentId","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/discipline/child/:studentId","type":0,"val":"discipline","end":""},{"old":"/api/v1/parent/discipline/child/:studentId","type":0,"val":"child","end":""},{"old":"/api/v1/parent/discipline/child/:studentId","type":1,"val":"studentId","end":""}],
-    types: placeholder as Registry['parents.get_child_discipline']['types'],
-  },
-  'parents.get_messages': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/parent/messages',
-    tokens: [{"old":"/api/v1/parent/messages","type":0,"val":"api","end":""},{"old":"/api/v1/parent/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/messages","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/messages","type":0,"val":"messages","end":""}],
-    types: placeholder as Registry['parents.get_messages']['types'],
-  },
   'parents.send_message_to_teacher': {
     methods: ["POST"],
-    pattern: '/api/v1/parent/messages/teacher/:teacherId',
-    tokens: [{"old":"/api/v1/parent/messages/teacher/:teacherId","type":0,"val":"api","end":""},{"old":"/api/v1/parent/messages/teacher/:teacherId","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/messages/teacher/:teacherId","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/messages/teacher/:teacherId","type":0,"val":"messages","end":""},{"old":"/api/v1/parent/messages/teacher/:teacherId","type":0,"val":"teacher","end":""},{"old":"/api/v1/parent/messages/teacher/:teacherId","type":1,"val":"teacherId","end":""}],
+    pattern: '/api/v1/parent/messages/teacher',
+    tokens: [{"old":"/api/v1/parent/messages/teacher","type":0,"val":"api","end":""},{"old":"/api/v1/parent/messages/teacher","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/messages/teacher","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/messages/teacher","type":0,"val":"messages","end":""},{"old":"/api/v1/parent/messages/teacher","type":0,"val":"teacher","end":""}],
     types: placeholder as Registry['parents.send_message_to_teacher']['types'],
-  },
-  'parents.reply_to_message': {
-    methods: ["POST"],
-    pattern: '/api/v1/parent/messages/:id/reply',
-    tokens: [{"old":"/api/v1/parent/messages/:id/reply","type":0,"val":"api","end":""},{"old":"/api/v1/parent/messages/:id/reply","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/messages/:id/reply","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/messages/:id/reply","type":0,"val":"messages","end":""},{"old":"/api/v1/parent/messages/:id/reply","type":1,"val":"id","end":""},{"old":"/api/v1/parent/messages/:id/reply","type":0,"val":"reply","end":""}],
-    types: placeholder as Registry['parents.reply_to_message']['types'],
   },
   'parents.get_child_payments': {
     methods: ["GET","HEAD"],
@@ -552,22 +516,10 @@ const routes = {
     tokens: [{"old":"/api/v1/parent/payments/child/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/parent/payments/child/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/payments/child/:studentId","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/payments/child/:studentId","type":0,"val":"payments","end":""},{"old":"/api/v1/parent/payments/child/:studentId","type":0,"val":"child","end":""},{"old":"/api/v1/parent/payments/child/:studentId","type":1,"val":"studentId","end":""}],
     types: placeholder as Registry['parents.get_child_payments']['types'],
   },
-  'parents.initiate_payment': {
-    methods: ["POST"],
-    pattern: '/api/v1/parent/payments/initiate',
-    tokens: [{"old":"/api/v1/parent/payments/initiate","type":0,"val":"api","end":""},{"old":"/api/v1/parent/payments/initiate","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/payments/initiate","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/payments/initiate","type":0,"val":"payments","end":""},{"old":"/api/v1/parent/payments/initiate","type":0,"val":"initiate","end":""}],
-    types: placeholder as Registry['parents.initiate_payment']['types'],
-  },
-  'parents.get_child_forum_activity': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/parent/forum/child/:studentId',
-    tokens: [{"old":"/api/v1/parent/forum/child/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/parent/forum/child/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/forum/child/:studentId","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/forum/child/:studentId","type":0,"val":"forum","end":""},{"old":"/api/v1/parent/forum/child/:studentId","type":0,"val":"child","end":""},{"old":"/api/v1/parent/forum/child/:studentId","type":1,"val":"studentId","end":""}],
-    types: placeholder as Registry['parents.get_child_forum_activity']['types'],
-  },
   'parents.justify_absence': {
     methods: ["POST"],
-    pattern: '/api/v1/parent/absence/justify/:absenceId',
-    tokens: [{"old":"/api/v1/parent/absence/justify/:absenceId","type":0,"val":"api","end":""},{"old":"/api/v1/parent/absence/justify/:absenceId","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/absence/justify/:absenceId","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/absence/justify/:absenceId","type":0,"val":"absence","end":""},{"old":"/api/v1/parent/absence/justify/:absenceId","type":0,"val":"justify","end":""},{"old":"/api/v1/parent/absence/justify/:absenceId","type":1,"val":"absenceId","end":""}],
+    pattern: '/api/v1/parent/absence/justify',
+    tokens: [{"old":"/api/v1/parent/absence/justify","type":0,"val":"api","end":""},{"old":"/api/v1/parent/absence/justify","type":0,"val":"v1","end":""},{"old":"/api/v1/parent/absence/justify","type":0,"val":"parent","end":""},{"old":"/api/v1/parent/absence/justify","type":0,"val":"absence","end":""},{"old":"/api/v1/parent/absence/justify","type":0,"val":"justify","end":""}],
     types: placeholder as Registry['parents.justify_absence']['types'],
   },
   'students.get_my_profile': {
@@ -600,23 +552,11 @@ const routes = {
     tokens: [{"old":"/api/v1/student/assignments","type":0,"val":"api","end":""},{"old":"/api/v1/student/assignments","type":0,"val":"v1","end":""},{"old":"/api/v1/student/assignments","type":0,"val":"student","end":""},{"old":"/api/v1/student/assignments","type":0,"val":"assignments","end":""}],
     types: placeholder as Registry['students.get_assignments']['types'],
   },
-  'students.get_assignment_detail': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/student/assignments/:id',
-    tokens: [{"old":"/api/v1/student/assignments/:id","type":0,"val":"api","end":""},{"old":"/api/v1/student/assignments/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/student/assignments/:id","type":0,"val":"student","end":""},{"old":"/api/v1/student/assignments/:id","type":0,"val":"assignments","end":""},{"old":"/api/v1/student/assignments/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['students.get_assignment_detail']['types'],
-  },
   'students.submit_assignment': {
     methods: ["POST"],
-    pattern: '/api/v1/student/assignments/:id/submit',
-    tokens: [{"old":"/api/v1/student/assignments/:id/submit","type":0,"val":"api","end":""},{"old":"/api/v1/student/assignments/:id/submit","type":0,"val":"v1","end":""},{"old":"/api/v1/student/assignments/:id/submit","type":0,"val":"student","end":""},{"old":"/api/v1/student/assignments/:id/submit","type":0,"val":"assignments","end":""},{"old":"/api/v1/student/assignments/:id/submit","type":1,"val":"id","end":""},{"old":"/api/v1/student/assignments/:id/submit","type":0,"val":"submit","end":""}],
+    pattern: '/api/v1/student/assignments/submit',
+    tokens: [{"old":"/api/v1/student/assignments/submit","type":0,"val":"api","end":""},{"old":"/api/v1/student/assignments/submit","type":0,"val":"v1","end":""},{"old":"/api/v1/student/assignments/submit","type":0,"val":"student","end":""},{"old":"/api/v1/student/assignments/submit","type":0,"val":"assignments","end":""},{"old":"/api/v1/student/assignments/submit","type":0,"val":"submit","end":""}],
     types: placeholder as Registry['students.submit_assignment']['types'],
-  },
-  'students.update_submission': {
-    methods: ["PUT"],
-    pattern: '/api/v1/student/assignments/submissions/:id',
-    tokens: [{"old":"/api/v1/student/assignments/submissions/:id","type":0,"val":"api","end":""},{"old":"/api/v1/student/assignments/submissions/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/student/assignments/submissions/:id","type":0,"val":"student","end":""},{"old":"/api/v1/student/assignments/submissions/:id","type":0,"val":"assignments","end":""},{"old":"/api/v1/student/assignments/submissions/:id","type":0,"val":"submissions","end":""},{"old":"/api/v1/student/assignments/submissions/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['students.update_submission']['types'],
   },
   'students.get_my_forum_questions': {
     methods: ["GET","HEAD"],
@@ -630,22 +570,10 @@ const routes = {
     tokens: [{"old":"/api/v1/student/forum/questions","type":0,"val":"api","end":""},{"old":"/api/v1/student/forum/questions","type":0,"val":"v1","end":""},{"old":"/api/v1/student/forum/questions","type":0,"val":"student","end":""},{"old":"/api/v1/student/forum/questions","type":0,"val":"forum","end":""},{"old":"/api/v1/student/forum/questions","type":0,"val":"questions","end":""}],
     types: placeholder as Registry['students.post_forum_question']['types'],
   },
-  'students.reply_to_forum': {
-    methods: ["POST"],
-    pattern: '/api/v1/student/forum/questions/:id/reply',
-    tokens: [{"old":"/api/v1/student/forum/questions/:id/reply","type":0,"val":"api","end":""},{"old":"/api/v1/student/forum/questions/:id/reply","type":0,"val":"v1","end":""},{"old":"/api/v1/student/forum/questions/:id/reply","type":0,"val":"student","end":""},{"old":"/api/v1/student/forum/questions/:id/reply","type":0,"val":"forum","end":""},{"old":"/api/v1/student/forum/questions/:id/reply","type":0,"val":"questions","end":""},{"old":"/api/v1/student/forum/questions/:id/reply","type":1,"val":"id","end":""},{"old":"/api/v1/student/forum/questions/:id/reply","type":0,"val":"reply","end":""}],
-    types: placeholder as Registry['students.reply_to_forum']['types'],
-  },
-  'students.get_messages': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/student/messages',
-    tokens: [{"old":"/api/v1/student/messages","type":0,"val":"api","end":""},{"old":"/api/v1/student/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/student/messages","type":0,"val":"student","end":""},{"old":"/api/v1/student/messages","type":0,"val":"messages","end":""}],
-    types: placeholder as Registry['students.get_messages']['types'],
-  },
   'students.send_message_to_teacher': {
     methods: ["POST"],
-    pattern: '/api/v1/student/messages/teacher/:teacherId',
-    tokens: [{"old":"/api/v1/student/messages/teacher/:teacherId","type":0,"val":"api","end":""},{"old":"/api/v1/student/messages/teacher/:teacherId","type":0,"val":"v1","end":""},{"old":"/api/v1/student/messages/teacher/:teacherId","type":0,"val":"student","end":""},{"old":"/api/v1/student/messages/teacher/:teacherId","type":0,"val":"messages","end":""},{"old":"/api/v1/student/messages/teacher/:teacherId","type":0,"val":"teacher","end":""},{"old":"/api/v1/student/messages/teacher/:teacherId","type":1,"val":"teacherId","end":""}],
+    pattern: '/api/v1/student/messages/teacher',
+    tokens: [{"old":"/api/v1/student/messages/teacher","type":0,"val":"api","end":""},{"old":"/api/v1/student/messages/teacher","type":0,"val":"v1","end":""},{"old":"/api/v1/student/messages/teacher","type":0,"val":"student","end":""},{"old":"/api/v1/student/messages/teacher","type":0,"val":"messages","end":""},{"old":"/api/v1/student/messages/teacher","type":0,"val":"teacher","end":""}],
     types: placeholder as Registry['students.send_message_to_teacher']['types'],
   },
   'students.get_my_timetable': {
@@ -660,6 +588,12 @@ const routes = {
     tokens: [{"old":"/api/v1/student/attendance","type":0,"val":"api","end":""},{"old":"/api/v1/student/attendance","type":0,"val":"v1","end":""},{"old":"/api/v1/student/attendance","type":0,"val":"student","end":""},{"old":"/api/v1/student/attendance","type":0,"val":"attendance","end":""}],
     types: placeholder as Registry['students.get_my_attendance']['types'],
   },
+  'students.request_transfer': {
+    methods: ["POST"],
+    pattern: '/api/v1/student/transfers/request',
+    tokens: [{"old":"/api/v1/student/transfers/request","type":0,"val":"api","end":""},{"old":"/api/v1/student/transfers/request","type":0,"val":"v1","end":""},{"old":"/api/v1/student/transfers/request","type":0,"val":"student","end":""},{"old":"/api/v1/student/transfers/request","type":0,"val":"transfers","end":""},{"old":"/api/v1/student/transfers/request","type":0,"val":"request","end":""}],
+    types: placeholder as Registry['students.request_transfer']['types'],
+  },
   'disciplines.get_students': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/discipline/students',
@@ -672,23 +606,11 @@ const routes = {
     tokens: [{"old":"/api/v1/discipline/students/:id","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/students/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/students/:id","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/students/:id","type":0,"val":"students","end":""},{"old":"/api/v1/discipline/students/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['disciplines.get_student_details']['types'],
   },
-  'disciplines.get_all_incidents': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/discipline/incidents',
-    tokens: [{"old":"/api/v1/discipline/incidents","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/incidents","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/incidents","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/incidents","type":0,"val":"incidents","end":""}],
-    types: placeholder as Registry['disciplines.get_all_incidents']['types'],
-  },
   'disciplines.report_incident': {
     methods: ["POST"],
     pattern: '/api/v1/discipline/incidents',
     tokens: [{"old":"/api/v1/discipline/incidents","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/incidents","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/incidents","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/incidents","type":0,"val":"incidents","end":""}],
     types: placeholder as Registry['disciplines.report_incident']['types'],
-  },
-  'disciplines.update_incident': {
-    methods: ["PUT"],
-    pattern: '/api/v1/discipline/incidents/:id',
-    tokens: [{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"incidents","end":""},{"old":"/api/v1/discipline/incidents/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['disciplines.update_incident']['types'],
   },
   'disciplines.delete_incident': {
     methods: ["DELETE"],
@@ -696,52 +618,16 @@ const routes = {
     tokens: [{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/incidents/:id","type":0,"val":"incidents","end":""},{"old":"/api/v1/discipline/incidents/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['disciplines.delete_incident']['types'],
   },
-  'disciplines.get_student_incidents': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/discipline/incidents/student/:studentId',
-    tokens: [{"old":"/api/v1/discipline/incidents/student/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/incidents/student/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/incidents/student/:studentId","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/incidents/student/:studentId","type":0,"val":"incidents","end":""},{"old":"/api/v1/discipline/incidents/student/:studentId","type":0,"val":"student","end":""},{"old":"/api/v1/discipline/incidents/student/:studentId","type":1,"val":"studentId","end":""}],
-    types: placeholder as Registry['disciplines.get_student_incidents']['types'],
-  },
   'disciplines.apply_sanction': {
     methods: ["POST"],
     pattern: '/api/v1/discipline/sanctions',
     tokens: [{"old":"/api/v1/discipline/sanctions","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/sanctions","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/sanctions","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/sanctions","type":0,"val":"sanctions","end":""}],
     types: placeholder as Registry['disciplines.apply_sanction']['types'],
   },
-  'disciplines.update_sanction': {
-    methods: ["PUT"],
-    pattern: '/api/v1/discipline/sanctions/:id',
-    tokens: [{"old":"/api/v1/discipline/sanctions/:id","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/sanctions/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/sanctions/:id","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/sanctions/:id","type":0,"val":"sanctions","end":""},{"old":"/api/v1/discipline/sanctions/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['disciplines.update_sanction']['types'],
-  },
-  'disciplines.get_student_discipline_report': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/discipline/reports/student/:studentId',
-    tokens: [{"old":"/api/v1/discipline/reports/student/:studentId","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/reports/student/:studentId","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/reports/student/:studentId","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/reports/student/:studentId","type":0,"val":"reports","end":""},{"old":"/api/v1/discipline/reports/student/:studentId","type":0,"val":"student","end":""},{"old":"/api/v1/discipline/reports/student/:studentId","type":1,"val":"studentId","end":""}],
-    types: placeholder as Registry['disciplines.get_student_discipline_report']['types'],
-  },
-  'disciplines.get_class_discipline_report': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/discipline/reports/class/:classId',
-    tokens: [{"old":"/api/v1/discipline/reports/class/:classId","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/reports/class/:classId","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/reports/class/:classId","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/reports/class/:classId","type":0,"val":"reports","end":""},{"old":"/api/v1/discipline/reports/class/:classId","type":0,"val":"class","end":""},{"old":"/api/v1/discipline/reports/class/:classId","type":1,"val":"classId","end":""}],
-    types: placeholder as Registry['disciplines.get_class_discipline_report']['types'],
-  },
-  'disciplines.get_discipline_summary': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/discipline/reports/summary',
-    tokens: [{"old":"/api/v1/discipline/reports/summary","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/reports/summary","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/reports/summary","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/reports/summary","type":0,"val":"reports","end":""},{"old":"/api/v1/discipline/reports/summary","type":0,"val":"summary","end":""}],
-    types: placeholder as Registry['disciplines.get_discipline_summary']['types'],
-  },
-  'disciplines.get_discipline_stats': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/discipline/stats',
-    tokens: [{"old":"/api/v1/discipline/stats","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/stats","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/stats","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/stats","type":0,"val":"stats","end":""}],
-    types: placeholder as Registry['disciplines.get_discipline_stats']['types'],
-  },
   'disciplines.notify_parent': {
     methods: ["POST"],
-    pattern: '/api/v1/discipline/notify-parent/:incidentId',
-    tokens: [{"old":"/api/v1/discipline/notify-parent/:incidentId","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/notify-parent/:incidentId","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/notify-parent/:incidentId","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/notify-parent/:incidentId","type":0,"val":"notify-parent","end":""},{"old":"/api/v1/discipline/notify-parent/:incidentId","type":1,"val":"incidentId","end":""}],
+    pattern: '/api/v1/discipline/notify-parent',
+    tokens: [{"old":"/api/v1/discipline/notify-parent","type":0,"val":"api","end":""},{"old":"/api/v1/discipline/notify-parent","type":0,"val":"v1","end":""},{"old":"/api/v1/discipline/notify-parent","type":0,"val":"discipline","end":""},{"old":"/api/v1/discipline/notify-parent","type":0,"val":"notify-parent","end":""}],
     types: placeholder as Registry['disciplines.notify_parent']['types'],
   },
   'messages.get_messages': {
@@ -749,12 +635,6 @@ const routes = {
     pattern: '/api/v1/communication/messages',
     tokens: [{"old":"/api/v1/communication/messages","type":0,"val":"api","end":""},{"old":"/api/v1/communication/messages","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/messages","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/messages","type":0,"val":"messages","end":""}],
     types: placeholder as Registry['messages.get_messages']['types'],
-  },
-  'messages.get_unread_count': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/communication/messages/unread',
-    tokens: [{"old":"/api/v1/communication/messages/unread","type":0,"val":"api","end":""},{"old":"/api/v1/communication/messages/unread","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/messages/unread","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/messages/unread","type":0,"val":"messages","end":""},{"old":"/api/v1/communication/messages/unread","type":0,"val":"unread","end":""}],
-    types: placeholder as Registry['messages.get_unread_count']['types'],
   },
   'messages.send_message': {
     methods: ["POST"],
@@ -764,15 +644,9 @@ const routes = {
   },
   'messages.mark_as_read': {
     methods: ["PUT"],
-    pattern: '/api/v1/communication/messages/:id/read',
-    tokens: [{"old":"/api/v1/communication/messages/:id/read","type":0,"val":"api","end":""},{"old":"/api/v1/communication/messages/:id/read","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/messages/:id/read","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/messages/:id/read","type":0,"val":"messages","end":""},{"old":"/api/v1/communication/messages/:id/read","type":1,"val":"id","end":""},{"old":"/api/v1/communication/messages/:id/read","type":0,"val":"read","end":""}],
+    pattern: '/api/v1/communication/messages/read',
+    tokens: [{"old":"/api/v1/communication/messages/read","type":0,"val":"api","end":""},{"old":"/api/v1/communication/messages/read","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/messages/read","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/messages/read","type":0,"val":"messages","end":""},{"old":"/api/v1/communication/messages/read","type":0,"val":"read","end":""}],
     types: placeholder as Registry['messages.mark_as_read']['types'],
-  },
-  'messages.delete_message': {
-    methods: ["DELETE"],
-    pattern: '/api/v1/communication/messages/:id',
-    tokens: [{"old":"/api/v1/communication/messages/:id","type":0,"val":"api","end":""},{"old":"/api/v1/communication/messages/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/messages/:id","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/messages/:id","type":0,"val":"messages","end":""},{"old":"/api/v1/communication/messages/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['messages.delete_message']['types'],
   },
   'messages.get_conversations': {
     methods: ["GET","HEAD"],
@@ -786,29 +660,17 @@ const routes = {
     tokens: [{"old":"/api/v1/communication/conversations/:userId","type":0,"val":"api","end":""},{"old":"/api/v1/communication/conversations/:userId","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/conversations/:userId","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/conversations/:userId","type":0,"val":"conversations","end":""},{"old":"/api/v1/communication/conversations/:userId","type":1,"val":"userId","end":""}],
     types: placeholder as Registry['messages.get_conversation']['types'],
   },
-  'messages.get_notifications': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/communication/notifications',
-    tokens: [{"old":"/api/v1/communication/notifications","type":0,"val":"api","end":""},{"old":"/api/v1/communication/notifications","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/notifications","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/notifications","type":0,"val":"notifications","end":""}],
-    types: placeholder as Registry['messages.get_notifications']['types'],
-  },
-  'messages.mark_notification_as_read': {
-    methods: ["PUT"],
-    pattern: '/api/v1/communication/notifications/:id/read',
-    tokens: [{"old":"/api/v1/communication/notifications/:id/read","type":0,"val":"api","end":""},{"old":"/api/v1/communication/notifications/:id/read","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/notifications/:id/read","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/notifications/:id/read","type":0,"val":"notifications","end":""},{"old":"/api/v1/communication/notifications/:id/read","type":1,"val":"id","end":""},{"old":"/api/v1/communication/notifications/:id/read","type":0,"val":"read","end":""}],
-    types: placeholder as Registry['messages.mark_notification_as_read']['types'],
-  },
-  'messages.mark_all_as_read': {
-    methods: ["PUT"],
-    pattern: '/api/v1/communication/notifications/read-all',
-    tokens: [{"old":"/api/v1/communication/notifications/read-all","type":0,"val":"api","end":""},{"old":"/api/v1/communication/notifications/read-all","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/notifications/read-all","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/notifications/read-all","type":0,"val":"notifications","end":""},{"old":"/api/v1/communication/notifications/read-all","type":0,"val":"read-all","end":""}],
-    types: placeholder as Registry['messages.mark_all_as_read']['types'],
-  },
-  'messages.upload_attachment': {
+  'communication.send_global_communication': {
     methods: ["POST"],
-    pattern: '/api/v1/communication/attachments/upload',
-    tokens: [{"old":"/api/v1/communication/attachments/upload","type":0,"val":"api","end":""},{"old":"/api/v1/communication/attachments/upload","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/attachments/upload","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/attachments/upload","type":0,"val":"attachments","end":""},{"old":"/api/v1/communication/attachments/upload","type":0,"val":"upload","end":""}],
-    types: placeholder as Registry['messages.upload_attachment']['types'],
+    pattern: '/api/v1/communication/communications/global',
+    tokens: [{"old":"/api/v1/communication/communications/global","type":0,"val":"api","end":""},{"old":"/api/v1/communication/communications/global","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/communications/global","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/communications/global","type":0,"val":"communications","end":""},{"old":"/api/v1/communication/communications/global","type":0,"val":"global","end":""}],
+    types: placeholder as Registry['communication.send_global_communication']['types'],
+  },
+  'communication.send_school_communication': {
+    methods: ["POST"],
+    pattern: '/api/v1/communication/communications/school',
+    tokens: [{"old":"/api/v1/communication/communications/school","type":0,"val":"api","end":""},{"old":"/api/v1/communication/communications/school","type":0,"val":"v1","end":""},{"old":"/api/v1/communication/communications/school","type":0,"val":"communication","end":""},{"old":"/api/v1/communication/communications/school","type":0,"val":"communications","end":""},{"old":"/api/v1/communication/communications/school","type":0,"val":"school","end":""}],
+    types: placeholder as Registry['communication.send_school_communication']['types'],
   },
   'inter_schools.search_schools': {
     methods: ["GET","HEAD"],
@@ -822,23 +684,11 @@ const routes = {
     tokens: [{"old":"/api/v1/inter-school/:id/info","type":0,"val":"api","end":""},{"old":"/api/v1/inter-school/:id/info","type":0,"val":"v1","end":""},{"old":"/api/v1/inter-school/:id/info","type":0,"val":"inter-school","end":""},{"old":"/api/v1/inter-school/:id/info","type":1,"val":"id","end":""},{"old":"/api/v1/inter-school/:id/info","type":0,"val":"info","end":""}],
     types: placeholder as Registry['inter_schools.get_school_public_info']['types'],
   },
-  'inter_schools.get_exchanges': {
-    methods: ["GET","HEAD"],
-    pattern: '/api/v1/inter-school/exchanges',
-    tokens: [{"old":"/api/v1/inter-school/exchanges","type":0,"val":"api","end":""},{"old":"/api/v1/inter-school/exchanges","type":0,"val":"v1","end":""},{"old":"/api/v1/inter-school/exchanges","type":0,"val":"inter-school","end":""},{"old":"/api/v1/inter-school/exchanges","type":0,"val":"exchanges","end":""}],
-    types: placeholder as Registry['inter_schools.get_exchanges']['types'],
-  },
   'inter_schools.start_exchange': {
     methods: ["POST"],
     pattern: '/api/v1/inter-school/exchanges',
     tokens: [{"old":"/api/v1/inter-school/exchanges","type":0,"val":"api","end":""},{"old":"/api/v1/inter-school/exchanges","type":0,"val":"v1","end":""},{"old":"/api/v1/inter-school/exchanges","type":0,"val":"inter-school","end":""},{"old":"/api/v1/inter-school/exchanges","type":0,"val":"exchanges","end":""}],
     types: placeholder as Registry['inter_schools.start_exchange']['types'],
-  },
-  'inter_schools.send_exchange_message': {
-    methods: ["POST"],
-    pattern: '/api/v1/inter-school/exchanges/:id/message',
-    tokens: [{"old":"/api/v1/inter-school/exchanges/:id/message","type":0,"val":"api","end":""},{"old":"/api/v1/inter-school/exchanges/:id/message","type":0,"val":"v1","end":""},{"old":"/api/v1/inter-school/exchanges/:id/message","type":0,"val":"inter-school","end":""},{"old":"/api/v1/inter-school/exchanges/:id/message","type":0,"val":"exchanges","end":""},{"old":"/api/v1/inter-school/exchanges/:id/message","type":1,"val":"id","end":""},{"old":"/api/v1/inter-school/exchanges/:id/message","type":0,"val":"message","end":""}],
-    types: placeholder as Registry['inter_schools.send_exchange_message']['types'],
   },
   'inter_schools.get_best_practices': {
     methods: ["GET","HEAD"],
@@ -866,75 +716,75 @@ const routes = {
   },
   'inter_schools.join_event': {
     methods: ["POST"],
-    pattern: '/api/v1/inter-school/events/:id/join',
-    tokens: [{"old":"/api/v1/inter-school/events/:id/join","type":0,"val":"api","end":""},{"old":"/api/v1/inter-school/events/:id/join","type":0,"val":"v1","end":""},{"old":"/api/v1/inter-school/events/:id/join","type":0,"val":"inter-school","end":""},{"old":"/api/v1/inter-school/events/:id/join","type":0,"val":"events","end":""},{"old":"/api/v1/inter-school/events/:id/join","type":1,"val":"id","end":""},{"old":"/api/v1/inter-school/events/:id/join","type":0,"val":"join","end":""}],
+    pattern: '/api/v1/inter-school/events/join',
+    tokens: [{"old":"/api/v1/inter-school/events/join","type":0,"val":"api","end":""},{"old":"/api/v1/inter-school/events/join","type":0,"val":"v1","end":""},{"old":"/api/v1/inter-school/events/join","type":0,"val":"inter-school","end":""},{"old":"/api/v1/inter-school/events/join","type":0,"val":"events","end":""},{"old":"/api/v1/inter-school/events/join","type":0,"val":"join","end":""}],
     types: placeholder as Registry['inter_schools.join_event']['types'],
   },
-  'admins.get_users': {
+  'admin.get_users': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/users',
     tokens: [{"old":"/api/v1/admin/users","type":0,"val":"api","end":""},{"old":"/api/v1/admin/users","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/users","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/users","type":0,"val":"users","end":""}],
-    types: placeholder as Registry['admins.get_users']['types'],
+    types: placeholder as Registry['admin.get_users']['types'],
   },
-  'admins.create_user': {
+  'admin.create_user': {
     methods: ["POST"],
     pattern: '/api/v1/admin/users',
     tokens: [{"old":"/api/v1/admin/users","type":0,"val":"api","end":""},{"old":"/api/v1/admin/users","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/users","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/users","type":0,"val":"users","end":""}],
-    types: placeholder as Registry['admins.create_user']['types'],
+    types: placeholder as Registry['admin.create_user']['types'],
   },
-  'admins.update_user': {
+  'admin.update_user': {
     methods: ["PUT"],
     pattern: '/api/v1/admin/users/:id',
     tokens: [{"old":"/api/v1/admin/users/:id","type":0,"val":"api","end":""},{"old":"/api/v1/admin/users/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/users/:id","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/users/:id","type":0,"val":"users","end":""},{"old":"/api/v1/admin/users/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['admins.update_user']['types'],
+    types: placeholder as Registry['admin.update_user']['types'],
   },
-  'admins.delete_user': {
+  'admin.delete_user': {
     methods: ["DELETE"],
     pattern: '/api/v1/admin/users/:id',
     tokens: [{"old":"/api/v1/admin/users/:id","type":0,"val":"api","end":""},{"old":"/api/v1/admin/users/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/users/:id","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/users/:id","type":0,"val":"users","end":""},{"old":"/api/v1/admin/users/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['admins.delete_user']['types'],
+    types: placeholder as Registry['admin.delete_user']['types'],
   },
-  'admins.activate_user': {
+  'admin.activate_user': {
     methods: ["POST"],
     pattern: '/api/v1/admin/users/:id/activate',
     tokens: [{"old":"/api/v1/admin/users/:id/activate","type":0,"val":"api","end":""},{"old":"/api/v1/admin/users/:id/activate","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/users/:id/activate","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/users/:id/activate","type":0,"val":"users","end":""},{"old":"/api/v1/admin/users/:id/activate","type":1,"val":"id","end":""},{"old":"/api/v1/admin/users/:id/activate","type":0,"val":"activate","end":""}],
-    types: placeholder as Registry['admins.activate_user']['types'],
+    types: placeholder as Registry['admin.activate_user']['types'],
   },
-  'admins.suspend_user': {
+  'admin.suspend_user': {
     methods: ["POST"],
     pattern: '/api/v1/admin/users/:id/suspend',
     tokens: [{"old":"/api/v1/admin/users/:id/suspend","type":0,"val":"api","end":""},{"old":"/api/v1/admin/users/:id/suspend","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/users/:id/suspend","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/users/:id/suspend","type":0,"val":"users","end":""},{"old":"/api/v1/admin/users/:id/suspend","type":1,"val":"id","end":""},{"old":"/api/v1/admin/users/:id/suspend","type":0,"val":"suspend","end":""}],
-    types: placeholder as Registry['admins.suspend_user']['types'],
+    types: placeholder as Registry['admin.suspend_user']['types'],
   },
-  'admins.get_roles': {
+  'admin.get_roles': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/roles',
     tokens: [{"old":"/api/v1/admin/roles","type":0,"val":"api","end":""},{"old":"/api/v1/admin/roles","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/roles","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/roles","type":0,"val":"roles","end":""}],
-    types: placeholder as Registry['admins.get_roles']['types'],
+    types: placeholder as Registry['admin.get_roles']['types'],
   },
-  'admins.create_role': {
+  'admin.create_role': {
     methods: ["POST"],
     pattern: '/api/v1/admin/roles',
     tokens: [{"old":"/api/v1/admin/roles","type":0,"val":"api","end":""},{"old":"/api/v1/admin/roles","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/roles","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/roles","type":0,"val":"roles","end":""}],
-    types: placeholder as Registry['admins.create_role']['types'],
+    types: placeholder as Registry['admin.create_role']['types'],
   },
-  'admins.update_role': {
+  'admin.update_role': {
     methods: ["PUT"],
     pattern: '/api/v1/admin/roles/:id',
     tokens: [{"old":"/api/v1/admin/roles/:id","type":0,"val":"api","end":""},{"old":"/api/v1/admin/roles/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/roles/:id","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/roles/:id","type":0,"val":"roles","end":""},{"old":"/api/v1/admin/roles/:id","type":1,"val":"id","end":""}],
-    types: placeholder as Registry['admins.update_role']['types'],
+    types: placeholder as Registry['admin.update_role']['types'],
   },
-  'admins.get_system_logs': {
+  'admin.get_system_logs': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/logs',
     tokens: [{"old":"/api/v1/admin/logs","type":0,"val":"api","end":""},{"old":"/api/v1/admin/logs","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/logs","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/logs","type":0,"val":"logs","end":""}],
-    types: placeholder as Registry['admins.get_system_logs']['types'],
+    types: placeholder as Registry['admin.get_system_logs']['types'],
   },
-  'admins.get_user_activity_logs': {
+  'admin.get_user_activity_logs': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/admin/logs/users',
     tokens: [{"old":"/api/v1/admin/logs/users","type":0,"val":"api","end":""},{"old":"/api/v1/admin/logs/users","type":0,"val":"v1","end":""},{"old":"/api/v1/admin/logs/users","type":0,"val":"admin","end":""},{"old":"/api/v1/admin/logs/users","type":0,"val":"logs","end":""},{"old":"/api/v1/admin/logs/users","type":0,"val":"users","end":""}],
-    types: placeholder as Registry['admins.get_user_activity_logs']['types'],
+    types: placeholder as Registry['admin.get_user_activity_logs']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

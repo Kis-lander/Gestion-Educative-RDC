@@ -1,0 +1,173 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Détails devoir - {{ assignment.title }}{{# /section }}
+
+{{# section('dashboardTitle') }}{{ assignment.title }}{{# /section }}
+{{# section('dashboardSubtitle') }}{{ assignment.className }} - {{ assignment.subjectName }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  @if(assignment.status === 'draft')
+  <button onclick="publishAssignment()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-check-circle mr-2"></i> Publier
+  </button>
+  @endif
+  @if(assignment.status === 'published')
+  <button onclick="closeAssignment()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+    <i class="fas fa-lock mr-2"></i> Clôturer
+  </button>
+  @endif
+  <a href="/teacher/assignments/{{ assignment.id }}/edit" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-edit mr-2"></i> Modifier
+  </a>
+  <a href="/teacher/assignments/{{ assignment.id }}/submissions" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+    <i class="fas fa-clipboard-list mr-2"></i> Voir soumissions
+  </a>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ assignment.totalStudents || 0 }}</p>
+    <p class="text-sm text-gray-500">Élèves concernés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ assignment.submittedCount || 0 }}</p>
+    <p class="text-sm text-gray-500">Soumissions reçues</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ assignment.gradedCount || 0 }}</p>
+    <p class="text-sm text-gray-500">Soumissions notées</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold {{ assignment.isOverdue ? 'text-red-600' : 'text-green-600' }}">
+      {{ assignment.daysRemaining }} jours
+    </p>
+    <p class="text-sm text-gray-500">avant échéance</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Détails du devoir -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="px-2 py-1 rounded-full text-xs {{ assignment.status === 'published' ? 'bg-green-100 text-green-800' : (assignment.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
+        {{ assignment.status === 'published' ? 'Publié' : (assignment.status === 'draft' ? 'Brouillon' : 'Clôturé') }}
+      </span>
+      <span class="text-xs text-gray-400">Crée le {{ formatDate(assignment.createdAt) }}</span>
+    </div>
+    
+    <div class="mb-4">
+      <h3 class="font-semibold text-gray-700 mb-1">Description</h3>
+      <p class="text-gray-600">{{ assignment.description || 'Aucune description fournie.' }}</p>
+    </div>
+    
+    <div class="mb-4">
+      <h3 class="font-semibold text-gray-700 mb-1">Instructions</h3>
+      <p class="text-gray-600">{{ assignment.instructions || 'Aucune instruction fournie.' }}</p>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+      <div><span class="text-gray-500">Date limite:</span> <strong>{{ formatDate(assignment.dueDate) }} {{ assignment.dueTime ? 'à ' + assignment.dueTime : '' }}</strong></div>
+      <div><span class="text-gray-500">Points max:</span> <strong>{{ assignment.maxPoints }} points</strong></div>
+    </div>
+    
+    @if(assignment.attachmentUrl)
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-700 mb-2">Fichier joint</h3>
+      <a href="{{ assignment.attachmentUrl }}" target="_blank" class="flex items-center gap-2 p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+        <i class="fas fa-file-alt text-blue-500"></i>
+        <span>Télécharger le document</span>
+      </a>
+    </div>
+    @endif
+  </div>
+  
+  <!-- Progression -->
+  <div class="space-y-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <h3 class="font-semibold mb-3">Progression des rendus</h3>
+      <div class="text-center mb-3">
+        <div class="text-3xl font-bold text-primary">{{ assignment.submissionRate || 0 }}%</div>
+        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+          <div class="bg-primary rounded-full h-2" style="width: {{ assignment.submissionRate || 0 }}%"></div>
+        </div>
+      </div>
+      <div class="text-center text-sm">
+        <span>{{ assignment.submittedCount }}/{{ assignment.totalStudents }} élèves ont rendu</span>
+      </div>
+    </div>
+    
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Rappel</h3>
+      <p class="text-sm">
+        Les élèves peuvent soumettre leur travail jusqu'à la date limite.
+        Après clôture, les soumissions ne seront plus possibles.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Dernières soumissions -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+    <h3 class="font-semibold">Dernières soumissions</h3>
+    <a href="/teacher/assignments/{{ assignment.id }}/submissions" class="text-primary text-sm hover:underline">Voir toutes</a>
+  </div>
+  <div class="divide-y dark:divide-gray-700">
+    @each(submission in recentSubmissions)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="font-medium">{{ submission.studentName }}</p>
+          <p class="text-xs text-gray-500">Soumis le {{ formatDateTime(submission.submittedAt) }}</p>
+        </div>
+        <div class="text-right">
+          @if(submission.grade !== null)
+          <span class="text-lg font-bold text-green-600">{{ submission.grade }}/{{ assignment.maxPoints }}</span>
+          <a href="/teacher/assignments/submissions/{{ submission.id }}/grade" class="text-primary text-sm block mt-1">Modifier</a>
+          @else
+          <a href="/teacher/assignments/submissions/{{ submission.id }}/grade" class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700">
+            Noter
+          </a>
+          @endif
+        </div>
+      </div>
+    </div>
+    @eachelse
+    <div class="p-6 text-center text-gray-500">Aucune soumission reçue</div>
+    @end
+  </div>
+</div>
+
+<script>
+  function publishAssignment() {
+    if (confirm('Publier ce devoir ? Les élèves pourront le voir et soumettre leurs réponses.')) {
+      fetch('/teacher/assignments/{{ assignment.id }}/publish', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) location.reload()
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+  
+  function closeAssignment() {
+    if (confirm('Clôturer ce devoir ? Les élèves ne pourront plus soumettre de réponses.')) {
+      fetch('/teacher/assignments/{{ assignment.id }}/close', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) location.reload()
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

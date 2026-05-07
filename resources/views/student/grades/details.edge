@@ -1,0 +1,177 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Détail des notes - {{ subject.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Détail des résultats{{# /section }}
+{{# section('dashboardSubtitle') }}{{ subject.name }} - Coefficient {{ subject.coefficient }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <select id="termSelect" class="px-3 py-2 border rounded-lg text-sm">
+    <option value="T1" {{ selectedTerm == 'T1' ? 'selected' : '' }}>Trimestre 1</option>
+    <option value="T2" {{ selectedTerm == 'T2' ? 'selected' : '' }}>Trimestre 2</option>
+    <option value="T3" {{ selectedTerm == 'T3' ? 'selected' : '' }}>Trimestre 3</option>
+  </select>
+  <button id="applyTerm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+    <i class="fas fa-sync-alt mr-2"></i> Actualiser
+  </button>
+  <a href="/student/grades" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-arrow-left mr-2"></i> Retour
+  </a>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Moyenne</p>
+    <p class="text-3xl font-bold">{{ currentAverage }}/20</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Meilleure note</p>
+    <p class="text-3xl font-bold">{{ bestGrade }}/20</p>
+  </div>
+  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Note la plus basse</p>
+    <p class="text-3xl font-bold">{{ worstGrade }}/20</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Moyenne classe</p>
+    <p class="text-3xl font-bold">{{ classAverage }}/20</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Graphique d'évolution -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <h3 class="font-semibold mb-3">Évolution des notes</h3>
+  <canvas id="evolutionChart" height="200"></canvas>
+</div>
+
+<!-- Détail des évaluations -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail des évaluations</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Type</th>
+          <th class="px-4 py-2 text-center">Date</th>
+          <th class="px-4 py-2 text-center">Note /20</th>
+          <th class="px-4 py-2 text-center">Moyenne classe</th>
+          <th class="px-4 py-2 text-left">Appréciation</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(evaluation in evaluations)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2 font-medium">{{ evaluation.type }}</td>
+          <td class="px-4 py-2 text-center">{{ evaluation.date }}</td>
+          <td class="px-4 py-2 text-center">
+            <span class="font-bold {{ evaluation.score >= 15 ? 'text-green-600' : (evaluation.score >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+              {{ evaluation.score }}/20
+            </span>
+          </td>
+          <td class="px-4 py-2 text-center">{{ evaluation.classAverage }}/20</td>
+          <td class="px-4 py-2 text-gray-600">{{ evaluation.comment || '-' }}</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Conseils pour progresser -->
+<div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+  <div class="flex gap-3">
+    <i class="fas fa-lightbulb text-yellow-500 text-xl"></i>
+    <div>
+      <h4 class="font-semibold">Conseils pour progresser</h4>
+      <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+        {{ subject.tips || 'Continuez vos efforts et n\'hésitez pas à demander de l\'aide à votre professeur.' }}
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Progression trimestrielle -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Progression trimestrielle</h3>
+  <div class="flex justify-around text-center">
+    <div>
+      <p class="text-gray-500 text-sm">Trimestre 1</p>
+      <p class="text-2xl font-bold {{ t1 >= 15 ? 'text-green-600' : (t1 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+        {{ t1 || '-' }}/20
+      </p>
+    </div>
+    <div>
+      <p class="text-gray-500 text-sm">Trimestre 2</p>
+      <p class="text-2xl font-bold {{ t2 >= 15 ? 'text-green-600' : (t2 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+        {{ t2 || '-' }}/20
+      </p>
+    </div>
+    <div>
+      <p class="text-gray-500 text-sm">Trimestre 3</p>
+      <p class="text-2xl font-bold {{ t3 >= 15 ? 'text-green-600' : (t3 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+        {{ t3 || '-' }}/20
+      </p>
+    </div>
+  </div>
+  <div class="mt-3 text-center">
+    <span class="text-sm">Évolution: 
+      <span class="{{ trend > 0 ? 'text-green-600' : (trend < 0 ? 'text-red-600' : 'text-gray-500') }}">
+        {{ trend > 0 ? '+' : '' }}{{ trend }} points
+      </span>
+    </span>
+  </div>
+</div>
+
+<script>
+  let evolutionChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('evolutionChart').getContext('2d')
+    evolutionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ evalLabels|json_encode|raw }},
+        datasets: [
+          {
+            label: 'Votre note',
+            data: {{ evalScores|json_encode|raw }},
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Moyenne de la classe',
+            data: {{ evalClassAverages|json_encode|raw }},
+            borderColor: '#16a34a',
+            borderDash: [5, 5],
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: { y: { max: 20, min: 0 } }
+      }
+    })
+  }
+  
+  document.getElementById('applyTerm')?.addEventListener('click', () => {
+    const term = document.getElementById('termSelect').value
+    const subjectId = {{ subject.id }}
+    window.location.href = `/student/grades/details?subject_id=${subjectId}&term=${term}`
+  })
+  
+  renderChart()
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,220 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Rapport des écoles - Inspection RDC{{# /section }}
+
+{{# section('dashboardTitle') }}Rapport des établissements{{# /section }}
+{{# section('dashboardSubtitle') }}Analyse détaillée des écoles de la RDC{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    <i class="fas fa-file-pdf mr-2"></i> PDF
+  </button>
+  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-file-excel mr-2"></i> Excel
+  </button>
+  <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Province</label>
+      <select id="filterProvince" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        <option value="Kinshasa">Kinshasa</option>
+        <option value="Kongo Central">Kongo Central</option>
+        <option value="Haut-Katanga">Haut-Katanga</option>
+        <option value="Nord-Kivu">Nord-Kivu</option>
+        <option value="Sud-Kivu">Sud-Kivu</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="active">Actif</option>
+        <option value="pending">En attente</option>
+        <option value="suspended">Suspendu</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
+      <select id="filterPeriod" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="all">Toute la période</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+      </select>
+    </div>
+    <div class="flex items-end">
+      <button id="applyFilters" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-chart-line mr-2"></i> Générer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Indicateurs clés -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary" id="totalSchools">0</p>
+    <p class="text-sm text-gray-500">Écoles totales</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600" id="activeSchools">0</p>
+    <p class="text-sm text-gray-500">Écoles actives</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600" id="pendingSchools">0</p>
+    <p class="text-sm text-gray-500">En attente</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600" id="totalStudents">0</p>
+    <p class="text-sm text-gray-500">Élèves total</p>
+  </div>
+</div>
+
+<!-- Graphiques -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <!-- Répartition par province -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-4">Répartition par province</h3>
+    <canvas id="provinceChart" height="250"></canvas>
+  </div>
+  
+  <!-- Évolution des inscriptions -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-4">Évolution des inscriptions</h3>
+    <canvas id="trendChart" height="250"></canvas>
+  </div>
+</div>
+
+<!-- Tableau détaillé -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Liste détaillée des écoles</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm" id="schoolsTable">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left">Code</th>
+          <th class="px-4 py-3 text-left">Nom</th>
+          <th class="px-4 py-3 text-left">Province</th>
+          <th class="px-4 py-3 text-center">Statut</th>
+          <th class="px-4 py-3 text-center">Élèves</th>
+          <th class="px-4 py-3 text-center">Enseignants</th>
+          <th class="px-4 py-3 text-center">Moyenne</th>
+        </tr>
+      </thead>
+      <tbody id="schoolsTableBody">
+        <tr>
+          <td colspan="7" class="text-center py-8 text-gray-500">Chargement des données...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let chart1, chart2
+  
+  async function loadReport() {
+    const province = document.getElementById('filterProvince').value
+    const status = document.getElementById('filterStatus').value
+    const period = document.getElementById('filterPeriod').value
+    
+    const params = new URLSearchParams()
+    if (province) params.append('province', province)
+    if (status) params.append('status', status)
+    if (period !== 'all') params.append('year', period)
+    
+    const res = await fetch(`/api/inspection/reports/schools?${params.toString()}`)
+    const data = await res.json()
+    
+    // Mettre à jour les indicateurs
+    document.getElementById('totalSchools').textContent = data.summary?.totalSchools || 0
+    document.getElementById('activeSchools').textContent = data.summary?.activeSchools || 0
+    document.getElementById('pendingSchools').textContent = data.summary?.pendingSchools || 0
+    document.getElementById('totalStudents').textContent = data.summary?.totalStudents || 0
+    
+    // Graphique provinces
+    if (chart1) chart1.destroy()
+    const ctx1 = document.getElementById('provinceChart').getContext('2d')
+    chart1 = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: data.provinceData?.labels || [],
+        datasets: [{
+          label: 'Nombre d\'écoles',
+          data: data.provinceData?.values || [],
+          backgroundColor: '#2563eb',
+          borderRadius: 8
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+    
+    // Graphique tendance
+    if (chart2) chart2.destroy()
+    const ctx2 = document.getElementById('trendChart').getContext('2d')
+    chart2 = new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: data.trendData?.labels || [],
+        datasets: [{
+          label: 'Nouvelles inscriptions',
+          data: data.trendData?.values || [],
+          borderColor: '#16a34a',
+          backgroundColor: 'rgba(22, 163, 74, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+    
+    // Tableau
+    const tbody = document.getElementById('schoolsTableBody')
+    if (data.schools && data.schools.length > 0) {
+      tbody.innerHTML = data.schools.map(school => `
+        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-2 font-mono text-xs">${school.code}</td>
+          <td class="px-4 py-2 font-medium">${school.name}</td>
+          <td class="px-4 py-2">${school.province}</td>
+          <td class="px-4 py-2 text-center">
+            <span class="px-2 py-0.5 rounded-full text-xs ${school.status === 'active' ? 'bg-green-100 text-green-800' : (school.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')}">
+              ${school.status === 'active' ? 'Actif' : (school.status === 'pending' ? 'En attente' : 'Suspendu')}
+            </span>
+          </td>
+          <td class="px-4 py-2 text-center">${school.studentsCount || 0}</td>
+          <td class="px-4 py-2 text-center">${school.teachersCount || 0}</td>
+          <td class="px-4 py-2 text-center font-medium ${school.averageGrade >= 15 ? 'text-green-600' : (school.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600')}">
+            ${school.averageGrade ? school.averageGrade.toFixed(1) : '-'}/20
+          </td>
+        </tr>
+      `).join('')
+    } else {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">Aucune donnée trouvée</td></tr>'
+    }
+  }
+  
+  function exportReport(format) {
+    const province = document.getElementById('filterProvince').value
+    const status = document.getElementById('filterStatus').value
+    const period = document.getElementById('filterPeriod').value
+    window.location.href = `/api/inspection/reports/schools/export?format=${format}&province=${province}&status=${status}&year=${period}`
+  }
+  
+  document.getElementById('applyFilters').addEventListener('click', loadReport)
+  loadReport()
+</script>
+{{# /section }}
+
+{{# /layout }}

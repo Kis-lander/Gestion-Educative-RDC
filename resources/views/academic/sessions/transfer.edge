@@ -1,0 +1,127 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Transfert de session - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Transfert de données{{# /section }}
+{{# section('dashboardSubtitle') }}Transférer {{ fromSession.name }} vers une nouvelle session{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire de transfert -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/academic/sessions/{{ fromSession.id }}/transfer" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Session destination *</label>
+        <select name="toSessionId" required class="w-full px-3 py-2 border rounded-lg">
+          <option value="">Sélectionner une session</option>
+          @each(session in availableSessions)
+          <option value="{{ session.id }}">{{ session.name }}</option>
+          @end
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Données à transférer</label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="transferStudents" value="1" checked class="w-4 h-4">
+            <span>Élèves et inscriptions</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="transferTeachers" value="1" checked class="w-4 h-4">
+            <span>Enseignants</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="transferClasses" value="1" checked class="w-4 h-4">
+            <span>Classes (structure)</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="transferSubjects" value="1" checked class="w-4 h-4">
+            <span>Matières et assignations</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="transferGrades" value="1" class="w-4 h-4">
+            <span>Notes (historique)</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="transferFees" value="1" class="w-4 h-4">
+            <span>Structure des frais</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 mb-4">
+        <p class="text-sm flex gap-2">
+          <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+          <span>Le transfert peut prendre quelques minutes selon le volume de données.</span>
+        </p>
+      </div>
+      
+      <div class="flex gap-3 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Lancer le transfert
+        </button>
+        <a href="/academic/sessions" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Aperçu -->
+  <div class="space-y-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <h3 class="font-semibold mb-3">Aperçu des données à transférer</h3>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span>Élèves actifs</span>
+          <span class="font-bold">{{ fromSession.activeStudents || 0 }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Enseignants actifs</span>
+          <span class="font-bold">{{ fromSession.activeTeachers || 0 }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Classes</span>
+          <span class="font-bold">{{ fromSession.classesCount || 0 }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Matières</span>
+          <span class="font-bold">{{ fromSession.subjectsCount || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Conseils</h3>
+      <ul class="text-sm space-y-2">
+        <li>✓ Créez d'abord la session destination</li>
+        <li>✓ Le transfert n'affecte pas la source</li>
+        <li>✓ Les notes historiques sont optionnelles</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Validation avant soumission
+  document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const toSessionId = document.querySelector('[name=toSessionId]').value
+    if (!toSessionId) {
+      alert('Veuillez sélectionner une session destination')
+      return
+    }
+    
+    if (confirm('⚠️ Attention : Le transfert peut prendre du temps. Ne fermez pas cette page.')) {
+      e.target.submit()
+    }
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

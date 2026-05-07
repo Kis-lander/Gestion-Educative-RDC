@@ -1,0 +1,162 @@
+{{# layout('layouts/print') }}
+
+{{# section('title') }}Rapport académique - {{ school.name }}{{# /section }}
+
+<div class="school-report">
+  <div class="text-center mb-6">
+    <h1 class="text-2xl font-bold">RAPPORT ACADÉMIQUE</h1>
+    <h2 class="text-xl">{{ school.name }}</h2>
+    <p class="text-sm">Année académique {{ academicYear }} - {{ termLabel }}</p>
+    <p class="text-sm">Généré le {{ generationDate }}</p>
+  </div>
+  
+  <!-- Résumé général -->
+  <div class="summary-box mb-6 p-3 bg-gray-50 border">
+    <h3 class="font-bold mb-2">Résumé général</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+      <div><strong>Total élèves:</strong> {{ stats.totalStudents || 0 }}</div>
+      <div><strong>Total classes:</strong> {{ stats.totalClasses || 0 }}</div>
+      <div><strong>Moyenne générale:</strong> {{ stats.overallAverage }}/20</div>
+      <div><strong>Taux réussite:</strong> {{ stats.successRate }}%</div>
+      <div><strong>Admis:</strong> {{ stats.passedCount }}</div>
+      <div><strong>Non admis:</strong> {{ stats.failedCount }}</div>
+    </div>
+  </div>
+  
+  <!-- Performance par classe -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Performance par classe</h3>
+    <div class="table-responsive">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-3 py-2">Classe</th>
+            <th class="px-3 py-2 text-center">Élèves</th>
+            <th class="px-3 py-2 text-center">Moyenne</th>
+            <th class="px-3 py-2 text-center">Taux réussite</th>
+            <th class="px-3 py-2 text-center">Meilleur élève</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(classData in classesData)
+          <tr class="border-b">
+            <td class="px-3 py-2 font-medium">{{ classData.className }}</td>
+            <td class="px-3 py-2 text-center">{{ classData.studentsCount }}</td>
+            <td class="px-3 py-2 text-center">{{ classData.average }}/20</td>
+            <td class="px-3 py-2 text-center">{{ classData.successRate }}%</td>
+            <td class="px-3 py-2">{{ classData.bestStudent }}</td>
+          </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Top 10 des meilleurs élèves -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Top 10 des meilleurs élèves</h3>
+    <div class="table-responsive">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-3 py-2">Rang</th>
+            <th class="px-3 py-2">Élève</th>
+            <th class="px-3 py-2">Classe</th>
+            <th class="px-3 py-2 text-center">Moyenne</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(student in topStudents)
+          <tr class="border-b">
+            <td class="px-3 py-2 text-center font-bold">{{ student.rank }}</td>
+            <td class="px-3 py-2">{{ student.name }}</td>
+            <td class="px-3 py-2">{{ student.className }}</td>
+            <td class="px-3 py-2 text-center font-bold text-green-600">{{ student.average }}/20</td>
+          </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Performance par matière -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Performance par matière</h3>
+    <div class="table-responsive">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-3 py-2">Matière</th>
+            <th class="px-3 py-2 text-center">Moyenne école</th>
+            <th class="px-3 py-2 text-center">Meilleure note</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(subject in subjectsPerformance)
+          <tr class="border-b">
+            <td class="px-3 py-2 font-medium">{{ subject.name }}</td>
+            <td class="px-3 py-2 text-center">{{ subject.average }}/20</td>
+            <td class="px-3 py-2 text-center text-green-600">{{ subject.best }}/20</td>
+          </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Tendances -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Évolution sur 3 ans</h3>
+    <div class="space-y-2">
+      <div>
+        <div class="flex justify-between text-sm">
+          <span>Moyenne générale</span>
+          <span>{{ trend.y1 }}/20 → {{ trend.y2 }}/20 → {{ trend.y3 }}/20</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-green-500 rounded-full h-2" style="width: {{ trend.y3Percent }}%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Recommandations -->
+  <div class="mt-6 p-3 border-l-4 border-primary bg-gray-50">
+    <p class="font-bold">RECOMMANDATIONS</p>
+    <p class="text-sm mt-1">{{ recommendations }}</p>
+  </div>
+  
+  <!-- Signatures -->
+  <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
+    <div class="text-center">
+      <p>Le Chef d'Établissement</p>
+      <div class="mt-12">_______________</div>
+    </div>
+    <div class="text-center">
+      <p>Le Responsable Académique</p>
+      <div class="mt-12">_______________</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .school-report {
+    font-family: 'Times New Roman', 'Arial', sans-serif;
+    padding: 20px;
+  }
+  .border {
+    border: 1px solid #ddd;
+  }
+  .border-b {
+    border-bottom: 1px solid #ddd;
+  }
+  .bg-gray-100 {
+    background-color: #f3f4f6;
+  }
+  @media print {
+    body { padding: 0; margin: 0; }
+    .school-report { padding: 0; }
+  }
+</style>
+
+{{# /layout }}

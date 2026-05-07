@@ -1,0 +1,256 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Import massif des notes - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Import massif de notes{{# /section }}
+{{# section('dashboardSubtitle') }}Chargez un fichier Excel/CSV pour importer les notes{{# /section }}
+
+{{# section('actions') }}
+<a href="/templates/grades-import-template.xlsx" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+  <i class="fas fa-download mr-2"></i> Télécharger modèle
+</a>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Upload -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Importer un fichier</h3>
+    
+    <form id="uploadForm" enctype="multipart/form-data" x-data="{ loading: false }" @submit.prevent="loading = true; submitForm()">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Fichier Excel/CSV *</label>
+        <div class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary transition"
+             @click="$refs.fileInput.click()"
+             :class="dragOver ? 'border-primary bg-blue-50' : 'border-gray-300'"
+             @dragover.prevent="dragOver = true"
+             @dragleave.prevent="dragOver = false"
+             @drop.prevent="handleDrop">
+          <input type="file" name="file" accept=".xlsx,.xls,.csv" class="hidden" x-ref="fileInput" @change="fileSelected = $refs.fileInput.files[0]">
+          <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+          <p class="text-gray-500">Glissez votre fichier ici ou cliquez pour sélectionner</p>
+          <p class="text-xs text-gray-400 mt-1">Format acceptés: .xlsx, .xls, .csv</p>
+          <p class="text-xs text-gray-400" x-show="fileSelected" x-text="'Fichier: ' + fileSelected.name"></p>
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
+        <select name="classId" required id="classSelect" class="w-full px-3 py-2 border rounded-lg">
+          <option value="">Sélectionner une classe</option>
+          @each(classObj in classes)
+          <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+          @end
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière *</label>
+        <select name="subjectId" required id="subjectSelect" class="w-full px-3 py-2 border rounded-lg" disabled>
+          <option value="">Sélectionnez d'abord une classe</option>
+        </select>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre *</label>
+          <select name="term" required class="w-full px-3 py-2 border rounded-lg">
+            <option value="T1">Trimestre 1</option>
+            <option value="T2">Trimestre 2</option>
+            <option value="T3">Trimestre 3</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type examen *</label>
+          <select name="examType" required class="w-full px-3 py-2 border rounded-lg">
+            <option value="Composition">Composition</option>
+            <option value="Interrogation">Interrogation</option>
+            <option value="Devoir">Devoir</option>
+            <option value="Projet">Projet</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Date examen *</label>
+        <input type="date" name="examDate" required class="w-full px-3 py-2 border rounded-lg">
+      </div>
+      
+      <div class="flex gap-3">
+        <button type="submit" :disabled="loading"
+                class="flex-1 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Importer les notes
+        </button>
+        <button type="button" onclick="previewFile()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Aperçu
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Instructions -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Format du fichier</h3>
+      <ul class="text-sm space-y-2">
+        <li><strong>Colonne A:</strong> Matricule de l'élève</li>
+        <li><strong>Colonne B:</strong> Note /20</li>
+        <li><strong>Colonne C:</strong> Appréciation (optionnel)</li>
+      </ul>
+    </div>
+    
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+      <p class="text-sm flex gap-2">
+        <i class="fas fa-info-circle text-yellow-600"></i>
+        <span>Le fichier doit contenir les notes pour TOUS les élèves de la classe sélectionnée. Les notes manquantes seront ignorées.</span>
+      </p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Exemple de ligne</h3>
+      <div class="border rounded-lg overflow-hidden">
+        <table class="w-full text-xs">
+          <thead class="bg-gray-100">
+            <tr><th class="p-2">Matricule</th><th class="p-2">Note</th><th class="p-2">Appréciation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="p-2 font-mono">STU-2024-001</td><td class="p-2">15.5</td><td class="p-2">Bon travail</td></tr>
+            <tr><td class="p-2 font-mono">STU-2024-002</td><td class="p-2">12</td><td class="p-2"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Aperçu des données -->
+<div id="previewModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+    <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+      <h3 class="font-bold text-lg">Aperçu des données</h3>
+      <button onclick="closePreview()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="p-4 overflow-y-auto" id="previewContent">
+      <!-- Contenu dynamique -->
+    </div>
+  </div>
+</div>
+
+<script>
+  let fileData = null
+  
+  // Charger les matières
+  document.getElementById('classSelect')?.addEventListener('change', async () => {
+    const classId = document.getElementById('classSelect').value
+    if (!classId) return
+    
+    const res = await fetch(`/api/classes/${classId}/subjects`)
+    const data = await res.json()
+    
+    const subjectSelect = document.getElementById('subjectSelect')
+    subjectSelect.innerHTML = '<option value="">Sélectionner une matière</option>'
+    if (data.subjects && data.subjects.length > 0) {
+      data.subjects.forEach(subject => {
+        subjectSelect.innerHTML += `<option value="${subject.subject_id}">${subject.subject_name}</option>`
+      })
+      subjectSelect.disabled = false
+    } else {
+      subjectSelect.innerHTML = '<option value="">Aucune matière assignée</option>'
+      subjectSelect.disabled = true
+    }
+  })
+  
+  function handleDrop(e) {
+    const file = e.dataTransfer.files[0]
+    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv'))) {
+      const fileInput = document.querySelector('input[type="file"]')
+      const dt = new DataTransfer()
+      dt.items.add(file)
+      fileInput.files = dt.files
+      // Déclencher l'événement change
+      const event = new Event('change', { bubbles: true })
+      fileInput.dispatchEvent(event)
+    }
+  }
+  
+  async function previewFile() {
+    const fileInput = document.querySelector('input[type="file"]')
+    if (!fileInput.files || !fileInput.files[0]) {
+      alert('Veuillez sélectionner un fichier')
+      return
+    }
+    
+    const formData = new FormData()
+    formData.append('file', fileInput.files[0])
+    
+    const res = await fetch('/api/grades/bulk/preview', {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
+      body: formData
+    })
+    const data = await res.json()
+    
+    const modal = document.getElementById('previewModal')
+    const content = document.getElementById('previewContent')
+    
+    if (data.data && data.data.length > 0) {
+      let html = `
+        <div class="table-responsive">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr><th class="p-2">Matricule</th><th class="p-2">Nom</th><th class="p-2">Note</th><th class="p-2">Appréciation</th></tr>
+            </thead>
+            <tbody>
+      `
+      data.data.forEach(row => {
+        html += `<tr><td class="p-2 font-mono">${row.matricule}</td><td class="p-2">${row.nom || '-'}</td><td class="p-2 font-bold">${row.note}</td><td class="p-2">${row.appreciation || '-'}</td></tr>`
+      })
+      html += `</tbody></table></div>`
+      content.innerHTML = html
+    } else {
+      content.innerHTML = '<p class="text-center text-gray-500 py-8">Aucune donnée valide trouvée</p>'
+    }
+    
+    modal.classList.remove('hidden')
+    modal.classList.add('flex')
+  }
+  
+  function closePreview() {
+    const modal = document.getElementById('previewModal')
+    modal.classList.add('hidden')
+    modal.classList.remove('flex')
+  }
+  
+  async function submitForm() {
+    const form = document.getElementById('uploadForm')
+    const formData = new FormData(form)
+    
+    const res = await fetch('/api/grades/bulk/import', {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
+      body: formData
+    })
+    const data = await res.json()
+    
+    if (data.success) {
+      alert(`${data.imported} note(s) importée(s) avec succès. ${data.errors || 0} erreur(s).`)
+      if (data.errors > 0) {
+        console.log(data.errorDetails)
+      }
+      window.location.href = '/academic/grades'
+    } else {
+      alert('Erreur: ' + data.message)
+    }
+  }
+  
+  // Date par défaut
+  document.querySelector('input[type="date"]').value = new Date().toISOString().split('T')[0]
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,193 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Relevé de présence - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Relevé de présence{{# /section }}
+{{# section('dashboardSubtitle') }}Consultez les présences de vos classes{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/teacher/attendance/mark" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-check-circle mr-2"></i> Marquer présences
+  </a>
+  <button onclick="exportAttendance()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.totalClasses || 0 }}</p>
+    <p class="text-sm text-gray-500">Classes</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.avgAttendance || 0 }}%</p>
+    <p class="text-sm text-gray-500">Présence moyenne</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-red-600">{{ stats.totalAbsences || 0 }}</p>
+    <p class="text-sm text-gray-500">Absences totales</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.totalLates || 0 }}</p>
+    <p class="text-sm text-gray-500">Retards</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+      <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        @each(classObj in classes)
+        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Liste des présences par classe -->
+<div class="space-y-4">
+  @each(classAttendance in attendanceData)
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white">{{ classAttendance.className }}</h3>
+        <div class="flex gap-3">
+          <span class="text-sm text-white bg-white/20 px-2 py-1 rounded">
+            <i class="fas fa-calendar mr-1"></i> {{ classAttendance.period.startDate }} - {{ classAttendance.period.endDate }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="p-4">
+      <!-- Statistiques rapides -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-2xl font-bold text-green-600">{{ classAttendance.presentRate }}%</p>
+          <p class="text-xs text-gray-500">Présents</p>
+        </div>
+        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-2xl font-bold text-red-600">{{ classAttendance.absentRate }}%</p>
+          <p class="text-xs text-gray-500">Absents</p>
+        </div>
+        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-2xl font-bold text-yellow-600">{{ classAttendance.lateRate }}%</p>
+          <p class="text-xs text-gray-500">Retards</p>
+        </div>
+      </div>
+      
+      <!-- Tableau des présences -->
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-3 py-2 text-left">Élève</th>
+              <th class="px-3 py-2 text-center">Présents</th>
+              <th class="px-3 py-2 text-center">Absents</th>
+              <th class="px-3 py-2 text-center">Retards</th>
+              <th class="px-3 py-2 text-center">Taux</th>
+              <th class="px-3 py-2 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(student in classAttendance.students)
+            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-3 py-2">
+                <span class="font-medium">{{ student.name }}</span><br>
+                <span class="text-xs text-gray-500">{{ student.registrationNumber }}</span>
+               </td>
+              <td class="px-3 py-2 text-center text-green-600 font-medium">{{ student.present }}</td>
+              <td class="px-3 py-2 text-center text-red-600">{{ student.absent }}</td>
+              <td class="px-3 py-2 text-center text-yellow-600">{{ student.late }}</td>
+              <td class="px-3 py-2 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                    <div class="bg-green-500 rounded-full h-1.5" style="width: {{ student.rate }}%"></div>
+                  </div>
+                  <span class="text-xs">{{ student.rate }}%</span>
+                </div>
+               </td>
+              <td class="px-3 py-2 text-center">
+                <a href="/teacher/attendance/student/{{ student.id }}" class="text-primary text-sm hover:underline">
+                  <i class="fas fa-chart-line"></i>
+                </a>
+              </td>
+             </tr>
+            @end
+          </tbody>
+         </table>
+      </div>
+    </div>
+  </div>
+  @eachelse
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+    <i class="fas fa-calendar-check text-5xl text-gray-400 mb-3"></i>
+    <p class="text-gray-500">Aucune donnée de présence trouvée</p>
+    <a href="/teacher/attendance/mark" class="mt-3 inline-block text-primary hover:underline">
+      Commencer à marquer les présences
+    </a>
+  </div>
+  @end
+</div>
+
+<script>
+  const filterClass = document.getElementById('filterClass')
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  // Dates par défaut (ce mois)
+  const today = new Date()
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+  startDate.value = firstDay.toISOString().split('T')[0]
+  endDate.value = today.toISOString().split('T')[0]
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterClass.value) params.set('class_id', filterClass.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    window.location.href = `/teacher/attendance?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/teacher/attendance'
+  })
+  
+  function exportAttendance() {
+    const params = new URLSearchParams()
+    if (filterClass.value) params.set('class_id', filterClass.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    window.location.href = `/api/teacher/attendance/export?${params.toString()}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

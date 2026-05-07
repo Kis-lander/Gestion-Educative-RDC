@@ -1,0 +1,153 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Rapport par matière - {{ subject.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Rapport par matière{{# /section }}
+{{# section('dashboardSubtitle') }}{{ subject.name }} - {{ term }} {{ academicYear }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    <i class="fas fa-file-pdf mr-2"></i> PDF
+  </button>
+  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-file-excel mr-2"></i> Excel
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Moyenne générale</p>
+    <p class="text-3xl font-bold">{{ stats.average }}/20</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Meilleure note</p>
+    <p class="text-3xl font-bold">{{ stats.best }}/20</p>
+  </div>
+  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Note la plus basse</p>
+    <p class="text-3xl font-bold">{{ stats.worst }}/20</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Taux réussite</p>
+    <p class="text-3xl font-bold">{{ stats.successRate }}%</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Performance par classe</h3>
+    <canvas id="classSubjectChart" height="200"></canvas>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Distribution des notes</h3>
+    <canvas id="subjectDistChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Performances par enseignant -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <h3 class="font-semibold mb-3">Performance par enseignant</h3>
+  <canvas id="teacherChart" height="200"></canvas>
+</div>
+
+<!-- Tableau détaillé par classe -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail par classe</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Classe</th>
+          <th class="px-4 py-2 text-center">Effectif</th>
+          <th class="px-4 py-2 text-center">Moyenne</th>
+          <th class="px-4 py-2 text-center">Meilleure note</th>
+          <th class="px-4 py-2 text-center">Taux réussite</th>
+          <th class="px-4 py-2 text-center">Enseignant</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(classData in classDetails)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2 font-medium">{{ classData.className }}</td>
+          <td class="px-4 py-2 text-center">{{ classData.studentsCount }}</td>
+          <td class="px-4 py-2 text-center font-bold {{ classData.average >= 15 ? 'text-green-600' : (classData.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ classData.average }}/20
+          </td>
+          <td class="px-4 py-2 text-center text-green-600">{{ classData.best }}/20</td>
+          <td class="px-4 py-2 text-center">{{ classData.successRate }}%</td>
+          <td class="px-4 py-2">{{ classData.teacherName }}</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Top élèves -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Top 10 des meilleurs élèves</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+    @each(top in topStudents)
+    <div class="flex justify-between items-center p-2 border-b">
+      <div>
+        <span class="font-bold text-primary mr-2">{{ top.rank }}</span>
+        <span>{{ top.name }}</span>
+        <span class="text-xs text-gray-500 ml-2">({{ top.className }})</span>
+      </div>
+      <span class="font-bold text-green-600">{{ top.grade }}/20</span>
+    </div>
+    @end
+  </div>
+</div>
+
+<script>
+  let classChart, distChart, teacherChart
+  
+  function renderCharts() {
+    const classCtx = document.getElementById('classSubjectChart').getContext('2d')
+    classChart = new Chart(classCtx, {
+      type: 'bar',
+      data: {
+        labels: {{ classLabels|json_encode|raw }},
+        datasets: [{ label: 'Moyenne /20', data: {{ classValues|json_encode|raw }}, backgroundColor: '#2563eb', borderRadius: 8 }]
+      },
+      options: { responsive: true, scales: { y: { max: 20 } } }
+    })
+    
+    const distCtx = document.getElementById('subjectDistChart').getContext('2d')
+    distChart = new Chart(distCtx, {
+      type: 'bar',
+      data: {
+        labels: ['0-5', '5-10', '10-12', '12-14', '14-16', '16-18', '18-20'],
+        datasets: [{ label: "Nombre d'élèves", data: {{ distData|json_encode|raw }}, backgroundColor: '#16a34a', borderRadius: 8 }]
+      },
+      options: { responsive: true }
+    })
+    
+    const teacherCtx = document.getElementById('teacherChart').getContext('2d')
+    teacherChart = new Chart(teacherCtx, {
+      type: 'bar',
+      data: {
+        labels: {{ teacherLabels|json_encode|raw }},
+        datasets: [{ label: 'Moyenne /20', data: {{ teacherValues|json_encode|raw }}, backgroundColor: '#f59e0b', borderRadius: 8 }]
+      },
+      options: { responsive: true, scales: { y: { max: 20 } } }
+    })
+  }
+  
+  function exportReport(format) {
+    window.location.href = `/api/reports/academic/subject/{{ subject.id }}/export?format=${format}&term={{ term }}&year={{ academicYear }}`
+  }
+  
+  renderCharts()
+</script>
+{{# /section }}
+
+{{# /layout }}

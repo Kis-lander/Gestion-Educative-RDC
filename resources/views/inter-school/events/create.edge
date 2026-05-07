@@ -1,0 +1,156 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Créer un événement - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Créer un événement{{# /section }}
+{{# section('dashboardSubtitle') }}Organisez un événement inter-écoles{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/inter-school/events/create" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre de l'événement *</label>
+          <input type="text" name="title" required 
+                 class="w-full px-3 py-2 border rounded-lg"
+                 placeholder="Ex: Olympiades de Mathématiques 2024">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'événement *</label>
+          <select name="eventType" required class="w-full px-3 py-2 border rounded-lg">
+            <option value="seminar">Séminaire</option>
+            <option value="workshop">Atelier / Formation</option>
+            <option value="competition">Compétition académique</option>
+            <option value="sports">Compétition sportive</option>
+            <option value="cultural">Festival culturel</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Description *</label>
+          <textarea name="description" required rows="4" 
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Décrivez l'événement, son objectif, le programme..."></textarea>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début *</label>
+            <input type="date" name="startDate" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
+            <input type="date" name="endDate" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Lieu *</label>
+          <input type="text" name="location" required 
+                 class="w-full px-3 py-2 border rounded-lg"
+                 placeholder="Adresse complète du lieu">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Province</label>
+          <select name="province" class="w-full px-3 py-2 border rounded-lg">
+            <option value="Kinshasa">Kinshasa</option>
+            <option value="Kongo Central">Kongo Central</option>
+            <option value="Haut-Katanga">Haut-Katanga</option>
+            <option value="Nord-Kivu">Nord-Kivu</option>
+            <option value="Sud-Kivu">Sud-Kivu</option>
+          </select>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre maximum de participants</label>
+            <input type="number" name="maxParticipants" value="100" min="1" max="10000"
+                   class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Frais de participation</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <input type="number" name="participationFee" step="0.01" min="0" value="0" 
+                     class="w-full pl-8 pr-3 py-2 border rounded-lg">
+            </div>
+            <p class="text-xs text-gray-500 mt-1">0 = gratuit</p>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Informations supplémentaires</label>
+          <textarea name="additionalInfo" rows="3" 
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Hébergement, repas, contact..."></textarea>
+        </div>
+        
+        <div>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="isPublic" checked class="w-4 h-4">
+            <span>Rendre l'événement public (visible par toutes les écoles)</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Créer l'événement
+        </button>
+        <a href="/inter-school/events" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Informations -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Conseils d'organisation</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Prévoyez suffisamment de temps</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Communiquez les détails importants</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Anticipez les besoins logistiques</li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Types d'événements</h3>
+      <div class="space-y-1 text-sm">
+        <p>📚 Séminaire: Conférences, présentations</p>
+        <p>🛠️ Atelier: Formation pratique, travaux de groupe</p>
+        <p>🏆 Compétition: Concours, olympiades</p>
+        <p>⚽ Sportif: Tournois, rencontres sportives</p>
+        <p>🎭 Culturel: Spectacles, expositions</p>
+      </div>
+    </div>
+    
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+      <p class="text-sm flex gap-2">
+        <i class="fas fa-info-circle text-yellow-600"></i>
+        <span>Les événements publics seront visibles par toutes les écoles de la plateforme.</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dates par défaut
+  const today = new Date()
+  const nextMonth = new Date()
+  nextMonth.setMonth(today.getMonth() + 1)
+  document.querySelector('input[name="startDate"]').value = today.toISOString().split('T')[0]
+  document.querySelector('input[name="endDate"]').value = nextMonth.toISOString().split('T')[0]
+</script>
+{{# /section }}
+
+{{# /layout }}

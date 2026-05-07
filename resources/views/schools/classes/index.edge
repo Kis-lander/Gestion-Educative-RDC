@@ -1,0 +1,199 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Gestion des classes - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Classes{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez les classes de l'établissement{{# /section }}
+
+{{# section('actions') }}
+<a href="/schools/classes/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+  <i class="fas fa-plus mr-2"></i> Nouvelle classe
+</a>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
+    <p class="text-sm text-gray-500">Total classes</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.active || 0 }}</p>
+    <p class="text-sm text-gray-500">Classes actives</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.averageSize || 0 }}</p>
+    <p class="text-sm text-gray-500">Moyenne/ classe</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.occupancyRate || 0 }}%</p>
+    <p class="text-sm text-gray-500">Taux occupation</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres et recherche -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
+      <select id="filterLevel" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="Maternel">Maternel</option>
+        <option value="Primaire">Primaire</option>
+        <option value="Secondaire">Secondaire</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
+      <select id="filterShift" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        <option value="morning">Matin</option>
+        <option value="afternoon">Après-midi</option>
+        <option value="evening">Soir</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input type="text" id="searchInput" placeholder="Nom de la classe..." 
+               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+      </div>
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-filter mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Grille des classes -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="classesGrid">
+  @each(classObj in classes)
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover class-card" 
+       data-level="{{ classObj.level }}" 
+       data-shift="{{ classObj.shift }}"
+       data-name="{{ classObj.name.toLowerCase() }}">
+    <div class="bg-gradient-to-r from-primary to-blue-700 px-4 py-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-lg">{{ classObj.name }}</h3>
+        <span class="text-xs bg-white/20 text-white px-2 py-1 rounded">
+          {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'Après-midi' : 'Soir') }}
+        </span>
+      </div>
+    </div>
+    <div class="p-4">
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-xs text-gray-500">Niveau</p>
+          <p class="font-semibold">{{ classObj.level }} - {{ classObj.gradeLevel }}</p>
+        </div>
+        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p class="text-xs text-gray-500">Élèves</p>
+          <p class="font-semibold">{{ classObj.studentsCount || 0 }}/{{ classObj.maxCapacity }}</p>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <div class="flex justify-between text-xs mb-1">
+          <span>Taux occupation</span>
+          <span>{{ classObj.occupancyRate || 0 }}%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-1.5">
+          <div class="bg-primary rounded-full h-1.5" style="width: {{ classObj.occupancyRate || 0 }}%"></div>
+        </div>
+      </div>
+      
+      <div class="flex justify-between text-sm mb-3">
+        <span class="text-gray-500">Enseignant:</span>
+        <span class="font-medium">{{ classObj.teacherName || 'Non assigné' }}</span>
+      </div>
+      
+      <div class="flex gap-2 mt-3 pt-2 border-t dark:border-gray-700">
+        <a href="/schools/classes/{{ classObj.id }}" class="flex-1 text-center px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-blue-700">
+          <i class="fas fa-eye mr-1"></i> Détails
+        </a>
+        <a href="/schools/classes/{{ classObj.id }}/students" class="flex-1 text-center px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+          <i class="fas fa-users mr-1"></i> Élèves
+        </a>
+        <a href="/schools/classes/{{ classObj.id }}/edit" class="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+          <i class="fas fa-edit"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  @eachelse
+  <div class="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+    <i class="fas fa-chalkboard text-5xl text-gray-400 mb-3"></i>
+    <p class="text-gray-500">Aucune classe trouvée</p>
+    <a href="/schools/classes/create" class="mt-3 inline-block text-primary hover:underline">
+      Créer votre première classe
+    </a>
+  </div>
+  @end
+</div>
+
+@include('partials/pagination', { pagination: pagination, url: '/schools/classes' })
+
+<script>
+  const filterLevel = document.getElementById('filterLevel')
+  const filterShift = document.getElementById('filterShift')
+  const searchInput = document.getElementById('searchInput')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  const classesGrid = document.getElementById('classesGrid')
+  
+  function filterClasses() {
+    const level = filterLevel.value
+    const shift = filterShift.value
+    const search = searchInput.value.toLowerCase()
+    
+    const cards = classesGrid.querySelectorAll('.class-card')
+    let visibleCount = 0
+    
+    cards.forEach(card => {
+      let show = true
+      
+      if (level && card.dataset.level !== level) show = false
+      if (shift && card.dataset.shift !== shift) show = false
+      if (search && !card.dataset.name.includes(search)) show = false
+      
+      card.style.display = show ? '' : 'none'
+      if (show) visibleCount++
+    })
+    
+    // Afficher message si aucun résultat
+    let noResultMsg = classesGrid.querySelector('.no-result-message')
+    if (visibleCount === 0 && cards.length > 0) {
+      if (!noResultMsg) {
+        noResultMsg = document.createElement('div')
+        noResultMsg.className = 'col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl no-result-message'
+        noResultMsg.innerHTML = `
+          <i class="fas fa-search text-4xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500">Aucune classe ne correspond aux critères</p>
+        `
+        classesGrid.appendChild(noResultMsg)
+      }
+    } else if (noResultMsg) {
+      noResultMsg.remove()
+    }
+  }
+  
+  applyBtn.addEventListener('click', filterClasses)
+  resetBtn.addEventListener('click', () => {
+    filterLevel.value = ''
+    filterShift.value = ''
+    searchInput.value = ''
+    filterClasses()
+  })
+  searchInput.addEventListener('keyup', () => filterClasses())
+</script>
+{{# /section }}
+
+{{# /layout }}

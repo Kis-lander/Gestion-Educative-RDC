@@ -1,0 +1,211 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Historique des paiements - {{ child.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Historique des paiements{{# /section }}
+{{# section('dashboardSubtitle') }}{{ child.name }} - Toutes les transactions{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="exportHistory()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.totalTransactions || 0 }}</p>
+    <p class="text-sm text-gray-500">Transactions</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ formatCurrency(stats.totalAmount, 'USD') }}</p>
+    <p class="text-sm text-gray-500">Montant total</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ formatCurrency(stats.averagePayment, 'USD') }}</p>
+    <p class="text-sm text-gray-500">Paiement moyen</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.worstYear || 0 }}</p>
+    <p class="text-sm text-gray-500">Année max paiements</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type de frais</label>
+      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="Inscription">Inscription</option>
+        <option value="Minerval">Minerval</option>
+        <option value="Assurance">Assurance</option>
+        <option value="Transport">Transport</option>
+        <option value="Cantine">Cantine</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Mode</label>
+      <select id="filterMethod" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="cash">Espèces</option>
+        <option value="bank_transfer">Virement</option>
+        <option value="mobile_money">Mobile Money</option>
+        <option value="check">Chèque</option>
+      </select>
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau historique -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3">Date</th>
+          <th class="px-4 py-3">Reçu n°</th>
+          <th class="px-4 py-3">Type</th>
+          <th class="px-4 py-3">Description</th>
+          <th class="px-4 py-3 text-right">Montant</th>
+          <th class="px-4 py-3">Mode</th>
+          <th class="px-4 py-3">Référence</th>
+          <th class="px-4 py-3 text-center">Reçu</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableBody">
+        @each(payment in payments)
+        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-3">{{ formatDateTime(payment.date) }}</td>
+          <td class="px-4 py-3 font-mono text-xs">{{ payment.receiptNumber }}</td>
+          <td class="px-4 py-3">{{ payment.feeType }}</td>
+          <td class="px-4 py-3 max-w-xs truncate">{{ payment.description || '-' }}</td>
+          <td class="px-4 py-3 text-right font-bold text-green-600">{{ formatCurrency(payment.amount, 'USD') }}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded-full text-xs
+              {{ payment.method === 'cash' ? 'bg-green-100 text-green-800' : 
+                 (payment.method === 'bank_transfer' ? 'bg-blue-100 text-blue-800' : 
+                 (payment.method === 'mobile_money' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')) }}">
+              {{ payment.methodLabel }}
+            </span>
+          </td>
+          <td class="px-4 py-3 font-mono text-xs">{{ payment.referenceNumber || '-' }}</td>
+          <td class="px-4 py-3 text-center">
+            <button onclick="viewReceipt('{{ payment.id }}')" class="text-primary hover:underline">
+              <i class="fas fa-print"></i>
+            </button>
+          </td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="8" class="text-center py-12 text-gray-500">
+            <i class="fas fa-history text-4xl mb-2 block"></i>
+            Aucun paiement trouvé pour cette période
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/parent/payments/history' })
+</div>
+
+<!-- Graphique annuel -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Récapitulatif annuel</h3>
+  <canvas id="annualChart" height="200"></canvas>
+</div>
+
+<script>
+  let annualChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('annualChart').getContext('2d')
+    annualChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{ chartLabels|json_encode|raw }},
+        datasets: [{
+          label: 'Montant payé ($)',
+          data: {{ chartValues|json_encode|raw }},
+          backgroundColor: '#2563eb',
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: { y: { beginAtZero: true } }
+      }
+    })
+  }
+  
+  function viewReceipt(paymentId) {
+    window.open(`/parent/payments/receipt/${paymentId}`, '_blank', 'width=800,height=600')
+  }
+  
+  function exportHistory() {
+    const childId = '{{ child.id }}'
+    const startDate = document.getElementById('startDate').value
+    const endDate = document.getElementById('endDate').value
+    const type = document.getElementById('filterType').value
+    const method = document.getElementById('filterMethod').value
+    window.location.href = `/api/parent/payments/history/export?child_id=${childId}&start_date=${startDate}&end_date=${endDate}&type=${type}&method=${method}`
+  }
+  
+  // Filtres
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const filterType = document.getElementById('filterType')
+  const filterMethod = document.getElementById('filterMethod')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  // Dates par défaut (6 derniers mois)
+  const today = new Date()
+  const sixMonthsAgo = new Date()
+  sixMonthsAgo.setMonth(today.getMonth() - 6)
+  startDate.value = sixMonthsAgo.toISOString().split('T')[0]
+  endDate.value = today.toISOString().split('T')[0]
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    params.set('child_id', '{{ child.id }}')
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    if (filterType.value) params.set('type', filterType.value)
+    if (filterMethod.value) params.set('method', filterMethod.value)
+    window.location.href = `/parent/payments/history?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = `/parent/payments/history?child_id={{ child.id }}`
+  })
+  
+  renderChart()
+</script>
+{{# /section }}
+
+{{# /layout }}

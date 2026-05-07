@@ -1,0 +1,273 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Présences de {{ student.name }} - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Présences de l'élève{{# /section }}
+{{# section('dashboardSubtitle') }}{{ student.name }} - {{ student.className }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="printStudentReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+  <button onclick="exportStudentAttendance()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.present }}</p>
+    <p class="text-sm text-gray-500">Présents</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-red-600">{{ stats.absent }}</p>
+    <p class="text-sm text-gray-500">Absents</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.late }}</p>
+    <p class="text-sm text-gray-500">Retards</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.rate || 0 }}%</p>
+    <p class="text-sm text-gray-500">Taux présence</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Calendrier des présences -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Calendrier mensuel</h3>
+    <div class="text-center mb-2">
+      <div class="flex justify-between items-center">
+        <button onclick="prevMonth()" class="px-2 py-1 border rounded">&lt;</button>
+        <span id="calendarMonth" class="font-medium"></span>
+        <button onclick="nextMonth()" class="px-2 py-1 border rounded">&gt;</button>
+      </div>
+    </div>
+    <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Évolution hebdomadaire</h3>
+    <canvas id="weeklyChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Détail des absences -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail des absences et retards</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Date</th>
+          <th class="px-4 py-2">Statut</th>
+          <th class="px-4 py-2">Justification</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(record in attendanceRecords)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2">{{ formatDate(record.date) }}</td>
+          <td class="px-4 py-2">
+            <span class="px-2 py-1 rounded-full text-xs
+              {{ record.status === 'present' ? 'bg-green-100 text-green-800' : 
+                 (record.status === 'absent' ? 'bg-red-100 text-red-800' : 
+                 (record.status === 'late' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800')) }}">
+              {{ record.status === 'present' ? 'Présent' : 
+                 (record.status === 'absent' ? 'Absent' : 
+                 (record.status === 'late' ? 'Retard' : 'Excusé')) }}
+            </span>
+          </td>
+          <td class="px-4 py-2">{{ record.reason || '-' }}</td>
+        </tr>
+        @eachelse
+        <tr><td colspan="3" class="text-center py-8">Aucun enregistrement pour cette période</td></tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let currentDate = new Date()
+  let attendanceData = []
+  let weeklyChart
+  
+  async function loadAttendance() {
+    const studentId = {{ student.id }}
+    const startDate = document.getElementById('startDate').value
+    const endDate = document.getElementById('endDate').value
+    
+    const params = new URLSearchParams()
+    if (startDate) params.append('start_date', startDate)
+    if (endDate) params.append('end_date', endDate)
+    
+    const res = await fetch(`/api/teacher/attendance/student/${studentId}?${params.toString()}`)
+    const data = await res.json()
+    attendanceData = data.attendances || []
+    
+    renderCalendar()
+    renderWeeklyChart()
+  }
+  
+  function renderCalendar() {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
+    document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`
+    
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const startDayOfWeek = firstDay.getDay()
+    const daysInMonth = lastDay.getDate()
+    
+    // Créer un map des présences par date
+    const attendanceMap = {}
+    attendanceData.forEach(att => {
+      const dateKey = att.date
+      attendanceMap[dateKey] = att.status
+    })
+    
+    const calendarGrid = document.getElementById('calendarGrid')
+    calendarGrid.innerHTML = ''
+    
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+    dayNames.forEach(day => {
+      const dayHeader = document.createElement('div')
+      dayHeader.className = 'p-1 font-medium'
+      dayHeader.textContent = day
+      calendarGrid.appendChild(dayHeader)
+    })
+    
+    for (let i = 0; i < startDayOfWeek; i++) {
+      const emptyDiv = document.createElement('div')
+      emptyDiv.className = 'p-1 bg-gray-50 rounded'
+      calendarGrid.appendChild(emptyDiv)
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const status = attendanceMap[dateStr]
+      
+      const dayDiv = document.createElement('div')
+      dayDiv.className = `p-1 rounded text-center cursor-pointer hover:bg-gray-100 ${status ? 'font-bold' : ''}`
+      if (status === 'present') dayDiv.className += ' bg-green-100 text-green-800'
+      else if (status === 'absent') dayDiv.className += ' bg-red-100 text-red-800'
+      else if (status === 'late') dayDiv.className += ' bg-yellow-100 text-yellow-800'
+      else if (status === 'excused') dayDiv.className += ' bg-blue-100 text-blue-800'
+      
+      dayDiv.textContent = day
+      dayDiv.title = status ? `Statut: ${status}` : 'Non renseigné'
+      calendarGrid.appendChild(dayDiv)
+    }
+  }
+  
+  function renderWeeklyChart() {
+    const ctx = document.getElementById('weeklyChart').getContext('2d')
+    if (weeklyChart) weeklyChart.destroy()
+    
+    // Regrouper par semaine
+    const weeklyData = {}
+    attendanceData.forEach(att => {
+      const week = getWeekNumber(new Date(att.date))
+      if (!weeklyData[week]) weeklyData[week] = { present: 0, absent: 0, late: 0, total: 0 }
+      weeklyData[week][att.status]++
+      weeklyData[week].total++
+    })
+    
+    const weeks = Object.keys(weeklyData).sort()
+    weeklyChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: weeks.map(w => `Semaine ${w}`),
+        datasets: [
+          { label: 'Présents', data: weeks.map(w => weeklyData[w]?.present || 0), borderColor: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.1)', fill: true },
+          { label: 'Absents', data: weeks.map(w => weeklyData[w]?.absent || 0), borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.1)', fill: true },
+          { label: 'Retards', data: weeks.map(w => weeklyData[w]?.late || 0), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+  }
+  
+  function getWeekNumber(date) {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
+    const week1 = new Date(d.getFullYear(), 0, 4)
+    return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7)
+  }
+  
+  function prevMonth() {
+    currentDate.setMonth(currentDate.getMonth() - 1)
+    loadAttendance()
+  }
+  
+  function nextMonth() {
+    currentDate.setMonth(currentDate.getMonth() + 1)
+    loadAttendance()
+  }
+  
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  // Dates par défaut (ce mois)
+  const today = new Date()
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+  startDate.value = firstDay.toISOString().split('T')[0]
+  endDate.value = today.toISOString().split('T')[0]
+  
+  applyBtn.addEventListener('click', () => loadAttendance())
+  resetBtn.addEventListener('click', () => {
+    startDate.value = firstDay.toISOString().split('T')[0]
+    endDate.value = today.toISOString().split('T')[0]
+    loadAttendance()
+  })
+  
+  function printStudentReport() {
+    window.print()
+  }
+  
+  function exportStudentAttendance() {
+    const start = startDate.value
+    const end = endDate.value
+    window.location.href = `/api/teacher/attendance/student/{{ student.id }}/export?start_date=${start}&end_date=${end}`
+  }
+  
+  loadAttendance()
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,152 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Mon profil - {{ student.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Mon profil{{# /section }}
+{{# section('dashboardSubtitle') }}Informations personnelles et scolaires{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/student/profile/edit" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-edit mr-2"></i> Modifier
+  </a>
+  <button onclick="printProfile()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Photo et identité -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
+    <div class="w-32 h-32 rounded-full bg-primary flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
+      {{ student.name.charAt(0) }}
+    </div>
+    <h2 class="text-xl font-bold">{{ student.name }}</h2>
+    <p class="text-gray-500">{{ student.className }}</p>
+    <p class="text-sm text-gray-400 font-mono mt-1">{{ student.registrationNumber }}</p>
+    
+    <div class="mt-4 pt-3 border-t">
+      <div class="flex justify-between text-sm">
+        <span class="text-gray-500">Moyenne générale</span>
+        <span class="font-bold {{ stats.averageGrade >= 15 ? 'text-green-600' : (stats.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+          {{ stats.averageGrade }}/20
+        </span>
+      </div>
+      <div class="flex justify-between text-sm mt-1">
+        <span class="text-gray-500">Classement</span>
+        <span class="font-bold">{{ stats.rank }}/{{ stats.totalStudents }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Informations personnelles -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold border-b pb-2 mb-3">Informations personnelles</h3>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Nom complet</span>
+        <span class="font-medium">{{ student.name }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Date de naissance</span>
+        <span>{{ student.birthDate || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Lieu de naissance</span>
+        <span>{{ student.birthPlace || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Nationalité</span>
+        <span>{{ student.nationality || 'Congolaise' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Genre</span>
+        <span>{{ student.gender === 'male' ? 'Masculin' : 'Féminin' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Adresse</span>
+        <span>{{ student.address || '-' }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Informations scolaires -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold border-b pb-2 mb-3">Informations scolaires</h3>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Établissement</span>
+        <span>{{ school.name }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Classe</span>
+        <span>{{ student.className }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Année académique</span>
+        <span>{{ currentYear }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Date d'inscription</span>
+        <span>{{ student.enrollmentDate || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Enseignant principal</span>
+        <span>{{ mainTeacher || '-' }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Informations parentales -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <h3 class="font-semibold border-b pb-2 mb-3">Contact parent / tuteur</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <p><span class="text-gray-500">Nom:</span> {{ parent.name || '-' }}</p>
+      <p class="mt-1"><span class="text-gray-500">Téléphone:</span> {{ parent.phone || '-' }}</p>
+    </div>
+    <div>
+      <p><span class="text-gray-500">Email:</span> {{ parent.email || '-' }}</p>
+      <p class="mt-1"><span class="text-gray-500">Relation:</span> {{ parent.relationship || '-' }}</p>
+    </div>
+  </div>
+  @if(student.medicalInfo)
+  <div class="mt-4 pt-3 border-t">
+    <p class="font-medium">Informations médicales</p>
+    <p class="text-sm text-gray-600 mt-1">{{ student.medicalInfo }}</p>
+  </div>
+  @endif
+</div>
+
+<!-- Options -->
+<div class="mt-6 flex flex-wrap gap-3">
+  <a href="/student/profile/change-password" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-key mr-2"></i> Changer mot de passe
+  </a>
+  <a href="/student/profile/preferences" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-bell mr-2"></i> Préférences notifications
+  </a>
+  <a href="/student/transfers/request" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-exchange-alt mr-2"></i> Demander transfert
+  </a>
+</div>
+
+<script>
+  function printProfile() {
+    window.print()
+  }
+</script>
+
+<style>
+  @media print {
+    .sidebar, header, footer, .actions, .no-print {
+      display: none !important;
+    }
+  }
+</style>
+{{# /section }}
+
+{{# /layout }}

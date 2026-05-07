@@ -1,0 +1,225 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Progression de l'élève - {{ student.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Progression scolaire{{# /section }}
+{{# section('dashboardSubtitle') }}{{ student.name }} - {{ student.className }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="printReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    <i class="fas fa-file-pdf mr-2"></i> PDF
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+  <!-- Info élève -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
+        {{ student.name.charAt(0) }}
+      </div>
+      <div>
+        <h3 class="font-bold text-lg">{{ student.name }}</h3>
+        <p class="text-sm text-gray-500">{{ student.className }} - {{ student.registrationNumber }}</p>
+      </div>
+    </div>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between"><span class="text-gray-500">Date naissance</span><span>{{ student.birthDate || '-' }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Tuteur</span><span>{{ student.parentName || '-' }}</span></div>
+    </div>
+  </div>
+  
+  <!-- Moyennes par trimestre -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold border-b pb-2 mb-3">Évolution trimestrielle</h3>
+    <div class="space-y-3">
+      <div>
+        <div class="flex justify-between text-sm mb-1">
+          <span>Trimestre 1</span>
+          <span class="font-bold {{ termAverages.t1 >= 15 ? 'text-green-600' : (termAverages.t1 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ termAverages.t1 }}/20
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-1.5">
+          <div class="bg-primary rounded-full h-1.5" style="width: {{ (termAverages.t1 / 20) * 100 }}%"></div>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between text-sm mb-1">
+          <span>Trimestre 2</span>
+          <span class="font-bold {{ termAverages.t2 >= 15 ? 'text-green-600' : (termAverages.t2 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ termAverages.t2 }}/20
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-1.5">
+          <div class="bg-primary rounded-full h-1.5" style="width: {{ (termAverages.t2 / 20) * 100 }}%"></div>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between text-sm mb-1">
+          <span>Trimestre 3</span>
+          <span class="font-bold {{ termAverages.t3 >= 15 ? 'text-green-600' : (termAverages.t3 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ termAverages.t3 }}/20
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-1.5">
+          <div class="bg-primary rounded-full h-1.5" style="width: {{ (termAverages.t3 / 20) * 100 }}%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Positionnement -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold border-b pb-2 mb-3">Positionnement</h3>
+    <div class="text-center">
+      <div class="text-4xl font-bold text-primary">{{ overallAverage }}/20</div>
+      <p class="text-sm text-gray-500 mt-1">Moyenne générale</p>
+      <div class="mt-3 pt-3 border-t">
+        <div class="flex justify-between text-sm">
+          <span>Rang dans la classe</span>
+          <span class="font-bold">{{ rank }}/{{ totalStudents }}</span>
+        </div>
+        <div class="flex justify-between text-sm mt-1">
+          <span>Écart avec la moyenne classe</span>
+          <span class="font-bold {{ diffFromClassAverage >= 0 ? 'text-green-600' : 'text-red-600' }}">
+            {{ diffFromClassAverage > 0 ? '+' : '' }}{{ diffFromClassAverage }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Graphique d'évolution par matière -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <h3 class="font-semibold mb-3">Évolution par matière</h3>
+  <canvas id="subjectEvolutionChart" height="250"></canvas>
+</div>
+
+<!-- Détail des notes par matière et trimestre -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail des performances par matière</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Matière</th>
+          <th class="px-4 py-2 text-center">T1</th>
+          <th class="px-4 py-2 text-center">T2</th>
+          <th class="px-4 py-2 text-center">T3</th>
+          <th class="px-4 py-2 text-center">Moyenne</th>
+          <th class="px-4 py-2 text-center">Progression</th>
+          <th class="px-4 py-2 text-left">Appréciation</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(subject in subjectDetails)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2 font-medium">{{ subject.name }} (Coeff {{ subject.coefficient }})</td>
+          <td class="px-4 py-2 text-center {{ subject.t1 >= 15 ? 'text-green-600' : (subject.t1 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ subject.t1 || '-' }}
+          </td>
+          <td class="px-4 py-2 text-center {{ subject.t2 >= 15 ? 'text-green-600' : (subject.t2 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ subject.t2 || '-' }}
+          </td>
+          <td class="px-4 py-2 text-center {{ subject.t3 >= 15 ? 'text-green-600' : (subject.t3 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ subject.t3 || '-' }}
+          </td>
+          <td class="px-4 py-2 text-center font-bold {{ subject.average >= 15 ? 'text-green-600' : (subject.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ subject.average }}/20
+          </td>
+          <td class="px-4 py-2 text-center">
+            <span class="{{ subject.trend > 0 ? 'text-green-600' : (subject.trend < 0 ? 'text-red-600' : 'text-gray-500') }}">
+              {{ subject.trend > 0 ? '+' : '' }}{{ subject.trend }} pts
+            </span>
+          </td>
+          <td class="px-4 py-2 text-gray-600">{{ subject.comment || '-' }}</td>
+        </tr>
+        @end
+      </tbody>
+      <tfoot class="bg-gray-50 dark:bg-gray-700 font-bold">
+        <tr>
+          <td class="px-4 py-2">MOYENNES TRIMESTRIELLES</td>
+          <td class="px-4 py-2 text-center">{{ termAverages.t1 }}/20</td>
+          <td class="px-4 py-2 text-center">{{ termAverages.t2 }}/20</td>
+          <td class="px-4 py-2 text-center">{{ termAverages.t3 }}/20</td>
+          <td class="px-4 py-2 text-center">{{ overallAverage }}/20</td>
+          <td class="px-4 py-2 text-center">
+            <span class="{{ termAverages.t3 - termAverages.t1 > 0 ? 'text-green-600' : 'text-red-600' }}">
+              {{ termAverages.t3 - termAverages.t1 > 0 ? '+' : '' }}{{ (termAverages.t3 - termAverages.t1).toFixed(1) }}
+            </span>
+          </td>
+          <td class="px-4 py-2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- Appréciation générale -->
+<div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+  <h4 class="font-semibold">Appréciation générale</h4>
+  <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">{{ appreciation || 'Élève sérieux et motivé. Continue sur cette lancée !' }}</p>
+</div>
+
+<!-- Points forts et axes d'amélioration -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+    <h4 class="font-semibold text-green-800">Points forts</h4>
+    <ul class="mt-2 space-y-1">
+      @each(strength in strengths)
+      <li class="text-sm flex items-center gap-2"><i class="fas fa-check-circle text-green-500"></i> {{ strength }}</li>
+      @end
+    </ul>
+  </div>
+  <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+    <h4 class="font-semibold text-yellow-800">Axes d'amélioration</h4>
+    <ul class="mt-2 space-y-1">
+      @each(improvement in improvements)
+      <li class="text-sm flex items-center gap-2"><i class="fas fa-arrow-right text-yellow-500"></i> {{ improvement }}</li>
+      @end
+    </ul>
+  </div>
+</div>
+
+<script>
+  let evolutionChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('subjectEvolutionChart').getContext('2d')
+    evolutionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Trimestre 1', 'Trimestre 2', 'Trimestre 3'],
+        datasets: {{ chartDatasets|json_encode|raw }}
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: { y: { max: 20, min: 0 } }
+      }
+    })
+  }
+  
+  function printReport() {
+    window.print()
+  }
+  
+  function exportReport(format) {
+    window.location.href = `/api/reports/academic/student/{{ student.id }}/export?format=${format}`
+  }
+  
+  renderChart()
+</script>
+{{# /section }}
+
+{{# /layout }}

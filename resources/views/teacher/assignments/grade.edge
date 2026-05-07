@@ -1,0 +1,115 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Noter soumission - {{ submission.studentName }}{{# /section }}
+
+{{# section('dashboardTitle') }}Noter la soumission{{# /section }}
+{{# section('dashboardSubtitle') }}{{ submission.studentName }} - {{ assignment.title }}{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire de notation -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/teacher/assignments/submissions/{{ submission.id }}/grade" x-data="{ loading: false, grade: {{ submission.grade || 0 }} }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="_method" value="PUT">
+      
+      <div class="space-y-4">
+        <!-- Info élève -->
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex justify-between items-center">
+          <div>
+            <p class="font-medium">{{ submission.studentName }}</p>
+            <p class="text-sm text-gray-500">{{ submission.registrationNumber }} - {{ assignment.className }}</p>
+          </div>
+          <span class="text-xs bg-gray-200 px-2 py-1 rounded">
+            Soumis le {{ formatDateTime(submission.submittedAt) }}
+          </span>
+        </div>
+        
+        <!-- Fichier soumis -->
+        @if(submission.attachmentUrl)
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Fichier soumis</label>
+          <a href="{{ submission.attachmentUrl }}" target="_blank" class="flex items-center gap-2 p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+            <i class="fas fa-file-alt text-blue-500"></i>
+            <span>Télécharger le fichier</span>
+          </a>
+        </div>
+        @endif
+        
+        <!-- Contenu de la soumission -->
+        @if(submission.submissionContent)
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu de la soumission</label>
+          <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg whitespace-pre-wrap">
+            {{ submission.submissionContent }}
+          </div>
+        </div>
+        @endif
+        
+        <!-- Notation -->
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Note / {{ assignment.maxPoints }} *</label>
+          <div class="flex items-center gap-3">
+            <input type="range" min="0" max="{{ assignment.maxPoints }}" step="0.5" x-model="grade"
+                   class="flex-1" id="gradeSlider">
+            <input type="number" name="grade" x-model="grade" step="0.5" min="0" max="{{ assignment.maxPoints }}" required
+                   class="w-24 px-3 py-2 border rounded-lg text-center">
+          </div>
+        </div>
+        
+        <!-- Feedback -->
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Feedback pour l'élève</label>
+          <textarea name="teacherFeedback" rows="4" 
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Commentaires sur le travail rendu...">{{ submission.teacherFeedback || '' }}</textarea>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Enregistrer la note
+        </button>
+        <a href="/teacher/assignments/{{ assignment.id }}/submissions" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Aide -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Conseils de notation</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Soyez juste et objectif</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Fournissez un feedback constructif</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Valorisez les efforts</li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Barème indicatif</h3>
+      <div class="text-sm space-y-1">
+        <div class="flex justify-between"><span>Excellent</span><span>16-20</span></div>
+        <div class="flex justify-between"><span>Très bien</span><span>14-15.9</span></div>
+        <div class="flex justify-between"><span>Bien</span><span>12-13.9</span></div>
+        <div class="flex justify-between"><span>Assez bien</span><span>10-11.9</span></div>
+        <div class="flex justify-between"><span>Insuffisant</span><span>&lt;10</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const slider = document.getElementById('gradeSlider')
+  const numberInput = document.querySelector('input[name="grade"]')
+  
+  slider?.addEventListener('input', () => { numberInput.value = slider.value })
+  numberInput?.addEventListener('input', () => { slider.value = numberInput.value })
+</script>
+{{# /section }}
+
+{{# /layout }}

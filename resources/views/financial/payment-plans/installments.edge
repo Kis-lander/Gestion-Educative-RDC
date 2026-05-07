@@ -1,0 +1,161 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Échéances - {{ plan.studentName }}{{# /section }}
+
+{{# section('dashboardTitle') }}Suivi des échéances{{# /section }}
+{{# section('dashboardSubtitle') }}{{ plan.studentName }} - Plan de paiement{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="sendReminder()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+    <i class="fas fa-bell mr-2"></i> Envoyer rappels
+  </button>
+  <button onclick="exportInstallments()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Alertes -->
+@if(overdueInstallments.length > 0)
+<div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg p-4 mb-6">
+  <div class="flex items-start gap-3">
+    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+    <div>
+      <p class="font-semibold text-red-800 dark:text-red-300">Attention : Échéances en retard</p>
+      <p class="text-sm text-red-700 dark:text-red-400">
+        {{ overdueInstallments.length }} échéance(s) est/sont en retard. Montant total dû: {{ formatCurrency(overdueTotal, 'USD') }}
+      </p>
+    </div>
+  </div>
+</div>
+@endif
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Échéancier détaillé</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Échéance</th>
+          <th class="px-4 py-2">Date due</th>
+          <th class="px-4 py-2 text-right">Montant</th>
+          <th class="px-4 py-2 text-right">Payé</th>
+          <th class="px-4 py-2 text-right">Reste</th>
+          <th class="px-4 py-2 text-center">Statut</th>
+          <th class="px-4 py-2 text-center">Date paiement</th>
+          <th class="px-4 py-2 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(installment in installments)
+        <tr class="border-b dark:border-gray-700 {{ installment.status === 'overdue' ? 'bg-red-50 dark:bg-red-900/10' : '' }}">
+          <td class="px-4 py-2 font-medium">Versement n°{{ installment.number }}</td>
+          <td class="px-4 py-2">{{ formatDate(installment.dueDate) }}
+            @if(installment.daysOverdue > 0)
+            <span class="text-red-600 text-xs block">Retard: {{ installment.daysOverdue }}j</span>
+            @endif
+          </td>
+          <td class="px-4 py-2 text-right">{{ formatCurrency(installment.amount, 'USD') }}</td>
+          <td class="px-4 py-2 text-right text-green-600">{{ formatCurrency(installment.paid, 'USD') }}</td>
+          <td class="px-4 py-2 text-right font-bold {{ installment.balance > 0 ? 'text-red-600' : 'text-green-600' }}">
+            {{ formatCurrency(installment.balance, 'USD') }}
+          </td>
+          <td class="px-4 py-2 text-center">
+            <span class="px-2 py-1 rounded-full text-xs {{ installment.status === 'paid' ? 'bg-green-100 text-green-800' : (installment.status === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
+              {{ installment.status === 'paid' ? 'Payé' : (installment.status === 'overdue' ? 'En retard' : 'En attente') }}
+            </span>
+          </td>
+          <td class="px-4 py-2 text-center">{{ installment.paymentDate ? formatDate(installment.paymentDate) : '-' }}</td>
+          <td class="px-4 py-2 text-center">
+            @if(installment.balance > 0)
+            <button onclick="recordPayment('{{ installment.id }}')" class="text-primary text-sm hover:underline">
+              <i class="fas fa-coins"></i>
+            </button>
+            @else
+            <i class="fas fa-check-circle text-green-500"></i>
+            @endif
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Graphique d'évolution -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Historique des paiements</h3>
+    <canvas id="paymentHistoryChart" height="200"></canvas>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Prochaine échéance</h3>
+    @if(nextInstallment)
+    <div class="text-center p-4">
+      <p class="text-gray-500">Versement n°{{ nextInstallment.number }}</p>
+      <p class="text-2xl font-bold text-primary mt-2">{{ formatCurrency(nextInstallment.amount, 'USD') }}</p>
+      <p class="text-sm text-gray-500 mt-1">Date limite: {{ formatDate(nextInstallment.dueDate) }}</p>
+      <p class="text-sm {{ nextInstallment.daysRemaining < 0 ? 'text-red-600' : 'text-yellow-600' }} mt-2">
+        @if(nextInstallment.daysRemaining < 0)
+        En retard de {{ Math.abs(nextInstallment.daysRemaining) }} jours
+        @else
+        Dans {{ nextInstallment.daysRemaining }} jours
+        @endif
+      </p>
+      <button onclick="recordPayment('{{ nextInstallment.id }}')" class="mt-4 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        Enregistrer paiement
+      </button>
+    </div>
+    @else
+    <p class="text-center text-gray-500 py-8">Toutes les échéances sont réglées</p>
+    @endif
+  </div>
+</div>
+
+<script>
+  let paymentChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('paymentHistoryChart').getContext('2d')
+    paymentChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{ chartLabels|json_encode|raw }},
+        datasets: [
+          { label: 'Montant dû', data: {{ chartDue|json_encode|raw }}, backgroundColor: '#2563eb' },
+          { label: 'Montant payé', data: {{ chartPaid|json_encode|raw }}, backgroundColor: '#16a34a' }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
+    })
+  }
+  
+  function recordPayment(installmentId) {
+    window.location.href = `/financial/payments/record?installment_id=${installmentId}&plan_id={{ plan.id }}`
+  }
+  
+  function sendReminder() {
+    if (confirm('Envoyer des rappels de paiement pour les échéances en retard ?')) {
+      fetch('/api/payment-plans/{{ plan.id }}/send-reminders', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) alert(`${data.sent} rappel(s) envoyé(s)`)
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+  
+  function exportInstallments() {
+    window.location.href = `/api/payment-plans/{{ plan.id }}/installments/export`
+  }
+  
+  renderChart()
+</script>
+{{# /section }}
+
+{{# /layout }}

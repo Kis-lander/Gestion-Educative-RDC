@@ -1,0 +1,218 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Rapport disciplinaire - {{ student.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Rapport disciplinaire{{# /section }}
+{{# section('dashboardSubtitle') }}{{ student.name }} - {{ student.className }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="printReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+  <button onclick="downloadPDF()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+    <i class="fas fa-file-pdf mr-2"></i> Télécharger PDF
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.totalIncidents || 0 }}</p>
+    <p class="text-sm text-gray-500">Total incidents</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-red-600">{{ stats.majorIncidents || 0 }}</p>
+    <p class="text-sm text-gray-500">Majeurs/Critiques</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.sanctionsCount || 0 }}</p>
+    <p class="text-sm text-gray-500">Sanctions reçues</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.appreciation }}</p>
+    <p class="text-sm text-gray-500">Appréciation</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Informations élève -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
+        {{ student.name.charAt(0) }}
+      </div>
+      <div>
+        <h3 class="font-bold text-xl">{{ student.name }}</h3>
+        <p class="text-sm text-gray-500">{{ student.className }}</p>
+        <p class="text-xs text-gray-400 font-mono">{{ student.registrationNumber }}</p>
+      </div>
+    </div>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Tuteur</span>
+        <span>{{ student.parentName || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Contact</span>
+        <span>{{ student.parentPhone || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Statut disciplinaire</span>
+        <span class="px-2 py-0.5 rounded-full text-xs
+          {{ student.disciplineStatus === 'exemplary' ? 'bg-green-100 text-green-800' : 
+             (student.disciplineStatus === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
+             (student.disciplineStatus === 'sanctioned' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
+          {{ student.disciplineStatus === 'exemplary' ? 'Exemplaire' : 
+             (student.disciplineStatus === 'warning' ? 'Averti' : 
+             (student.disciplineStatus === 'sanctioned' ? 'Sanctionné' : 'Suspendu')) }}
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Graphique évolution -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <h3 class="font-semibold mb-3">Évolution des incidents</h3>
+    <canvas id="studentTrendChart" height="150"></canvas>
+  </div>
+  
+  <!-- Répartition par type -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <h3 class="font-semibold mb-3">Répartition par type</h3>
+    <canvas id="studentTypeChart" height="150"></canvas>
+  </div>
+</div>
+
+<!-- Détail des incidents -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail des incidents</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Date</th>
+          <th class="px-4 py-2">Type</th>
+          <th class="px-4 py-2">Gravité</th>
+          <th class="px-4 py-2">Description</th>
+          <th class="px-4 py-2">Sanction</th>
+          <th class="px-4 py-2">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(incident in incidents)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2">{{ formatDate(incident.date) }}</td>
+          <td class="px-4 py-2">{{ incident.typeLabel }}</td>
+          <td class="px-4 py-2">{{ incident.severityLabel }}</td>
+          <td class="px-4 py-2">{{ incident.description }}</td>
+          <td class="px-4 py-2">{{ incident.sanction || '-' }}</td>
+          <td class="px-4 py-2">
+            <span class="px-2 py-1 rounded-full text-xs
+              {{ incident.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                 (incident.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800') }}">
+              {{ incident.status === 'pending' ? 'En attente' : (incident.status === 'resolved' ? 'Résolu' : 'En appel') }}
+            </span>
+          </td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Résumé des sanctions -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Résumé des sanctions</h3>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+    <div class="p-2 bg-yellow-50 rounded">
+      <p class="text-2xl font-bold text-yellow-600">{{ sanctionsSummary.warning || 0 }}</p>
+      <p class="text-xs">Avertissements</p>
+    </div>
+    <div class="p-2 bg-blue-50 rounded">
+      <p class="text-2xl font-bold text-blue-600">{{ sanctionsSummary.community_service || 0 }}</p>
+      <p class="text-xs">TIG</p>
+    </div>
+    <div class="p-2 bg-orange-50 rounded">
+      <p class="text-2xl font-bold text-orange-600">{{ sanctionsSummary.suspension || 0 }}</p>
+      <p class="text-xs">Suspensions</p>
+    </div>
+    <div class="p-2 bg-red-50 rounded">
+      <p class="text-2xl font-bold text-red-600">{{ sanctionsSummary.expulsion || 0 }}</p>
+      <p class="text-xs">Exclusions</p>
+    </div>
+  </div>
+</div>
+
+<!-- Appréciation finale -->
+<div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+  <div class="flex items-start gap-3">
+    <i class="fas fa-star text-yellow-500 text-xl"></i>
+    <div>
+      <h4 class="font-semibold">Appréciation générale</h4>
+      <p class="text-sm text-gray-700 dark:text-gray-300">
+        @if(stats.totalIncidents === 0)
+        Félicitations ! Cet élève a un comportement exemplaire et mérite d'être valorisé.
+        @elseif(stats.totalIncidents <= 2)
+        Bon comportement général. Quelques incidents mineurs à surveiller.
+        @elseif(stats.totalIncidents <= 5)
+        Comportement à améliorer. Un suivi régulier est recommandé.
+        @else
+        Comportement préoccupant. Des mesures disciplinaires sont nécessaires.
+        @endif
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  let trendChart, typeChart
+  
+  function renderCharts() {
+    // Graphique tendance
+    const trendCtx = document.getElementById('studentTrendChart').getContext('2d')
+    trendChart = new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: {{ trendLabels|json_encode|raw }},
+        datasets: [{
+          label: "Nombre d'incidents",
+          data: {{ trendValues|json_encode|raw }},
+          borderColor: '#dc2626',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+    
+    // Graphique par type
+    const typeCtx = document.getElementById('studentTypeChart').getContext('2d')
+    typeChart = new Chart(typeCtx, {
+      type: 'doughnut',
+      data: {
+        labels: {{ typeLabels|json_encode|raw }},
+        datasets: [{ data: {{ typeValues|json_encode|raw }}, backgroundColor: ['#2563eb', '#f59e0b', '#8b5cf6', '#dc2626', '#6b7280'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+  }
+  
+  function printReport() {
+    window.print()
+  }
+  
+  function downloadPDF() {
+    window.location.href = `/api/discipline/reports/student/{{ student.id }}/pdf`
+  }
+  
+  renderCharts()
+</script>
+{{# /section }}
+
+{{# /layout }}

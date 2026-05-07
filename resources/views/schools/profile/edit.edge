@@ -1,0 +1,106 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Modifier le profil - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Modifier le profil{{# /section }}
+{{# section('dashboardSubtitle') }}Mettez à jour les informations de l'établissement{{# /section }}
+
+{{# section('content') }}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <form method="POST" action="/schools/profile/update" x-data="{ loading: false, logoPreview: null }" @submit="loading = true">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="_method" value="PUT">
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Logo upload -->
+      <div class="md:col-span-2">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Logo de l'école</label>
+        <div class="flex items-center gap-4">
+          <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
+            <img :src="logoPreview || '{{ school.logoUrl || '/images/default-school.png' }}'" 
+                 class="max-w-full max-h-full object-contain">
+          </div>
+          <div>
+            <input type="file" id="logoInput" accept="image/*" class="hidden">
+            <button type="button" onclick="document.getElementById('logoInput').click()" 
+                    class="px-3 py-1 border rounded-lg text-sm hover:bg-gray-50">
+              <i class="fas fa-upload mr-1"></i> Changer logo
+            </button>
+            <p class="text-xs text-gray-400 mt-1">Format: PNG, JPG. Max 2MB</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="md:col-span-2">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de l'école</label>
+        <input type="text" name="name" value="{{ school.name }}" 
+               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Province</label>
+        <select name="province" class="w-full px-4 py-2 border rounded-lg">
+          <option value="{{ school.province }}">{{ school.province }}</option>
+          <option value="Kinshasa">Kinshasa</option>
+          <option value="Kongo Central">Kongo Central</option>
+          <option value="Haut-Katanga">Haut-Katanga</option>
+          <option value="Nord-Kivu">Nord-Kivu</option>
+          <option value="Sud-Kivu">Sud-Kivu</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Territoire/Commune</label>
+        <input type="text" name="territory" value="{{ school.territory }}"
+               class="w-full px-4 py-2 border rounded-lg">
+      </div>
+      
+      <div class="md:col-span-2">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Adresse</label>
+        <input type="text" name="address" value="{{ school.address }}"
+               class="w-full px-4 py-2 border rounded-lg">
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone</label>
+        <input type="tel" name="phone" value="{{ school.phone }}"
+               class="w-full px-4 py-2 border rounded-lg">
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Email</label>
+        <input type="email" name="email" value="{{ school.email }}"
+               class="w-full px-4 py-2 border rounded-lg">
+      </div>
+    </div>
+    
+    <div class="flex gap-3 mt-6 pt-4 border-t">
+      <button type="submit" :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+        Sauvegarder les modifications
+      </button>
+      <a href="/schools/profile" class="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+        Annuler
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Aperçu du logo
+  document.getElementById('logoInput')?.addEventListener('change', function(e) {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = function(event) {
+        const component = document.querySelector('[x-data]').__x.$data
+        component.logoPreview = event.target.result
+      }
+      reader.readAsDataURL(file)
+    }
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

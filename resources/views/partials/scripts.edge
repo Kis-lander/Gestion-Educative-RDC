@@ -1,0 +1,118 @@
+<!-- Alpine.js pour l'interactivité -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<script>
+  // Store global Alpine
+  document.addEventListener('alpine:init', () => {
+    Alpine.store('loading', { loading: false })
+    
+    Alpine.store('toast', {
+      show(message, type = 'success') {
+        const toastEvent = new CustomEvent('show-toast', { detail: { message, type } })
+        window.dispatchEvent(toastEvent)
+      }
+    })
+  })
+  
+  // Fonctions utilitaires
+  function formatDate(date) {
+    if (!date) return '-'
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
+  
+  function formatDateTime(date) {
+    if (!date) return '-'
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+  
+  function formatCurrency(amount, currency = 'USD') {
+    if (!amount && amount !== 0) return '-'
+    return new Intl.NumberFormat('fr-FR', { 
+      style: 'currency', 
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount)
+  }
+  
+  function formatPercentage(value) {
+    if (!value && value !== 0) return '-'
+    return `${Math.round(value)}%`
+  }
+  
+  function truncateText(text, maxLength = 50) {
+    if (!text) return ''
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + '...'
+  }
+  
+  // Gestion des toasts
+  window.showToastFn = null
+  
+  document.addEventListener('alpine:init', () => {
+    window.showToastFn = (message, type) => {
+      const toastEvent = new CustomEvent('show-toast', { detail: { message, type } })
+      window.dispatchEvent(toastEvent)
+    }
+  })
+  
+  window.addEventListener('show-toast', (e) => {
+    const { message, type } = e.detail
+    const toastDiv = document.querySelector('[x-data]')?.__x?.$data
+    if (toastDiv) {
+      toastDiv.toastMessage = message
+      toastDiv.toastType = type
+      toastDiv.showToast = true
+      setTimeout(() => { toastDiv.showToast = false }, 3000)
+    }
+  })
+  
+  // Gestion du chargement
+  window.showLoading = () => {
+    const app = document.querySelector('[x-data]')?.__x?.$data
+    if (app) app.$store.loading = true
+  }
+  
+  window.hideLoading = () => {
+    const app = document.querySelector('[x-data]')?.__x?.$data
+    if (app) app.$store.loading = false
+  }
+  
+  // Confirmation avant action
+  window.confirmAction = (message, callback) => {
+    if (confirm(message || 'Êtes-vous sûr de vouloir effectuer cette action ?')) {
+      callback()
+    }
+  }
+  
+  // Debounce pour les recherches
+  function debounce(func, wait) {
+    let timeout
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout)
+        func(...args)
+      }
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+    }
+  }
+  
+  // Export des fonctions globales
+  window.formatDate = formatDate
+  window.formatDateTime = formatDateTime
+  window.formatCurrency = formatCurrency
+  window.formatPercentage = formatPercentage
+  window.truncateText = truncateText
+  window.debounce = debounce
+</script>

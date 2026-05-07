@@ -1,0 +1,117 @@
+{{# layout('layouts/print') }}
+
+{{# section('title') }}Emploi du temps - {{ className }}{{# /section }}
+
+<div class="print-container">
+  <div class="text-center mb-6">
+    <h1 class="text-xl font-bold">REPUBLIQUE DEMOCRATIQUE DU CONGO</h1>
+    <h2 class="text-lg">Ministère de l'Enseignement Primaire, Secondaire et Technique</h2>
+    <h3 class="text-md mt-2">{{ schoolName }}</h3>
+    <h4 class="text-md">Emploi du temps - Classe de {{ className }}</h4>
+    <p class="text-sm">Année académique {{ academicYear }} - {{ shift === 'morning' ? 'Matin' : (shift === 'afternoon' ? 'Après-midi' : 'Soir') }}</p>
+    <p class="text-sm">Semaine du {{ weekStart }} au {{ weekEnd }}</p>
+  </div>
+  
+  <div class="table-responsive">
+    <table class="w-full">
+      <thead>
+        <tr>
+          <th class="px-2 py-2 text-center">Horaire</th>
+          <th class="px-2 py-2 text-center">Lundi</th>
+          <th class="px-2 py-2 text-center">Mardi</th>
+          <th class="px-2 py-2 text-center">Mercredi</th>
+          <th class="px-2 py-2 text-center">Jeudi</th>
+          <th class="px-2 py-2 text-center">Vendredi</th>
+          <th class="px-2 py-2 text-center">Samedi</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(slot in timetable)
+        <tr>
+          <td class="px-2 py-2 text-center font-bold">{{ slot.time }}</td>
+          @each(day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'])
+          <td class="px-2 py-1">
+            @if(slot[day].content)
+            <div class="text-center">
+              <strong>{{ slot[day].content.subject }}</strong><br>
+              <span class="text-xs">{{ slot[day].content.teacher }}</span><br>
+              <span class="text-xs">Salle {{ slot[day].content.room }}</span>
+            </div>
+            @else
+            <div class="text-center text-gray-400">-</div>
+            @endif
+          </td>
+          @end
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Récapitulatif -->
+  <div class="mt-6 grid grid-cols-2 gap-4">
+    <div class="border rounded p-3">
+      <h4 class="font-bold">Récapitulatif des heures</h4>
+      <div class="text-sm mt-2 space-y-1">
+        @each(hour in summary)
+        <div class="flex justify-between">
+          <span>{{ hour.day }}</span>
+          <span>{{ hour.hours }}h</span>
+        </div>
+        @end
+        <div class="flex justify-between font-bold pt-1 border-t">
+          <span>Total</span>
+          <span>{{ totalHours }}h</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="border rounded p-3">
+      <h4 class="font-bold">Enseignants</h4>
+      <div class="text-sm mt-2 space-y-1">
+        @each(teacher in teachers)
+        <div>{{ teacher.name }} - {{ teacher.subject }}</div>
+        @end
+      </div>
+    </div>
+  </div>
+  
+  <!-- Observations -->
+  <div class="mt-6 border-t pt-4">
+    <p class="text-sm"><strong>Observations:</strong></p>
+    <p class="text-sm mt-1">_________________________________________</p>
+    <p class="text-sm mt-1">_________________________________________</p>
+  </div>
+  
+  <!-- Signatures -->
+  <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
+    <div class="text-center">
+      <p>L'Enseignant Principal</p>
+      <div class="mt-12">_______________</div>
+    </div>
+    <div class="text-center">
+      <p>Le Chef d'Établissement</p>
+      <div class="mt-12">_______________</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media print {
+    body {
+      padding: 0;
+      margin: 0;
+    }
+    .print-container {
+      max-width: 100%;
+    }
+    table {
+      page-break-inside: avoid;
+    }
+    h1, h2, h3, h4 {
+      page-break-after: avoid;
+    }
+  }
+</style>
+
+{{# /layout }}

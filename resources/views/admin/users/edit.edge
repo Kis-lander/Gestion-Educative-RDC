@@ -1,0 +1,142 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Modifier utilisateur - {{ user.firstName }} {{ user.lastName }}{{# /section }}
+
+{{# section('dashboardTitle') }}Modifier utilisateur{{# /section }}
+{{# section('dashboardSubtitle') }}{{ user.firstName }} {{ user.lastName }}{{# /section }}
+
+{{# section('actions') }}
+<button onclick="resetPassword()" class="px-4 py-2 border border-yellow-500 text-yellow-600 rounded-lg hover:bg-yellow-50">
+  <i class="fas fa-key mr-2"></i> Réinitialiser mot de passe
+</button>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/admin/users/{{ user.id }}/update" x-data="{ loading: false, selectedRole: '{{ user.role }}' }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="_method" value="PUT">
+      
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Prénom *</label>
+            <input type="text" name="firstName" value="{{ user.firstName }}" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom *</label>
+            <input type="text" name="lastName" value="{{ user.lastName }}" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Email</label>
+          <input type="email" value="{{ user.email }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
+          <p class="text-xs text-gray-400 mt-1">L'email ne peut pas être modifié</p>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone</label>
+          <input type="tel" name="phone" value="{{ user.phone || '' }}" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Rôle</label>
+          <select name="role" x-model="selectedRole" class="w-full px-3 py-2 border rounded-lg">
+            <option value="inspection" {{ user.role === 'inspection' ? 'selected' : '' }}>Inspection</option>
+            <option value="director" {{ user.role === 'director' ? 'selected' : '' }}>Directeur</option>
+            <option value="finance_director" {{ user.role === 'finance_director' ? 'selected' : '' }}>Directeur Financier</option>
+            <option value="teacher" {{ user.role === 'teacher' ? 'selected' : '' }}>Enseignant</option>
+            <option value="parent" {{ user.role === 'parent' ? 'selected' : '' }}>Parent</option>
+            <option value="student" {{ user.role === 'student' ? 'selected' : '' }}>Élève</option>
+            <option value="discipline_director" {{ user.role === 'discipline_director' ? 'selected' : '' }}>Directeur Discipline</option>
+          </select>
+        </div>
+        
+        <div x-show="selectedRole !== 'inspection'" x-cloak>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">École</label>
+          <select name="schoolId" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Aucune</option>
+            @each(school in schools)
+            <option value="{{ school.id }}" {{ user.schoolId === school.id ? 'selected' : '' }}>{{ school.name }}</option>
+            @end
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
+          <select name="status" class="w-full px-3 py-2 border rounded-lg">
+            <option value="active" {{ user.status === 'active' ? 'selected' : '' }}>Actif</option>
+            <option value="inactive" {{ user.status === 'inactive' ? 'selected' : '' }}>Inactif</option>
+            <option value="suspended" {{ user.status === 'suspended' ? 'selected' : '' }}>Suspendu</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Enregistrer
+        </button>
+        <a href="/admin/users/{{ user.id }}/show" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Informations -->
+  <div class="space-y-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <h3 class="font-semibold border-b pb-2 mb-3">Informations système</h3>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">ID utilisateur</span>
+          <span class="font-mono">{{ user.id }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date création</span>
+          <span>{{ formatDate(user.createdAt) }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Dernière modification</span>
+          <span>{{ formatDate(user.updatedAt) }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Dernière connexion</span>
+          <span>{{ user.lastLogin || 'Jamais' }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+      <p class="text-sm flex gap-2">
+        <i class="fas fa-shield-alt text-yellow-600"></i>
+        <span>La modification du rôle peut affecter les permissions de l'utilisateur.</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function resetPassword() {
+    if (confirm('Réinitialiser le mot de passe de cet utilisateur ? Un email lui sera envoyé.')) {
+      const res = await fetch(`/admin/users/{{ user.id }}/reset-password`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert('Un email de réinitialisation a été envoyé')
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,136 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Mes sujets - Forum pédagogique{{# /section }}
+
+{{# section('dashboardTitle') }}Mes sujets{{# /section }}
+{{# section('dashboardSubtitle') }}Tous les sujets que j'ai créés{{# /section }}
+
+{{# section('actions') }}
+<a href="/teacher/forum/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+  <i class="fas fa-plus mr-2"></i> Nouveau sujet
+</a>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
+    <p class="text-sm text-gray-500">Total sujets</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.pinned || 0 }}</p>
+    <p class="text-sm text-gray-500">Épinglés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.totalReplies || 0 }}</p>
+    <p class="text-sm text-gray-500">Réponses reçues</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.totalViews || 0 }}</p>
+    <p class="text-sm text-gray-500">Vues totales</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="divide-y dark:divide-gray-700">
+    @each(topic in myTopics)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/teacher/forum/topic/{{ topic.id }}'">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-bold text-gray-800 dark:text-white">{{ topic.title }}</h3>
+            @if(topic.isPinned)
+            <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded"><i class="fas fa-thumbtack mr-1"></i> Épinglé</span>
+            @endif
+            @if(topic.isLocked)
+            <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded"><i class="fas fa-lock mr-1"></i> Verrouillé</span>
+            @endif
+          </div>
+          <div class="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+            <span><i class="fas fa-chalkboard mr-1"></i> {{ topic.className }}</span>
+            <span><i class="fas fa-book mr-1"></i> {{ topic.subjectName }}</span>
+            <span><i class="fas fa-calendar mr-1"></i> {{ topic.createdAt }}</span>
+            <span><i class="fas fa-clock mr-1"></i> {{ topic.createdTime }}</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{{ topic.content }}</p>
+        </div>
+        <div class="text-right text-xs text-gray-400">
+          <div class="mb-1"><i class="fas fa-comment mr-1"></i> {{ topic.repliesCount || 0 }} réponses</div>
+          <div><i class="fas fa-eye mr-1"></i> {{ topic.views || 0 }} vues</div>
+          @if(topic.lastReplyAt)
+          <div class="mt-1">Dernière réponse: {{ topic.lastReplyAt }}</div>
+          @endif
+        </div>
+      </div>
+      <div class="flex gap-3 mt-3 pt-2 border-t">
+        <a href="/teacher/forum/topic/{{ topic.id }}" class="text-primary text-sm hover:underline">
+          <i class="fas fa-eye mr-1"></i> Voir
+        </a>
+        <button onclick="event.stopPropagation();togglePin('{{ topic.id }}')" class="text-yellow-600 text-sm hover:underline">
+          <i class="fas fa-thumbtack mr-1"></i> {{ topic.isPinned ? 'Désépingler' : 'Épingler' }}
+        </button>
+        <button onclick="event.stopPropagation();toggleLock('{{ topic.id }}')" class="text-gray-600 text-sm hover:underline">
+          <i class="fas fa-lock mr-1"></i> {{ topic.isLocked ? 'Déverrouiller' : 'Verrouiller' }}
+        </button>
+        <button onclick="event.stopPropagation();deleteTopic('{{ topic.id }}')" class="text-red-600 text-sm hover:underline">
+          <i class="fas fa-trash mr-1"></i> Supprimer
+        </button>
+      </div>
+    </div>
+    @eachelse
+    <div class="p-12 text-center text-gray-500">
+      <i class="fas fa-comment-dots text-5xl mb-3 block"></i>
+      Vous n'avez pas encore créé de sujet
+      <div class="mt-3">
+        <a href="/teacher/forum/create" class="text-primary hover:underline">
+          Créer votre premier sujet
+        </a>
+      </div>
+    </div>
+    @end
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/teacher/forum/my-topics' })
+</div>
+
+<script>
+  function togglePin(topicId) {
+    event.stopPropagation()
+    fetch(`/teacher/forum/topic/${topicId}/toggle-pin`, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    }).then(res => res.json()).then(data => {
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    })
+  }
+  
+  function toggleLock(topicId) {
+    event.stopPropagation()
+    fetch(`/teacher/forum/topic/${topicId}/toggle-lock`, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    }).then(res => res.json()).then(data => {
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    })
+  }
+  
+  function deleteTopic(topicId) {
+    event.stopPropagation()
+    if (confirm('Supprimer définitivement ce sujet ?')) {
+      fetch(`/teacher/forum/topic/${topicId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) location.reload()
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

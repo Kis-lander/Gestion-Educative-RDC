@@ -1,0 +1,185 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Créer plan de paiement - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Nouveau plan de paiement{{# /section }}
+{{# section('dashboardSubtitle') }}Créez un échéancier personnalisé{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/financial/payment-plans/create" x-data="{ 
+      loading: false, 
+      selectedStudent: null, 
+      studentInfo: null,
+      totalAmount: 0,
+      installments: 4,
+      installmentAmount: 0
+    }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève *</label>
+          <select name="studentId" required class="w-full px-3 py-2 border rounded-lg" x-model="selectedStudent" @change="loadStudentInfo">
+            <option value="">Sélectionner un élève</option>
+            @each(student in students)
+            <option value="{{ student.id }}">{{ student.name }} - {{ student.className }} ({{ student.registrationNumber }})</option>
+            @end
+          </select>
+        </div>
+        
+        <!-- Infos élève -->
+        <div x-show="selectedStudent" x-cloak class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div><span class="text-gray-500">Classe:</span> <span x-text="studentInfo?.className"></span></div>
+            <div><span class="text-gray-500">Matricule:</span> <span x-text="studentInfo?.registrationNumber"></span></div>
+            <div><span class="text-gray-500">Solde actuel:</span> <span class="font-bold" :class="studentInfo?.balance > 0 ? 'text-red-600' : 'text-green-600'" x-text="formatCurrency(studentInfo?.balance)"></span></div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Montant total *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <input type="number" name="totalAmount" x-model="totalAmount" step="0.01" min="0.01" required 
+                     class="w-full pl-8 pr-3 py-2 border rounded-lg" placeholder="0.00" @input="calculateInstallment">
+            </div>
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre de versements *</label>
+            <select name="numberOfInstallments" x-model="installments" class="w-full px-3 py-2 border rounded-lg" @change="calculateInstallment">
+              <option value="2">2 versements</option>
+              <option value="3">3 versements</option>
+              <option value="4" selected>4 versements (mensuel)</option>
+              <option value="6">6 versements</option>
+              <option value="9">9 versements</option>
+              <option value="12">12 versements</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date de début *</label>
+            <input type="date" name="startDate" required class="w-full px-3 py-2 border rounded-lg" x-model="startDate" @change="calculateInstallment">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Fréquence</label>
+            <select name="frequency" class="w-full px-3 py-2 border rounded-lg">
+              <option value="monthly">Mensuelle</option>
+              <option value="weekly">Hebdomadaire</option>
+              <option value="biweekly">Bimensuelle</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Montant par versement:</span>
+            <span class="text-2xl font-bold text-primary" x-text="formatCurrency(installmentAmount)"></span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">* Calculé automatiquement</p>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Notes / Observations</label>
+          <textarea name="notes" rows="2" class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Informations complémentaires sur le plan..."></textarea>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Créer le plan
+        </button>
+        <a href="/financial/payment-plans" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Informations -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Avantages</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Paiements échelonnés</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Rappels automatiques</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Suivi des retards</li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Exemple d'échéancier</h3>
+      <div class="text-sm space-y-1" id="exampleSchedule">
+        <!-- Dynamique -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function loadStudentInfo() {
+    const studentId = document.querySelector('[name=studentId]').value
+    if (studentId) {
+      fetch(`/api/students/${studentId}/financial-status`)
+        .then(res => res.json())
+        .then(data => {
+          const component = document.querySelector('[x-data]').__x.$data
+          component.studentInfo = {
+            className: data.className,
+            registrationNumber: data.registrationNumber,
+            balance: data.balance || 0
+          }
+        })
+    }
+  }
+  
+  function calculateInstallment() {
+    const component = document.querySelector('[x-data]').__x.$data
+    const total = parseFloat(component.totalAmount) || 0
+    const installments = parseInt(component.installments) || 1
+    component.installmentAmount = total / installments
+    
+    // Mettre à jour l'exemple d'échéancier
+    updateExampleSchedule()
+  }
+  
+  function updateExampleSchedule() {
+    const component = document.querySelector('[x-data]').__x.$data
+    const total = component.totalAmount
+    const installments = component.installments
+    const startDate = component.startDate || new Date().toISOString().split('T')[0]
+    const amount = component.installmentAmount
+    
+    if (!total || total <= 0) return
+    
+    let html = '<div class="space-y-1"><p class="font-medium">Échéancier prévisionnel:</p>'
+    for (let i = 1; i <= installments; i++) {
+      const date = new Date(startDate)
+      date.setMonth(date.getMonth() + (i - 1))
+      html += `<div class="flex justify-between text-xs"><span>Versement ${i}:</span><span>${formatDate(date.toISOString().split('T')[0])} - ${formatCurrency(amount)}</span></div>`
+    }
+    html += '</div>'
+    document.getElementById('exampleSchedule').innerHTML = html
+  }
+  
+  // Initialisation
+  const startDateInput = document.querySelector('input[name="startDate"]')
+  startDateInput.value = new Date().toISOString().split('T')[0]
+  
+  // Observateurs
+  const component = document.querySelector('[x-data]').__x.$data
+  component.$watch('totalAmount', () => calculateInstallment())
+  component.$watch('installments', () => calculateInstallment())
+  component.$watch('startDate', () => updateExampleSchedule())
+</script>
+{{# /section }}
+
+{{# /layout }}

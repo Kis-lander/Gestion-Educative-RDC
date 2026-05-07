@@ -1,0 +1,176 @@
+{{# layout('layouts/auth') }}
+
+{{# section('title') }}Inscription de l'école - Gestion Éducative RDC{{# /section }}
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 md:p-8">
+  <div class="text-center mb-6">
+    <i class="fas fa-school text-primary text-4xl mb-3"></i>
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Inscription de l'établissement</h2>
+    <p class="text-gray-500 dark:text-gray-400 mt-1">Remplissez ce formulaire pour enregistrer votre école</p>
+  </div>
+  
+  <form method="POST" action="/register-school" x-data="{ loading: false, step: 1 }" @submit="loading = true">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    
+    <!-- Step 1: Informations générales -->
+    <div x-show="step === 1">
+      <h3 class="font-semibold text-lg mb-4 text-gray-700 dark:text-gray-300">
+        <span class="bg-primary text-white w-6 h-6 inline-flex items-center justify-center rounded-full text-sm mr-2">1</span>
+        Informations de l'école
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de l'école *</label>
+          <input type="text" name="name" required 
+                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                 placeholder="Ex: Collège Saint Joseph">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Province *</label>
+          <select name="province" required class="w-full px-4 py-2 border rounded-lg">
+            <option value="">Sélectionner une province</option>
+            <option value="Kinshasa">Kinshasa</option>
+            <option value="Kongo Central">Kongo Central</option>
+            <option value="Kwilu">Kwilu</option>
+            <option value="Kwango">Kwango</option>
+            <option value="Mai-Ndombe">Mai-Ndombe</option>
+            <option value="Equateur">Equateur</option>
+            <option value="Mongala">Mongala</option>
+            <option value="Nord-Ubangi">Nord-Ubangi</option>
+            <option value="Sud-Ubangi">Sud-Ubangi</option>
+            <option value="Bas-Uele">Bas-Uele</option>
+            <option value="Haut-Uele">Haut-Uele</option>
+            <option value="Ituri">Ituri</option>
+            <option value="Tshopo">Tshopo</option>
+            <option value="Tshuapa">Tshuapa</option>
+            <option value="Maniema">Maniema</option>
+            <option value="Nord-Kivu">Nord-Kivu</option>
+            <option value="Sud-Kivu">Sud-Kivu</option>
+            <option value="Lomami">Lomami</option>
+            <option value="Sankuru">Sankuru</option>
+            <option value="Kasaï">Kasaï</option>
+            <option value="Kasaï-Central">Kasaï-Central</option>
+            <option value="Kasaï-Oriental">Kasaï-Oriental</option>
+            <option value="Haut-Lomami">Haut-Lomami</option>
+            <option value="Lualaba">Lualaba</option>
+            <option value="Haut-Katanga">Haut-Katanga</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Territoire / Commune *</label>
+          <input type="text" name="territory" required 
+                 class="w-full px-4 py-2 border rounded-lg"
+                 placeholder="Ex: Gombe, Lukunga, etc.">
+        </div>
+        
+        <div class="md:col-span-2">
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Adresse *</label>
+          <input type="text" name="address" required 
+                 class="w-full px-4 py-2 border rounded-lg"
+                 placeholder="Numéro, avenue/lac, quartier">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone *</label>
+          <input type="tel" name="phone" required placeholder="+243 XXX XXX XXX"
+                 class="w-full px-4 py-2 border rounded-lg">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+          <input type="email" name="email" required 
+                 class="w-full px-4 py-2 border rounded-lg"
+                 placeholder="contact@ecole.cd">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Step 2: Informations du directeur -->
+    <div x-show="step === 2" x-cloak>
+      <h3 class="font-semibold text-lg mb-4 text-gray-700 dark:text-gray-300">
+        <span class="bg-primary text-white w-6 h-6 inline-flex items-center justify-center rounded-full text-sm mr-2">2</span>
+        Informations du directeur
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom complet *</label>
+          <input type="text" name="directorName" required 
+                 class="w-full px-4 py-2 border rounded-lg"
+                 placeholder="Jean MUKADI">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone *</label>
+          <input type="tel" name="directorPhone" required 
+                 class="w-full px-4 py-2 border rounded-lg"
+                 placeholder="+243 XXX XXX XXX">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Email (optionnel)</label>
+          <input type="email" name="directorEmail" 
+                 class="w-full px-4 py-2 border rounded-lg"
+                 placeholder="directeur@ecole.cd">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Step 3: Confirmation -->
+    <div x-show="step === 3" x-cloak>
+      <h3 class="font-semibold text-lg mb-4 text-gray-700 dark:text-gray-300">
+        <span class="bg-primary text-white w-6 h-6 inline-flex items-center justify-center rounded-full text-sm mr-2">3</span>
+        Confirmation
+      </h3>
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg p-4 mb-4">
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+          <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+          En soumettant ce formulaire, vous acceptez que :
+        </p>
+        <ul class="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4">
+          <li>Les informations fournies sont exactes et vérifiables</li>
+          <li>L'école sera soumise à validation par l'Inspection Pédagogique</li>
+          <li>Vous recevrez les identifiants de connexion par email après validation</li>
+          <li>Les données saisies seront traitées conformément à la réglementation</li>
+        </ul>
+      </div>
+      
+      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+        <p class="text-sm font-medium mb-2">Récapitulatif :</p>
+        <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+          <p><span class="font-medium">École :</span> <span x-text="document.querySelector('[name=name]')?.value || '-'"></span></p>
+          <p><span class="font-medium">Province :</span> <span x-text="document.querySelector('[name=province]')?.value || '-'"></span></p>
+          <p><span class="font-medium">Directeur :</span> <span x-text="document.querySelector('[name=directorName]')?.value || '-'"></span></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Navigation steps -->
+    <div class="flex justify-between mt-8 pt-4 border-t dark:border-gray-700">
+      <button type="button" x-show="step > 1" @click="step--" 
+              class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        <i class="fas fa-chevron-left mr-2"></i> Précédent
+      </button>
+      <button type="button" x-show="step < 3" @click="step++" 
+              class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition ml-auto">
+        Suivant <i class="fas fa-chevron-right ml-2"></i>
+      </button>
+      <button type="submit" x-show="step === 3" :disabled="loading"
+              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition ml-auto">
+        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+        <i x-show="!loading" class="fas fa-check mr-2"></i>
+        Soumettre la demande
+      </button>
+    </div>
+  </form>
+  
+  <div class="mt-6 text-center">
+    <p class="text-gray-500 dark:text-gray-400 text-sm">
+      Déjà inscrit ? 
+      <a href="/login" class="text-primary hover:underline">Se connecter</a>
+    </p>
+  </div>
+</div>
+
+{{# /layout }}

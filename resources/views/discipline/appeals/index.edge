@@ -1,0 +1,245 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Gestion des appels - Discipline{{# /section }}
+
+{{# section('dashboardTitle') }}Appels disciplinaires{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez les demandes d'appel des sanctions{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="exportAppeals()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Total appels</p>
+    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">En attente</p>
+    <p class="text-3xl font-bold">{{ stats.pending || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Approuvés</p>
+    <p class="text-3xl font-bold">{{ stats.approved || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Rejetés</p>
+    <p class="text-3xl font-bold">{{ stats.rejected || 0 }}</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="pending">En attente</option>
+        <option value="approved">Approuvé</option>
+        <option value="rejected">Rejeté</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+      <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        @each(classObj in classes)
+        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-filter mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Liste des appels -->
+<div class="space-y-4">
+  @each(appeal in appeals)
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="border-l-4 
+      {{ appeal.status === 'pending' ? 'border-yellow-500' : 
+         (appeal.status === 'approved' ? 'border-green-500' : 'border-red-500') }}">
+      <div class="p-4">
+        <div class="flex flex-wrap justify-between items-start gap-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap">
+              <h3 class="font-bold text-gray-800 dark:text-white">{{ appeal.studentName }}</h3>
+              <span class="text-sm text-gray-500">{{ appeal.className }}</span>
+              <span class="px-2 py-1 rounded-full text-xs
+                {{ appeal.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                   (appeal.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
+                {{ appeal.status === 'pending' ? 'En attente' : 
+                   (appeal.status === 'approved' ? 'Approuvé' : 'Rejeté') }}
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-sm">
+              <div><span class="text-gray-500">Sanction:</span> {{ appeal.sanctionLabel }}</div>
+              <div><span class="text-gray-500">Date sanction:</span> {{ formatDate(appeal.sanctionDate) }}</div>
+              <div><span class="text-gray-500">Date appel:</span> {{ formatDate(appeal.appealDate) }}</div>
+            </div>
+            <div class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+              <p class="font-medium">Motif de l'appel:</p>
+              <p class="text-gray-600">{{ appeal.reason }}</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <a href="/discipline/appeals/{{ appeal.id }}/review" class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700">
+              <i class="fas fa-gavel mr-1"></i> Examiner
+            </a>
+            <button onclick="viewDetails('{{ appeal.id }}')" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">
+              <i class="fas fa-eye mr-1"></i> Détails
+            </button>
+          </div>
+        </div>
+        
+        <!-- Timeline -->
+        <div class="mt-4 pt-3 border-t">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 text-center">
+              <div class="w-8 h-8 rounded-full bg-green-500 mx-auto flex items-center justify-center text-white text-xs">
+                <i class="fas fa-check"></i>
+              </div>
+              <p class="text-xs mt-1">Sanction</p>
+              <p class="text-xs text-gray-400">{{ formatDate(appeal.sanctionDate) }}</p>
+            </div>
+            <div class="flex-1 text-center">
+              <div class="w-8 h-8 rounded-full {{ appeal.appealDate ? 'bg-green-500' : 'bg-gray-300' }} mx-auto flex items-center justify-center text-white text-xs">
+                <i class="fas {{ appeal.appealDate ? 'fa-file-alt' : 'fa-clock' }}"></i>
+              </div>
+              <p class="text-xs mt-1">Appel</p>
+              <p class="text-xs text-gray-400">{{ appeal.appealDate ? formatDate(appeal.appealDate) : '-' }}</p>
+            </div>
+            <div class="flex-1 text-center">
+              <div class="w-8 h-8 rounded-full {{ appeal.reviewDate ? (appeal.status === 'approved' ? 'bg-green-500' : 'bg-red-500') : 'bg-gray-300' }} mx-auto flex items-center justify-center text-white text-xs">
+                <i class="fas {{ appeal.reviewDate ? 'fa-check' : 'fa-clock' }}"></i>
+              </div>
+              <p class="text-xs mt-1">Décision</p>
+              <p class="text-xs text-gray-400">{{ appeal.reviewDate ? formatDate(appeal.reviewDate) : 'En attente' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @eachelse
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+    <i class="fas fa-gavel text-5xl text-gray-400 mb-3"></i>
+    <p class="text-gray-500">Aucune demande d'appel</p>
+  </div>
+  @end
+</div>
+
+@include('partials/pagination', { pagination: pagination, url: '/discipline/appeals' })
+
+<!-- Modal Détails -->
+<div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Détails de l'appel</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div id="detailsContent">
+      <!-- Contenu dynamique -->
+    </div>
+  </div>
+</div>
+
+<script>
+  const filterStatus = document.getElementById('filterStatus')
+  const filterClass = document.getElementById('filterClass')
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    if (filterClass.value) params.set('class_id', filterClass.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    window.location.href = `/discipline/appeals?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/discipline/appeals'
+  })
+  
+  async function viewDetails(appealId) {
+    const res = await fetch(`/api/discipline/appeals/${appealId}`)
+    const data = await res.json()
+    
+    const content = document.getElementById('detailsContent')
+    content.innerHTML = `
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Élève:</span>
+          <span class="font-medium">${data.studentName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Classe:</span>
+          <span>${data.className}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Sanction contestée:</span>
+          <span>${data.sanctionLabel}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date sanction:</span>
+          <span>${data.sanctionDate}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date appel:</span>
+          <span>${data.appealDate}</span>
+        </div>
+        <div class="pt-2 border-t">
+          <p class="font-medium">Motif de l'appel:</p>
+          <p class="text-gray-600 mt-1">${data.reason}</p>
+        </div>
+        ${data.evidence ? `<div class="pt-2"><p class="font-medium">Preuves:</p><a href="${data.evidence}" target="_blank" class="text-primary text-sm hover:underline">Télécharger</a></div>` : ''}
+        ${data.reviewComment ? `<div class="pt-2 border-t"><p class="font-medium">Commentaire de l'examinateur:</p><p class="text-gray-600 mt-1">${data.reviewComment}</p></div>` : ''}
+      </div>
+    `
+    document.getElementById('detailsModal').classList.remove('hidden')
+    document.getElementById('detailsModal').classList.add('flex')
+  }
+  
+  function closeModal() {
+    document.getElementById('detailsModal').classList.add('hidden')
+    document.getElementById('detailsModal').classList.remove('flex')
+  }
+  
+  function exportAppeals() {
+    const params = new URLSearchParams()
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    window.location.href = `/api/discipline/appeals/export?${params.toString()}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

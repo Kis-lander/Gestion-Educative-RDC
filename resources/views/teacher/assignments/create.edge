@@ -1,0 +1,172 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Créer un devoir - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Nouveau devoir{{# /section }}
+{{# section('dashboardSubtitle') }}Créez un devoir pour vos élèves{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/teacher/assignments/create" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
+            <select name="classId" required class="w-full px-3 py-2 border rounded-lg" id="classSelect">
+              <option value="">Sélectionner</option>
+              @each(classObj in classes)
+              <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+              @end
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière *</label>
+            <select name="subjectId" required class="w-full px-3 py-2 border rounded-lg" id="subjectSelect" disabled>
+              <option value="">Sélectionnez d'abord une classe</option>
+            </select>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
+          <input type="text" name="title" required 
+                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                 placeholder="Ex: Devoir sur les fractions, Composition sur la RDC...">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+          <textarea name="description" rows="3" 
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Description détaillée du devoir..."></textarea>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
+          <textarea name="instructions" rows="3" 
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Instructions pour les élèves..."></textarea>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date limite *</label>
+            <input type="date" name="dueDate" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure limite</label>
+            <input type="time" name="dueTime" class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Points maximum</label>
+            <input type="number" name="maxPoints" value="20" min="0" max="100" step="0.5"
+                   class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Fichier joint (optionnel)</label>
+          <div class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
+               onclick="document.getElementById('fileInput').click()">
+            <input type="file" name="attachment" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.txt,.jpg,.png">
+            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+            <p class="text-gray-500">Cliquez ou glissez un fichier</p>
+            <p class="text-xs text-gray-400 mt-1">PDF, DOC, TXT, JPG, PNG (max 10MB)</p>
+          </div>
+          <div id="fileName" class="text-sm text-green-600 mt-1 hidden"></div>
+        </div>
+        
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="saveAsDraft" class="w-4 h-4">
+            <span>Enregistrer comme brouillon</span>
+          </label>
+          <p class="text-xs text-gray-500 mt-1">Les brouillons ne sont pas visibles par les élèves</p>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Créer le devoir
+        </button>
+        <a href="/teacher/assignments" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Conseils -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Conseils</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Soyez clair dans les instructions</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Fixez une date limite réaliste</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Joignez des documents si nécessaire</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Vérifiez avant de publier</li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Exemple de devoir</h3>
+      <div class="text-sm">
+        <p><strong>Titre:</strong> Composition de Mathématiques</p>
+        <p><strong>Description:</strong> Résoudre les équations suivantes...</p>
+        <p><strong>Instructions:</strong> Rendre le travail avant le 15/12/2024</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Charger les matières selon la classe
+  document.getElementById('classSelect')?.addEventListener('change', async function() {
+    const classId = this.value
+    const subjectSelect = document.getElementById('subjectSelect')
+    if (!classId) {
+      subjectSelect.innerHTML = '<option value="">Sélectionnez d\'abord une classe</option>'
+      subjectSelect.disabled = true
+      return
+    }
+    
+    const res = await fetch(`/api/classes/${classId}/subjects`)
+    const data = await res.json()
+    
+    subjectSelect.innerHTML = '<option value="">Sélectionner une matière</option>'
+    if (data.subjects && data.subjects.length > 0) {
+      data.subjects.forEach(subject => {
+        subjectSelect.innerHTML += `<option value="${subject.subject_id}">${subject.subject_name} (${subject.hours_per_week}h/sem)</option>`
+      })
+      subjectSelect.disabled = false
+    } else {
+      subjectSelect.innerHTML = '<option value="">Aucune matière assignée</option>'
+      subjectSelect.disabled = true
+    }
+  })
+  
+  // Gestion du fichier
+  const fileInput = document.getElementById('fileInput')
+  const fileName = document.getElementById('fileName')
+  
+  fileInput?.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      fileName.textContent = `Fichier sélectionné: ${this.files[0].name}`
+      fileName.classList.remove('hidden')
+    }
+  })
+  
+  // Date par défaut (2 semaines)
+  const dueDate = new Date()
+  dueDate.setDate(dueDate.getDate() + 14)
+  document.querySelector('input[name="dueDate"]').value = dueDate.toISOString().split('T')[0]
+</script>
+{{# /section }}
+
+{{# /layout }}

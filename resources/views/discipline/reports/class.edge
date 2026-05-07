@@ -1,0 +1,198 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Rapport disciplinaire - Classe {{ className }}{{# /section }}
+
+{{# section('dashboardTitle') }}Rapport disciplinaire - Classe{{# /section }}
+{{# section('dashboardSubtitle') }}{{ className }} - Période: {{ periodLabel }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="printReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-print mr-2"></i> Imprimer
+  </button>
+  <button onclick="downloadPDF()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+    <i class="fas fa-file-pdf mr-2"></i> Télécharger PDF
+  </button>
+  <button onclick="exportClassReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.totalIncidents || 0 }}</p>
+    <p class="text-sm text-gray-500">Incidents totaux</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-red-600">{{ stats.affectedStudents || 0 }}</p>
+    <p class="text-sm text-gray-500">Élèves concernés</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.avgPerStudent || 0 }}</p>
+    <p class="text-sm text-gray-500">Moyenne/élève</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.exemplaryRate || 0 }}%</p>
+    <p class="text-sm text-gray-500">Taux exemplarité</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <!-- Graphique évolution -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Évolution des incidents</h3>
+    <canvas id="classTrendChart" height="200"></canvas>
+  </div>
+  
+  <!-- Répartition par type -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Répartition par type d'incident</h3>
+    <canvas id="classTypeChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Tableau des élèves -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Détail par élève</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">#</th>
+          <th class="px-4 py-2">Élève</th>
+          <th class="px-4 py-2 text-center">Incidents</th>
+          <th class="px-4 py-2 text-center">Majeurs</th>
+          <th class="px-4 py-2 text-center">Sanctions</th>
+          <th class="px-4 py-2 text-center">Statut</th>
+          <th class="px-4 py-2 text-center">Dernier incident</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(student in students)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2 text-center">{{ student.rank }}</td>
+          <td class="px-4 py-2 font-medium">{{ student.name }}</td>
+          <td class="px-4 py-2 text-center">
+            <span class="font-bold {{ student.incidentCount > 0 ? 'text-red-600' : 'text-green-600' }}">
+              {{ student.incidentCount }}
+            </span>
+          </td>
+          <td class="px-4 py-2 text-center">{{ student.majorCount || 0 }}</td>
+          <td class="px-4 py-2 text-center">{{ student.sanctionsCount || 0 }}</td>
+          <td class="px-4 py-2 text-center">
+            <span class="px-2 py-1 rounded-full text-xs
+              {{ student.disciplineStatus === 'exemplary' ? 'bg-green-100 text-green-800' : 
+                 (student.disciplineStatus === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
+                 (student.disciplineStatus === 'sanctioned' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
+              {{ student.disciplineStatus === 'exemplary' ? 'Exemplaire' : 
+                 (student.disciplineStatus === 'warning' ? 'Averti' : 
+                 (student.disciplineStatus === 'sanctioned' ? 'Sanctionné' : 'Suspendu')) }}
+            </span>
+          </td>
+          <td class="px-4 py-2 text-center">{{ student.lastIncidentDate || '-' }}</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Classement des élèves -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Top 5 élèves avec incidents</h3>
+    <div class="space-y-2">
+      @each(top in topStudents)
+      <div class="flex justify-between items-center p-2 border-b">
+        <div>
+          <p class="font-medium">{{ top.name }}</p>
+          <p class="text-xs text-gray-500">{{ top.incidentCount }} incident(s)</p>
+        </div>
+        <div class="w-32 bg-gray-200 rounded-full h-1.5">
+          <div class="bg-red-500 rounded-full h-1.5" style="width: {{ top.percentage }}%"></div>
+        </div>
+      </div>
+      @end
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Top 5 élèves exemplaires</h3>
+    <div class="space-y-2">
+      @each(exemplary in exemplaryStudents)
+      <div class="flex justify-between items-center p-2 border-b">
+        <div>
+          <p class="font-medium">{{ exemplary.name }}</p>
+          <p class="text-xs text-green-600">0 incident</p>
+        </div>
+        <i class="fas fa-star text-yellow-500"></i>
+      </div>
+      @end
+    </div>
+  </div>
+</div>
+
+<!-- Appréciation générale -->
+<div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+  <h4 class="font-semibold">Appréciation générale de la classe</h4>
+  <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+    @if(stats.totalIncidents === 0)
+    Félicitations ! La classe a un comportement exemplaire.
+    @elseif(stats.avgPerStudent <= 1)
+    Bon comportement général. Quelques incidents isolés.
+    @elseif(stats.avgPerStudent <= 2)
+    Comportement moyen. Une attention particulière est nécessaire.
+    @else
+    Des efforts significatifs sont nécessaires pour améliorer la discipline.
+    @endif
+  </p>
+</div>
+
+<script>
+  let classTrendChart, classTypeChart
+  
+  function renderCharts() {
+    const trendCtx = document.getElementById('classTrendChart').getContext('2d')
+    classTrendChart = new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: {{ trendLabels|json_encode|raw }},
+        datasets: [{ label: "Nombre d'incidents", data: {{ trendValues|json_encode|raw }}, borderColor: '#dc2626', fill: true, tension: 0.4 }]
+      },
+      options: { responsive: true }
+    })
+    
+    const typeCtx = document.getElementById('classTypeChart').getContext('2d')
+    classTypeChart = new Chart(typeCtx, {
+      type: 'doughnut',
+      data: {
+        labels: {{ typeLabels|json_encode|raw }},
+        datasets: [{ data: {{ typeValues|json_encode|raw }}, backgroundColor: ['#2563eb', '#f59e0b', '#8b5cf6', '#dc2626', '#6b7280'] }]
+      },
+      options: { responsive: true }
+    })
+  }
+  
+  function printReport() {
+    window.print()
+  }
+  
+  function downloadPDF() {
+    window.location.href = `/api/discipline/reports/class/{{ classId }}/pdf`
+  }
+  
+  function exportClassReport() {
+    window.location.href = `/api/discipline/reports/class/{{ classId }}/export`
+  }
+  
+  renderCharts()
+</script>
+{{# /section }}
+
+{{# /layout }}

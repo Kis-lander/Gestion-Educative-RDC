@@ -1,0 +1,122 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Soumettre devoir - {{ assignment.title }}{{# /section }}
+
+{{# section('dashboardTitle') }}Soumission de devoir{{# /section }}
+{{# section('dashboardSubtitle') }}{{ assignment.title }}{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/student/assignments/{{ assignment.id }}/submit" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <!-- Rappel date limite -->
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-clock text-yellow-600"></i>
+            <span class="text-sm">Date limite: <strong>{{ formatDate(assignment.dueDate) }} {{ assignment.dueTime ? 'à ' + assignment.dueTime : '' }}</strong></span>
+            <span class="text-sm {{ assignment.daysRemaining < 0 ? 'text-red-600' : 'text-green-600' }}">
+              ({{ assignment.daysRemaining > 0 ? assignment.daysRemaining + ' jours restants' : 
+                 (assignment.daysRemaining < 0 ? 'En retard de ' + Math.abs(assignment.daysRemaining) + ' jours' : 'Dernier jour') }})
+            </span>
+          </div>
+        </div>
+        
+        <!-- Contenu de la soumission -->
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu / Réponse *</label>
+          <textarea name="content" rows="8" required 
+                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                    placeholder="Rédigez votre réponse ici...">{{ existingSubmission?.submissionContent || '' }}</textarea>
+        </div>
+        
+        <!-- Fichier joint -->
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Fichier joint (optionnel)</label>
+          <div class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
+               onclick="document.getElementById('fileInput').click()">
+            <input type="file" name="attachment" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.txt,.jpg,.png">
+            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+            <p class="text-gray-500">Cliquez pour télécharger un fichier</p>
+            <p class="text-xs text-gray-400 mt-1">PDF, DOC, TXT, JPG, PNG (max 10MB)</p>
+          </div>
+          <div id="fileName" class="text-sm text-green-600 mt-1 hidden"></div>
+          @if(existingSubmission?.attachmentUrl)
+          <div class="mt-2 p-2 bg-gray-100 rounded flex justify-between items-center">
+            <span><i class="fas fa-file-alt mr-1"></i> Fichier actuel</span>
+            <a href="{{ existingSubmission.attachmentUrl }}" target="_blank" class="text-primary text-sm">Voir</a>
+          </div>
+          @endif
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Soumettre le devoir
+        </button>
+        <a href="/student/assignments/{{ assignment.id }}" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Conseils -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Conseils</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2">
+          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+          <span>Relisez votre travail avant de soumettre</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+          <span>Assurez-vous que tous les fichiers sont joints</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+          <span>Vous pouvez modifier votre soumission jusqu'à la date limite</span>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Barème</h3>
+      <div class="space-y-1 text-sm">
+        <p>⭐ Qualité du contenu: {{ (assignment.maxPoints * 0.6) }} points</p>
+        <p>📋 Respect des consignes: {{ (assignment.maxPoints * 0.2) }} points</p>
+        <p>🎨 Présentation: {{ (assignment.maxPoints * 0.2) }} points</p>
+      </div>
+    </div>
+    
+    @if(assignment.daysRemaining < 0)
+    <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4">
+      <p class="text-sm flex gap-2">
+        <i class="fas fa-exclamation-triangle text-red-600"></i>
+        <span>Le devoir est en retard. La soumission est toujours possible mais la note pourra être pénalisée.</span>
+      </p>
+    </div>
+    @endif
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput')
+  const fileName = document.getElementById('fileName')
+  
+  fileInput?.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      fileName.textContent = `Fichier sélectionné: ${this.files[0].name}`
+      fileName.classList.remove('hidden')
+    }
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,215 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Catégories - Best Practices{{# /section }}
+
+{{# section('dashboardTitle') }}Catégories{{# /section }}
+{{# section('dashboardSubtitle') }}Explorez les pratiques par catégorie{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <!-- Catégorie Pédagogie -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
+       onclick="window.location.href='/inter-school/best-practices?category=pedagogy'">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <i class="fas fa-chalkboard-user text-white text-3xl"></i>
+          <h3 class="text-white font-bold text-xl mt-2">Pédagogie</h3>
+        </div>
+        <div class="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center">
+          <span class="text-white text-2xl font-bold">{{ stats.pedagogy || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="p-4">
+      <p class="text-gray-600 dark:text-gray-400 text-sm">Méthodes d'enseignement innovantes, approches pédagogiques, outils d'apprentissage.</p>
+    </div>
+  </div>
+  
+  <!-- Catégorie Technologie -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
+       onclick="window.location.href='/inter-school/best-practices?category=technology'">
+    <div class="bg-gradient-to-r from-green-500 to-green-600 p-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <i class="fas fa-laptop text-white text-3xl"></i>
+          <h3 class="text-white font-bold text-xl mt-2">Technologie</h3>
+        </div>
+        <div class="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center">
+          <span class="text-white text-2xl font-bold">{{ stats.technology || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="p-4">
+      <p class="text-gray-600 dark:text-gray-400 text-sm">Intégration du numérique, outils EdTech, plateformes éducatives.</p>
+    </div>
+  </div>
+  
+  <!-- Catégorie Gestion scolaire -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
+       onclick="window.location.href='/inter-school/best-practices?category=management'">
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <i class="fas fa-building text-white text-3xl"></i>
+          <h3 class="text-white font-bold text-xl mt-2">Gestion scolaire</h3>
+        </div>
+        <div class="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center">
+          <span class="text-white text-2xl font-bold">{{ stats.management || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="p-4">
+      <p class="text-gray-600 dark:text-gray-400 text-sm">Administration, organisation, gestion des ressources humaines et matérielles.</p>
+    </div>
+  </div>
+  
+  <!-- Catégorie Discipline -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
+       onclick="window.location.href='/inter-school/best-practices?category=discipline'">
+    <div class="bg-gradient-to-r from-red-500 to-red-600 p-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <i class="fas fa-gavel text-white text-3xl"></i>
+          <h3 class="text-white font-bold text-xl mt-2">Discipline</h3>
+        </div>
+        <div class="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center">
+          <span class="text-white text-2xl font-bold">{{ stats.discipline || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="p-4">
+      <p class="text-gray-600 dark:text-gray-400 text-sm">Gestion du comportement, systèmes de motivation, médiation.</p>
+    </div>
+  </div>
+  
+  <!-- Catégorie Sports -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
+       onclick="window.location.href='/inter-school/best-practices?category=sports'">
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <i class="fas fa-futbol text-white text-3xl"></i>
+          <h3 class="text-white font-bold text-xl mt-2">Sports</h3>
+        </div>
+        <div class="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center">
+          <span class="text-white text-2xl font-bold">{{ stats.sports || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="p-4">
+      <p class="text-gray-600 dark:text-gray-400 text-sm">Activités sportives, compétitions, éducation physique.</p>
+    </div>
+  </div>
+  
+  <!-- Catégorie Culture -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
+       onclick="window.location.href='/inter-school/best-practices?category=culture'">
+    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 p-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <i class="fas fa-palette text-white text-3xl"></i>
+          <h3 class="text-white font-bold text-xl mt-2">Culture</h3>
+        </div>
+        <div class="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center">
+          <span class="text-white text-2xl font-bold">{{ stats.culture || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="p-4">
+      <p class="text-gray-600 dark:text-gray-400 text-sm">Arts, traditions, échanges culturels, festivals scolaires.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Statistiques globales -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Classement des catégories</h3>
+  <div class="space-y-3">
+    <div>
+      <div class="flex justify-between text-sm mb-1">
+        <span>Pédagogie</span>
+        <span>{{ stats.pedagogy || 0 }} pratiques</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-blue-500 rounded-full h-2" style="width: {{ (stats.pedagogy / stats.total * 100) || 0 }}%"></div>
+      </div>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1">
+        <span>Technologie</span>
+        <span>{{ stats.technology || 0 }} pratiques</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-green-500 rounded-full h-2" style="width: {{ (stats.technology / stats.total * 100) || 0 }}%"></div>
+      </div>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1">
+        <span>Gestion scolaire</span>
+        <span>{{ stats.management || 0 }} pratiques</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-purple-500 rounded-full h-2" style="width: {{ (stats.management / stats.total * 100) || 0 }}%"></div>
+      </div>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1">
+        <span>Discipline</span>
+        <span>{{ stats.discipline || 0 }} pratiques</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-red-500 rounded-full h-2" style="width: {{ (stats.discipline / stats.total * 100) || 0 }}%"></div>
+      </div>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1">
+        <span>Sports</span>
+        <span>{{ stats.sports || 0 }} pratiques</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-orange-500 rounded-full h-2" style="width: {{ (stats.sports / stats.total * 100) || 0 }}%"></div>
+      </div>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1">
+        <span>Culture</span>
+        <span>{{ stats.culture || 0 }} pratiques</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-yellow-500 rounded-full h-2" style="width: {{ (stats.culture / stats.total * 100) || 0 }}%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tendances -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Tendances récentes</h3>
+  <div class="flex flex-wrap gap-2">
+    @each(trend in trends)
+    <span class="px-3 py-1 bg-gray-100 rounded-full text-sm">#{{ trend }}</span>
+    @end
+  </div>
+</div>
+
+<script>
+  // Graphique camembert des catégories (optionnel)
+  const ctx = document.getElementById('categoriesChart')?.getContext('2d')
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pédagogie', 'Technologie', 'Gestion scolaire', 'Discipline', 'Sports', 'Culture'],
+        datasets: [{
+          data: [{{ stats.pedagogy || 0 }}, {{ stats.technology || 0 }}, {{ stats.management || 0 }}, {{ stats.discipline || 0 }}, {{ stats.sports || 0 }}, {{ stats.culture || 0 }}],
+          backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#f97316', '#eab308']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true }
+    })
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

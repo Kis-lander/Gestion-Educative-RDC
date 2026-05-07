@@ -1,0 +1,367 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Demandes de transfert - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Demandes de transfert{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez les demandes de transfert sortant et entrant{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="newTransferRequest()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Nouvelle demande
+  </button>
+  <button onclick="exportRequests()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.outgoing || 0 }}</p>
+    <p class="text-sm text-gray-500">Transferts sortants</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.incoming || 0 }}</p>
+    <p class="text-sm text-gray-500">Transferts entrants</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.pending || 0 }}</p>
+    <p class="text-sm text-gray-500">En attente</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.completed || 0 }}</p>
+    <p class="text-sm text-gray-500">Complétés</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Tabs -->
+<div class="border-b dark:border-gray-700 mb-6">
+  <nav class="flex gap-4">
+    <button onclick="showTab('outgoing')" id="tab-outgoing" class="px-4 py-2 font-medium border-b-2 border-primary text-primary">
+      Transferts sortants
+    </button>
+    <button onclick="showTab('incoming')" id="tab-incoming" class="px-4 py-2 font-medium text-gray-500 hover:text-gray-700">
+      Transferts entrants
+    </button>
+  </nav>
+</div>
+
+<!-- Transferts sortants -->
+<div id="panel-outgoing" class="tab-panel">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="px-4 py-3 border-b dark:border-gray-700">
+      <h3 class="font-semibold">Demandes de transfert sortant</h3>
+    </div>
+    <div class="table-responsive">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-4 py-3 text-left">Date demande</th>
+            <th class="px-4 py-3 text-left">Élève</th>
+            <th class="px-4 py-3 text-left">Classe</th>
+            <th class="px-4 py-3 text-left">École destination</th>
+            <th class="px-4 py-3 text-center">Statut</th>
+            <th class="px-4 py-3 text-center">Code</th>
+            <th class="px-4 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(request in outgoingRequests)
+          <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-4 py-3">{{ formatDate(request.createdAt) }}</td>
+            <td class="px-4 py-3 font-medium">{{ request.studentName }}</td>
+            <td class="px-4 py-3">{{ request.className }}</td>
+            <td class="px-4 py-3">{{ request.targetSchoolName }}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="px-2 py-1 rounded-full text-xs" :class="{
+                'bg-yellow-100 text-yellow-800': '{{ request.status }}' === 'pending',
+                'bg-green-100 text-green-800': '{{ request.status }}' === 'approved',
+                'bg-blue-100 text-blue-800': '{{ request.status }}' === 'used',
+                'bg-red-100 text-red-800': '{{ request.status }}' === 'rejected'
+              }">
+                {{ request.status === 'pending' ? 'En attente' : (request.status === 'approved' ? 'Approuvé' : (request.status === 'used' ? 'Complété' : 'Rejeté')) }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center font-mono text-xs">{{ request.authorizationCode || '-' }}</td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex justify-center gap-2">
+                @if(request.status === 'pending')
+                <button onclick="cancelRequest('{{ request.id }}')" class="text-red-500 hover:text-red-700" title="Annuler">
+                  <i class="fas fa-times-circle"></i>
+                </button>
+                @endif
+                @if(request.status === 'approved')
+                <button onclick="downloadAuthorization('{{ request.authorizationCode }}')" class="text-green-600 hover:text-green-800" title="Télécharger autorisation">
+                  <i class="fas fa-download"></i>
+                </button>
+                @endif
+                <button onclick="viewDetails('{{ request.id }}')" class="text-primary hover:text-blue-700" title="Détails">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          @eachelse
+          <tr>
+            <td colspan="7" class="text-center py-12 text-gray-500">
+              <i class="fas fa-exchange-alt text-4xl mb-3 block"></i>
+              Aucune demande de transfert sortant
+            </td>
+          </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Transferts entrants -->
+<div id="panel-incoming" class="tab-panel hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="px-4 py-3 border-b dark:border-gray-700">
+      <h3 class="font-semibold">Demandes de transfert entrant</h3>
+    </div>
+    <div class="table-responsive">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-4 py-3 text-left">Date demande</th>
+            <th class="px-4 py-3 text-left">Élève</th>
+            <th class="px-4 py-3 text-left">Classe d'origine</th>
+            <th class="px-4 py-3 text-left">École d'origine</th>
+            <th class="px-4 py-3 text-center">Statut</th>
+            <th class="px-4 py-3 text-center">Code</th>
+            <th class="px-4 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(request in incomingRequests)
+          <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-4 py-3">{{ formatDate(request.createdAt) }}</td>
+            <td class="px-4 py-3 font-medium">{{ request.studentName }}</td>
+            <td class="px-4 py-3">{{ request.originalClassName }}</td>
+            <td class="px-4 py-3">{{ request.fromSchoolName }}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="px-2 py-1 rounded-full text-xs" :class="{
+                'bg-yellow-100 text-yellow-800': '{{ request.status }}' === 'pending',
+                'bg-green-100 text-green-800': '{{ request.status }}' === 'approved',
+                'bg-blue-100 text-blue-800': '{{ request.status }}' === 'used',
+                'bg-red-100 text-red-800': '{{ request.status }}' === 'rejected'
+              }">
+                {{ request.status === 'pending' ? 'En attente' : (request.status === 'approved' ? 'Approuvé' : (request.status === 'used' ? 'Complété' : 'Rejeté')) }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center font-mono text-xs">{{ request.authorizationCode || '-' }}</td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex justify-center gap-2">
+                @if(request.status === 'pending')
+                <a href="/schools/transfers/authorize?code={{ request.authorizationCode }}" class="text-green-600 hover:text-green-800" title="Autoriser">
+                  <i class="fas fa-check-circle"></i>
+                </a>
+                @endif
+                <button onclick="viewDetails('{{ request.id }}')" class="text-primary hover:text-blue-700" title="Détails">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          @eachelse
+          <tr>
+            <td colspan="7" class="text-center py-12 text-gray-500">
+              <i class="fas fa-exchange-alt text-4xl mb-3 block"></i>
+              Aucune demande de transfert entrant
+            </td>
+          </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@include('partials/pagination', { pagination: pagination, url: '/schools/transfers/requests' })
+
+<!-- Modal Nouvelle demande -->
+<div id="newRequestModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Nouvelle demande de transfert</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form id="transferForm" onsubmit="event.preventDefault(); submitTransfer()">
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève *</label>
+        <select name="studentId" required class="w-full px-3 py-2 border rounded-lg">
+          <option value="">Sélectionner un élève</option>
+          @each(student in students)
+          <option value="{{ student.id }}">{{ student.user.firstName }} {{ student.user.lastName }} ({{ student.className }})</option>
+          @end
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Code de l'école destination *</label>
+        <input type="text" name="targetSchoolCode" required placeholder="Ex: SCH-XXXXXX"
+               class="w-full px-3 py-2 border rounded-lg">
+        <p class="text-xs text-gray-500 mt-1">Entrez le code unique de l'école cible</p>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Raison du transfert</label>
+        <textarea name="reason" rows="3" class="w-full px-3 py-2 border rounded-lg"
+                  placeholder="Motif du transfert..."></textarea>
+      </div>
+      
+      <div class="flex gap-3">
+        <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          Soumettre la demande
+        </button>
+        <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Détails -->
+<div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Détails du transfert</h3>
+      <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div id="detailsContent">
+      <!-- Contenu dynamique -->
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentTab = 'outgoing'
+  
+  function showTab(tab) {
+    currentTab = tab
+    document.getElementById('panel-outgoing').classList.add('hidden')
+    document.getElementById('panel-incoming').classList.add('hidden')
+    document.getElementById(`panel-${tab}`).classList.remove('hidden')
+    
+    document.getElementById('tab-outgoing').classList.remove('border-primary', 'text-primary')
+    document.getElementById('tab-outgoing').classList.add('text-gray-500')
+    document.getElementById('tab-incoming').classList.remove('border-primary', 'text-primary')
+    document.getElementById('tab-incoming').classList.add('text-gray-500')
+    
+    document.getElementById(`tab-${tab}`).classList.add('border-primary', 'text-primary')
+    document.getElementById(`tab-${tab}`).classList.remove('text-gray-500')
+  }
+  
+  function newTransferRequest() {
+    document.getElementById('newRequestModal').classList.remove('hidden')
+    document.getElementById('newRequestModal').classList.add('flex')
+  }
+  
+  function closeModal() {
+    document.getElementById('newRequestModal').classList.add('hidden')
+    document.getElementById('newRequestModal').classList.remove('flex')
+  }
+  
+  function closeDetailsModal() {
+    document.getElementById('detailsModal').classList.add('hidden')
+    document.getElementById('detailsModal').classList.remove('flex')
+  }
+  
+  async function submitTransfer() {
+    const form = document.getElementById('transferForm')
+    const formData = new FormData(form)
+    
+    const res = await fetch('/api/transfers/request', {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
+      body: formData
+    })
+    const data = await res.json()
+    
+    if (data.success) {
+      alert(`Demande soumise avec succès. Code: ${data.authorizationCode}`)
+      location.reload()
+    } else {
+      alert('Erreur: ' + data.message)
+    }
+  }
+  
+  async function cancelRequest(requestId) {
+    if (confirm('Annuler cette demande de transfert ?')) {
+      const res = await fetch(`/api/transfers/${requestId}/cancel`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      if (data.success) {
+        location.reload()
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+  
+  async function viewDetails(requestId) {
+    const res = await fetch(`/api/transfers/${requestId}`)
+    const data = await res.json()
+    
+    const content = document.getElementById('detailsContent')
+    content.innerHTML = `
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Élève:</span>
+          <span class="font-medium">${data.studentName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Classe:</span>
+          <span>${data.className}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">École destination:</span>
+          <span>${data.targetSchoolName}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date demande:</span>
+          <span>${data.createdAt}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Statut:</span>
+          <span class="px-2 py-0.5 rounded-full text-xs ${data.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : (data.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}">
+            ${data.status === 'pending' ? 'En attente' : (data.status === 'approved' ? 'Approuvé' : 'Rejeté')}
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Code:</span>
+          <span class="font-mono">${data.authorizationCode || '-'}</span>
+        </div>
+        ${data.reason ? `<div><span class="text-gray-500">Raison:</span><p class="mt-1 text-gray-600">${data.reason}</p></div>` : ''}
+        ${data.rejectionReason ? `<div><span class="text-gray-500">Raison rejet:</span><p class="mt-1 text-red-600">${data.rejectionReason}</p></div>` : ''}
+      </div>
+    `
+    document.getElementById('detailsModal').classList.remove('hidden')
+    document.getElementById('detailsModal').classList.add('flex')
+  }
+  
+  function downloadAuthorization(code) {
+    window.open(`/api/transfers/authorization/${code}/download`, '_blank')
+  }
+  
+  function exportRequests() {
+    window.location.href = `/api/transfers/export?type=${currentTab}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

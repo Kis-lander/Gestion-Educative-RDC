@@ -1,0 +1,325 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Paramètres - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Paramètres de l'école{{# /section }}
+{{# section('dashboardSubtitle') }}Configuration de l'établissement{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <!-- Sidebar navigation -->
+  <div class="lg:col-span-1">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden sticky top-20">
+      <div class="p-4 border-b dark:border-gray-700">
+        <h3 class="font-semibold">Configuration</h3>
+      </div>
+      <div class="divide-y dark:divide-gray-700">
+        <button onclick="showSettingsTab('general')" id="settings-tab-general" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
+          <i class="fas fa-globe w-5 text-gray-500"></i>
+          <span>Général</span>
+        </button>
+        <button onclick="showSettingsTab('academic')" id="settings-tab-academic" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
+          <i class="fas fa-graduation-cap w-5 text-gray-500"></i>
+          <span>Académique</span>
+        </button>
+        <button onclick="showSettingsTab('users')" id="settings-tab-users" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
+          <i class="fas fa-users w-5 text-gray-500"></i>
+          <span>Utilisateurs</span>
+        </button>
+        <button onclick="showSettingsTab('security')" id="settings-tab-security" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
+          <i class="fas fa-shield-alt w-5 text-gray-500"></i>
+          <span>Sécurité</span>
+        </button>
+        <button onclick="showSettingsTab('api')" id="settings-tab-api" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
+          <i class="fas fa-code w-5 text-gray-500"></i>
+          <span>API</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Content area -->
+  <div class="lg:col-span-3">
+    
+    <!-- Tab: Général -->
+    <div id="settings-panel-general" class="settings-panel">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Paramètres généraux</h3>
+        
+        <form method="POST" action="/schools/settings/general" x-data="{ loading: false }" @submit="loading = true">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom abrégé de l'école</label>
+              <input type="text" name="short_name" value="{{ settings.shortName || '' }}" 
+                     class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Site web</label>
+              <input type="url" name="website" value="{{ settings.website || '' }}" 
+                     class="w-full px-3 py-2 border rounded-lg" placeholder="https://www.ecole.cd">
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Devise de l'école</label>
+              <input type="text" name="motto" value="{{ settings.motto || '' }}" 
+                     class="w-full px-3 py-2 border rounded-lg" placeholder="La discipline au service de l'excellence">
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea name="description" rows="3" class="w-full px-3 py-2 border rounded-lg"
+                        placeholder="Présentation de l'établissement...">{{ settings.description || '' }}</textarea>
+            </div>
+          </div>
+          
+          <div class="mt-6 pt-4 border-t">
+            <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Tab: Académique -->
+    <div id="settings-panel-academic" class="settings-panel hidden">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Paramètres académiques</h3>
+        
+        <form method="POST" action="/schools/settings/academic" x-data="{ loading: false }" @submit="loading = true">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique en cours</label>
+              <select name="current_academic_year" class="w-full px-3 py-2 border rounded-lg">
+                <option value="2024-2025" {{ settings.currentAcademicYear === '2024-2025' ? 'selected' : '' }}>2024-2025</option>
+                <option value="2023-2024" {{ settings.currentAcademicYear === '2023-2024' ? 'selected' : '' }}>2023-2024</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre actuel</label>
+              <select name="current_term" class="w-full px-3 py-2 border rounded-lg">
+                <option value="T1" {{ settings.currentTerm === 'T1' ? 'selected' : '' }}>Trimestre 1</option>
+                <option value="T2" {{ settings.currentTerm === 'T2' ? 'selected' : '' }}>Trimestre 2</option>
+                <option value="T3" {{ settings.currentTerm === 'T3' ? 'selected' : '' }}>Trimestre 3</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="auto_publish_grades" {{ settings.autoPublishGrades ? 'checked' : '' }} class="w-4 h-4">
+                <span>Publication automatique des notes à la fin du trimestre</span>
+              </label>
+            </div>
+            
+            <div>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="require_parent_approval" {{ settings.requireParentApproval ? 'checked' : '' }} class="w-4 h-4">
+                <span>Validation parentale obligatoire pour les bulletins</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="mt-6 pt-4 border-t">
+            <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Tab: Utilisateurs -->
+    <div id="settings-panel-users" class="settings-panel hidden">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Gestion des utilisateurs</h3>
+        
+        <div class="space-y-6">
+          <div>
+            <h4 class="font-medium mb-3">Rôles et permissions</h4>
+            <div class="space-y-2">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="allow_teacher_grade_edit" {{ settings.allowTeacherGradeEdit ? 'checked' : '' }} class="w-4 h-4">
+                <span>Les enseignants peuvent modifier leurs notes après publication</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="allow_parent_messaging" {{ settings.allowParentMessaging ? 'checked' : '' }} class="w-4 h-4">
+                <span>Activer la messagerie parents-enseignants</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="allow_student_forum" {{ settings.allowStudentForum ? 'checked' : '' }} class="w-4 h-4">
+                <span>Activer le forum pour les élèves</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="pt-4 border-t">
+            <h4 class="font-medium mb-3">Nouveaux comptes</h4>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Mot de passe par défaut</label>
+              <input type="text" name="default_password" value="{{ settings.defaultPassword || 'password123' }}" 
+                     class="w-full px-3 py-2 border rounded-lg font-mono">
+              <p class="text-xs text-gray-500 mt-1">Modifié à la première connexion</p>
+            </div>
+          </div>
+          
+          <div class="pt-4 border-t">
+            <button onclick="syncUsers()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+              <i class="fas fa-sync-alt mr-2"></i> Synchroniser les utilisateurs
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tab: Sécurité -->
+    <div id="settings-panel-security" class="settings-panel hidden">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Paramètres de sécurité</h3>
+        
+        <div class="space-y-6">
+          <div>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="require_2fa" {{ settings.require2FA ? 'checked' : '' }} class="w-4 h-4">
+              <span>Exiger la double authentification pour les administrateurs</span>
+            </label>
+          </div>
+          
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Session expiration (minutes)</label>
+            <input type="number" name="session_timeout" value="{{ settings.sessionTimeout || 60 }}" min="15" max="480"
+                   class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">IP autorisées (une par ligne)</label>
+            <textarea name="whitelist_ips" rows="3" class="w-full px-3 py-2 border rounded-lg font-mono text-sm"
+                      placeholder="192.168.1.1&#10;10.0.0.0/24">{{ settings.whitelistIPs || '' }}</textarea>
+          </div>
+          
+          <div class="pt-4 border-t">
+            <h4 class="font-medium mb-3 text-red-600">Zone dangereuse</h4>
+            <button onclick="clearAllData()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+              <i class="fas fa-trash-alt mr-2"></i> Réinitialiser toutes les données
+            </button>
+            <p class="text-xs text-gray-500 mt-2">Cette action est irréversible</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tab: API -->
+    <div id="settings-panel-api" class="settings-panel hidden">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Intégration API</h3>
+        
+        <div class="space-y-4">
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <p class="font-medium mb-2">Clé API</p>
+            <div class="flex gap-2">
+              <input type="text" id="apiKey" value="{{ settings.apiKey || 'Non générée' }}" readonly 
+                     class="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded font-mono text-sm">
+              <button onclick="regenerateApiKey()" class="px-3 py-2 border rounded-lg hover:bg-gray-100">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Utilisez cette clé pour les intégrations externes</p>
+          </div>
+          
+          <div>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="enable_api" {{ settings.enableAPI ? 'checked' : '' }} class="w-4 h-4">
+              <span>Activer l'API externe</span>
+            </label>
+          </div>
+          
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Webhooks</label>
+            <textarea name="webhooks" rows="3" class="w-full px-3 py-2 border rounded-lg font-mono text-sm"
+                      placeholder="https://votre-serveur.com/webhook">{{ settings.webhooks || '' }}</textarea>
+          </div>
+          
+          <div class="pt-4 border-t">
+            <button onclick="testApiConnection()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+              <i class="fas fa-plug mr-2"></i> Tester la connexion API
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<script>
+  let currentSettingsTab = 'general'
+  
+  function showSettingsTab(tabName) {
+    document.querySelectorAll('.settings-panel').forEach(panel => {
+      panel.classList.add('hidden')
+    })
+    document.getElementById(`settings-panel-${tabName}`).classList.remove('hidden')
+    
+    document.querySelectorAll('[id^="settings-tab-"]').forEach(tab => {
+      tab.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'font-semibold')
+    })
+    document.getElementById(`settings-tab-${tabName}`).classList.add('bg-gray-100', 'dark:bg-gray-700', 'font-semibold')
+    
+    currentSettingsTab = tabName
+  }
+  
+  function regenerateApiKey() {
+    fetch('/api/schools/settings/regenerate-api-key', {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    }).then(res => res.json()).then(data => {
+      if (data.apiKey) {
+        document.getElementById('apiKey').value = data.apiKey
+        alert('Nouvelle clé API générée')
+      }
+    })
+  }
+  
+  function testApiConnection() {
+    fetch('/api/schools/settings/test-api')
+      .then(res => res.json())
+      .then(data => {
+        alert(data.success ? 'Connexion API réussie' : 'Erreur de connexion API')
+      })
+  }
+  
+  function syncUsers() {
+    fetch('/api/schools/settings/sync-users', {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    }).then(res => res.json()).then(data => {
+      alert(`${data.synced || 0} utilisateurs synchronisés`)
+    })
+  }
+  
+  function clearAllData() {
+    if (confirm('⚠️ ATTENTION : Cette action supprimera TOUTES les données de l\'école. Êtes-vous absolument sûr ?')) {
+      if (prompt('Tapez "CONFIRMER" pour valider') === 'CONFIRMER') {
+        fetch('/api/schools/settings/clear-data', {
+          method: 'DELETE',
+          headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+        }).then(res => res.json()).then(data => {
+          alert(data.success ? 'Données réinitialisées' : 'Erreur')
+          if (data.success) window.location.href = '/'
+        })
+      }
+    }
+  }
+  
+  showSettingsTab('general')
+</script>
+{{# /section }}
+
+{{# /layout }}

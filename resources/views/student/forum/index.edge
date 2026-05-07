@@ -1,0 +1,186 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Forum pédagogique - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Forum pédagogique{{# /section }}
+{{# section('dashboardSubtitle') }}Échanges entre élèves et enseignants{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/student/forum/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Poser une question
+  </a>
+  <button onclick="exportForum()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Total sujets</p>
+    <p class="text-3xl font-bold">{{ stats.totalTopics || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Mes questions</p>
+    <p class="text-3xl font-bold">{{ stats.myTopics || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Réponses reçues</p>
+    <p class="text-3xl font-bold">{{ stats.myReplies || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Sujets populaires</p>
+    <p class="text-3xl font-bold">{{ stats.popular || 0 }}</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Matière</label>
+      <select id="filterSubject" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        @each(subject in subjects)
+        <option value="{{ subject.id }}">{{ subject.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="open">Ouverts</option>
+        <option value="closed">Fermés</option>
+        <option value="pinned">Épinglés</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+      <input type="text" id="searchInput" placeholder="Titre, contenu..."
+             class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Liste des sujets -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="divide-y dark:divide-gray-700">
+    @if(pinnedTopics && pinnedTopics.length > 0)
+    <div class="bg-yellow-50 dark:bg-yellow-900/20">
+      <div class="px-4 py-2 border-b">
+        <h4 class="font-semibold text-sm text-yellow-700"><i class="fas fa-thumbtack mr-1"></i> Sujets épinglés</h4>
+      </div>
+      @each(topic in pinnedTopics)
+      <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/student/forum/topic/{{ topic.id }}'">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-bold text-gray-800 dark:text-white">{{ topic.title }}</h3>
+              <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded"><i class="fas fa-thumbtack mr-1"></i> Épinglé</span>
+              @if(topic.isLocked)
+              <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded"><i class="fas fa-lock mr-1"></i> Verrouillé</span>
+              @endif
+            </div>
+            <div class="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+              <span><i class="fas fa-book mr-1"></i> {{ topic.subjectName }}</span>
+              <span><i class="fas fa-user mr-1"></i> {{ topic.authorName }}</span>
+              <span><i class="fas fa-clock mr-1"></i> {{ topic.createdAt }}</span>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{{ topic.content }}</p>
+          </div>
+          <div class="text-right text-xs text-gray-400">
+            <div class="mb-1"><i class="fas fa-comment mr-1"></i> {{ topic.repliesCount || 0 }} réponses</div>
+            <div><i class="fas fa-eye mr-1"></i> {{ topic.views || 0 }} vues</div>
+          </div>
+        </div>
+      </div>
+      @end
+    </div>
+    @endif
+    
+    <div class="px-4 py-2 border-b">
+      <h4 class="font-semibold text-sm">Sujets récents</h4>
+    </div>
+    @each(topic in topics)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/student/forum/topic/{{ topic.id }}'">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-bold text-gray-800 dark:text-white">{{ topic.title }}</h3>
+            @if(topic.isLocked)
+            <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded"><i class="fas fa-lock mr-1"></i> Verrouillé</span>
+            @endif
+          </div>
+          <div class="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+            <span><i class="fas fa-book mr-1"></i> {{ topic.subjectName }}</span>
+            <span><i class="fas fa-user mr-1"></i> {{ topic.authorName }}</span>
+            <span><i class="fas fa-clock mr-1"></i> {{ topic.createdAt }}</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{{ topic.content }}</p>
+        </div>
+        <div class="text-right text-xs text-gray-400">
+          <div class="mb-1"><i class="fas fa-comment mr-1"></i> {{ topic.repliesCount || 0 }} réponses</div>
+          <div><i class="fas fa-eye mr-1"></i> {{ topic.views || 0 }} vues</div>
+          @if(topic.lastReplyAt)
+          <div class="mt-1">{{ topic.lastReplyAt }}</div>
+          @endif
+        </div>
+      </div>
+    </div>
+    @eachelse
+    <div class="p-12 text-center text-gray-500">
+      <i class="fas fa-comments text-5xl mb-3 block"></i>
+      Aucun sujet trouvé
+      <div class="mt-3">
+        <a href="/student/forum/create" class="text-primary hover:underline">
+          Poser la première question
+        </a>
+      </div>
+    </div>
+    @end
+  </div>
+  
+  @include('partials/pagination', { pagination: pagination, url: '/student/forum' })
+</div>
+
+<script>
+  const filterSubject = document.getElementById('filterSubject')
+  const filterStatus = document.getElementById('filterStatus')
+  const searchInput = document.getElementById('searchInput')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterSubject.value) params.set('subject_id', filterSubject.value)
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    if (searchInput.value) params.set('search', searchInput.value)
+    window.location.href = `/student/forum?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/student/forum'
+  })
+  
+  function exportForum() {
+    const params = new URLSearchParams()
+    if (filterSubject.value) params.set('subject_id', filterSubject.value)
+    window.location.href = `/api/student/forum/export?${params.toString()}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

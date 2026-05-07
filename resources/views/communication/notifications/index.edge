@@ -1,0 +1,190 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Notifications - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Centre de notifications{{# /section }}
+{{# section('dashboardSubtitle') }}Historique de vos notifications{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="markAllAsRead()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-check-double mr-2"></i> Tout marquer lu
+  </button>
+  <button onclick="deleteAll()" class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
+    <i class="fas fa-trash-alt mr-2"></i> Supprimer tout
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Total</p>
+    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Non lues</p>
+    <p class="text-3xl font-bold">{{ stats.unread || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Ce mois</p>
+    <p class="text-3xl font-bold">{{ stats.thisMonth || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Cette semaine</p>
+    <p class="text-3xl font-bold">{{ stats.thisWeek || 0 }}</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
+      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Toutes</option>
+        <option value="message">Messages</option>
+        <option value="grade">Notes</option>
+        <option value="discipline">Discipline</option>
+        <option value="payment">Paiements</option>
+        <option value="event">Événements</option>
+        <option value="system">Système</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="unread">Non lues</option>
+        <option value="read">Lues</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-filter mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Liste des notifications -->
+<div class="space-y-2">
+  @each(notification in notifications)
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden notification-item {{ !notification.isRead ? 'border-l-4 border-blue-500' : '' }}"
+       data-type="{{ notification.type }}"
+       data-read="{{ notification.isRead }}">
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="viewNotification('{{ notification.id }}', '{{ notification.link }}')">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full 
+          {{ notification.type === 'message' ? 'bg-blue-100 text-blue-600' : 
+             (notification.type === 'grade' ? 'bg-green-100 text-green-600' : 
+             (notification.type === 'discipline' ? 'bg-red-100 text-red-600' : 
+             (notification.type === 'payment' ? 'bg-yellow-100 text-yellow-600' : 
+             (notification.type === 'event' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600')))) }} 
+          flex items-center justify-center">
+          <i class="fas {{ notification.type === 'message' ? 'fa-envelope' : 
+                         (notification.type === 'grade' ? 'fa-star' : 
+                         (notification.type === 'discipline' ? 'fa-gavel' : 
+                         (notification.type === 'payment' ? 'fa-coins' : 
+                         (notification.type === 'event' ? 'fa-calendar' : 'fa-bell')))) }}"></i>
+        </div>
+        <div class="flex-1">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-semibold {{ !notification.isRead ? 'text-blue-600' : 'text-gray-800 dark:text-white' }}">
+                {{ notification.title }}
+              </h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ notification.message }}</p>
+            </div>
+            <span class="text-xs text-gray-400 whitespace-nowrap ml-3">{{ notification.time }}</span>
+          </div>
+          @if(!notification.isRead)
+          <div class="mt-2 flex gap-2">
+            <button onclick="event.stopPropagation();markAsRead('{{ notification.id }}')" class="text-primary text-xs hover:underline">
+              Marquer comme lue
+            </button>
+          </div>
+          @endif
+        </div>
+      </div>
+    </div>
+  </div>
+  @eachelse
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+    <i class="fas fa-bell-slash text-5xl text-gray-400 mb-3"></i>
+    <p class="text-gray-500">Aucune notification</p>
+    <p class="text-sm text-gray-400 mt-1">Vous serez notifié des événements importants</p>
+  </div>
+  @end
+</div>
+
+@include('partials/pagination', { pagination: pagination, url: '/communication/notifications' })
+
+<script>
+  const filterType = document.getElementById('filterType')
+  const filterStatus = document.getElementById('filterStatus')
+  const startDate = document.getElementById('startDate')
+  const endDate = document.getElementById('endDate')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    const params = new URLSearchParams()
+    if (filterType.value) params.set('type', filterType.value)
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    window.location.href = `/communication/notifications?${params.toString()}`
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    window.location.href = '/communication/notifications'
+  })
+  
+  function markAsRead(notificationId) {
+    fetch(`/api/notifications/${notificationId}/read`, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    }).then(() => location.reload())
+  }
+  
+  function markAllAsRead() {
+    fetch('/api/notifications/mark-all-read', {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    }).then(() => location.reload())
+  }
+  
+  function deleteAll() {
+    if (confirm('Supprimer toutes les notifications ? Cette action est irréversible.')) {
+      fetch('/api/notifications/delete-all', {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(() => location.reload())
+    }
+  }
+  
+  function viewNotification(notificationId, link) {
+    if (link) {
+      window.location.href = link
+    } else {
+      markAsRead(notificationId)
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

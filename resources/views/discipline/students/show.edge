@@ -1,0 +1,307 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Dossier disciplinaire - {{ student.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Dossier disciplinaire{{# /section }}
+{{# section('dashboardSubtitle') }}{{ student.name }} - {{ student.className }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="reportIncident()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Signaler un incident
+  </button>
+  <button onclick="exportStudentReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter rapport
+  </button>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.totalIncidents || 0 }}</p>
+    <p class="text-sm text-gray-500">Total incidents</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-red-600">{{ stats.majorIncidents || 0 }}</p>
+    <p class="text-sm text-gray-500">Majeurs/Critiques</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.sanctionsCount || 0 }}</p>
+    <p class="text-sm text-gray-500">Sanctions reçues</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.appreciation }}</p>
+    <p class="text-sm text-gray-500">Appréciation</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Informations élève -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
+        {{ student.name.charAt(0) }}
+      </div>
+      <div>
+        <h3 class="font-bold text-xl">{{ student.name }}</h3>
+        <p class="text-sm text-gray-500">{{ student.className }}</p>
+        <p class="text-xs text-gray-400 font-mono">{{ student.registrationNumber }}</p>
+      </div>
+    </div>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Date naissance</span>
+        <span>{{ student.birthDate || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Tuteur</span>
+        <span>{{ student.parentName || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Contact</span>
+        <span>{{ student.parentPhone || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Statut disciplinaire</span>
+        <span class="px-2 py-0.5 rounded-full text-xs
+          {{ student.disciplineStatus === 'exemplary' ? 'bg-green-100 text-green-800' : 
+             (student.disciplineStatus === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
+             (student.disciplineStatus === 'sanctioned' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
+          {{ student.disciplineStatus === 'exemplary' ? 'Exemplaire' : 
+             (student.disciplineStatus === 'warning' ? 'Averti' : 
+             (student.disciplineStatus === 'sanctioned' ? 'Sanctionné' : 'Suspendu')) }}
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Résumé des incidents -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <h3 class="font-semibold border-b pb-2 mb-3">Résumé par type</h3>
+    <div class="space-y-2">
+      <div class="flex justify-between text-sm">
+        <span>Absences</span>
+        <span class="font-bold">{{ summaryByType.absence || 0 }}</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span>Retards</span>
+        <span class="font-bold">{{ summaryByType.late || 0 }}</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span>Inconduite</span>
+        <span class="font-bold">{{ summaryByType.misconduct || 0 }}</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span>Violence</span>
+        <span class="font-bold">{{ summaryByType.violence || 0 }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Avertissements -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <h3 class="font-semibold border-b pb-2 mb-3">Avertissements</h3>
+    @if(student.warnings && student.warnings.length > 0)
+    <div class="space-y-2">
+      @each(warning in student.warnings)
+      <div class="p-2 bg-yellow-50 rounded text-sm">
+        <p class="font-medium">{{ warning.date }}</p>
+        <p>{{ warning.reason }}</p>
+      </div>
+      @end
+    </div>
+    @else
+    <p class="text-gray-500 text-center py-4">Aucun avertissement</p>
+    @endif
+  </div>
+</div>
+
+<!-- Onglets -->
+<div class="mt-6">
+  <div class="border-b dark:border-gray-700 mb-4">
+    <nav class="flex gap-4">
+      <button onclick="showTab('incidents')" id="tab-incidents" class="px-4 py-2 font-medium border-b-2 border-primary text-primary">
+        Historique des incidents
+      </button>
+      <button onclick="showTab('sanctions')" id="tab-sanctions" class="px-4 py-2 font-medium text-gray-500 hover:text-gray-700">
+        Sanctions
+      </button>
+      <button onclick="showTab('reports')" id="tab-reports" class="px-4 py-2 font-medium text-gray-500 hover:text-gray-700">
+        Rapports
+      </button>
+    </nav>
+  </div>
+  
+  <!-- Onglet Incidents -->
+  <div id="panel-incidents" class="tab-panel">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">Date</th>
+              <th class="px-4 py-2">Type</th>
+              <th class="px-4 py-2">Gravité</th>
+              <th class="px-4 py-2">Description</th>
+              <th class="px-4 py-2">Sanction</th>
+              <th class="px-4 py-2 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(incident in incidents)
+            <tr class="border-b dark:border-gray-700">
+              <td class="px-4 py-2">{{ formatDate(incident.date) }}</td>
+              <td class="px-4 py-2">
+                <span class="px-2 py-1 rounded-full text-xs
+                  {{ incident.type === 'absence' ? 'bg-blue-100 text-blue-800' : 
+                     (incident.type === 'late' ? 'bg-yellow-100 text-yellow-800' : 
+                     (incident.type === 'misconduct' ? 'bg-purple-100 text-purple-800' : 
+                     (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}">
+                  {{ incident.typeLabel }}
+                </span>
+              </td>
+              <td class="px-4 py-2">
+                <span class="px-2 py-1 rounded-full text-xs
+                  {{ incident.severity === 'minor' ? 'bg-green-100 text-green-800' : 
+                     (incident.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
+                     (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
+                  {{ incident.severityLabel }}
+                </span>
+              </td>
+              <td class="px-4 py-2">{{ incident.description }}</td>
+              <td class="px-4 py-2">{{ incident.sanction || '-' }}</td>
+              <td class="px-4 py-2 text-center">
+                <a href="/discipline/incidents/{{ incident.id }}/edit" class="text-primary hover:underline">
+                  <i class="fas fa-edit"></i>
+                </a>
+              </td>
+            </tr>
+            @eachelse
+            <tr>
+              <td colspan="6" class="text-center py-8">Aucun incident enregistré</td>
+            </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Onglet Sanctions -->
+  <div id="panel-sanctions" class="tab-panel hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">Date</th>
+              <th class="px-4 py-2">Incident</th>
+              <th class="px-4 py-2">Sanction</th>
+              <th class="px-4 py-2">Période</th>
+              <th class="px-4 py-2">Statut</th>
+              <th class="px-4 py-2 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(sanction in sanctions)
+            <tr class="border-b dark:border-gray-700">
+              <td class="px-4 py-2">{{ formatDate(sanction.date) }}</td>
+              <td class="px-4 py-2">{{ sanction.incidentType }}</td>
+              <td class="px-4 py-2">{{ sanction.sanctionLabel }}</td>
+              <td class="px-4 py-2">{{ sanction.startDate ? formatDate(sanction.startDate) + ' - ' + formatDate(sanction.endDate) : '-' }}</td>
+              <td class="px-4 py-2">
+                <span class="px-2 py-1 rounded-full text-xs {{ sanction.isActive ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                  {{ sanction.isActive ? 'En cours' : 'Terminée' }}
+                </span>
+              </td>
+              <td class="px-4 py-2 text-center">
+                <button onclick="viewSanction('{{ sanction.id }}')" class="text-primary hover:underline">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+            @eachelse
+            <tr>
+              <td colspan="6" class="text-center py-8">Aucune sanction enregistrée</td>
+            </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Onglet Rapports -->
+  <div id="panel-reports" class="tab-panel hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-3">Générer un rapport</h3>
+      <form id="reportForm" onsubmit="event.preventDefault(); generateReport()" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-gray-700 text-sm mb-1">Type de rapport</label>
+          <select name="reportType" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="full">Rapport complet</option>
+            <option value="summary">Résumé disciplinaire</option>
+            <option value="evolution">Évolution du comportement</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 text-sm mb-1">Période</label>
+          <select name="period" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="all">Toute la scolarité</option>
+            <option value="year">Année en cours</option>
+            <option value="term">Trimestre en cours</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-file-pdf mr-2"></i> Générer PDF
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(tabName) {
+    document.getElementById('panel-incidents').classList.add('hidden')
+    document.getElementById('panel-sanctions').classList.add('hidden')
+    document.getElementById('panel-reports').classList.add('hidden')
+    document.getElementById(`panel-${tabName}`).classList.remove('hidden')
+    
+    document.getElementById('tab-incidents').classList.remove('border-primary', 'text-primary')
+    document.getElementById('tab-incidents').classList.add('text-gray-500')
+    document.getElementById('tab-sanctions').classList.remove('border-primary', 'text-primary')
+    document.getElementById('tab-sanctions').classList.add('text-gray-500')
+    document.getElementById('tab-reports').classList.remove('border-primary', 'text-primary')
+    document.getElementById('tab-reports').classList.add('text-gray-500')
+    
+    document.getElementById(`tab-${tabName}`).classList.add('border-primary', 'text-primary')
+    document.getElementById(`tab-${tabName}`).classList.remove('text-gray-500')
+  }
+  
+  function reportIncident() {
+    window.location.href = `/discipline/incidents/report?student_id={{ student.id }}`
+  }
+  
+  function exportStudentReport() {
+    window.location.href = `/api/discipline/students/{{ student.id }}/export`
+  }
+  
+  function viewSanction(sanctionId) {
+    window.location.href = `/discipline/sanctions/${sanctionId}`
+  }
+  
+  function generateReport() {
+    const form = document.getElementById('reportForm')
+    const reportType = form.querySelector('[name="reportType"]').value
+    const period = form.querySelector('[name="period"]').value
+    window.location.href = `/api/discipline/students/{{ student.id }}/report?type=${reportType}&period=${period}`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

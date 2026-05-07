@@ -1,0 +1,171 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Enregistrer paiement - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Enregistrement paiement{{# /section }}
+{{# section('dashboardSubtitle') }}Enregistrez un nouveau paiement{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/financial/payments/record" x-data="{ loading: false, selectedStudent: null, studentInfo: null }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève *</label>
+          <select name="studentId" required class="w-full px-3 py-2 border rounded-lg" x-model="selectedStudent" @change="loadStudentInfo">
+            <option value="">Sélectionner un élève</option>
+            @each(student in students)
+            <option value="{{ student.id }}">{{ student.name }} - {{ student.className }} ({{ student.registrationNumber }})</option>
+            @end
+          </select>
+        </div>
+        
+        <!-- Infos élève -->
+        <div x-show="selectedStudent" x-cloak class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div><span class="text-gray-500">Classe:</span> <span x-text="studentInfo?.className"></span></div>
+            <div><span class="text-gray-500">Matricule:</span> <span x-text="studentInfo?.registrationNumber"></span></div>
+            <div><span class="text-gray-500">Solde dû:</span> <span class="font-bold text-red-600" x-text="formatCurrency(studentInfo?.balance)"></span></div>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de frais *</label>
+          <select name="feeId" required class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Sélectionner</option>
+            @each(fee in fees)
+            <option value="{{ fee.id }}">{{ fee.feeType }} - {{ formatCurrency(fee.amount, fee.currency) }} {{ fee.term ? '(' + fee.term + ')' : '(Annuel)' }}</option>
+            @end
+          </select>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Montant payé *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <input type="number" name="amountPaid" step="0.01" min="0.01" required 
+                     class="w-full pl-8 pr-3 py-2 border rounded-lg" placeholder="0.00">
+            </div>
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Devise</label>
+            <select name="currency" class="w-full px-3 py-2 border rounded-lg">
+              <option value="USD">USD ($)</option>
+              <option value="CDF">CDF (FC)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date paiement *</label>
+            <input type="date" name="paymentDate" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Mode de paiement *</label>
+            <select name="paymentMethod" required class="w-full px-3 py-2 border rounded-lg">
+              <option value="cash">Espèces</option>
+              <option value="bank_transfer">Virement bancaire</option>
+              <option value="mobile_money">Mobile Money</option>
+              <option value="check">Chèque</option>
+              <option value="card">Carte bancaire</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- Champs supplémentaires selon mode -->
+        <div x-show="document.querySelector('[name=paymentMethod]')?.value === 'bank_transfer'" x-cloak>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la banque</label>
+          <input type="text" name="bankName" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        
+        <div x-show="document.querySelector('[name=paymentMethod]')?.value === 'check'" x-cloak>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Numéro de chèque</label>
+          <input type="text" name="checkNumber" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        
+        <div x-show="document.querySelector('[name=paymentMethod]')?.value === 'mobile_money'" x-cloak>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Numéro Mobile Money</label>
+          <input type="text" name="mobileMoneyNumber" class="w-full px-3 py-2 border rounded-lg" placeholder="+243 XXX XXX XXX">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Numéro de référence / transaction</label>
+          <input type="text" name="referenceNumber" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+          <textarea name="notes" rows="2" class="w-full px-3 py-2 border rounded-lg" placeholder="Informations complémentaires..."></textarea>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Enregistrer le paiement
+        </button>
+        <a href="/financial/payments" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Informations -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Conseils</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2">
+          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+          <span>Un reçu sera généré automatiquement</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+          <span>Les champs supplémentaires apparaîtront selon le mode de paiement</span>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Aide à la saisie</h3>
+      <div class="text-sm space-y-2">
+        <p>📝 <strong>Espèces:</strong> Remplissez date et montant</p>
+        <p>🏦 <strong>Virement:</strong> Indiquez la banque et référence</p>
+        <p>📱 <strong>Mobile Money:</strong> Numéro du payeur</p>
+        <p>💳 <strong>Carte:</strong> Référence transaction</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function loadStudentInfo() {
+    const studentId = document.querySelector('[name=studentId]').value
+    if (studentId) {
+      fetch(`/api/students/${studentId}/financial-status`)
+        .then(res => res.json())
+        .then(data => {
+          const component = document.querySelector('[x-data]').__x.$data
+          component.studentInfo = {
+            className: data.className,
+            registrationNumber: data.registrationNumber,
+            balance: data.balance || 0
+          }
+        })
+    }
+  }
+  
+  // Date par défaut
+  document.querySelector('input[name="paymentDate"]').value = new Date().toISOString().split('T')[0]
+</script>
+{{# /section }}
+
+{{# /layout }}

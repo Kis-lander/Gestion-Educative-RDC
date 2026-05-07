@@ -1,0 +1,188 @@
+{{# layout('layouts/print') }}
+
+{{# section('title') }}Rapport disciplinaire - {{ school.name }}{{# /section }}
+
+<div class="school-report">
+  <div class="text-center mb-6">
+    <h1 class="text-2xl font-bold">RAPPORT DISCIPLINAIRE</h1>
+    <h2 class="text-xl">{{ school.name }}</h2>
+    <p class="text-sm">Année académique {{ academicYear }} - Période: {{ periodLabel }}</p>
+    <p class="text-sm">Généré le {{ generationDate }}</p>
+  </div>
+  
+  <!-- Résumé général -->
+  <div class="summary-box mb-6 p-3 bg-gray-50 border">
+    <h3 class="font-bold mb-2">Résumé général</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+      <div><strong>Total incidents:</strong> {{ stats.totalIncidents || 0 }}</div>
+      <div><strong>Élèves concernés:</strong> {{ stats.affectedStudents || 0 }}</div>
+      <div><strong>Sanctions appliquées:</strong> {{ stats.totalSanctions || 0 }}</div>
+      <div><strong>Taux résolution:</strong> {{ stats.resolutionRate || 0 }}%</div>
+      <div><strong>Incidents majeurs:</strong> {{ stats.majorIncidents || 0 }}</div>
+      <div><strong>Suspensions actives:</strong> {{ stats.activeSuspensions || 0 }}</div>
+    </div>
+  </div>
+  
+  <!-- Graphique tendance -->
+  <div class="mb-6 text-center">
+    <h3 class="font-bold mb-2">Évolution mensuelle des incidents</h3>
+    <canvas id="schoolTrendChart" height="200"></canvas>
+  </div>
+  
+  <!-- Répartition par classe -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Répartition par classe</h3>
+    <div class="table-responsive">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-3 py-2">Classe</th>
+            <th class="px-3 py-2 text-center">Incidents</th>
+            <th class="px-3 py-2 text-center">Élèves concernés</th>
+            <th class="px-3 py-2 text-center">Taux incidence</th>
+            <th class="px-3 py-2 text-center">Sanctions</th>
+          </td>
+        </thead>
+        <tbody>
+          @each(classData in classesData)
+          <tr class="border-b">
+            <td class="px-3 py-2 font-medium">{{ classData.className }}</td>
+            <td class="px-3 py-2 text-center">{{ classData.incidentCount }}</td>
+            <td class="px-3 py-2 text-center">{{ classData.affectedStudents }}/{{ classData.totalStudents }}</td>
+            <td class="px-3 py-2 text-center">{{ classData.incidenceRate }}%</td>
+            <td class="px-3 py-2 text-center">{{ classData.sanctionsCount }}</td>
+          </table>
+          @end
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Top classes problématiques -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Classes avec le plus d'incidents</h3>
+    <div class="space-y-2">
+      @each(topClass in topClasses)
+      <div>
+        <div class="flex justify-between text-sm">
+          <span>{{ topClass.className }}</span>
+          <span>{{ topClass.incidentCount }} incidents</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-1.5">
+          <div class="bg-red-500 rounded-full h-1.5" style="width: {{ topClass.percentage }}%"></div>
+        </div>
+      </div>
+      @end
+    </div>
+  </div>
+  
+  <!-- Répartition par type -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Répartition par type d'incident</h3>
+    <div class="grid grid-cols-2 gap-3">
+      @each(type in typeDistribution)
+      <div class="flex justify-between text-sm">
+        <span>{{ type.label }}</span>
+        <span class="font-bold">{{ type.count }} ({{ type.percentage }}%)</span>
+      </div>
+      @end
+    </div>
+  </div>
+  
+  <!-- Top élèves -->
+  <div class="mb-6">
+    <h3 class="font-bold mb-2">Top 5 élèves avec incidents</h3>
+    <div class="table-responsive">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-3 py-2">Élève</th>
+            <th class="px-3 py-2">Classe</th>
+            <th class="px-3 py-2 text-center">Incidents</th>
+            <th class="px-3 py-2 text-center">Sanctions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(topStudent in topStudents)
+          <tr class="border-b">
+            <td class="px-3 py-2">{{ topStudent.name }}</td>
+            <td class="px-3 py-2">{{ topStudent.className }}</td>
+            <td class="px-3 py-2 text-center">{{ topStudent.incidentCount }}</td>
+            <td class="px-3 py-2 text-center">{{ topStudent.sanctionsCount }}</td>
+          </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Recommandations -->
+  <div class="mt-6 p-3 border-l-4 border-primary bg-gray-50">
+    <p class="font-bold">RECOMMANDATIONS</p>
+    <p class="text-sm mt-1">
+      @if(stats.totalIncidents > 50)
+      Une attention particulière doit être portée à la discipline dans l'établissement.
+      Organiser des séances de sensibilisation sur le règlement intérieur.
+      @elseif(stats.totalIncidents > 20)
+      La discipline est globalement satisfaisante. Continuer le suivi des élèves à risque.
+      @else
+      Félicitations pour l'excellente discipline dans l'établissement.
+      @endif
+    </p>
+  </div>
+  
+  <!-- Signatures -->
+  <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
+    <div class="text-center">
+      <p>Le Chef d'Établissement</p>
+      <div class="mt-12">_______________</div>
+    </div>
+    <div class="text-center">
+      <p>Le Responsable de la Discipline</p>
+      <div class="mt-12">_______________</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let schoolTrendChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('schoolTrendChart').getContext('2d')
+    schoolTrendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ trendLabels|json_encode|raw }},
+        datasets: [{ label: "Nombre d'incidents", data: {{ trendValues|json_encode|raw }}, borderColor: '#dc2626', fill: true, tension: 0.4 }]
+      },
+      options: { responsive: true }
+    })
+  }
+  
+  renderChart()
+</script>
+
+<style>
+  .school-report {
+    font-family: 'Times New Roman', 'Arial', sans-serif;
+    padding: 20px;
+  }
+  table {
+    border-collapse: collapse;
+  }
+  .border {
+    border: 1px solid #ddd;
+  }
+  .border-b {
+    border-bottom: 1px solid #ddd;
+  }
+  .bg-gray-100 {
+    background-color: #f3f4f6;
+  }
+  @media print {
+    body { padding: 0; margin: 0; }
+    .school-report { padding: 0; }
+  }
+</style>
+
+{{# /layout }}

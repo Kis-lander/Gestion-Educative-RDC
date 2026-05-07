@@ -1,0 +1,246 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Paramètres des notifications{{# /section }}
+
+{{# section('dashboardTitle') }}Paramètres des notifications{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez vos préférences de notification{{# /section }}
+
+{{# section('actions') }}
+<button onclick="saveSettings()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+  <i class="fas fa-save mr-2"></i> Enregistrer
+</button>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Canaux de notification -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Canaux de notification</h3>
+    
+    <div class="space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Notifications par email</p>
+          <p class="text-sm text-gray-500">Recevoir les notifications par email</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="emailEnabled" class="sr-only peer" {{ settings.emailEnabled ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Notifications push (navigateur)</p>
+          <p class="text-sm text-gray-500">Recevoir des notifications sur votre navigateur</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="pushEnabled" class="sr-only peer" {{ settings.pushEnabled ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Notifications SMS</p>
+          <p class="text-sm text-gray-500">Recevoir les alertes importantes par SMS</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="smsEnabled" class="sr-only peer" {{ settings.smsEnabled ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+    </div>
+    
+    <div class="mt-6 pt-4 border-t">
+      <h4 class="font-medium mb-2">Email de notification</h4>
+      <input type="email" id="notificationEmail" value="{{ settings.notificationEmail || auth.user.email }}" 
+             class="w-full px-3 py-2 border rounded-lg">
+      <p class="text-xs text-gray-400 mt-1">Adresse email pour recevoir les notifications</p>
+    </div>
+    
+    <div class="mt-4">
+      <h4 class="font-medium mb-2">Numéro de téléphone (SMS)</h4>
+      <input type="tel" id="notificationPhone" value="{{ settings.notificationPhone || auth.user.phone }}" 
+             class="w-full px-3 py-2 border rounded-lg" placeholder="+243 XXX XXX XXX">
+      <p class="text-xs text-gray-400 mt-1">Format international (+243...)</p>
+    </div>
+  </div>
+  
+  <!-- Types de notifications -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Types de notifications</h3>
+    
+    <div class="space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Messages</p>
+          <p class="text-sm text-gray-500">Nouveaux messages reçus</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notifyMessage" class="sr-only peer" {{ settings.notifyMessage ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Notes et résultats</p>
+          <p class="text-sm text-gray-500">Notes publiées, bulletins disponibles</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notifyGrade" class="sr-only peer" {{ settings.notifyGrade ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Discipline</p>
+          <p class="text-sm text-gray-500">Incidents signalés, sanctions appliquées</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notifyDiscipline" class="sr-only peer" {{ settings.notifyDiscipline ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Paiements</p>
+          <p class="text-sm text-gray-500">Paiements enregistrés, échéances</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notifyPayment" class="sr-only peer" {{ settings.notifyPayment ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Événements</p>
+          <p class="text-sm text-gray-500">Événements scolaires, réunions</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notifyEvent" class="sr-only peer" {{ settings.notifyEvent ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Rappels</p>
+          <p class="text-sm text-gray-500">Rappels de devoirs, échéances</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notifyReminder" class="sr-only peer" {{ settings.notifyReminder ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-medium">Système</p>
+          <p class="text-sm text-gray-500">Mises à jour, maintenance</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notifySystem" class="sr-only peer" {{ settings.notifySystem ? 'checked' : '' }}>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fréquence des notifications -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Fréquence des notifications</h3>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 mb-2">Résumé quotidien</label>
+      <select id="dailyDigest" class="w-full px-3 py-2 border rounded-lg">
+        <option value="none" {{ settings.dailyDigest === 'none' ? 'selected' : '' }}>Désactivé</option>
+        <option value="8" {{ settings.dailyDigest === '8' ? 'selected' : '' }}>08:00</option>
+        <option value="12" {{ settings.dailyDigest === '12' ? 'selected' : '' }}>12:00</option>
+        <option value="18" {{ settings.dailyDigest === '18' ? 'selected' : '' }}>18:00</option>
+        <option value="20" {{ settings.dailyDigest === '20' ? 'selected' : '' }}>20:00</option>
+      </select>
+    </div>
+    
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 mb-2">Résumé hebdomadaire</label>
+      <select id="weeklyDigest" class="w-full px-3 py-2 border rounded-lg">
+        <option value="none" {{ settings.weeklyDigest === 'none' ? 'selected' : '' }}>Désactivé</option>
+        <option value="monday" {{ settings.weeklyDigest === 'monday' ? 'selected' : '' }}>Lundi</option>
+        <option value="friday" {{ settings.weeklyDigest === 'friday' ? 'selected' : '' }}>Vendredi</option>
+        <option value="sunday" {{ settings.weeklyDigest === 'sunday' ? 'selected' : '' }}>Dimanche</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="mt-4">
+    <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure silencieuse (pas de notifications)</label>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-sm text-gray-500">De</label>
+        <input type="time" id="quietStart" value="{{ settings.quietStart || '22:00' }}" class="w-full px-3 py-2 border rounded-lg">
+      </div>
+      <div>
+        <label class="text-sm text-gray-500">À</label>
+        <input type="time" id="quietEnd" value="{{ settings.quietEnd || '07:00' }}" class="w-full px-3 py-2 border rounded-lg">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function saveSettings() {
+    const settings = {
+      emailEnabled: document.getElementById('emailEnabled').checked,
+      pushEnabled: document.getElementById('pushEnabled').checked,
+      smsEnabled: document.getElementById('smsEnabled').checked,
+      notificationEmail: document.getElementById('notificationEmail').value,
+      notificationPhone: document.getElementById('notificationPhone').value,
+      notifyMessage: document.getElementById('notifyMessage').checked,
+      notifyGrade: document.getElementById('notifyGrade').checked,
+      notifyDiscipline: document.getElementById('notifyDiscipline').checked,
+      notifyPayment: document.getElementById('notifyPayment').checked,
+      notifyEvent: document.getElementById('notifyEvent').checked,
+      notifyReminder: document.getElementById('notifyReminder').checked,
+      notifySystem: document.getElementById('notifySystem').checked,
+      dailyDigest: document.getElementById('dailyDigest').value,
+      weeklyDigest: document.getElementById('weeklyDigest').value,
+      quietStart: document.getElementById('quietStart').value,
+      quietEnd: document.getElementById('quietEnd').value
+    }
+    
+    const res = await fetch('/api/notifications/settings', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrfToken }}'
+      },
+      body: JSON.stringify(settings)
+    })
+    
+    const data = await res.json()
+    if (data.success) {
+      alert('Paramètres enregistrés avec succès')
+    } else {
+      alert('Erreur: ' + data.message)
+    }
+  }
+  
+  // Activer les notifications push (si supporté)
+  if ('Notification' in window && document.getElementById('pushEnabled').checked) {
+    Notification.requestPermission().then(permission => {
+      if (permission !== 'granted') {
+        document.getElementById('pushEnabled').checked = false
+      }
+    })
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

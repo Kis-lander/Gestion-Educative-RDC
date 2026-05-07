@@ -1,0 +1,256 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Tableau de bord Enseignant - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Espace Enseignant{{# /section }}
+{{# section('dashboardSubtitle') }}Bienvenue, {{ auth.user.firstName }} {{ auth.user.lastName }}{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Mes classes</p>
+        <p class="text-2xl font-bold text-primary">{{ stats.myClasses || 0 }}</p>
+      </div>
+      <i class="fas fa-chalkboard text-blue-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Mes élèves</p>
+        <p class="text-2xl font-bold text-green-600">{{ stats.myStudents || 0 }}</p>
+      </div>
+      <i class="fas fa-users text-green-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Devoirs publiés</p>
+        <p class="text-2xl font-bold text-purple-600">{{ stats.assignments || 0 }}</p>
+      </div>
+      <i class="fas fa-tasks text-purple-500 text-xl"></i>
+    </div>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Soumissions à noter</p>
+        <p class="text-2xl font-bold text-yellow-600">{{ stats.pendingSubmissions || 0 }}</p>
+      </div>
+      <i class="fas fa-clock text-yellow-500 text-xl"></i>
+    </div>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Mes classes -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md">
+    <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+      <h3 class="font-semibold text-gray-800 dark:text-white">Mes classes</h3>
+      <a href="/teacher/classes" class="text-primary text-sm hover:underline">Voir tout</a>
+    </div>
+    <div class="divide-y dark:divide-gray-700">
+      @each(classObj in myClasses)
+      <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-medium text-gray-800 dark:text-white">{{ classObj.name }}</p>
+            <p class="text-xs text-gray-500 mt-1">{{ classObj.level }} - {{ classObj.academicYear }}</p>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+              {{ classObj.studentsCount || 0 }} élèves
+            </span>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-3">
+          <a href="/teacher/classes/{{ classObj.id }}" class="text-primary text-sm hover:underline">
+            <i class="fas fa-eye mr-1"></i> Détails
+          </a>
+          <a href="/teacher/attendance/mark?class_id={{ classObj.id }}" class="text-green-600 text-sm hover:underline">
+            <i class="fas fa-calendar-check mr-1"></i> Présences
+          </a>
+          <a href="/academic/grades/add?class_id={{ classObj.id }}" class="text-yellow-600 text-sm hover:underline">
+            <i class="fas fa-star mr-1"></i> Notes
+          </a>
+        </div>
+      </div>
+      @eachelse
+      <div class="p-8 text-center text-gray-500">
+        <i class="fas fa-chalkboard text-3xl mb-2 block"></i>
+        Aucune classe assignée
+      </div>
+      @end
+    </div>
+  </div>
+  
+  <!-- Devoirs récents -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md">
+    <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+      <h3 class="font-semibold text-gray-800 dark:text-white">Devoirs récents</h3>
+      <a href="/teacher/assignments/create" class="text-primary text-sm hover:underline">
+        <i class="fas fa-plus mr-1"></i> Nouveau
+      </a>
+    </div>
+    <div class="divide-y dark:divide-gray-700">
+      @each(assignment in recentAssignments)
+      <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-medium text-gray-800 dark:text-white">{{ assignment.title }}</p>
+            <p class="text-xs text-gray-500">{{ assignment.className }} - {{ assignment.subjectName }}</p>
+          </div>
+          <span class="text-xs {{ assignment.isOverdue ? 'text-red-600' : 'text-green-600' }}">
+            {{ assignment.dueDate }}
+          </span>
+        </div>
+        <div class="flex justify-between items-center mt-2">
+          <div class="flex gap-1 text-xs">
+            <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+              {{ assignment.submittedCount || 0 }}/{{ assignment.totalStudents }} rendus
+            </span>
+            @if(assignment.submittedCount > 0)
+            <a href="/teacher/assignments/{{ assignment.id }}/submissions" class="text-primary hover:underline">
+              Voir soumissions
+            </a>
+            @endif
+          </div>
+          <div class="flex gap-2">
+            <a href="/teacher/assignments/{{ assignment.id }}/edit" class="text-primary">
+              <i class="fas fa-edit"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      @eachelse
+      <div class="p-8 text-center text-gray-500">
+        <i class="fas fa-tasks text-3xl mb-2 block"></i>
+        Aucun devoir publié
+        <a href="/teacher/assignments/create" class="block mt-2 text-primary hover:underline text-sm">
+          Créer un devoir
+        </a>
+      </div>
+      @end
+    </div>
+  </div>
+</div>
+
+<!-- Présences du jour -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+    <h3 class="font-semibold text-gray-800 dark:text-white">Présences du jour</h3>
+    <a href="/teacher/attendance/mark" class="text-primary text-sm hover:underline">
+      <i class="fas fa-plus mr-1"></i> Marquer
+    </a>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+    @each(classAttendance in todayAttendance)
+    <div class="border rounded-lg p-3">
+      <div class="flex justify-between items-center mb-2">
+        <p class="font-medium">{{ classAttendance.className }}</p>
+        <span class="text-xs bg-{{ classAttendance.rate >= 80 ? 'green' : (classAttendance.rate >= 50 ? 'yellow' : 'red') }}-100 px-2 py-1 rounded">
+          {{ classAttendance.rate }}% présents
+        </span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="bg-green-500 rounded-full h-1.5" style="width: {{ classAttendance.rate }}%"></div>
+      </div>
+      <div class="flex justify-between text-xs mt-2 text-gray-500">
+        <span>Présents: {{ classAttendance.presentCount }}</span>
+        <span>Absents: {{ classAttendance.absentCount }}</span>
+      </div>
+    </div>
+    @eachelse
+    <div class="col-span-2 text-center py-6 text-gray-500">
+      Aucun cours programmé aujourd'hui
+    </div>
+    @end
+  </div>
+</div>
+
+<!-- Forum pédagogique récent -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+  <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+    <h3 class="font-semibold text-gray-800 dark:text-white">Forum pédagogique</h3>
+    <a href="/teacher/forum/create" class="text-primary text-sm hover:underline">
+      <i class="fas fa-plus mr-1"></i> Nouveau sujet
+    </a>
+  </div>
+  <div class="divide-y dark:divide-gray-700">
+    @each(topic in forumTopics)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/teacher/forum/topic/{{ topic.id }}'">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="font-medium text-gray-800 dark:text-white">{{ topic.title }}</p>
+          <p class="text-xs text-gray-500">{{ topic.className }} - {{ topic.subjectName }}</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-gray-400">{{ topic.repliesCount }} réponses</span>
+        </div>
+      </div>
+    </div>
+    @eachelse
+    <div class="p-8 text-center text-gray-500">
+      <i class="fas fa-comments text-3xl mb-2 block"></i>
+      Aucun sujet récent
+    </div>
+    @end
+  </div>
+</div>
+
+<!-- Messages récents -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+  <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+    <h3 class="font-semibold text-gray-800 dark:text-white">Messages récents</h3>
+    <a href="/communication/messages/compose" class="text-primary text-sm hover:underline">
+      <i class="fas fa-plus mr-1"></i> Écrire
+    </a>
+  </div>
+  <div class="divide-y dark:divide-gray-700">
+    @each(message in recentMessages)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <p class="font-medium text-gray-800 dark:text-white">{{ message.senderName }}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">{{ message.subject }}</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-gray-400">{{ message.time }}</span>
+          @if(!message.isRead)
+          <span class="w-2 h-2 bg-blue-500 rounded-full inline-block ml-1"></span>
+          @endif
+        </div>
+      </div>
+    </div>
+    @eachelse
+    <div class="p-8 text-center text-gray-500">
+      <i class="fas fa-envelope text-3xl mb-2 block"></i>
+      Aucun message récent
+    </div>
+    @end
+  </div>
+</div>
+
+<script>
+  // Rafraîchissement auto des notifications
+  setInterval(() => {
+    fetch('/api/teacher/notifications/count')
+      .then(res => res.json())
+      .then(data => {
+        if (data.count > 0) {
+          // Mise à jour badge
+        }
+      })
+  }, 30000)
+</script>
+{{# /section }}
+
+{{# /layout }}

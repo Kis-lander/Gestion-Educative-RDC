@@ -1,0 +1,286 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Marquer les présences - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Marquer les présences{{# /section }}
+{{# section('dashboardSubtitle') }}Enregistrez les présences des élèves{{# /section }}
+
+{{# section('content') }}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <!-- Sélection -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
+      <select id="classSelect" class="w-full px-3 py-2 border rounded-lg">
+        <option value="">Sélectionner</option>
+        @each(classObj in myClasses)
+        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+        @end
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 mb-2">Date *</label>
+      <input type="date" id="attendanceDate" class="w-full px-3 py-2 border rounded-lg">
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 mb-2">Période</label>
+      <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg">
+        <option value="morning">Matin</option>
+        <option value="afternoon">Après-midi</option>
+        <option value="full">Journée complète</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- Actions rapides -->
+  <div class="flex gap-2 mb-4">
+    <button onclick="markAll('present')" class="px-3 py-1 bg-green-100 text-green-800 rounded text-sm hover:bg-green-200">
+      <i class="fas fa-check mr-1"></i> Tout présent
+    </button>
+    <button onclick="markAll('absent')" class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200">
+      <i class="fas fa-times mr-1"></i> Tout absent
+    </button>
+    <button onclick="markAll('late')" class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm hover:bg-yellow-200">
+      <i class="fas fa-clock mr-1"></i> Tout retard
+    </button>
+  </div>
+  
+  <!-- Grille des présences -->
+  <div id="attendanceGrid">
+    <div class="text-center py-8 text-gray-500">
+      <i class="fas fa-arrow-left text-2xl mb-2 block"></i>
+      Sélectionnez une classe pour marquer les présences
+    </div>
+  </div>
+  
+  <!-- Actions -->
+  <div class="flex gap-3 mt-6 pt-4 border-t" id="actionButtons" style="display: none;">
+    <button id="saveAttendance" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+      <i class="fas fa-save mr-2"></i> Enregistrer les présences
+    </button>
+  </div>
+</div>
+
+<script>
+  const classSelect = document.getElementById('classSelect')
+  const attendanceDate = document.getElementById('attendanceDate')
+  const periodSelect = document.getElementById('periodSelect')
+  const attendanceGrid = document.getElementById('attendanceGrid')
+  const actionButtons = document.getElementById('actionButtons')
+  
+  let studentsList = []
+  let existingAttendance = {}
+  
+  // Charger les élèves
+  classSelect.addEventListener('change', async () => {
+    const classId = classSelect.value
+    const date = attendanceDate.value
+    const period = periodSelect.value
+    
+    if (!classId) return
+    
+    // Charger les élèves
+    const studentsRes = await fetch(`/api/teacher/classes/${classId}/students`)
+    const studentsData = await studentsRes.json()
+    studentsList = studentsData.students || []
+    
+    // Charger les présences existantes
+    const attendanceRes = await fetch(`/api/teacher/attendance/class/${classId}?date=${date}&period=${period}`)
+    const attendanceData = await attendanceRes.json()
+    
+    existingAttendance = {}
+    if (attendanceData.attendances) {
+      attendanceData.attendances.forEach(att => {
+        existingAttendance[att.studentId] = att.status
+      })
+    }
+    
+    renderAttendanceForm()
+    actionButtons.style.display = 'flex'
+  })
+  
+  attendanceDate.addEventListener('change', () => {
+    if (classSelect.value) {
+      loadAttendance()
+    }
+  })
+  
+  periodSelect.addEventListener('change', () => {
+    if (classSelect.value) {
+      loadAttendance()
+    }
+  })
+  
+  async function loadAttendance() {
+    const classId = classSelect.value
+    const date = attendanceDate.value
+    const period = periodSelect.value
+    
+    const res = await fetch(`/api/teacher/attendance/class/${classId}?date=${date}&period=${period}`)
+    const data = await res.json()
+    
+    existingAttendance = {}
+    if (data.attendances) {
+      data.attendances.forEach(att => {
+        existingAttendance[att.studentId] = att.status
+      })
+    }
+    
+    updateAttendanceForm()
+  }
+  
+  function renderAttendanceForm() {
+    if (!studentsList.length) {
+      attendanceGrid.innerHTML = '<div class="text-center py-8 text-gray-500">Aucun élève dans cette classe</div>'
+      return
+    }
+    
+    let html = `
+      <div class="table-responsive">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">Matricule</th>
+              <th class="px-4 py-3 text-left">Élève</th>
+              <th class="px-4 py-3 text-center">Statut</th>
+              <th class="px-4 py-3 text-left">Justification / Motif</th>
+            </tr>
+          </thead>
+          <tbody>
+    `
+    
+    studentsList.forEach(student => {
+      const existingStatus = existingAttendance[student.id] || 'present'
+      const existingReason = existingAttendance[student.reason] || ''
+      
+      html += `
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-3 font-mono text-sm">${student.registrationNumber}</td>
+          <td class="px-4 py-3 font-medium">${student.name}</td>
+          <td class="px-4 py-3 text-center">
+            <select class="status-select px-2 py-1 border rounded text-sm"
+                    data-student-id="${student.id}"
+                    data-student-name="${student.name}">
+              <option value="present" ${existingStatus === 'present' ? 'selected' : ''}>✅ Présent(e)</option>
+              <option value="absent" ${existingStatus === 'absent' ? 'selected' : ''}>❌ Absent(e)</option>
+              <option value="late" ${existingStatus === 'late' ? 'selected' : ''}>⏰ Retard</option>
+              <option value="excused" ${existingStatus === 'excused' ? 'selected' : ''}>📝 Excusé(e)</option>
+            </select>
+          </td>
+          <td class="px-4 py-3">
+            <input type="text" class="reason-input w-full px-2 py-1 border rounded text-sm"
+                   data-student-id="${student.id}"
+                   value="${existingReason}"
+                   placeholder="Motif (optionnel)">
+          </td>
+        </tr>
+      `
+    })
+    
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `
+    
+    attendanceGrid.innerHTML = html
+  }
+  
+  function updateAttendanceForm() {
+    studentsList.forEach(student => {
+      const statusSelect = document.querySelector(`.status-select[data-student-id="${student.id}"]`)
+      const reasonInput = document.querySelector(`.reason-input[data-student-id="${student.id}"]`)
+      const existingStatus = existingAttendance[student.id] || 'present'
+      const existingReason = existingAttendance[`${student.id}_reason`] || ''
+      
+      if (statusSelect) statusSelect.value = existingStatus
+      if (reasonInput) reasonInput.value = existingReason
+    })
+  }
+  
+  function markAll(status) {
+    document.querySelectorAll('.status-select').forEach(select => {
+      select.value = status
+    })
+  }
+  
+  async function saveAttendance() {
+    const classId = classSelect.value
+    const date = attendanceDate.value
+    const period = periodSelect.value
+    
+    if (!classId) {
+      alert('Veuillez sélectionner une classe')
+      return
+    }
+    
+    if (!date) {
+      alert('Veuillez sélectionner une date')
+      return
+    }
+    
+    const attendances = []
+    document.querySelectorAll('.status-select').forEach(select => {
+      const studentId = select.dataset.studentId
+      const status = select.value
+      const reason = document.querySelector(`.reason-input[data-student-id="${studentId}"]`)?.value || ''
+      
+      attendances.push({ studentId, status, reason })
+    })
+    
+    // Afficher loading
+    const loading = document.createElement('div')
+    loading.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50'
+    loading.innerHTML = '<div class="spinner"></div>'
+    document.body.appendChild(loading)
+    
+    const res = await fetch('/api/teacher/attendance/save', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrfToken }}'
+      },
+      body: JSON.stringify({
+        classId,
+        date,
+        period,
+        attendances
+      })
+    })
+    
+    loading.remove()
+    const data = await res.json()
+    
+    if (data.success) {
+      alert(`${attendances.length} présences enregistrées avec succès`)
+      // Recharger les données
+      await loadAttendance()
+    } else {
+      alert('Erreur: ' + data.message)
+    }
+  }
+  
+  document.getElementById('saveAttendance')?.addEventListener('click', saveAttendance)
+  
+  // Date par défaut
+  attendanceDate.value = new Date().toISOString().split('T')[0]
+</script>
+
+<style>
+  .spinner {
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #2563eb;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    background: white;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+{{# /section }}
+
+{{# /layout }}

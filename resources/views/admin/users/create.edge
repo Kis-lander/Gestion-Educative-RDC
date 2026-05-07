@@ -1,0 +1,135 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Créer utilisateur - Administration{{# /section }}
+
+{{# section('dashboardTitle') }}Créer un utilisateur{{# /section }}
+{{# section('dashboardSubtitle') }}Ajouter un nouvel utilisateur{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/admin/users/create" x-data="{ loading: false, selectedRole: '' }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Prénom *</label>
+            <input type="text" name="firstName" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom *</label>
+            <input type="text" name="lastName" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+          <input type="email" name="email" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone</label>
+          <input type="tel" name="phone" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Rôle *</label>
+          <select name="role" required x-model="selectedRole" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Sélectionner</option>
+            <option value="inspection">Inspection</option>
+            <option value="director">Directeur</option>
+            <option value="finance_director">Directeur Financier</option>
+            <option value="teacher">Enseignant</option>
+            <option value="parent">Parent</option>
+            <option value="student">Élève</option>
+            <option value="discipline_director">Directeur Discipline</option>
+          </select>
+        </div>
+        
+        <div x-show="selectedRole !== 'inspection'" x-cloak>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">École *</label>
+          <select name="schoolId" required class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Sélectionner une école</option>
+            @each(school in schools)
+            <option value="{{ school.id }}">{{ school.name }} ({{ school.province }})</option>
+            @end
+          </select>
+        </div>
+        
+        <div x-show="selectedRole === 'student'" x-cloak>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe</label>
+          <select name="classId" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Sélectionner une classe</option>
+            <option value="" disabled>--- Sélectionnez d'abord une école ---</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="sendCredentials" checked class="w-4 h-4">
+            <span>Envoyer les identifiants par email</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Créer l'utilisateur
+        </button>
+        <a href="/admin/users" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Informations -->
+  <div class="space-y-6">
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">À savoir</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Un mot de passe temporaire sera généré</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> L'utilisateur devra le changer à la première connexion</li>
+        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Les identifiants sont envoyés par email</li>
+      </ul>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-2">Rôles disponibles</h3>
+      <div class="space-y-1 text-sm">
+        <p><span class="font-medium">Inspection:</span> Supervision nationale</p>
+        <p><span class="font-medium">Directeur:</span> Gestion complète de l'école</p>
+        <p><span class="font-medium">Enseignant:</span> Gestion des classes et notes</p>
+        <p><span class="font-medium">Parent:</span> Suivi des enfants</p>
+        <p><span class="font-medium">Élève:</span> Consultation des notes</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Charger les classes lorsqu'une école est sélectionnée
+  const schoolSelect = document.querySelector('select[name="schoolId"]')
+  const classSelect = document.querySelector('select[name="classId"]')
+  
+  schoolSelect?.addEventListener('change', async () => {
+    const schoolId = schoolSelect.value
+    if (schoolId && classSelect) {
+      const res = await fetch(`/api/schools/${schoolId}/classes`)
+      const data = await res.json()
+      classSelect.innerHTML = '<option value="">Sélectionner une classe</option>'
+      if (data.classes) {
+        data.classes.forEach(c => {
+          classSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`
+        })
+      }
+    }
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

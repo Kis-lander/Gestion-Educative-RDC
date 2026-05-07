@@ -1,0 +1,188 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Autoriser un transfert - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Autorisation de transfert{{# /section }}
+{{# section('dashboardSubtitle') }}Valider l'inscription d'un élève transféré{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Informations du transfert -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+        <i class="fas fa-exchange-alt text-blue-600 text-xl"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg">Demande de transfert entrante</h3>
+        <p class="text-sm text-gray-500">Code: {{ authorizationCode }}</p>
+      </div>
+    </div>
+    
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div>
+          <p class="text-gray-500 text-sm">Élève</p>
+          <p class="font-medium">{{ transfer.studentName }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">Matricule</p>
+          <p class="font-mono">{{ transfer.studentRegistrationNumber }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">Classe d'origine</p>
+          <p>{{ transfer.originalClassName }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">École d'origine</p>
+          <p>{{ transfer.fromSchoolName }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">Date demande</p>
+          <p>{{ formatDate(transfer.createdAt) }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">Validité</p>
+          <p>Jusqu'au {{ formatDate(transfer.validUntil) }}</p>
+        </div>
+      </div>
+      
+      @if(transfer.reason)
+      <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+        <p class="text-gray-500 text-sm">Motif du transfert</p>
+        <p class="mt-1">{{ transfer.reason }}</p>
+      </div>
+      @endif
+    </div>
+  </div>
+  
+  <!-- Formulaire d'autorisation -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Autoriser l'inscription</h3>
+    
+    <form method="POST" action="/api/transfers/complete" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="transferId" value="{{ transfer.id }}">
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe d'affectation *</label>
+        <select name="newClassId" required class="w-full px-3 py-2 border rounded-lg">
+          <option value="">Sélectionner une classe</option>
+          @each(classObj in classes)
+          <option value="{{ classObj.id }}">{{ classObj.name }} ({{ classObj.level }})</option>
+          @end
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Date d'inscription *</label>
+        <input type="date" name="enrollmentDate" required value="{{ today }}"
+               class="w-full px-3 py-2 border rounded-lg">
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Notes (optionnel)</label>
+        <textarea name="notes" rows="3" class="w-full px-3 py-2 border rounded-lg"
+                  placeholder="Informations complémentaires..."></textarea>
+      </div>
+      
+      <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-4">
+        <p class="text-sm text-green-800 dark:text-green-300">
+          <i class="fas fa-info-circle mr-2"></i>
+          En autorisant ce transfert, l'élève sera inscrit dans votre établissement.
+          Son dossier académique précédent sera accessible.
+        </p>
+      </div>
+      
+      <div class="flex gap-3">
+        <button type="submit" :disabled="loading"
+                class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Autoriser l'inscription
+        </button>
+        <button type="button" onclick="rejectTransfer()"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+          Rejeter
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Documents à fournir -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Documents requis</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-file-alt text-gray-400"></i>
+      <div>
+        <p class="font-medium">Bulletin scolaire</p>
+        <p class="text-xs text-gray-500">Dernier bulletin de l'élève</p>
+      </div>
+      <button onclick="viewDocument('bulletin')" class="ml-auto text-primary text-sm hover:underline">
+        Consulter
+      </button>
+    </div>
+    <div class="flex items-center gap-3">
+      <i class="fas fa-id-card text-gray-400"></i>
+      <div>
+        <p class="font-medium">Extrait de naissance</p>
+        <p class="text-xs text-gray-500">Copie certifiée conforme</p>
+      </div>
+      <button onclick="viewDocument('birth')" class="ml-auto text-primary text-sm hover:underline">
+        Consulter
+      </button>
+    </div>
+    <div class="flex items-center gap-3">
+      <i class="fas fa-handshake text-gray-400"></i>
+      <div>
+        <p class="font-medium">Lettre de transfert</p>
+        <p class="text-xs text-gray-500">Autorisation de l'école d'origine</p>
+      </div>
+      <button onclick="viewDocument('transfer')" class="ml-auto text-primary text-sm hover:underline">
+        Consulter
+      </button>
+    </div>
+    <div class="flex items-center gap-3">
+      <i class="fas fa-file-pdf text-gray-400"></i>
+      <div>
+        <p class="font-medium">Certificat de radiation</p>
+        <p class="text-xs text-gray-500">De l'école d'origine</p>
+      </div>
+      <button onclick="viewDocument('radiation')" class="ml-auto text-primary text-sm hover:underline">
+        Consulter
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function rejectTransfer() {
+    const reason = prompt('Raison du rejet (obligatoire) :')
+    if (reason) {
+      fetch('/api/transfers/{{ transfer.id }}/reject', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrfToken }}'
+        },
+        body: JSON.stringify({ reason })
+      }).then(res => res.json()).then(data => {
+        if (data.success) {
+          alert('Transfert rejeté')
+          window.location.href = '/schools/transfers/pending'
+        } else {
+          alert('Erreur: ' + data.message)
+        }
+      })
+    }
+  }
+  
+  function viewDocument(type) {
+    // Logique pour visualiser les documents
+    alert(`Document: ${type} sera affiché ici`)
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

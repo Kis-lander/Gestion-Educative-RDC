@@ -1,0 +1,170 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Langue - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Langue et région{{# /section }}
+{{# section('dashboardSubtitle') }}Choisissez votre langue et vos préférences régionales{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Langue -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Langue de l'interface</h3>
+    
+    <div class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+               :class="selectedLanguage === 'fr' ? 'border-primary bg-blue-50' : ''">
+          <input type="radio" name="language" value="fr" {{ language.language === 'fr' ? 'checked' : '' }} class="w-4 h-4">
+          <div>
+            <span class="font-medium">Français</span>
+            <p class="text-xs text-gray-500">Langue par défaut</p>
+          </div>
+        </label>
+        
+        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+               :class="selectedLanguage === 'en' ? 'border-primary bg-blue-50' : ''">
+          <input type="radio" name="language" value="en" {{ language.language === 'en' ? 'checked' : '' }} class="w-4 h-4">
+          <div>
+            <span class="font-medium">English</span>
+            <p class="text-xs text-gray-500">International</p>
+          </div>
+        </label>
+        
+        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+               :class="selectedLanguage === 'ln' ? 'border-primary bg-blue-50' : ''">
+          <input type="radio" name="language" value="ln" {{ language.language === 'ln' ? 'checked' : '' }} class="w-4 h-4">
+          <div>
+            <span class="font-medium">Lingala</span>
+            <p class="text-xs text-gray-500">Langue nationale</p>
+          </div>
+        </label>
+        
+        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+               :class="selectedLanguage === 'sw' ? 'border-primary bg-blue-50' : ''">
+          <input type="radio" name="language" value="sw" {{ language.language === 'sw' ? 'checked' : '' }} class="w-4 h-4">
+          <div>
+            <span class="font-medium">Swahili</span>
+            <p class="text-xs text-gray-500">Kiswahili</p>
+          </div>
+        </label>
+      </div>
+    </div>
+    
+    <div class="mt-6 pt-4 border-t">
+      <button onclick="saveLanguage()" class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        Enregistrer
+      </button>
+    </div>
+  </div>
+  
+  <!-- Région -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Préférences régionales</h3>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
+        <select id="timezone" class="w-full px-3 py-2 border rounded-lg">
+          <option value="Africa/Kinshasa" {{ language.timezone === 'Africa/Kinshasa' ? 'selected' : '' }}>Afrique/Kinshasa</option>
+          <option value="Africa/Lubumbashi" {{ language.timezone === 'Africa/Lubumbashi' ? 'selected' : '' }}>Afrique/Lubumbashi</option>
+          <option value="UTC" {{ language.timezone === 'UTC' ? 'selected' : '' }}>UTC</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Devise</label>
+        <select id="currency" class="w-full px-3 py-2 border rounded-lg">
+          <option value="USD" {{ language.currency === 'USD' ? 'selected' : '' }}>Dollar américain (USD)</option>
+          <option value="CDF" {{ language.currency === 'CDF' ? 'selected' : '' }}>Franc congolais (CDF)</option>
+          <option value="EUR" {{ language.currency === 'EUR' ? 'selected' : '' }}>Euro (EUR)</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Premier jour de la semaine</label>
+        <select id="firstDayOfWeek" class="w-full px-3 py-2 border rounded-lg">
+          <option value="monday" {{ language.firstDayOfWeek === 'monday' ? 'selected' : '' }}>Lundi</option>
+          <option value="sunday" {{ language.firstDayOfWeek === 'sunday' ? 'selected' : '' }}>Dimanche</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="mt-6 pt-4 border-t">
+      <button onclick="saveRegional()" class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Aperçu -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Aperçu</h3>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-500">Date</p>
+      <p class="font-medium" id="previewDate">{{ previewDate }}</p>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-500">Heure</p>
+      <p class="font-medium" id="previewTime">{{ previewTime }}</p>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-500">Monnaie</p>
+      <p class="font-medium" id="previewCurrency">100 {{ language.currency === 'USD' ? '$' : (language.currency === 'CDF' ? 'FC' : '€') }}</p>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-500">Nombre</p>
+      <p class="font-medium" id="previewNumber">1 234 567,89</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function saveLanguage() {
+    const language = document.querySelector('input[name="language"]:checked')?.value || 'fr'
+    
+    fetch('/api/settings/language', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrfToken }}'
+      },
+      body: JSON.stringify({ language })
+    }).then(res => res.json()).then(data => {
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    })
+  }
+  
+  function saveRegional() {
+    const regional = {
+      timezone: document.getElementById('timezone').value,
+      currency: document.getElementById('currency').value,
+      firstDayOfWeek: document.getElementById('firstDayOfWeek').value
+    }
+    
+    fetch('/api/settings/regional', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrfToken }}'
+      },
+      body: JSON.stringify(regional)
+    }).then(res => res.json()).then(data => {
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    })
+  }
+  
+  // Mettre à jour l'aperçu
+  document.getElementById('currency')?.addEventListener('change', function() {
+    const symbol = this.value === 'USD' ? '$' : (this.value === 'CDF' ? 'FC' : '€')
+    document.getElementById('previewCurrency').textContent = `100 ${symbol}`
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

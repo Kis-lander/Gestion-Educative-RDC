@@ -1,0 +1,175 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Préférences - {{ user.firstName }} {{ user.lastName }}{{# /section }}
+
+{{# section('dashboardTitle') }}Préférences{{# /section }}
+{{# section('dashboardSubtitle') }}Personnalisez votre expérience{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Apparence -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Apparence</h3>
+    
+    <form method="POST" action="/profile/preferences" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Thème</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                   :class="theme === 'light' ? 'border-primary bg-blue-50' : ''">
+              <input type="radio" name="theme" value="light" {{ preferences.theme === 'light' ? 'checked' : '' }} class="w-4 h-4">
+              <i class="fas fa-sun text-yellow-500"></i>
+              <span>Clair</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                   :class="theme === 'dark' ? 'border-primary bg-blue-50' : ''">
+              <input type="radio" name="theme" value="dark" {{ preferences.theme === 'dark' ? 'checked' : '' }} class="w-4 h-4">
+              <i class="fas fa-moon text-blue-500"></i>
+              <span>Sombre</span>
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Langue</label>
+          <select name="language" class="w-full px-3 py-2 border rounded-lg">
+            <option value="fr" {{ preferences.language === 'fr' ? 'selected' : '' }}>Français</option>
+            <option value="en" {{ preferences.language === 'en' ? 'selected' : '' }}>English</option>
+            <option value="ln" {{ preferences.language === 'ln' ? 'selected' : '' }}>Lingala</option>
+            <option value="sw" {{ preferences.language === 'sw' ? 'selected' : '' }}>Swahili</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Enregistrer
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Notifications -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Notifications</h3>
+    
+    <form method="POST" action="/profile/notifications-prefs" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-3">
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <span class="font-medium">Messages</span>
+            <p class="text-xs text-gray-500">Notifications pour les nouveaux messages</p>
+          </div>
+          <input type="checkbox" name="notify_messages" value="1" {{ preferences.notifyMessages ? 'checked' : '' }} class="w-5 h-5">
+        </label>
+        
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <span class="font-medium">Notes et résultats</span>
+            <p class="text-xs text-gray-500">Nouvelles notes, bulletins</p>
+          </div>
+          <input type="checkbox" name="notify_grades" value="1" {{ preferences.notifyGrades ? 'checked' : '' }} class="w-5 h-5">
+        </label>
+        
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <span class="font-medium">Discipline</span>
+            <p class="text-xs text-gray-500">Incidents, sanctions</p>
+          </div>
+          <input type="checkbox" name="notify_discipline" value="1" {{ preferences.notifyDiscipline ? 'checked' : '' }} class="w-5 h-5">
+        </label>
+        
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <span class="font-medium">Paiements</span>
+            <p class="text-xs text-gray-500">Échéances, reçus</p>
+          </div>
+          <input type="checkbox" name="notify_payments" value="1" {{ preferences.notifyPayments ? 'checked' : '' }} class="w-5 h-5">
+        </label>
+        
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <span class="font-medium">Événements</span>
+            <p class="text-xs text-gray-500">Événements scolaires, réunions</p>
+          </div>
+          <input type="checkbox" name="notify_events" value="1" {{ preferences.notifyEvents ? 'checked' : '' }} class="w-5 h-5">
+        </label>
+      </div>
+      
+      <div class="mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Enregistrer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Préférences avancées -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Préférences avancées</h3>
+  
+  <div class="space-y-4">
+    <label class="flex items-center justify-between cursor-pointer">
+      <div>
+        <span class="font-medium">Raccourcis clavier</span>
+        <p class="text-xs text-gray-500">Activer les raccourcis clavier</p>
+      </div>
+      <input type="checkbox" name="keyboard_shortcuts" {{ preferences.keyboardShortcuts ? 'checked' : '' }} class="w-5 h-5">
+    </label>
+    
+    <label class="flex items-center justify-between cursor-pointer">
+      <div>
+        <span class="font-medium">Confirmation avant suppression</span>
+        <p class="text-xs text-gray-500">Demander confirmation avant supprimer</p>
+      </div>
+      <input type="checkbox" name="confirm_delete" {{ preferences.confirmDelete ? 'checked' : '' }} class="w-5 h-5">
+    </label>
+    
+    <label class="flex items-center justify-between cursor-pointer">
+      <div>
+        <span class="font-medium">Auto-sauvegarde</span>
+        <p class="text-xs text-gray-500">Sauvegarder automatiquement les formulaires</p>
+      </div>
+      <input type="checkbox" name="auto_save" {{ preferences.autoSave ? 'checked' : '' }} class="w-5 h-5">
+    </label>
+  </div>
+  
+  <div class="mt-6 pt-4 border-t">
+    <button onclick="saveAdvancedPrefs()" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+      Enregistrer
+    </button>
+  </div>
+</div>
+
+<script>
+  function saveAdvancedPrefs() {
+    const keyboardShortcuts = document.querySelector('input[name="keyboard_shortcuts"]').checked
+    const confirmDelete = document.querySelector('input[name="confirm_delete"]').checked
+    const autoSave = document.querySelector('input[name="auto_save"]').checked
+    
+    fetch('/api/profile/advanced-preferences', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrfToken }}'
+      },
+      body: JSON.stringify({ keyboardShortcuts, confirmDelete, autoSave })
+    }).then(res => res.json()).then(data => {
+      if (data.success) alert('Préférences enregistrées')
+      else alert('Erreur: ' + data.message)
+    })
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

@@ -1,0 +1,195 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Assigner des matières - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Assigner des matières{{# /section }}
+{{# section('dashboardSubtitle') }}Associez une matière à une classe et un enseignant{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Formulaire d'assignation -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Nouvelle assignation</h3>
+    
+    <form method="POST" action="/api/subjects/assign" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
+          <select name="classId" required class="w-full px-4 py-2 border rounded-lg">
+            <option value="">Sélectionner une classe</option>
+            @each(classObj in classes)
+            <option value="{{ classObj.id }}">{{ classObj.name }} ({{ classObj.level }})</option>
+            @end
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière *</label>
+          <select name="subjectId" required class="w-full px-4 py-2 border rounded-lg">
+            <option value="">Sélectionner une matière</option>
+            @each(subject in subjects)
+            <option value="{{ subject.id }}">{{ subject.name }} (Coeff {{ subject.coefficient }})</option>
+            @end
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Enseignant *</label>
+          <select name="teacherId" required class="w-full px-4 py-2 border rounded-lg">
+            <option value="">Sélectionner un enseignant</option>
+            @each(teacher in teachers)
+            <option value="{{ teacher.id }}">{{ teacher.user.firstName }} {{ teacher.user.lastName }}</option>
+            @end
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Heures par semaine</label>
+          <input type="number" name="hoursPerWeek" value="4" min="1" max="40"
+                 class="w-full px-4 py-2 border rounded-lg">
+        </div>
+      </div>
+      
+      <div class="mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Assigner la matière
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Assignations existantes -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-semibold text-lg">Assignations existantes</h3>
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input type="text" id="searchAssignment" placeholder="Filtrer..." 
+               class="pl-8 pr-3 py-1 border rounded-lg text-sm">
+      </div>
+    </div>
+    
+    <div class="space-y-3 max-h-96 overflow-y-auto" id="assignmentsList">
+      @each(assignment in assignments)
+      <div class="assignment-item p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+           data-search="{{ assignment.className }} {{ assignment.subjectName }} {{ assignment.teacherName }}">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-medium">{{ assignment.subjectName }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Classe: {{ assignment.className }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Enseignant: {{ assignment.teacherName }}</p>
+            <p class="text-xs text-gray-400">{{ assignment.hoursPerWeek }} heures/semaine</p>
+          </div>
+          <button onclick="removeAssignment('{{ assignment.id }}')" class="text-red-500 hover:text-red-700">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      @eachelse
+      <p class="text-gray-500 text-center py-6">Aucune assignation pour le moment</p>
+      @end
+    </div>
+  </div>
+</div>
+
+<!-- Assignations par classe (vue alternative) -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Récapitulatif par classe</h3>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2 text-left">Classe</th>
+          <th class="px-4 py-2 text-left">Matières assignées</th>
+          <th class="px-4 py-2 text-center">Total heures/semaine</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(summary in classSummaries)
+        <tr>
+          <td class="px-4 py-2 font-medium">{{ summary.className }}</td>
+          <td class="px-4 py-2">
+            <div class="flex flex-wrap gap-1">
+              @each(sub in summary.subjects)
+              <span class="text-xs bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">
+                {{ sub.name }} ({{ sub.hours }}h)
+              </span>
+              @end
+            </div>
+          </td>
+          <td class="px-4 py-2 text-center font-bold">{{ summary.totalHours }}h</td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="3" class="text-center py-6 text-gray-500">Aucune donnée disponible</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Filtre des assignations
+  const searchInput = document.getElementById('searchAssignment')
+  if (searchInput) {
+    searchInput.addEventListener('keyup', () => {
+      const search = searchInput.value.toLowerCase()
+      const items = document.querySelectorAll('.assignment-item')
+      items.forEach(item => {
+        const text = item.dataset.search?.toLowerCase() || ''
+        item.style.display = text.includes(search) ? '' : 'none'
+      })
+    })
+  }
+  
+  function removeAssignment(assignmentId) {
+    if (confirm('Retirer cette assignation ?')) {
+      fetch(`/api/subjects/assignment/${assignmentId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) {
+          location.reload()
+        } else {
+          alert('Erreur: ' + data.message)
+        }
+      })
+    }
+  }
+  
+  // Gestion du formulaire
+  const form = document.querySelector('form')
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const formData = new FormData(form)
+      const loading = form.querySelector('[x-data]')?.__x?.$data
+      
+      try {
+        const res = await fetch('/api/subjects/assign', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
+          body: formData
+        })
+        const data = await res.json()
+        if (data.success) {
+          location.reload()
+        } else {
+          alert('Erreur: ' + data.message)
+          if (loading) loading.loading = false
+        }
+      } catch (err) {
+        alert('Erreur de connexion')
+        if (loading) loading.loading = false
+      }
+    })
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

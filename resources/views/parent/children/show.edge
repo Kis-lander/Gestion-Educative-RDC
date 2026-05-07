@@ -1,0 +1,190 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Détails - {{ child.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Détails de l'élève{{# /section }}
+{{# section('dashboardSubtitle') }}{{ child.name }} - {{ child.className }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <a href="/parent/grades/child/{{ child.id }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+    <i class="fas fa-star mr-2"></i> Bulletin / Notes
+  </a>
+  <a href="/parent/messages/send?student_id={{ child.id }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+    <i class="fas fa-envelope mr-2"></i> Contacter enseignant
+  </a>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ child.averageGrade || '-' }}/20</p>
+    <p class="text-sm text-gray-500">Moyenne générale</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ child.rank || '-' }}/{{ child.totalStudents || 0 }}</p>
+    <p class="text-sm text-gray-500">Classement</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ child.attendanceRate || 0 }}%</p>
+    <p class="text-sm text-gray-500">Présences</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ child.disciplineIncidents || 0 }}</p>
+    <p class="text-sm text-gray-500">Incidents</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Informations personnelles -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
+        {{ child.name.charAt(0) }}
+      </div>
+      <div>
+        <h3 class="font-bold text-xl">{{ child.name }}</h3>
+        <p class="text-sm text-gray-500">{{ child.className }}</p>
+        <p class="text-xs text-gray-400 font-mono mt-1">{{ child.registrationNumber }}</p>
+      </div>
+    </div>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Date naissance</span>
+        <span>{{ child.birthDate || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Lieu naissance</span>
+        <span>{{ child.birthPlace || '-' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Nationalité</span>
+        <span>{{ child.nationality || 'Congolaise' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Genre</span>
+        <span>{{ child.gender === 'male' ? 'Masculin' : 'Féminin' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Adresse</span>
+        <span>{{ child.address || '-' }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Performance académique -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <h3 class="font-semibold border-b pb-2 mb-3">Performance académique</h3>
+    <div class="space-y-3">
+      <div>
+        <div class="flex justify-between text-sm mb-1">
+          <span>Moyenne actuelle</span>
+          <span class="font-bold {{ child.averageGrade >= 15 ? 'text-green-600' : (child.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+            {{ child.averageGrade }}/20
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-primary rounded-full h-2" style="width: {{ (child.averageGrade / 20) * 100 }}%"></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 text-center pt-2">
+        <div class="p-2 bg-green-50 dark:bg-green-900/20 rounded">
+          <p class="text-xs text-gray-500">Meilleure matière</p>
+          <p class="font-bold">{{ child.bestSubject || '-' }}</p>
+          <p class="text-sm">{{ child.bestSubjectGrade || '-' }}/20</p>
+        </div>
+        <div class="p-2 bg-red-50 dark:bg-red-900/20 rounded">
+          <p class="text-xs text-gray-500">Matière à améliorer</p>
+          <p class="font-bold">{{ child.worstSubject || '-' }}</p>
+          <p class="text-sm">{{ child.worstSubjectGrade || '-' }}/20</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Derniers avis / appréciations -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+    <h3 class="font-semibold border-b pb-2 mb-3">Derniers avis</h3>
+    <div class="space-y-3 max-h-60 overflow-y-auto">
+      @each(comment in recentComments)
+      <div class="p-2 border-b">
+        <p class="font-medium text-sm">{{ comment.subject }}</p>
+        <p class="text-xs text-gray-600 mt-1">{{ comment.comment }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ comment.teacher }} - {{ comment.date }}</p>
+      </div>
+      @eachelse
+      <p class="text-gray-500 text-center py-4">Aucun avis récent</p>
+      @end
+    </div>
+  </div>
+</div>
+
+<!-- Dernières notes -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+    <h3 class="font-semibold">Dernières notes obtenues</h3>
+    <a href="/parent/grades/child/{{ child.id }}" class="text-primary text-sm hover:underline">Voir tout</a>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Matière</th>
+          <th class="px-4 py-2 text-center">Note</th>
+          <th class="px-4 py-2 text-center">Date</th>
+          <th class="px-4 py-2 text-left">Appréciation</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(grade in recentGrades)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2 font-medium">{{ grade.subject }} </td>
+          <td class="px-4 py-2 text-center">
+            <span class="font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+              {{ grade.score }}/20
+            </span>
+           </td>
+          <td class="px-4 py-2 text-center">{{ grade.date }}</td>
+          <td class="px-4 py-2 text-gray-600">{{ grade.comment || '-' }}</td>
+         </tr>
+        @eachelse
+        <tr><td colspan="4" class="text-center py-8">Aucune note enregistrée</td></tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Évolution graphique -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <h3 class="font-semibold mb-3">Évolution des notes par matière</h3>
+  <canvas id="evolutionChart" height="200"></canvas>
+</div>
+
+<script>
+  let evolutionChart
+  
+  function renderChart() {
+    const ctx = document.getElementById('evolutionChart').getContext('2d')
+    evolutionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ chartLabels|json_encode|raw }},
+        datasets: {{ chartDatasets|json_encode|raw }}
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: { y: { max: 20, min: 0 } }
+      }
+    })
+  }
+  
+  renderChart()
+</script>
+{{# /section }}
+
+{{# /layout }}

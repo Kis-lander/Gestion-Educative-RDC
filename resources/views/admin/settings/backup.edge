@@ -1,0 +1,272 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Sauvegarde - Administration{{# /section }}
+
+{{# section('dashboardTitle') }}Sauvegarde des données{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez les sauvegardes de la plateforme{{# /section }}
+
+{{# section('actions') }}
+<button onclick="createBackup()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+  <i class="fas fa-database mr-2"></i> Sauvegarder maintenant
+</button>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Sauvegardes</p>
+    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Dernière sauvegarde</p>
+    <p class="text-lg font-bold">{{ stats.lastBackup || 'Jamais' }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Espace utilisé</p>
+    <p class="text-3xl font-bold">{{ stats.totalSize || '0 GB' }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Statut</p>
+    <p class="text-xl font-bold">{{ stats.status }}</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/admin/settings/backup" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Planification</h3>
+          
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Fréquence automatique</label>
+            <select name="backup_frequency" class="w-full px-3 py-2 border rounded-lg">
+              <option value="disabled" {{ settings.backupFrequency === 'disabled' ? 'selected' : '' }}>Désactivé</option>
+              <option value="daily" {{ settings.backupFrequency === 'daily' ? 'selected' : '' }}>Quotidienne</option>
+              <option value="weekly" {{ settings.backupFrequency === 'weekly' ? 'selected' : '' }}>Hebdomadaire</option>
+              <option value="monthly" {{ settings.backupFrequency === 'monthly' ? 'selected' : '' }}>Mensuelle</option>
+            </select>
+          </div>
+          
+          <div class="mt-3">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure de sauvegarde</label>
+            <input type="time" name="backup_time" value="{{ settings.backupTime || '02:00' }}" 
+                   class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          
+          <div class="mt-3">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Conserver (nombre de sauvegardes)</label>
+            <input type="number" name="backup_retention" value="{{ settings.backupRetention || 30 }}" 
+                   min="1" max="365" class="w-full px-3 py-2 border rounded-lg">
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Contenu des sauvegardes</h3>
+          
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="backup_database" checked disabled class="w-4 h-4">
+              <span>Base de données (obligatoire)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="backup_uploads" {{ settings.backupUploads ? 'checked' : '' }} class="w-4 h-4">
+              <span>Fichiers uploadés</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="backup_logs" {{ settings.backupLogs ? 'checked' : '' }} class="w-4 h-4">
+              <span>Logs système</span>
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Stockage externe</h3>
+          
+          <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="backup_remote" {{ settings.backupRemote ? 'checked' : '' }} class="w-4 h-4">
+              <span>Envoyer vers stockage externe</span>
+            </label>
+          </div>
+          
+          <div x-show="backupRemote" class="mt-3 space-y-3">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de stockage</label>
+              <select name="remote_type" class="w-full px-3 py-2 border rounded-lg">
+                <option value="s3" {{ settings.remoteType === 's3' ? 'selected' : '' }}>Amazon S3</option>
+                <option value="ftp" {{ settings.remoteType === 'ftp' ? 'selected' : '' }}>FTP/SFTP</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Chemin/Bucket</label>
+              <input type="text" name="remote_path" value="{{ settings.remotePath }}" 
+                     class="w-full px-3 py-2 border rounded-lg">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-6 pt-4 border-t">
+        <button type="submit" :disabled="loading"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Enregistrer
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Liste des sauvegardes -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="px-4 py-3 border-b dark:border-gray-700">
+      <h3 class="font-semibold">Sauvegardes disponibles</h3>
+    </div>
+    <div class="divide-y dark:divide-gray-700">
+      @each(backup in backups)
+      <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
+        <div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-archive text-blue-500"></i>
+            <p class="font-medium">{{ backup.filename }}</p>
+          </div>
+          <div class="flex gap-3 mt-1 text-xs text-gray-400">
+            <span><i class="fas fa-calendar mr-1"></i> {{ backup.date }}</span>
+            <span><i class="fas fa-hdd mr-1"></i> {{ backup.size }}</span>
+            <span><i class="fas fa-database mr-1"></i> {{ backup.type }}</span>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="downloadBackup('{{ backup.filename }}')" class="text-primary hover:underline text-sm" title="Télécharger">
+            <i class="fas fa-download"></i>
+          </button>
+          <button onclick="restoreBackup('{{ backup.filename }}')" class="text-yellow-600 hover:text-yellow-800 text-sm" title="Restaurer">
+            <i class="fas fa-trash-restore"></i>
+          </button>
+          <button onclick="deleteBackup('{{ backup.filename }}')" class="text-red-500 hover:text-red-700 text-sm" title="Supprimer">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      @eachelse
+      <div class="p-12 text-center text-gray-500">
+        <i class="fas fa-database text-5xl mb-3 block"></i>
+        <p>Aucune sauvegarde disponible</p>
+        <button onclick="createBackup()" class="mt-3 text-primary hover:underline">
+          Créer la première sauvegarde
+        </button>
+      </div>
+      @end
+    </div>
+  </div>
+</div>
+
+<!-- Progression de restauration -->
+<div id="restoreModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-primary text-3xl mb-3"></i>
+      <h3 class="font-bold text-lg mb-2">Restauration en cours...</h3>
+      <p class="text-sm text-gray-500">Cette opération peut prendre plusieurs minutes.</p>
+      <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
+        <div id="restoreProgress" class="bg-primary rounded-full h-2" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function createBackup() {
+    if (confirm('Créer une sauvegarde manuelle ? Cette opération peut prendre quelques minutes.')) {
+      const loading = document.createElement('div')
+      loading.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50'
+      loading.innerHTML = '<div class="bg-white dark:bg-gray-800 rounded-lg p-8 flex flex-col items-center"><div class="spinner"></div><p class="mt-4">Création de la sauvegarde...</p></div>'
+      document.body.appendChild(loading)
+      
+      const res = await fetch('/api/admin/backup/create', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      loading.remove()
+      if (data.success) {
+        alert('Sauvegarde créée avec succès')
+        location.reload()
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+  
+  function downloadBackup(filename) {
+    window.location.href = `/api/admin/backup/download/${filename}`
+  }
+  
+  async function restoreBackup(filename) {
+    if (confirm(`⚠️ RESTAURATION COMPLÈTE\n\nRestaurer la sauvegarde "${filename}" ?\n\nCette action remplacera TOUTES les données actuelles.\nAssurez-vous d'avoir une sauvegarde récente.\n\nCette opération est IRREVERSIBLE.`)) {
+      const modal = document.getElementById('restoreModal')
+      modal.classList.remove('hidden')
+      modal.classList.add('flex')
+      
+      const progress = document.getElementById('restoreProgress')
+      let percent = 0
+      const interval = setInterval(() => {
+        percent += 10
+        progress.style.width = percent + '%'
+        if (percent >= 100) clearInterval(interval)
+      }, 500)
+      
+      const res = await fetch(`/api/admin/backup/restore/${filename}`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      
+      clearInterval(interval)
+      modal.classList.add('hidden')
+      modal.classList.remove('flex')
+      
+      if (data.success) {
+        alert('Restauration terminée. La plateforme va redémarrer.')
+        window.location.href = '/'
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+  
+  async function deleteBackup(filename) {
+    if (confirm(`Supprimer la sauvegarde "${filename}" ?`)) {
+      const res = await fetch(`/api/admin/backup/delete/${filename}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      })
+      const data = await res.json()
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    }
+  }
+</script>
+
+<style>
+  .spinner {
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #2563eb;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+{{# /section }}
+
+{{# /layout }}

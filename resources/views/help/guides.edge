@@ -1,0 +1,91 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Guides - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Guides pratiques{{# /section }}
+{{# section('dashboardSubtitle') }}Apprenez à utiliser la plateforme{{# /section }}
+
+{{# section('content') }}
+<!-- Catégories -->
+<div class="flex flex-wrap gap-2 mb-6">
+  <button class="guide-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all">Tous</button>
+  <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="quick-start">Démarrage</button>
+  <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="teachers">Enseignants</button>
+  <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="parents">Parents</button>
+  <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="administrators">Administrateurs</button>
+</div>
+
+<!-- Grille des guides -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  @each(guide in guides)
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden guide-card" data-cat="{{ guide.category }}">
+    <div class="h-32 bg-gradient-to-r {{ guide.color }} relative">
+      <div class="absolute bottom-4 left-4">
+        <span class="px-2 py-1 rounded-full text-xs bg-white/20 text-white">{{ guide.categoryLabel }}</span>
+      </div>
+    </div>
+    <div class="p-4">
+      <h3 class="font-bold text-lg">{{ guide.title }}</h3>
+      <p class="text-sm text-gray-600 mt-1">{{ guide.description }}</p>
+      <div class="flex items-center gap-3 mt-3 text-xs text-gray-400">
+        <span><i class="fas fa-clock mr-1"></i> {{ guide.readTime }} min</span>
+        <span><i class="fas fa-chart-line mr-1"></i> {{ guide.difficulty }}</span>
+      </div>
+      <div class="mt-4">
+        <a href="{{ guide.link }}" class="text-primary text-sm hover:underline">Lire le guide →</a>
+      </div>
+    </div>
+  </div>
+  @eachelse
+  <div class="col-span-full text-center py-12 text-gray-500">
+    <i class="fas fa-book-open text-4xl mb-3 block"></i>
+    <p>Aucun guide disponible</p>
+  </div>
+  @end
+</div>
+
+<!-- Guides populaires -->
+<div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Guides les plus consultés</h3>
+  </div>
+  <div class="divide-y dark:divide-gray-700">
+    @each(popular in popularGuides)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='{{ popular.link }}'">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-star text-yellow-500"></i>
+        <div>
+          <p class="font-medium">{{ popular.title }}</p>
+          <p class="text-sm text-gray-500">{{ popular.views }} lectures</p>
+        </div>
+      </div>
+    </div>
+    @end
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.guide-cat').forEach(cat => {
+    cat.addEventListener('click', () => {
+      const selectedCat = cat.dataset.cat
+      
+      document.querySelectorAll('.guide-cat').forEach(c => {
+        c.classList.remove('bg-primary', 'text-white')
+        c.classList.add('border')
+      })
+      cat.classList.add('bg-primary', 'text-white')
+      cat.classList.remove('border')
+      
+      document.querySelectorAll('.guide-card').forEach(card => {
+        if (selectedCat === 'all' || card.dataset.cat === selectedCat) {
+          card.style.display = ''
+        } else {
+          card.style.display = 'none'
+        }
+      })
+    })
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

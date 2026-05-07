@@ -1,0 +1,157 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Planning des rendez-vous - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Planning des rendez-vous{{# /section }}
+{{# section('dashboardSubtitle') }}Vue hebdomadaire de vos rendez-vous{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="previousWeek()" class="px-3 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-chevron-left mr-1"></i> Semaine précédente
+  </button>
+  <button onclick="goToToday()" class="px-3 py-2 border rounded-lg hover:bg-gray-50">
+    Aujourd'hui
+  </button>
+  <button onclick="nextWeek()" class="px-3 py-2 border rounded-lg hover:bg-gray-50">
+    Semaine suivante <i class="fas fa-chevron-right ml-1"></i>
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700 text-center">
+    <h3 class="font-semibold" id="weekRange">{{ weekRange }}</h3>
+  </div>
+  
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-2 py-3 text-center" style="min-width: 100px">Horaire</th>
+          <th class="px-2 py-3 text-center">Lundi</th>
+          <th class="px-2 py-3 text-center">Mardi</th>
+          <th class="px-2 py-3 text-center">Mercredi</th>
+          <th class="px-2 py-3 text-center">Jeudi</th>
+          <th class="px-2 py-3 text-center">Vendredi</th>
+          <th class="px-2 py-3 text-center">Samedi</th>
+        </tr>
+      </thead>
+      <tbody id="scheduleGrid">
+        <!-- Généré par JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Légende -->
+<div class="mt-6 flex flex-wrap gap-4 justify-center">
+  <div class="flex items-center gap-2">
+    <div class="w-4 h-4 bg-green-100 border border-green-500 rounded"></div>
+    <span class="text-sm">Rendez-vous confirmé</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <div class="w-4 h-4 bg-yellow-100 border border-yellow-500 rounded"></div>
+    <span class="text-sm">En attente</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <div class="w-4 h-4 bg-blue-100 border border-blue-500 rounded"></div>
+    <span class="text-sm">Effectué</span>
+  </div>
+</div>
+
+<script>
+  let currentDate = new Date()
+  
+  function getWeekRange(date) {
+    const start = new Date(date)
+    start.setDate(date.getDate() - date.getDay() + 1)
+    const end = new Date(start)
+    end.setDate(start.getDate() + 4)
+    return `${start.toLocaleDateString('fr-FR')} - ${end.toLocaleDateString('fr-FR')}`
+  }
+  
+  async function loadSchedule() {
+    const year = currentDate.getFullYear()
+    const week = getWeekNumber(currentDate)
+    
+    document.getElementById('weekRange').textContent = getWeekRange(currentDate)
+    
+    const res = await fetch(`/api/parent/appointments/schedule?year=${year}&week=${week}`)
+    const data = await res.json()
+    
+    renderScheduleGrid(data.schedule)
+  }
+  
+  function getWeekNumber(date) {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
+    const week1 = new Date(d.getFullYear(), 0, 4)
+    return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7)
+  }
+  
+  function renderScheduleGrid(schedule) {
+    const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00']
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    const dayNames = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+    
+    let html = ''
+    
+    timeSlots.forEach(slot => {
+      html += `<tr class="border-b dark:border-gray-700">`
+      html += `<td class="px-2 py-3 font-medium text-center bg-gray-50 dark:bg-gray-700">${slot}</td>`
+      
+      days.forEach(day => {
+        const appointment = schedule[day]?.[slot]
+        if (appointment) {
+          html += `
+            <td class="px-2 py-2 ${appointment.status === 'confirmed' ? 'bg-green-50 dark:bg-green-900/20' : 
+               (appointment.status === 'pending' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 
+               (appointment.status === 'completed' ? 'bg-blue-50 dark:bg-blue-900/20' : ''))}">
+              <div class="text-center cursor-pointer" onclick="viewAppointment('${appointment.id}')">
+                <p class="font-medium text-sm">${appointment.teacherName}</p>
+                <p class="text-xs text-gray-500">${appointment.childName}</p>
+                <p class="text-xs ${appointment.status === 'confirmed' ? 'text-green-600' : 
+                   (appointment.status === 'pending' ? 'text-yellow-600' : 'text-blue-600')}">
+                  ${appointment.status === 'confirmed' ? 'Confirmé' : 
+                    (appointment.status === 'pending' ? 'En attente' : 'Effectué')}
+                </p>
+              </div>
+            </td>
+          `
+        } else {
+          html += `<td class="px-2 py-2 bg-gray-50 dark:bg-gray-700 text-center text-gray-400">-</td>`
+        }
+      })
+      html += `</tr>`
+    })
+    
+    document.getElementById('scheduleGrid').innerHTML = html
+  }
+  
+  function previousWeek() {
+    currentDate.setDate(currentDate.getDate() - 7)
+    loadSchedule()
+  }
+  
+  function nextWeek() {
+    currentDate.setDate(currentDate.getDate() + 7)
+    loadSchedule()
+  }
+  
+  function goToToday() {
+    currentDate = new Date()
+    loadSchedule()
+  }
+  
+  function viewAppointment(appointmentId) {
+    window.location.href = `/parent/appointments/${appointmentId}`
+  }
+  
+  loadSchedule()
+</script>
+{{# /section }}
+
+{{# /layout }}

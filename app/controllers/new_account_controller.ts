@@ -182,11 +182,11 @@ export default class NewAccountController {
     return parent
   }
 
-  private async sendWelcomeEmail(email: string, pass: string, role: string) {
+  private async sendWelcomeEmail(email: string, _pass: string, _role: string) {
     console.log(`Email de bienvenue envoyé à ${email}`)
   }
 
-  private async sendAccountSuspensionEmail(email: string, reason: string) {
+  private async sendAccountSuspensionEmail(email: string, _reason: string) {
     console.log(`Email de suspension envoyé à ${email}`)
   }
 }

@@ -1,0 +1,105 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Modifier emploi du temps - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Modifier l'emploi du temps{{# /section }}
+{{# section('dashboardSubtitle') }}{{ className }}{{# /section }}
+
+{{# section('content') }}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+  <form method="POST" action="/api/timetable/{{ timetableId }}/update" x-data="{ loading: false }" @submit="loading = true">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="_method" value="PUT">
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe</label>
+        <input type="text" value="{{ className }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
+      </div>
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique</label>
+        <input type="text" value="{{ academicYear }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
+      </div>
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre / Période</label>
+        <input type="text" value="{{ term }} - {{ shift === 'morning' ? 'Matin' : (shift === 'afternoon' ? 'Après-midi' : 'Soir') }}" 
+               class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
+      </div>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="w-full text-sm" id="timetableGrid">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-2 py-2">Horaire</th>
+            <th class="px-2 py-2">Lundi</th>
+            <th class="px-2 py-2">Mardi</th>
+            <th class="px-2 py-2">Mercredi</th>
+            <th class="px-2 py-2">Jeudi</th>
+            <th class="px-2 py-2">Vendredi</th>
+            <th class="px-2 py-2">Samedi</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(slot in timetable)
+          <tr class="border-b dark:border-gray-700">
+            <td class="px-2 py-2 font-medium bg-gray-50 dark:bg-gray-700">{{ slot.time }}</td>
+            @each(day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'])
+            <td class="px-1 py-1">
+              <input type="hidden" name="entries[{{ slot.index }}][{{ day }}][id]" value="{{ slot[day].id }}">
+              <select name="entries[{{ slot.index }}][{{ day }}][subjectId]" class="w-full px-1 py-1 border rounded text-xs mb-1">
+                <option value="">-- Matière --</option>
+                @each(subject in subjects)
+                <option value="{{ subject.id }}" {{ slot[day].subjectId == subject.id ? 'selected' : '' }}>{{ subject.name }}</option>
+                @end
+              </select>
+              <select name="entries[{{ slot.index }}][{{ day }}][teacherId]" class="w-full px-1 py-1 border rounded text-xs mb-1">
+                <option value="">-- Enseignant --</option>
+                @each(teacher in teachers)
+                <option value="{{ teacher.id }}" {{ slot[day].teacherId == teacher.id ? 'selected' : '' }}>{{ teacher.user.firstName }} {{ teacher.user.lastName }}</option>
+                @end
+              </select>
+              <input type="text" name="entries[{{ slot.index }}][{{ day }}][room]" value="{{ slot[day].room }}" placeholder="Salle" class="w-full px-1 py-1 border rounded text-xs">
+            </td>
+            @end
+          </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="flex gap-3 mt-6 pt-4 border-t">
+      <button type="submit" :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+        Sauvegarder les modifications
+      </button>
+      <a href="/schools/timetable" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+        Annuler
+      </a>
+      <button type="button" onclick="deleteTimetable()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 ml-auto">
+        <i class="fas fa-trash mr-2"></i> Supprimer cet emploi du temps
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function deleteTimetable() {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet emploi du temps ? Cette action est irréversible.')) {
+      fetch('/api/timetable/{{ timetableId }}', {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) {
+          window.location.href = '/schools/timetable'
+        } else {
+          alert('Erreur: ' + data.message)
+        }
+      })
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

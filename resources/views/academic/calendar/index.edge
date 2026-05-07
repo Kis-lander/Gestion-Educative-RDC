@@ -1,0 +1,420 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Calendrier académique - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Calendrier académique{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez les événements et dates importantes de l'année scolaire{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="changeView('month')" id="viewMonthBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+    <i class="fas fa-calendar-alt mr-2"></i> Mois
+  </button>
+  <button onclick="changeView('week')" id="viewWeekBtn" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-calendar-week mr-2"></i> Semaine
+  </button>
+  <button onclick="changeView('agenda')" id="viewAgendaBtn" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-list mr-2"></i> Agenda
+  </button>
+  <a href="/academic/calendar/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-plus mr-2"></i> Ajouter événement
+  </a>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type d'événement</label>
+      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="holiday">Vacances / Congé</option>
+        <option value="exam">Examen</option>
+        <option value="meeting">Réunion</option>
+        <option value="event">Événement spécial</option>
+        <option value="deadline">Date limite</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année académique</label>
+      <select id="filterYear" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="{{ currentYear }}">{{ currentYear }}</option>
+        <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input type="text" id="searchInput" placeholder="Titre, description..."
+               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+      </div>
+    </div>
+    <div class="flex items-end gap-2">
+      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-filter mr-2"></i> Filtrer
+      </button>
+      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Vue Mois (par défaut) -->
+<div id="monthView" class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="p-4 border-b dark:border-gray-700">
+    <div class="flex justify-between items-center">
+      <h3 class="font-semibold">Calendrier</h3>
+      <div class="flex gap-2">
+        <button onclick="previousMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
+          <i class="fas fa-chevron-left"></i> Mois précédent
+        </button>
+        <button onclick="goToToday()" class="px-3 py-1 border rounded hover:bg-gray-50">
+          Aujourd'hui
+        </button>
+        <button onclick="nextMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
+          Mois suivant <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="p-4">
+    <div class="text-center mb-4">
+      <h2 id="currentMonthYear" class="text-xl font-bold"></h2>
+    </div>
+    <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium mb-2">
+      <div class="text-red-500">Dimanche</div>
+      <div>Lundi</div>
+      <div>Mardi</div>
+      <div>Mercredi</div>
+      <div>Jeudi</div>
+      <div>Vendredi</div>
+      <div>Samedi</div>
+    </div>
+    <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+      <!-- Généré par JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Vue Semaine -->
+<div id="weekView" class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hidden">
+  <div class="p-4 border-b dark:border-gray-700">
+    <div class="flex justify-between items-center">
+      <h3 class="font-semibold">Vue semaine</h3>
+      <div class="flex gap-2">
+        <button onclick="previousWeek()" class="px-3 py-1 border rounded hover:bg-gray-50">
+          <i class="fas fa-chevron-left"></i> Semaine précédente
+        </button>
+        <button onclick="goToTodayWeek()" class="px-3 py-1 border rounded hover:bg-gray-50">
+          Aujourd'hui
+        </button>
+        <button onclick="nextWeek()" class="px-3 py-1 border rounded hover:bg-gray-50">
+          Semaine suivante <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="p-4">
+    <div class="text-center mb-4">
+      <h2 id="currentWeekRange" class="text-lg font-bold"></h2>
+    </div>
+    <div id="weekGrid" class="grid grid-cols-7 gap-2">
+      <!-- Généré par JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Vue Agenda -->
+<div id="agendaView" class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hidden">
+  <div class="p-4 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Agenda des événements</h3>
+  </div>
+  <div class="divide-y dark:divide-gray-700" id="agendaList">
+    <!-- Généré par JS -->
+  </div>
+</div>
+
+<script>
+  let currentDate = new Date()
+  let currentView = 'month'
+  let eventsData = []
+  
+  // Charger les événements
+  async function loadEvents() {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth() + 1
+    const type = document.getElementById('filterType').value
+    const search = document.getElementById('searchInput').value
+    const academicYear = document.getElementById('filterYear').value
+    
+    let url = `/api/calendar/events?year=${year}&month=${month}&academic_year=${academicYear}`
+    if (type) url += `&type=${type}`
+    if (search) url += `&search=${encodeURIComponent(search)}`
+    
+    const res = await fetch(url)
+    const data = await res.json()
+    eventsData = data.events || []
+    renderCurrentView()
+  }
+  
+  // Rendu vue mois
+  function renderMonthView() {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const startDayOfWeek = firstDay.getDay()
+    const daysInMonth = lastDay.getDate()
+    
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
+    document.getElementById('currentMonthYear').textContent = `${monthNames[month]} ${year}`
+    
+    const calendarGrid = document.getElementById('calendarGrid')
+    calendarGrid.innerHTML = ''
+    
+    // Jours vides
+    for (let i = 0; i < startDayOfWeek; i++) {
+      const emptyDiv = document.createElement('div')
+      emptyDiv.className = 'p-2 bg-gray-50 dark:bg-gray-700 rounded min-h-[100px]'
+      calendarGrid.appendChild(emptyDiv)
+    }
+    
+    // Jours du mois
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const dayEvents = eventsData.filter(e => {
+        const eventDate = new Date(e.start_date)
+        return eventDate.getDate() === day && eventDate.getMonth() === month && eventDate.getFullYear() === year
+      })
+      
+      const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
+      
+      const dayDiv = document.createElement('div')
+      dayDiv.className = `p-2 border rounded min-h-[100px] ${dayEvents.length > 0 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300' : 'hover:bg-gray-50 dark:hover:bg-gray-700'} ${isToday ? 'ring-2 ring-primary' : ''}`
+      dayDiv.innerHTML = `
+        <div class="font-bold text-sm mb-1 ${isToday ? 'text-primary' : ''}">${day}</div>
+        <div class="space-y-1">
+          ${dayEvents.slice(0, 3).map(event => `
+            <div class="text-xs p-1 rounded cursor-pointer ${getEventColor(event.type)}" 
+                 onclick="viewEvent(${event.id})" title="${event.title}">
+              <i class="fas ${getEventIcon(event.type)} mr-1"></i>
+              ${event.title.length > 20 ? event.title.substring(0, 20) + '...' : event.title}
+            </div>
+          `).join('')}
+          ${dayEvents.length > 3 ? `<div class="text-xs text-gray-500 text-center">+${dayEvents.length - 3} autre(s)</div>` : ''}
+        </div>
+      `
+      calendarGrid.appendChild(dayDiv)
+    }
+    
+    // Compléter la dernière ligne
+    const totalCells = startDayOfWeek + daysInMonth
+    const remainingCells = 42 - totalCells
+    for (let i = 0; i < remainingCells; i++) {
+      const emptyDiv = document.createElement('div')
+      emptyDiv.className = 'p-2 bg-gray-50 dark:bg-gray-700 rounded min-h-[100px]'
+      calendarGrid.appendChild(emptyDiv)
+    }
+  }
+  
+  // Rendu vue semaine
+  function renderWeekView() {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const currentDay = currentDate.getDate()
+    const startOfWeek = new Date(currentDate)
+    startOfWeek.setDate(currentDay - currentDate.getDay())
+    
+    const weekDays = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+    
+    document.getElementById('currentWeekRange').textContent = 
+      `${startOfWeek.toLocaleDateString('fr-FR')} - ${endOfWeek.toLocaleDateString('fr-FR')}`
+    
+    const weekGrid = document.getElementById('weekGrid')
+    weekGrid.innerHTML = ''
+    
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(startOfWeek)
+      dayDate.setDate(startOfWeek.getDate() + i)
+      const dateStr = dayDate.toISOString().split('T')[0]
+      const dayEvents = eventsData.filter(e => e.start_date === dateStr || (e.start_date <= dateStr && e.end_date >= dateStr))
+      const isToday = new Date().toDateString() === dayDate.toDateString()
+      
+      const dayCol = document.createElement('div')
+      dayCol.className = `border rounded-lg p-2 ${isToday ? 'ring-2 ring-primary' : ''}`
+      dayCol.innerHTML = `
+        <div class="text-center font-bold p-2 ${isToday ? 'bg-primary text-white rounded' : 'bg-gray-100 dark:bg-gray-700'}">
+          ${weekDays[i]}<br>${dayDate.getDate()} ${dayDate.toLocaleDateString('fr-FR', { month: 'short' })}
+        </div>
+        <div class="min-h-[300px] space-y-1 mt-2">
+          ${dayEvents.map(event => `
+            <div class="text-xs p-1 rounded cursor-pointer ${getEventColor(event.type)}" 
+                 onclick="viewEvent(${event.id})">
+              <i class="fas ${getEventIcon(event.type)} mr-1"></i>
+              <strong>${event.title}</strong><br>
+              <small>${event.start_time || ''}</small>
+            </div>
+          `).join('')}
+        </div>
+      `
+      weekGrid.appendChild(dayCol)
+    }
+  }
+  
+  // Rendu vue agenda
+  function renderAgendaView() {
+    const sortedEvents = [...eventsData].sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
+    const agendaList = document.getElementById('agendaList')
+    
+    if (sortedEvents.length === 0) {
+      agendaList.innerHTML = `
+        <div class="p-8 text-center text-gray-500">
+          <i class="fas fa-calendar-alt text-4xl mb-3 block"></i>
+          Aucun événement à venir
+        </div>
+      `
+      return
+    }
+    
+    agendaList.innerHTML = sortedEvents.map(event => `
+      <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="viewEvent(${event.id})">
+        <div class="flex flex-wrap justify-between items-start gap-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2 py-1 rounded-full text-xs ${getEventColor(event.type)}">
+                <i class="fas ${getEventIcon(event.type)} mr-1"></i> ${getEventTypeLabel(event.type)}
+              </span>
+              <h4 class="font-semibold">${event.title}</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-sm">
+              <div><i class="fas fa-calendar w-5 text-gray-400"></i> ${formatDate(event.start_date)} ${event.start_time ? `à ${event.start_time}` : ''}</div>
+              ${event.end_date !== event.start_date ? `<div><i class="fas fa-calendar-check w-5 text-gray-400"></i> Jusqu'au ${formatDate(event.end_date)}</div>` : ''}
+              ${event.location ? `<div><i class="fas fa-map-marker-alt w-5 text-gray-400"></i> ${event.location}</div>` : ''}
+            </div>
+            ${event.description ? `<p class="text-sm text-gray-600 dark:text-gray-400 mt-2">${event.description}</p>` : ''}
+          </div>
+          <div class="text-right text-xs text-gray-400">
+            ${event.targetAudience ? `Public: ${event.targetAudience}` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('')
+  }
+  
+  function renderCurrentView() {
+    if (currentView === 'month') renderMonthView()
+    else if (currentView === 'week') renderWeekView()
+    else if (currentView === 'agenda') renderAgendaView()
+  }
+  
+  function changeView(view) {
+    currentView = view
+    document.getElementById('monthView').classList.add('hidden')
+    document.getElementById('weekView').classList.add('hidden')
+    document.getElementById('agendaView').classList.add('hidden')
+    document.getElementById(`${view}View`).classList.remove('hidden')
+    
+    document.getElementById('viewMonthBtn').className = view === 'month' ? 'px-4 py-2 bg-primary text-white rounded-lg' : 'px-4 py-2 border rounded-lg'
+    document.getElementById('viewWeekBtn').className = view === 'week' ? 'px-4 py-2 bg-primary text-white rounded-lg' : 'px-4 py-2 border rounded-lg'
+    document.getElementById('viewAgendaBtn').className = view === 'agenda' ? 'px-4 py-2 bg-primary text-white rounded-lg' : 'px-4 py-2 border rounded-lg'
+    
+    renderCurrentView()
+  }
+  
+  function previousMonth() {
+    currentDate.setMonth(currentDate.getMonth() - 1)
+    loadEvents()
+  }
+  
+  function nextMonth() {
+    currentDate.setMonth(currentDate.getMonth() + 1)
+    loadEvents()
+  }
+  
+  function goToToday() {
+    currentDate = new Date()
+    loadEvents()
+  }
+  
+  function previousWeek() {
+    currentDate.setDate(currentDate.getDate() - 7)
+    loadEvents()
+  }
+  
+  function nextWeek() {
+    currentDate.setDate(currentDate.getDate() + 7)
+    loadEvents()
+  }
+  
+  function goToTodayWeek() {
+    currentDate = new Date()
+    loadEvents()
+  }
+  
+  function getEventColor(type) {
+    const colors = {
+      holiday: 'bg-green-100 text-green-800',
+      exam: 'bg-red-100 text-red-800',
+      meeting: 'bg-blue-100 text-blue-800',
+      event: 'bg-purple-100 text-purple-800',
+      deadline: 'bg-yellow-100 text-yellow-800'
+    }
+    return colors[type] || 'bg-gray-100 text-gray-800'
+  }
+  
+  function getEventIcon(type) {
+    const icons = {
+      holiday: 'fa-umbrella-beach',
+      exam: 'fa-pen-to-square',
+      meeting: 'fa-users',
+      event: 'fa-calendar-day',
+      deadline: 'fa-hourglass-half'
+    }
+    return icons[type] || 'fa-calendar-alt'
+  }
+  
+  function getEventTypeLabel(type) {
+    const labels = {
+      holiday: 'Vacances',
+      exam: 'Examen',
+      meeting: 'Réunion',
+      event: 'Événement',
+      deadline: 'Date limite'
+    }
+    return labels[type] || type
+  }
+  
+  function viewEvent(eventId) {
+    window.location.href = `/academic/calendar/${eventId}/edit`
+  }
+  
+  // Filtres
+  const filterType = document.getElementById('filterType')
+  const filterYear = document.getElementById('filterYear')
+  const searchInput = document.getElementById('searchInput')
+  const applyBtn = document.getElementById('applyFilters')
+  const resetBtn = document.getElementById('resetFilters')
+  
+  applyBtn.addEventListener('click', () => {
+    loadEvents()
+  })
+  
+  resetBtn.addEventListener('click', () => {
+    filterType.value = ''
+    filterYear.value = '{{ currentYear }}'
+    searchInput.value = ''
+    loadEvents()
+  })
+  
+  loadEvents()
+</script>
+{{# /section }}
+
+{{# /layout }}

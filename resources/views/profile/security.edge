@@ -1,0 +1,223 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Sécurité - {{ user.firstName }} {{ user.lastName }}{{# /section }}
+
+{{# section('dashboardTitle') }}Sécurité du compte{{# /section }}
+{{# section('dashboardSubtitle') }}Gérez votre mot de passe et votre sécurité{{# /section }}
+
+{{# section('actions') }}
+<a href="/profile" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+  <i class="fas fa-arrow-left mr-2"></i> Retour
+</a>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary">{{ stats.passwordStrength }}</p>
+    <p class="text-sm text-gray-500">Force du mot de passe</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600">{{ stats.lastPasswordChange || '-' }}</p>
+    <p class="text-sm text-gray-500">Dernier changement</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600">{{ stats.activeSessions || 0 }}</p>
+    <p class="text-sm text-gray-500">Sessions actives</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{ stats.twoFactorEnabled ? 'Activé' : 'Désactivé' }}</p>
+    <p class="text-sm text-gray-500">Authentification 2 facteurs</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Changement mot de passe -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Changer mon mot de passe</h3>
+    
+    <form method="POST" action="/profile/change-password" x-data="{ loading: false, password: '', confirmPassword: '' }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Mot de passe actuel *</label>
+          <input type="password" name="currentPassword" required 
+                 class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Nouveau mot de passe *</label>
+          <input type="password" name="newPassword" required x-model="password"
+                 class="w-full px-3 py-2 border rounded-lg">
+          <div class="mt-1 text-xs">
+            <div class="flex items-center gap-2" :class="password.length >= 8 ? 'text-green-600' : 'text-gray-400'">
+              <i class="fas" :class="password.length >= 8 ? 'fa-check-circle' : 'fa-circle'"></i>
+              <span>Au moins 8 caractères</span>
+            </div>
+            <div class="flex items-center gap-2" :class="/[A-Z]/.test(password) ? 'text-green-600' : 'text-gray-400'">
+              <i class="fas" :class="/[A-Z]/.test(password) ? 'fa-check-circle' : 'fa-circle'"></i>
+              <span>Au moins une majuscule</span>
+            </div>
+            <div class="flex items-center gap-2" :class="/[0-9]/.test(password) ? 'text-green-600' : 'text-gray-400'">
+              <i class="fas" :class="/[0-9]/.test(password) ? 'fa-check-circle' : 'fa-circle'"></i>
+              <span>Au moins un chiffre</span>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 mb-2">Confirmer le nouveau mot de passe *</label>
+          <input type="password" name="newPasswordConfirmation" required x-model="confirmPassword"
+                 class="w-full px-3 py-2 border rounded-lg">
+          <p x-show="confirmPassword && password !== confirmPassword" class="text-red-500 text-xs mt-1">
+            Les mots de passe ne correspondent pas
+          </p>
+        </div>
+        
+        <button type="submit" :disabled="loading || password !== confirmPassword"
+                class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          Changer le mot de passe
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Authentification à deux facteurs -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Authentification à deux facteurs (2FA)</h3>
+    
+    <div class="text-center mb-4">
+      <div class="w-16 h-16 rounded-full {{ twoFactorEnabled ? 'bg-green-100' : 'bg-gray-100' }} flex items-center justify-center mx-auto">
+        <i class="fas {{ twoFactorEnabled ? 'fa-shield-alt text-green-600' : 'fa-shield-alt text-gray-400' }} text-2xl"></i>
+      </div>
+      <p class="mt-2 font-medium">{{ twoFactorEnabled ? '2FA activé' : '2FA désactivé' }}</p>
+      <p class="text-sm text-gray-500 mt-1">
+        {{ twoFactorEnabled ? 'Votre compte est protégé par authentification à deux facteurs.' : 'Ajoutez une couche de sécurité supplémentaire à votre compte.' }}
+      </p>
+    </div>
+    
+    @if(!twoFactorEnabled)
+    <button onclick="setupTwoFactor()" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+      <i class="fas fa-qrcode mr-2"></i> Activer la 2FA
+    </button>
+    @else
+    <button onclick="disableTwoFactor()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+      <i class="fas fa-ban mr-2"></i> Désactiver la 2FA
+    </button>
+    @endif
+  </div>
+</div>
+
+<!-- Sessions actives -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+    <h3 class="font-semibold">Sessions actives</h3>
+    <button onclick="logoutOtherSessions()" class="text-red-600 text-sm hover:underline">
+      Déconnecter toutes les autres sessions
+    </button>
+  </div>
+  <div class="divide-y dark:divide-gray-700">
+    @each(session in activeSessions)
+    <div class="p-4 flex justify-between items-center">
+      <div>
+        <div class="flex items-center gap-2">
+          <i class="fas fa-{{ session.device === 'mobile' ? 'mobile-alt' : 'laptop' }} text-gray-400"></i>
+          <span class="font-medium">{{ session.deviceName }}</span>
+          @if(session.isCurrent)
+          <span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">Session actuelle</span>
+          @endif
+        </div>
+        <div class="flex gap-3 mt-1 text-xs text-gray-400">
+          <span><i class="fas fa-map-marker-alt mr-1"></i> {{ session.location || 'Position inconnue' }}</span>
+          <span><i class="fas fa-clock mr-1"></i> Dernière activité: {{ session.lastActivity }}</span>
+        </div>
+      </div>
+      @if(!session.isCurrent)
+      <button onclick="revokeSession('{{ session.id }}')" class="text-red-500 text-sm hover:underline">
+        Révoquer
+      </button>
+      @endif
+    </div>
+    @end
+  </div>
+</div>
+
+<!-- Journal des connexions -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Historique des connexions</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Date</th>
+          <th class="px-4 py-2">IP</th>
+          <th class="px-4 py-2">Appareil</th>
+          <th class="px-4 py-2">Localisation</th>
+        </tr>
+      </thead>
+      <tbody>
+        @each(login in loginHistory)
+        <tr class="border-b dark:border-gray-700">
+          <td class="px-4 py-2">{{ formatDateTime(login.createdAt) }}</td>
+          <td class="px-4 py-2 font-mono">{{ login.ip }}</td>
+          <td class="px-4 py-2">{{ login.device }}</td>
+          <td class="px-4 py-2">{{ login.location || '-' }}</td>
+        </tr>
+        @eachelse
+        <tr>
+          <td colspan="4" class="text-center py-6 text-gray-500">Aucune connexion enregistrée</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function setupTwoFactor() {
+    window.location.href = '/profile/2fa/setup'
+  }
+  
+  function disableTwoFactor() {
+    if (confirm('Désactiver l\'authentification à deux facteurs ?')) {
+      fetch('/api/profile/2fa/disable', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) location.reload()
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+  
+  function logoutOtherSessions() {
+    if (confirm('Déconnecter toutes les autres sessions ?')) {
+      fetch('/api/profile/sessions/logout-others', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+      }).then(res => res.json()).then(data => {
+        if (data.success) location.reload()
+        else alert('Erreur: ' + data.message)
+      })
+    }
+  }
+  
+  function revokeSession(sessionId) {
+    fetch(`/api/profile/sessions/${sessionId}/revoke`, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
+    }).then(res => res.json()).then(data => {
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    })
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

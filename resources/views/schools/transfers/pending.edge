@@ -1,0 +1,103 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Transferts en attente - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Transferts en attente{{# /section }}
+{{# section('dashboardSubtitle') }}Demandes de transfert nécessitant votre action{{# /section }}
+
+{{# section('content') }}
+<div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 mb-6 flex items-center justify-between">
+  <div>
+    <p class="text-yellow-800 dark:text-yellow-300 font-semibold">{{ pendingCount }} demande(s) en attente</p>
+    <p class="text-sm text-yellow-600 dark:text-yellow-400">Ces transferts entrants vous attendent</p>
+  </div>
+  <i class="fas fa-clock text-yellow-500 text-3xl"></i>
+</div>
+
+<div class="space-y-4">
+  @each(request in pendingRequests)
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div class="border-l-4 border-yellow-500 p-4">
+      <div class="flex flex-wrap justify-between items-start gap-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <h3 class="font-bold text-lg">{{ request.studentName }}</h3>
+            <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">En attente</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+            <div>
+              <span class="text-gray-500">Matricule:</span>
+              <span class="font-mono ml-1">{{ request.studentRegistrationNumber }}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Classe d'origine:</span>
+              <span class="ml-1">{{ request.originalClassName }}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">École d'origine:</span>
+              <span class="ml-1">{{ request.fromSchoolName }}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Date demande:</span>
+              <span class="ml-1">{{ formatDate(request.createdAt) }}</span>
+            </div>
+            <div class="md:col-span-2">
+              <span class="text-gray-500">Code autorisation:</span>
+              <span class="font-mono ml-1">{{ request.authorizationCode }}</span>
+            </div>
+          </div>
+          @if(request.reason)
+          <div class="mt-3 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+            <span class="text-gray-500">Motif:</span>
+            <p class="mt-1">{{ request.reason }}</p>
+          </div>
+          @endif
+        </div>
+        <div class="flex gap-2">
+          <a href="/schools/transfers/authorize?code={{ request.authorizationCode }}" 
+             class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <i class="fas fa-check mr-1"></i> Autoriser
+          </a>
+          <button onclick="rejectRequest('{{ request.id }}')" 
+                  class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            <i class="fas fa-times mr-1"></i> Rejeter
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @eachelse
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+    <i class="fas fa-check-circle text-green-500 text-5xl mb-3"></i>
+    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Aucune demande en attente</h3>
+    <p class="text-gray-500 mt-2">Toutes les demandes de transfert ont été traitées</p>
+  </div>
+  @end
+</div>
+
+@include('partials/pagination', { pagination: pagination, url: '/schools/transfers/pending' })
+
+<script>
+  async function rejectRequest(requestId) {
+    const reason = prompt('Raison du rejet :')
+    if (reason) {
+      const res = await fetch(`/api/transfers/${requestId}/reject`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrfToken }}'
+        },
+        body: JSON.stringify({ reason })
+      })
+      const data = await res.json()
+      if (data.success) {
+        location.reload()
+      } else {
+        alert('Erreur: ' + data.message)
+      }
+    }
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

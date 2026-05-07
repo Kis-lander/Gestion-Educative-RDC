@@ -1,0 +1,252 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Membres du groupe - {{ group.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Membres du groupe{{# /section }}
+{{# section('dashboardSubtitle') }}{{ group.name }}{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  @if(userRole === 'admin')
+  <button onclick="addMembers()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-user-plus mr-2"></i> Ajouter des membres
+  </button>
+  <button onclick="exportMembers()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+  @endif
+  <a href="/communication/groups" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-arrow-left mr-2"></i> Retour
+  </a>
+</div>
+{{# /section }}
+
+{{# section('stats') }}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Total membres</p>
+    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Administrateurs</p>
+    <p class="text-3xl font-bold">{{ stats.admins || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Membres actifs</p>
+    <p class="text-3xl font-bold">{{ stats.active || 0 }}</p>
+  </div>
+  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Dernier ajout</p>
+    <p class="text-lg font-bold">{{ stats.lastMember || '-' }}</p>
+  </div>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Recherche -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="relative">
+    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+    <input type="text" id="searchMember" placeholder="Rechercher un membre..."
+           class="w-full pl-10 pr-4 py-2 border rounded-lg">
+  </div>
+</div>
+
+<!-- Liste des membres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4" id="membersGrid">
+    @each(member in members)
+    <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 member-item"
+         data-name="{{ member.name.toLowerCase() }}" data-role="{{ member.role }}">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+          {{ member.name.charAt(0) }}
+        </div>
+        <div>
+          <p class="font-medium">{{ member.name }}</p>
+          <p class="text-xs text-gray-500">{{ member.roleLabel }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        @if(member.isAdmin)
+        <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800">Admin</span>
+        @endif
+        @if(userRole === 'admin' && member.id !== currentUserId)
+        <div class="relative" x-data="{ open: false }">
+          <button @click="open = !open" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div x-show="open" @click.away="open = false" x-cloak
+               class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-10 border">
+            @if(!member.isAdmin)
+            <button onclick="makeAdmin('{{ member.id }}', '{{ member.name }}')" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+              <i class="fas fa-user-shield mr-2"></i> Nommer admin
+            </button>
+            @else
+            <button onclick="removeAdmin('{{ member.id }}', '{{ member.name }}')" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+              <i class="fas fa-user-minus mr-2"></i> Retirer admin
+            </button>
+            @endif
+            <button onclick="removeMember('{{ member.id }}', '{{ member.name }}')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+              <i class="fas fa-user-times mr-2"></i> Retirer du groupe
+            </button>
+          </div>
+        </div>
+        @endif
+      </div>
+    </div>
+    @end
+  </div>
+</div>
+
+<!-- Modal ajout membres -->
+<div id="addMembersModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Ajouter des membres</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="mb-4">
+      <input type="text" id="searchUsers" placeholder="Rechercher..."
+             class="w-full px-3 py-2 border rounded-lg">
+    </div>
+    
+    <div class="max-h-64 overflow-y-auto space-y-2" id="usersList">
+      @each(user in availableUsers)
+      <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer user-item"
+             data-name="{{ user.name.toLowerCase() }}">
+        <input type="checkbox" value="{{ user.id }}" class="add-member-checkbox w-4 h-4">
+        <div>
+          <p class="font-medium">{{ user.name }}</p>
+          <p class="text-xs text-gray-500">{{ user.role }}</p>
+        </div>
+      </label>
+      @end
+    </div>
+    
+    <div class="flex gap-3 mt-4 pt-4 border-t">
+      <button onclick="addSelectedMembers()" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg">
+        Ajouter
+      </button>
+      <button onclick="closeModal()" class="flex-1 px-4 py-2 border rounded-lg">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Recherche membres
+  document.getElementById('searchMember')?.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase()
+    document.querySelectorAll('.member-item').forEach(item => {
+      const name = item.dataset.name
+      item.style.display = name.includes(term) ? '' : 'none'
+    })
+  })
+  
+  // Recherche utilisateurs dans modal
+  document.getElementById('searchUsers')?.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase()
+    document.querySelectorAll('.user-item').forEach(item => {
+      const name = item.dataset.name
+      item.style.display = name.includes(term) ? '' : 'none'
+    })
+  })
+  
+  function addMembers() {
+    document.getElementById('addMembersModal').classList.remove('hidden')
+    document.getElementById('addMembersModal').classList.add('flex')
+  }
+  
+  function closeModal() {
+    document.getElementById('addMembersModal').classList.add('hidden')
+    document.getElementById('addMembersModal').classList.remove('flex')
+  }
+  
+  async function addSelectedMembers() {
+    const selected = []
+    document.querySelectorAll('.add-member-checkbox:checked').forEach(cb => {
+      selected.push(cb.value)
+    })
+    
+    if (selected.length === 0) {
+      alert('Sélectionnez au moins un membre')
+      return
+    }
+    
+    const res = await fetch('/api/groups/{{ group.id }}/add-members', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrfToken }}'
+      },
+      body: JSON.stringify({ memberIds: selected })
+    })
+    
+    const data = await res.json()
+    if (data.success) {
+      location.reload()
+    } else {
+      alert('Erreur: ' + data.message)
+    }
+  }
+  
+  async function makeAdmin(memberId, memberName) {
+    if (confirm(`Nommer ${memberName} comme administrateur du groupe ?`)) {
+      const res = await fetch('/api/groups/{{ group.id }}/make-admin', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrfToken }}'
+        },
+        body: JSON.stringify({ memberId })
+      })
+      const data = await res.json()
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    }
+  }
+  
+  async function removeAdmin(memberId, memberName) {
+    if (confirm(`Retirer les droits administrateur de ${memberName} ?`)) {
+      const res = await fetch('/api/groups/{{ group.id }}/remove-admin', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrfToken }}'
+        },
+        body: JSON.stringify({ memberId })
+      })
+      const data = await res.json()
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    }
+  }
+  
+  async function removeMember(memberId, memberName) {
+    if (confirm(`Retirer ${memberName} du groupe ?`)) {
+      const res = await fetch('/api/groups/{{ group.id }}/remove-member', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrfToken }}'
+        },
+        body: JSON.stringify({ memberId })
+      })
+      const data = await res.json()
+      if (data.success) location.reload()
+      else alert('Erreur: ' + data.message)
+    }
+  }
+  
+  function exportMembers() {
+    window.location.href = `/api/groups/{{ group.id }}/members/export`
+  }
+</script>
+{{# /section }}
+
+{{# /layout }}

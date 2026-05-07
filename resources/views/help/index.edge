@@ -1,0 +1,115 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Centre d'aide - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Centre d'aide{{# /section }}
+{{# section('dashboardSubtitle') }}Comment pouvons-nous vous aider ?{{# /section }}
+
+{{# section('content') }}
+<!-- Barre de recherche -->
+<div class="bg-gradient-to-r from-primary to-blue-700 rounded-xl p-8 mb-8 text-center text-white">
+  <h2 class="text-2xl font-bold mb-2">Bienvenue au centre d'aide</h2>
+  <p class="mb-6 opacity-90">Trouvez des réponses à vos questions</p>
+  <div class="max-w-2xl mx-auto">
+    <div class="relative">
+      <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      <input type="text" id="searchHelp" placeholder="Rechercher une aide..." 
+             class="w-full pl-12 pr-4 py-3 rounded-lg text-gray-800">
+    </div>
+  </div>
+</div>
+
+<!-- Catégories d'aide -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition" onclick="window.location.href='/help/faq'">
+    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-question-circle text-blue-600 text-2xl"></i>
+    </div>
+    <h3 class="font-semibold text-lg">FAQ</h3>
+    <p class="text-sm text-gray-500 mt-2">Questions fréquemment posées</p>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition" onclick="window.location.href='/help/guides'">
+    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-book-open text-green-600 text-2xl"></i>
+    </div>
+    <h3 class="font-semibold text-lg">Guides</h3>
+    <p class="text-sm text-gray-500 mt-2">Tutoriels détaillés</p>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition" onclick="window.location.href='/help/tutorial'">
+    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-play-circle text-purple-600 text-2xl"></i>
+    </div>
+    <h3 class="font-semibold text-lg">Tutoriels vidéo</h3>
+    <p class="text-sm text-gray-500 mt-2">Apprenez en vidéo</p>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition" onclick="window.location.href='/help/documentation'">
+    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-file-alt text-yellow-600 text-2xl"></i>
+    </div>
+    <h3 class="font-semibold text-lg">Documentation</h3>
+    <p class="text-sm text-gray-500 mt-2">Documentation technique</p>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition" onclick="window.location.href='/help/contact'">
+    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-headset text-red-600 text-2xl"></i>
+    </div>
+    <h3 class="font-semibold text-lg">Support</h3>
+    <p class="text-sm text-gray-500 mt-2">Contacter le support</p>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition" onclick="window.location.href='/help/guides?category=quick-start'">
+    <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-rocket text-indigo-600 text-2xl"></i>
+    </div>
+    <h3 class="font-semibold text-lg">Démarrage rapide</h3>
+    <p class="text-sm text-gray-500 mt-2">Commencez en 5 minutes</p>
+  </div>
+</div>
+
+<!-- Articles populaires -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Articles populaires</h3>
+  </div>
+  <div class="divide-y dark:divide-gray-700">
+    @each(article in popularArticles)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='{{ article.link }}'">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-file-alt text-gray-400"></i>
+        <div>
+          <p class="font-medium">{{ article.title }}</p>
+          <p class="text-sm text-gray-500">{{ article.views }} vues</p>
+        </div>
+      </div>
+    </div>
+    @end
+  </div>
+</div>
+
+<!-- Nouveautés -->
+<div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+  <div class="flex items-start gap-4">
+    <i class="fas fa-newspaper text-blue-500 text-2xl"></i>
+    <div>
+      <h4 class="font-semibold">Nouveautés</h4>
+      <p class="text-sm text-gray-600 mt-1">Version 2.0 - Nouveau tableau de bord, rapports améliorés, et plus encore.</p>
+      <a href="/help/documentation#whats-new" class="text-primary text-sm hover:underline mt-2 inline-block">En savoir plus →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('searchHelp').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      const query = encodeURIComponent(this.value)
+      window.location.href = `/help/search?q=${query}`
+    }
+  })
+</script>
+{{# /section }}
+
+{{# /layout }}

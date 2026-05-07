@@ -1,0 +1,208 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Rapport de performance - Inspection RDC{{# /section }}
+
+{{# section('dashboardTitle') }}Rapport de performance académique{{# /section }}
+{{# section('dashboardSubtitle') }}Analyse des résultats scolaires par province et niveau{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    <i class="fas fa-file-pdf mr-2"></i> PDF
+  </button>
+  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+    <i class="fas fa-file-excel mr-2"></i> Excel
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtres -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année académique</label>
+      <select id="academicYear" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="2024-2025">2024-2025</option>
+        <option value="2023-2024">2023-2024</option>
+        <option value="2022-2023">2022-2023</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+      <select id="term" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="T1">Trimestre 1</option>
+        <option value="T2">Trimestre 2</option>
+        <option value="T3">Trimestre 3</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
+      <select id="level" class="w-full px-3 py-2 border rounded-lg text-sm">
+        <option value="">Tous</option>
+        <option value="Primaire">Primaire</option>
+        <option value="Secondaire">Secondaire</option>
+      </select>
+    </div>
+    <div class="flex items-end">
+      <button id="applyFilters" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-chart-line mr-2"></i> Analyser
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Indicateurs -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-primary" id="avgNational">0.0</p>
+    <p class="text-sm text-gray-500">Moyenne nationale</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-green-600" id="bestProvince">-</p>
+    <p class="text-sm text-gray-500">Meilleure province</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-red-600" id="worstProvince">-</p>
+    <p class="text-sm text-gray-500">Province à améliorer</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+    <p class="text-2xl font-bold text-purple-600" id="topSubject">-</p>
+    <p class="text-sm text-gray-500">Meilleure matière</p>
+  </div>
+</div>
+
+<!-- Graphiques -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-4">Performance par province</h3>
+    <canvas id="provincePerformanceChart" height="300"></canvas>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-4">Top 10 meilleures écoles</h3>
+    <canvas id="topSchoolsChart" height="300"></canvas>
+  </div>
+</div>
+
+<!-- Performance par matière -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <h3 class="font-semibold mb-4">Performance par matière</h3>
+  <div class="space-y-3" id="subjectsPerformance"></div>
+</div>
+
+<!-- Tableau des provinces -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Classement des provinces</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left">Rang</th>
+          <th class="px-4 py-3 text-left">Province</th>
+          <th class="px-4 py-3 text-center">Moyenne /20</th>
+          <th class="px-4 py-3 text-center">Taux réussite</th>
+          <th class="px-4 py-3 text-center">Évolution</th>
+        </tr>
+      </thead>
+      <tbody id="provincesRanking"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let chart1, chart2
+  
+  async function loadReport() {
+    const year = document.getElementById('academicYear').value
+    const term = document.getElementById('term').value
+    const level = document.getElementById('level').value
+    
+    const params = new URLSearchParams({ year, term })
+    if (level) params.append('level', level)
+    
+    const res = await fetch(`/api/inspection/reports/performance?${params.toString()}`)
+    const data = await res.json()
+    
+    // Indicateurs
+    document.getElementById('avgNational').textContent = data.nationalAverage?.toFixed(1) || '0.0'
+    document.getElementById('bestProvince').textContent = data.bestProvince?.name || '-'
+    document.getElementById('worstProvince').textContent = data.worstProvince?.name || '-'
+    document.getElementById('topSubject').textContent = data.topSubject?.name || '-'
+    
+    // Graphique provinces
+    if (chart1) chart1.destroy()
+    const ctx1 = document.getElementById('provincePerformanceChart').getContext('2d')
+    chart1 = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: data.provinces?.map(p => p.name) || [],
+        datasets: [{
+          label: 'Moyenne /20',
+          data: data.provinces?.map(p => p.average) || [],
+          backgroundColor: '#2563eb',
+          borderRadius: 8
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 20 } } }
+    })
+    
+    // Graphique top écoles
+    if (chart2) chart2.destroy()
+    const ctx2 = document.getElementById('topSchoolsChart').getContext('2d')
+    chart2 = new Chart(ctx2, {
+      type: 'horizontalBar',
+      data: {
+        labels: data.topSchools?.map(s => s.name.substring(0, 20)) || [],
+        datasets: [{
+          label: 'Moyenne /20',
+          data: data.topSchools?.map(s => s.average) || [],
+          backgroundColor: '#16a34a'
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: true, indexAxis: 'y', scales: { x: { max: 20 } } }
+    })
+    
+    // Matières
+    const subjectsHtml = data.subjects?.map(sub => `
+      <div>
+        <div class="flex justify-between text-sm mb-1">
+          <span>${sub.name}</span>
+          <span class="font-medium">${sub.average.toFixed(1)}/20</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-${sub.average >= 15 ? 'green' : (sub.average >= 10 ? 'yellow' : 'red')}-500 rounded-full h-2" style="width: ${(sub.average / 20) * 100}%"></div>
+        </div>
+      </div>
+    `).join('') || '<p>Aucune donnée</p>'
+    document.getElementById('subjectsPerformance').innerHTML = subjectsHtml
+    
+    // Classement provinces
+    const rankingHtml = data.provinces?.map((p, index) => `
+      <tr class="border-b dark:border-gray-700">
+        <td class="px-4 py-2 text-center font-bold">${index + 1}</td>
+        <td class="px-4 py-2">${p.name}</td>
+        <td class="px-4 py-2 text-center font-medium ${p.average >= 15 ? 'text-green-600' : (p.average >= 10 ? 'text-yellow-600' : 'text-red-600')}">${p.average.toFixed(1)}/20</td>
+        <td class="px-4 py-2 text-center">${p.successRate || 0}%</td>
+        <td class="px-4 py-2 text-center">
+          ${p.trend > 0 ? `<span class="text-green-600"><i class="fas fa-arrow-up"></i> +${p.trend}%</span>` : (p.trend < 0 ? `<span class="text-red-600"><i class="fas fa-arrow-down"></i> ${p.trend}%</span>` : '-' )}
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" class="text-center py-8">Aucune donnée</td></tr>'
+    document.getElementById('provincesRanking').innerHTML = rankingHtml
+  }
+  
+  function exportReport(format) {
+    const year = document.getElementById('academicYear').value
+    const term = document.getElementById('term').value
+    const level = document.getElementById('level').value
+    window.location.href = `/api/inspection/reports/performance/export?format=${format}&year=${year}&term=${term}&level=${level}`
+  }
+  
+  document.getElementById('applyFilters').addEventListener('click', loadReport)
+  loadReport()
+</script>
+{{# /section }}
+
+{{# /layout }}

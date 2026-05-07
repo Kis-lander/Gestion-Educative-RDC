@@ -1,0 +1,256 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Communication globale - Inspection RDC{{# /section }}
+
+{{# section('dashboardTitle') }}Communication globale{{# /section }}
+{{# section('dashboardSubtitle') }}Envoyer un message à toutes les écoles ou groupes spécifiques{{# /section }}
+
+{{# section('content') }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Formulaire de communication -->
+  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <form method="POST" action="/inspection/communications/global" x-data="{ loading: false, preview: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Objet *</label>
+        <input type="text" name="subject" required 
+               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+               placeholder="Ex: Réunion des directeurs d'école">
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu du message *</label>
+        <textarea name="content" rows="6" required 
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                  placeholder="Saisissez votre message ici..."></textarea>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Cibles</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="targetRole" value="all" checked class="w-4 h-4">
+            <span>Tous les utilisateurs</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="targetRole" value="director" class="w-4 h-4">
+            <span>Directeurs uniquement</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="targetRole" value="teacher" class="w-4 h-4">
+            <span>Enseignants uniquement</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="targetRole" value="parent" class="w-4 h-4">
+            <span>Parents uniquement</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Filtrer par province (optionnel)</label>
+        <select name="targetProvince" class="w-full px-3 py-2 border rounded-lg">
+          <option value="">Toutes les provinces</option>
+          <option value="Kinshasa">Kinshasa</option>
+          <option value="Kongo Central">Kongo Central</option>
+          <option value="Kwilu">Kwilu</option>
+          <option value="Kwango">Kwango</option>
+          <option value="Mai-Ndombe">Mai-Ndombe</option>
+          <option value="Equateur">Equateur</option>
+          <option value="Mongala">Mongala</option>
+          <option value="Nord-Ubangi">Nord-Ubangi</option>
+          <option value="Sud-Ubangi">Sud-Ubangi</option>
+          <option value="Bas-Uele">Bas-Uele</option>
+          <option value="Haut-Uele">Haut-Uele</option>
+          <option value="Ituri">Ituri</option>
+          <option value="Tshopo">Tshopo</option>
+          <option value="Tshuapa">Tshuapa</option>
+          <option value="Maniema">Maniema</option>
+          <option value="Nord-Kivu">Nord-Kivu</option>
+          <option value="Sud-Kivu">Sud-Kivu</option>
+          <option value="Lomami">Lomami</option>
+          <option value="Sankuru">Sankuru</option>
+          <option value="Kasaï">Kasaï</option>
+          <option value="Kasaï-Central">Kasaï-Central</option>
+          <option value="Kasaï-Oriental">Kasaï-Oriental</option>
+          <option value="Haut-Lomami">Haut-Lomami</option>
+          <option value="Lualaba">Lualaba</option>
+          <option value="Haut-Katanga">Haut-Katanga</option>
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="urgent" class="w-4 h-4">
+          <span class="text-red-600 font-medium">Marquer comme urgent</span>
+        </label>
+      </div>
+      
+      <div class="flex gap-3">
+        <button type="button" @click="preview = !preview" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+          <i class="fas fa-eye mr-2"></i> Aperçu
+        </button>
+        <button type="submit" :disabled="loading"
+                class="flex-1 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+          <span>Envoyer la communication</span>
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Aperçu et informations -->
+  <div class="space-y-6">
+    <!-- Aperçu du message -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" x-show="preview" x-cloak>
+      <h3 class="font-semibold text-lg border-b pb-2 mb-3">Aperçu du message</h3>
+      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+          <i class="fas fa-bullhorn"></i>
+          <span>Inspection Pédagogique - RDC</span>
+        </div>
+        <div class="font-bold text-gray-800 dark:text-white mb-2" x-text="document.querySelector('[name=subject]')?.value || 'Objet'"></div>
+        <div class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap" x-text="document.querySelector('[name=content]')?.value || 'Contenu du message...'"></div>
+        <div class="mt-3 pt-2 border-t text-xs text-gray-400">
+          <i class="fas fa-users mr-1"></i>
+          Destinataires: <span x-text="getTargetLabel()"></span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Informations -->
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h3 class="font-semibold mb-2">Informations</h3>
+      <ul class="text-sm space-y-2">
+        <li class="flex gap-2">
+          <i class="fas fa-users text-blue-500 mt-0.5"></i>
+          <span>Cette communication sera envoyée à tous les utilisateurs ciblés</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="fas fa-clock text-blue-500 mt-0.5"></i>
+          <span>L'envoi peut prendre quelques minutes selon le nombre de destinataires</span>
+        </li>
+        <li class="flex gap-2">
+          <i class="fas fa-shield-alt text-blue-500 mt-0.5"></i>
+          <span>Les communications sont archivées et traçables</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Statistiques -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <h3 class="font-semibold mb-3">Estimation des destinataires</h3>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span>Total utilisateurs actifs</span>
+          <span class="font-bold" id="totalUsers">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Directeurs</span>
+          <span id="directorCount">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Enseignants</span>
+          <span id="teacherCount">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Parents</span>
+          <span id="parentCount">-</span>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t text-center">
+        <p class="text-xs text-gray-400" id="provinceNote"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Communications récentes -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Communications récentes</h3>
+  </div>
+  <div class="divide-y dark:divide-gray-700 max-h-80 overflow-y-auto">
+    @each(comm in recentCommunications)
+    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <p class="font-medium">{{ comm.subject }}</p>
+            @if(comm.urgent)
+            <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Urgent</span>
+            @endif
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{{ comm.content }}</p>
+          <div class="flex gap-3 mt-2 text-xs text-gray-400">
+            <span><i class="fas fa-calendar mr-1"></i> {{ formatDate(comm.createdAt) }}</span>
+            <span><i class="fas fa-users mr-1"></i> {{ comm.recipientCount }} destinataires</span>
+          </div>
+        </div>
+        <button onclick="viewCommunication('{{ comm.id }}')" class="text-primary text-sm hover:underline">
+          Détails
+        </button>
+      </div>
+    </div>
+    @eachelse
+    <div class="p-8 text-center text-gray-500">
+      <i class="fas fa-comment-slash text-3xl mb-2 block"></i>
+      Aucune communication récente
+    </div>
+    @end
+  </div>
+</div>
+
+<script>
+  // Charger les statistiques des utilisateurs
+  function loadUserStats() {
+    const province = document.querySelector('[name=targetProvince]').value
+    fetch(`/api/users/stats?province=${province}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('totalUsers').textContent = data.total || 0
+        document.getElementById('directorCount').textContent = data.directors || 0
+        document.getElementById('teacherCount').textContent = data.teachers || 0
+        document.getElementById('parentCount').textContent = data.parents || 0
+        
+        if (province) {
+          document.getElementById('provinceNote').textContent = `Filtré par: ${province}`
+        } else {
+          document.getElementById('provinceNote').textContent = 'Toutes les provinces'
+        }
+      })
+  }
+  
+  function getTargetLabel() {
+    const role = document.querySelector('[name=targetRole]:checked')?.value || 'all'
+    const province = document.querySelector('[name=targetProvince]')?.value
+    
+    let label = ''
+    switch(role) {
+      case 'all': label = 'Tous les utilisateurs'; break
+      case 'director': label = 'Directeurs'; break
+      case 'teacher': label = 'Enseignants'; break
+      case 'parent': label = 'Parents'; break
+      default: label = 'Tous'
+    }
+    
+    if (province) label += ` (${province})`
+    return label
+  }
+  
+  function viewCommunication(id) {
+    window.location.href = `/inspection/communications/${id}`
+  }
+  
+  // Écouter les changements de sélection
+  document.querySelector('[name=targetProvince]').addEventListener('change', loadUserStats)
+  document.querySelectorAll('[name=targetRole]').forEach(radio => {
+    radio.addEventListener('change', loadUserStats)
+  })
+  
+  loadUserStats()
+</script>
+{{# /section }}
+
+{{# /layout }}

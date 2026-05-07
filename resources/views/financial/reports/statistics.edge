@@ -1,0 +1,189 @@
+{{# layout('layouts/dashboard') }}
+
+{{# section('title') }}Statistiques financières - {{ school.name }}{{# /section }}
+
+{{# section('dashboardTitle') }}Statistiques financières{{# /section }}
+{{# section('dashboardSubtitle') }}Analyse globale de la santé financière{{# /section }}
+
+{{# section('actions') }}
+<div class="flex gap-2">
+  <button onclick="exportStatistics()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+    <i class="fas fa-download mr-2"></i> Exporter
+  </button>
+</div>
+{{# /section }}
+
+{{# section('content') }}
+<!-- Filtre année -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+  <div class="flex gap-3 items-center">
+    <label class="text-gray-700">Année académique:</label>
+    <select id="yearSelect" class="px-3 py-2 border rounded-lg">
+      <option value="{{ currentYear }}">{{ currentYear }}</option>
+      <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
+    </select>
+    <button id="refreshStats" class="px-4 py-2 bg-primary text-white rounded-lg">Actualiser</button>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Taux de recouvrement</p>
+    <p class="text-3xl font-bold" id="recoveryRate">0%</p>
+    <div class="w-full bg-white/30 rounded-full h-1 mt-2">
+      <div class="bg-white rounded-full h-1" id="recoveryBar" style="width: 0%"></div>
+    </div>
+  </div>
+  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Total encaissé</p>
+    <p class="text-3xl font-bold" id="totalCollected">0 $</p>
+  </div>
+  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Total impayés</p>
+    <p class="text-3xl font-bold" id="totalOutstanding">0 $</p>
+  </div>
+  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+    <p class="text-sm opacity-90">Nombre de payeurs</p>
+    <p class="text-3xl font-bold" id="payersCount">0</p>
+  </div>
+</div>
+
+<!-- Graphiques -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Performance par classe</h3>
+    <canvas id="classPerformanceChart" height="250"></canvas>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Répartition des impayés par classe</h3>
+    <canvas id="outstandingByClassChart" height="250"></canvas>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Évolution mensuelle des encaissements</h3>
+    <canvas id="monthlyEvolutionChart" height="250"></canvas>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <h3 class="font-semibold mb-3">Top 5 des meilleurs payeurs</h3>
+    <div id="topPayers" class="space-y-2 max-h-64 overflow-y-auto"></div>
+  </div>
+</div>
+
+<!-- Tableau récapitulatif par classe -->
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+  <div class="px-4 py-3 border-b dark:border-gray-700">
+    <h3 class="font-semibold">Récapitulatif par classe</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2">Classe</th>
+          <th class="px-4 py-2 text-right">Total dû</th>
+          <th class="px-4 py-2 text-right">Total payé</th>
+          <th class="px-4 py-2 text-right">Impayés</th>
+          <th class="px-4 py-2 text-center">Taux recouvrement</th>
+          <th class="px-4 py-2 text-center">Débiteurs</th>
+        </tr>
+      </thead>
+      <tbody id="classSummaryTable">
+        <!-- Dynamique -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let classChart, outstandingChart, monthlyChart
+  
+  async function loadStatistics() {
+    const year = document.getElementById('yearSelect').value
+    
+    const res = await fetch(`/api/financial/reports/statistics?year=${year}`)
+    const data = await res.json()
+    
+    // KPI
+    document.getElementById('recoveryRate').textContent = `${data.kpi.recoveryRate}%`
+    document.getElementById('recoveryBar').style.width = `${data.kpi.recoveryRate}%`
+    document.getElementById('totalCollected').textContent = `$ ${data.kpi.totalCollected.toLocaleString()}`
+    document.getElementById('totalOutstanding').textContent = `$ ${data.kpi.totalOutstanding.toLocaleString()}`
+    document.getElementById('payersCount').textContent = data.kpi.payersCount
+    
+    // Graphique performance par classe
+    if (classChart) classChart.destroy()
+    const classCtx = document.getElementById('classPerformanceChart').getContext('2d')
+    classChart = new Chart(classCtx, {
+      type: 'bar',
+      data: {
+        labels: data.classPerformance.labels,
+        datasets: [{ label: 'Taux recouvrement (%)', data: data.classPerformance.values, backgroundColor: '#2563eb', borderRadius: 8 }]
+      },
+      options: { responsive: true, scales: { y: { max: 100 } } }
+    })
+    
+    // Graphique impayés par classe
+    if (outstandingChart) outstandingChart.destroy()
+    const outstandingCtx = document.getElementById('outstandingByClassChart').getContext('2d')
+    outstandingChart = new Chart(outstandingCtx, {
+      type: 'bar',
+      data: {
+        labels: data.outstandingByClass.labels,
+        datasets: [{ label: 'Impayés ($)', data: data.outstandingByClass.values, backgroundColor: '#dc2626', borderRadius: 8 }]
+      },
+      options: { responsive: true }
+    })
+    
+    // Graphique évolution mensuelle
+    if (monthlyChart) monthlyChart.destroy()
+    const monthlyCtx = document.getElementById('monthlyEvolutionChart').getContext('2d')
+    monthlyChart = new Chart(monthlyCtx, {
+      type: 'line',
+      data: {
+        labels: data.monthlyEvolution.labels,
+        datasets: [{ label: 'Encaissements ($)', data: data.monthlyEvolution.values, borderColor: '#16a34a', fill: true, tension: 0.4 }]
+      },
+      options: { responsive: true }
+    })
+    
+    // Top payeurs
+    document.getElementById('topPayers').innerHTML = data.topPayers.map((p, i) => `
+      <div class="flex justify-between items-center p-2 border-b">
+        <div><span class="w-6 inline-block font-bold">${i + 1}</span> ${p.name}</div>
+        <span class="font-bold text-green-600">$ ${p.total.toLocaleString()}</span>
+      </div>
+    `).join('')
+    
+    // Tableau par classe
+    document.getElementById('classSummaryTable').innerHTML = data.classSummary.map(c => `
+      <tr class="border-b dark:border-gray-700">
+        <td class="px-4 py-2 font-medium">${c.className}</td>
+        <td class="px-4 py-2 text-right">$ ${c.totalDue.toLocaleString()}</td>
+        <td class="px-4 py-2 text-right text-green-600">$ ${c.totalPaid.toLocaleString()}</td>
+        <td class="px-4 py-2 text-right text-red-600">$ ${c.outstanding.toLocaleString()}</td>
+        <td class="px-4 py-2 text-center">
+          <div class="flex items-center justify-center gap-2">
+            <div class="w-20 bg-gray-200 rounded-full h-1.5"><div class="bg-green-500 rounded-full h-1.5" style="width: ${c.recoveryRate}%"></div></div>
+            <span>${c.recoveryRate}%</span>
+          </div>
+        </td>
+        <td class="px-4 py-2 text-center">${c.debtorsCount}</td>
+      </tr>
+    `).join('')
+  }
+  
+  document.getElementById('refreshStats').addEventListener('click', loadStatistics)
+  document.getElementById('yearSelect').addEventListener('change', loadStatistics)
+  
+  function exportStatistics() {
+    const year = document.getElementById('yearSelect').value
+    window.location.href = `/api/financial/reports/statistics/export?year=${year}`
+  }
+  
+  loadStatistics()
+</script>
+{{# /section }}
+
+{{# /layout }}
