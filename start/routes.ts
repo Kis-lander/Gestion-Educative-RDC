@@ -192,6 +192,8 @@ router
     // ==================== ROUTES PUBLIQUES ====================
     router.post('/register-school', [controllers.Schools, 'registerSchool'])
     router.post('/login', [controllers.Auth, 'login'])
+    router.post('/auth/otp/request', [controllers.Auth, 'requestOtp'])
+    router.post('/auth/otp/verify', [controllers.Auth, 'verifyOtp'])
     router.post('/forgot-password', [controllers.Auth, 'forgotPassword'])
     router.post('/reset-password', [controllers.Auth, 'resetPassword'])
     router.post('/verify-transfer', [controllers.Transfers, 'verifyAuthorization'])

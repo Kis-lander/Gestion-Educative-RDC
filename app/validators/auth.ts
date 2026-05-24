@@ -81,6 +81,21 @@ export const resetPasswordValidator = vine.create(
 /**
  * Validateur pour la mise à jour du profil
  */
+export const requestOtpValidator = vine.create(
+  vine.object({
+    email: vine.string().trim().email().exists({ table: 'users', column: 'email' }),
+    purpose: vine.string().trim().optional(),
+  })
+)
+
+export const verifyOtpValidator = vine.create(
+  vine.object({
+    email: vine.string().trim().email().exists({ table: 'users', column: 'email' }),
+    code: vine.string().trim().minLength(4).maxLength(10),
+    purpose: vine.string().trim().optional(),
+  })
+)
+
 export const updateProfileValidator = vine.create(
   vine.object({
     firstName: vine.string().trim().maxLength(100).optional(),
@@ -96,4 +111,6 @@ registerValidator.messagesProvider = provider
 changePasswordValidator.messagesProvider = provider
 forgotPasswordValidator.messagesProvider = provider
 resetPasswordValidator.messagesProvider = provider
+requestOtpValidator.messagesProvider = provider
+verifyOtpValidator.messagesProvider = provider
 updateProfileValidator.messagesProvider = provider

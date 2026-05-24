@@ -4,6 +4,7 @@ import School from '#models/school'
 import User from '#models/user'
 import Message from '#models/message'
 import Teacher from '#models/teacher'
+import OtpMailService from '#services/otp_mail_service'
 import { DateTime } from 'luxon'
 import { randomBytes } from 'node:crypto'
 import {
@@ -14,6 +15,8 @@ import {
 } from '#validators/inspection'
 
 export default class InspectionController {
+  private mailService = new OtpMailService()
+
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
 
@@ -195,26 +198,50 @@ export default class InspectionController {
 
   public async approveSchoolPage({ params, view }: HttpContext) {
     const school = await School.findOrFail(params.id)
+    const director = await User.query()
+      .where('school_id', school.id)
+      .where('role', 'director')
+      .first()
 
-    return view.render('inspection/schools/approve', { school })
+    return view.render('inspection/schools/approve', { school, director })
   }
 
-  public async approveAndGenerateCredentials({ params, request, response, session }: HttpContext) {
+  public async approveAndGenerateCredentials({
+    auth,
+    params,
+    request,
+    response,
+    session,
+    view,
+  }: HttpContext) {
     const school = await School.findOrFail(params.id)
-    const email = request.input('directorEmail', school.email)
+    const email = String(request.input('directorEmail', school.email)).trim().toLowerCase()
     const tempPassword = randomBytes(8).toString('hex')
+    let director = await User.query()
+      .where('school_id', school.id)
+      .where('role', 'director')
+      .first()
+
+    const existingUser = await User.query().where('email', email).first()
+
+    if (existingUser && existingUser.id !== director?.id) {
+      session.flash('error', 'Cet email appartient deja a un autre compte utilisateur.')
+      return response.redirect().back()
+    }
+
+    if (director?.id === auth.user?.id) {
+      session.flash(
+        'error',
+        'Le compte inspection ne peut pas etre utilise comme compte directeur.'
+      )
+      return response.redirect().back()
+    }
 
     await db.transaction(async (trx) => {
       school.useTransaction(trx)
       school.status = 'active'
       school.approvedAt = DateTime.now()
       await school.save()
-
-      let director = await User.query()
-        .useTransaction(trx)
-        .where('school_id', school.id)
-        .where('role', 'director')
-        .first()
 
       if (!director) {
         director = new User()
@@ -224,15 +251,63 @@ export default class InspectionController {
         director.lastName = school.name
         director.role = 'director'
         director.status = 'active'
+      } else {
+        director.useTransaction(trx)
       }
 
       director.email = email
       director.password = tempPassword
+      director.status = 'active'
       await director.save()
     })
 
-    session.flash('success', `École approuvée. Mot de passe temporaire: ${tempPassword}`)
-    return response.redirect(`/inspection/schools/${school.id}`)
+    const credentials = {
+      email,
+      password: tempPassword,
+      schoolCode: school.code,
+      schoolName: school.name,
+      directorName: `${director?.firstName ?? 'Directeur'} ${director?.lastName ?? school.name}`,
+      approvedAt:
+        school.approvedAt?.toFormat('dd/MM/yyyy HH:mm') ??
+        DateTime.now().toFormat('dd/MM/yyyy HH:mm'),
+    }
+    let emailDelivery = {
+      sent: true,
+      message: `Les identifiants ont ete envoyes a ${email}.`,
+    }
+
+    try {
+      await this.mailService.sendDirectorCredentials({
+        to: email,
+        schoolName: credentials.schoolName,
+        schoolCode: credentials.schoolCode,
+        directorName: credentials.directorName,
+        email: credentials.email,
+        password: credentials.password,
+      })
+    } catch (error) {
+      emailDelivery = {
+        sent: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "L'email n'a pas pu etre envoye automatiquement.",
+      }
+    }
+
+    session.flash(
+      emailDelivery.sent ? 'success' : 'error',
+      emailDelivery.sent
+        ? 'Ecole approuvee, identifiants generes et email envoye.'
+        : 'Ecole approuvee et identifiants generes, mais email non envoye.'
+    )
+
+    return view.render('inspection/schools/approved_credentials', {
+      school,
+      director,
+      credentials,
+      emailDelivery,
+    })
   }
 
   public async rejectSchool({ request, params, response }: HttpContext) {

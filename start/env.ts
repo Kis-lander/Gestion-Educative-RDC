@@ -23,4 +23,34 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Session
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
+
+  // Database
+  DB_CONNECTION: Env.schema.string(),
+  DB_HOST: Env.schema.string(),
+  DB_PORT: Env.schema.number(),
+  DB_USER: Env.schema.string(),
+  DB_PASSWORD: Env.schema.string.optional(),
+  DB_DATABASE: Env.schema.string(),
+  DATABASE_URL: Env.schema.string.optional(),
+
+  // Mail / OTP
+  MAIL_MAILER: Env.schema.enum(['console', 'smtp', 'brevo_api'] as const),
+  MAIL_HOST: Env.schema.string(),
+  MAIL_PORT: Env.schema.number(),
+  MAIL_USERNAME: Env.schema.string.optional(),
+  MAIL_PASSWORD: Env.schema.string.optional(),
+  MAIL_FROM_ADDRESS: Env.schema.string(),
+  MAIL_FROM_NAME: Env.schema.string(),
+  MAIL_SECURE: Env.schema.boolean(),
+  BREVO_API_KEY: Env.schema.string.optional(),
+  BREVO_API_URL: Env.schema.string(),
+  BREVO_SENDER_EMAIL: Env.schema.string(),
+  BREVO_SENDER_NAME: Env.schema.string(),
+
+  // OTP
+  OTP_CODE_LENGTH: Env.schema.number(),
+  OTP_EXPIRES_IN_MINUTES: Env.schema.number(),
+  OTP_RESEND_COOLDOWN_SECONDS: Env.schema.number(),
+  OTP_MAX_ATTEMPTS: Env.schema.number(),
+  OTP_PURPOSE: Env.schema.string(),
 })

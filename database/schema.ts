@@ -297,6 +297,31 @@ export class MessageSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class OtpCodeSchema extends BaseModel {
+  static $columns = ['attempts', 'codeHash', 'createdAt', 'email', 'expiresAt', 'id', 'purpose', 'updatedAt', 'usedAt', 'userId'] as const
+  $columns = OtpCodeSchema.$columns
+  @column()
+  declare attempts: number
+  @column()
+  declare codeHash: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare email: string
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare purpose: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column.dateTime()
+  declare usedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
 export class ParentStudentSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'isPrimary', 'parentId', 'studentId', 'updatedAt'] as const
   $columns = ParentStudentSchema.$columns

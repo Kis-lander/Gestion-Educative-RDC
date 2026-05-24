@@ -5,15 +5,20 @@ import { randomBytes } from 'node:crypto'
 import { DateTime } from 'luxon'
 import School from '#models/school'
 import User from '#models/user'
+import OtpService from '#services/otp_service'
 import {
   changePasswordValidator,
   loginValidator,
   updateProfileValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
+  requestOtpValidator,
+  verifyOtpValidator,
 } from '#validators/auth'
 
 export default class AuthController {
+  private otpService = new OtpService()
+
   /**
    * Afficher la page profil.
    */
@@ -225,6 +230,65 @@ export default class AuthController {
     return response.ok({
       success: true,
       message: 'Deconnexion reussie',
+    })
+  }
+
+  public async requestOtp({ request, response }: HttpContext) {
+    const payload = await request.validateUsing(requestOtpValidator)
+    const result = await this.otpService.issue(payload.email, payload.purpose)
+
+    if (result.waitSeconds) {
+      return response.tooManyRequests({
+        success: false,
+        message: `Veuillez patienter ${result.waitSeconds} secondes avant de demander un nouveau code.`,
+        waitSeconds: result.waitSeconds,
+      })
+    }
+
+    return response.ok({
+      success: true,
+      message: 'Si ce compte est actif, un code de verification a ete envoye.',
+    })
+  }
+
+  public async verifyOtp({ auth, request, response }: HttpContext) {
+    const payload = await request.validateUsing(verifyOtpValidator)
+    const result = await this.otpService.verify(payload.email, payload.code, payload.purpose)
+
+    if (!result.valid || !result.user) {
+      const messages = {
+        expired: 'Code expire. Veuillez demander un nouveau code.',
+        locked: 'Trop de tentatives. Veuillez demander un nouveau code.',
+        invalid: 'Code invalide.',
+      }
+
+      return response.unauthorized({
+        success: false,
+        message: messages[result.reason ?? 'invalid'],
+      })
+    }
+
+    if ((payload.purpose ?? 'login') === 'login') {
+      await auth.use('web').login(result.user)
+      result.user.lastLogin = DateTime.now()
+      await result.user.save()
+      await result.user.load('school')
+    }
+
+    return response.ok({
+      success: true,
+      message: 'Code verifie avec succes',
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+        fullName: result.user.fullName,
+        role: result.user.role,
+        schoolId: result.user.schoolId,
+        schoolName: result.user.school?.name,
+        avatarUrl: result.user.avatarUrl,
+      },
     })
   }
 

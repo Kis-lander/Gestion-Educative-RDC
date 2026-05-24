@@ -63,6 +63,9 @@ header.auth-header {
   max-width: none;
   border-bottom: 1px solid rgba(37, 99, 235, 0.12);
 }
+header.auth-header > div {
+  height: calc(64px + 2rem);
+}
 header > div {
   display: flex;
   justify-content: space-between;
@@ -130,6 +133,11 @@ header nav a.nav-button-primary:hover {
   border-radius: 4px;
   object-fit: contain;
 }
+.auth-brand-logo {
+  width: auto;
+  max-width: min(calc(276px + 2rem), calc(52vw + 2rem));
+  max-height: calc(52px + 2rem);
+}
 
 /* Main */
 main {
@@ -148,7 +156,7 @@ main.auth-page {
   justify-content: center;
   max-width: none;
   margin: 0;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - (64px + 2rem));
   overflow: hidden;
   border: none;
   background:

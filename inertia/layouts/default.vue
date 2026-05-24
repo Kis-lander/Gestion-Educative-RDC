@@ -8,6 +8,16 @@ import { translate } from '~/lib/i18n'
 
 const page = usePage<Data.SharedProps>()
 const isAuthPage = computed(() => ['/login', '/signup'].includes(page.url.split('?')[0]))
+const headerLogoSrc = computed(() =>
+  isAuthPage.value
+    ? '/images/logo-gouve-minepst.jpg'
+    : 'https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png'
+)
+const headerLogoAlt = computed(() =>
+  isAuthPage.value
+    ? "Logo du Ministere de l'Enseignement Primaire, Secondaire et Technique"
+    : 'Logo RDC'
+)
 const locale = computed(() => page.props.locale ?? 'fr')
 const t = (key: Parameters<typeof translate>[1]) => translate(locale.value, key)
 const showScrollTop = ref(false)
@@ -101,8 +111,9 @@ onBeforeUnmount(() => {
         <a href="/">
           <img
             class="brand-logo"
-            src="https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png"
-            alt="Logo RDC"
+            :class="{ 'auth-brand-logo': isAuthPage }"
+            :src="headerLogoSrc"
+            :alt="headerLogoAlt"
           />
         </a>
       </div>
