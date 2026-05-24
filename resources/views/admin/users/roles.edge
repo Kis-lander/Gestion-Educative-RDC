@@ -1,208 +1,258 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Gestion des rôles - Administration{{# /section }}
-
-{{# section('dashboardTitle') }}Rôles et permissions{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez les rôles des utilisateurs{{# /section }}
-
-{{# section('actions') }}
-<button onclick="showCreateRoleModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-  <i class="fas fa-plus mr-2"></i> Nouveau rôle
+  @section('title')
+    Gestion des rôles - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Rôles et permissions
+  @endsection
+  @section('dashboardSubtitle')
+    Gérez les rôles des utilisateurs
+  @endsection
+  
+  @section('actions')
+    <button
+      onclick="showCreateRoleModal()"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+    >
+      <i class="fas fa-plus mr-2"></i>Nouveau rôle
 </button>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Rôles système</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.custom || 0 }}</p>
-    <p class="text-sm text-gray-500">Rôles personnalisés</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.totalPermissions || 0 }}</p>
-    <p class="text-sm text-gray-500">Permissions</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.assigned || 0 }}</p>
-    <p class="text-sm text-gray-500">Utilisateurs avec rôle</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Liste des rôles -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="px-4 py-3 border-b dark:border-gray-700">
-      <h3 class="font-semibold">Rôles disponibles</h3>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Rôles système
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.custom || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Rôles personnalisés
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.totalPermissions || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Permissions
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.assigned || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Utilisateurs avec rôle
+        </p>
+      </div>
     </div>
-    <div class="divide-y dark:divide-gray-700">
-      @each(role in roles)
-      <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-        <div class="flex justify-between items-start">
-          <div>
-            <h4 class="font-bold">{{ role.name }}</h4>
-            <p class="text-sm text-gray-500">{{ role.description || 'Aucune description' }}</p>
-            <p class="text-xs text-gray-400 mt-1">{{ role.permissionsCount || 0 }} permissions | {{ role.usersCount || 0 }} utilisateurs</p>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Liste des rôles -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-4 py-3 border-b dark:border-gray-700">
+          <h3 class="font-semibold">
+            Rôles disponibles
+          </h3>
+        </div>
+        <div class="divide-y dark:divide-gray-700">
+          @each(role in roles)
+            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-bold">
+                    {{ role.name }}
+                  </h4>
+                  <p class="text-sm text-gray-500">
+                    {{ role.description || 'Aucune description' }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">
+                    {{ role.permissionsCount || 0 }} permissions | {{ role.usersCount || 0 }} utilisateurs
+                  </p>
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    onclick="editRole('{{ role.id }}', '{{ role.name }}', '{{ role.description }}')"
+                    class="text-primary hover:underline"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  @if(role.isCustom)
+                    <button onclick="deleteRole('{{ role.id }}', '{{ role.name }}')" class="text-red-500 hover:text-red-700">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  @endif
+                </div>
+              </div>
+            </div>
+          @end
+        </div>
+      </div>
+
+      <!-- Permissions système -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-4 py-3 border-b dark:border-gray-700">
+          <h3 class="font-semibold">
+            Permissions système
+          </h3>
+        </div>
+        <div class="p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+              <p class="font-medium text-sm mb-2">
+                Gestion des utilisateurs
+              </p>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Voir utilisateurs</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Créer utilisateurs</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Modifier utilisateurs</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Supprimer utilisateurs</label>
+            </div>
+            <div>
+              <p class="font-medium text-sm mb-2">
+                Gestion des écoles
+              </p>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Voir écoles</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Approuver écoles</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Suspendre écoles</label>
+            </div>
+            <div>
+              <p class="font-medium text-sm mb-2">
+                Gestion académique
+              </p>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Gérer classes</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Gérer matières</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Gérer notes</label>
+            </div>
+            <div>
+              <p class="font-medium text-sm mb-2">
+                Gestion financière
+              </p>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Voir transactions</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Créer frais</label>
+              <label class="flex items-center gap-2 text-sm py-1">                <input type="checkbox" disabled checked class="w-4 h-4" />Gérer bourses</label>
+            </div>
           </div>
-          <div class="flex gap-2">
-            <button onclick="editRole('{{ role.id }}', '{{ role.name }}', '{{ role.description }}')" class="text-primary hover:underline">
-              <i class="fas fa-edit"></i>
-            </button>
-            @if(role.isCustom)
-            <button onclick="deleteRole('{{ role.id }}', '{{ role.name }}')" class="text-red-500 hover:text-red-700">
-              <i class="fas fa-trash"></i>
-            </button>
-            @endif
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal création/édition rôle -->
+    <div id="roleModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg" id="modalTitle">
+            Créer un rôle
+          </h3>
+          <button onclick="closeRoleModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="roleForm" onsubmit="event.preventDefault(); saveRole()">
+          <input type="hidden" id="roleId" name="roleId" value="" />
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Nom du rôle *</label>
+            <input type="text" id="roleName" name="name" required class="w-full px-3 py-2 border rounded-lg" />
           </div>
-        </div>
-      </div>
-      @end
-    </div>
-  </div>
-  
-  <!-- Permissions système -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="px-4 py-3 border-b dark:border-gray-700">
-      <h3 class="font-semibold">Permissions système</h3>
-    </div>
-    <div class="p-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <div>
-          <p class="font-medium text-sm mb-2">Gestion des utilisateurs</p>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Voir utilisateurs</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Créer utilisateurs</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Modifier utilisateurs</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Supprimer utilisateurs</label>
-        </div>
-        <div>
-          <p class="font-medium text-sm mb-2">Gestion des écoles</p>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Voir écoles</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Approuver écoles</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Suspendre écoles</label>
-        </div>
-        <div>
-          <p class="font-medium text-sm mb-2">Gestion académique</p>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Gérer classes</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Gérer matières</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Gérer notes</label>
-        </div>
-        <div>
-          <p class="font-medium text-sm mb-2">Gestion financière</p>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Voir transactions</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Créer frais</label>
-          <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" disabled checked class="w-4 h-4"> Gérer bourses</label>
-        </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Description</label>
+            <textarea id="roleDescription" name="description" rows="3" class="w-full px-3 py-2 border rounded-lg"></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Permissions</label>
+            <div class="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="users.view" class="w-4 h-4" />Voir utilisateurs</label>
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="users.create" class="w-4 h-4" />Créer utilisateurs</label>
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="users.edit" class="w-4 h-4" />Modifier utilisateurs</label>
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="schools.view" class="w-4 h-4" />Voir écoles</label>
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="schools.approve" class="w-4 h-4" />Approuver écoles</label>
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="grades.manage" class="w-4 h-4" />Gérer notes</label>
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="finance.view" class="w-4 h-4" />Voir finances</label>
+              <label class="flex items-center gap-2">                <input type="checkbox" name="permissions[]" value="reports.view" class="w-4 h-4" />Voir rapports</label>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button>
+            <button type="button" onclick="closeRoleModal()" class="flex-1 px-4 py-2 border rounded-lg">Annuler</button>
+          </div>
+        </form>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal création/édition rôle -->
-<div id="roleModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-lg" id="modalTitle">Créer un rôle</h3>
-      <button onclick="closeRoleModal()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <form id="roleForm" onsubmit="event.preventDefault(); saveRole()">
-      <input type="hidden" id="roleId" name="roleId" value="">
-      <div class="mb-4">
-        <label class="block text-gray-700 mb-2">Nom du rôle *</label>
-        <input type="text" id="roleName" name="name" required class="w-full px-3 py-2 border rounded-lg">
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 mb-2">Description</label>
-        <textarea id="roleDescription" name="description" rows="3" class="w-full px-3 py-2 border rounded-lg"></textarea>
-      </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 mb-2">Permissions</label>
-        <div class="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-3">
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="users.view" class="w-4 h-4"> Voir utilisateurs</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="users.create" class="w-4 h-4"> Créer utilisateurs</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="users.edit" class="w-4 h-4"> Modifier utilisateurs</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="schools.view" class="w-4 h-4"> Voir écoles</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="schools.approve" class="w-4 h-4"> Approuver écoles</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="grades.manage" class="w-4 h-4"> Gérer notes</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="finance.view" class="w-4 h-4"> Voir finances</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="permissions[]" value="reports.view" class="w-4 h-4"> Voir rapports</label>
-        </div>
-      </div>
-      <div class="flex gap-3">
-        <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button>
-        <button type="button" onclick="closeRoleModal()" class="flex-1 px-4 py-2 border rounded-lg">Annuler</button>
-      </div>
-    </form>
-  </div>
-</div>
+    <script>
+      function showCreateRoleModal() {
+        document.getElementById("modalTitle").textContent = "Créer un rôle";
+        document.getElementById("roleId").value = "";
+        document.getElementById("roleName").value = "";
+        document.getElementById("roleDescription").value = "";
+        document.querySelectorAll('input[name="permissions[]"]').forEach(cb => cb.checked = false);
+        document.getElementById("roleModal").classList.remove("hidden");
+        document.getElementById("roleModal").classList.add("flex");
+      }
 
-<script>
-  function showCreateRoleModal() {
-    document.getElementById('modalTitle').textContent = 'Créer un rôle'
-    document.getElementById('roleId').value = ''
-    document.getElementById('roleName').value = ''
-    document.getElementById('roleDescription').value = ''
-    document.querySelectorAll('input[name="permissions[]"]').forEach(cb => cb.checked = false)
-    document.getElementById('roleModal').classList.remove('hidden')
-    document.getElementById('roleModal').classList.add('flex')
-  }
-  
-  function editRole(id, name, description) {
-    document.getElementById('modalTitle').textContent = 'Modifier le rôle'
-    document.getElementById('roleId').value = id
-    document.getElementById('roleName').value = name
-    document.getElementById('roleDescription').value = description || ''
-    document.getElementById('roleModal').classList.remove('hidden')
-    document.getElementById('roleModal').classList.add('flex')
-  }
-  
-  function closeRoleModal() {
-    document.getElementById('roleModal').classList.add('hidden')
-    document.getElementById('roleModal').classList.remove('flex')
-  }
-  
-  async function saveRole() {
-    const id = document.getElementById('roleId').value
-    const name = document.getElementById('roleName').value
-    const description = document.getElementById('roleDescription').value
-    const permissions = Array.from(document.querySelectorAll('input[name="permissions[]"]:checked')).map(cb => cb.value)
-    
-    const url = id ? `/api/admin/roles/${id}/update` : '/api/admin/roles/create'
-    const method = id ? 'PUT' : 'POST'
-    
-    const res = await fetch(url, {
-      method: method,
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrfToken }}'
-      },
-      body: JSON.stringify({ name, description, permissions })
-    })
-    const data = await res.json()
-    if (data.success) {
-      location.reload()
-    } else {
-      alert('Erreur: ' + data.message)
-    }
-  }
-  
-  async function deleteRole(roleId, roleName) {
-    if (confirm(`Supprimer le rôle "${roleName}" ? Cette action est irréversible.`)) {
-      const res = await fetch(`/api/admin/roles/${roleId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) location.reload()
-      else alert('Erreur: ' + data.message)
-    }
-  }
-</script>
-{{# /section }}
+      function editRole(id, name, description) {
+        document.getElementById("modalTitle").textContent = "Modifier le rôle";
+        document.getElementById("roleId").value = id;
+        document.getElementById("roleName").value = name;
+        document.getElementById("roleDescription").value = description || "";
+        document.getElementById("roleModal").classList.remove("hidden");
+        document.getElementById("roleModal").classList.add("flex");
+      }
 
-{{# /layout }}
+      function closeRoleModal() {
+        document.getElementById("roleModal").classList.add("hidden");
+        document.getElementById("roleModal").classList.remove("flex");
+      }
+
+      async function saveRole() {
+        const id = document.getElementById("roleId").value;
+        const name = document.getElementById("roleName").value;
+        const description = document.getElementById("roleDescription").value;
+        const permissions = Array.from(document.querySelectorAll('input[name="permissions[]"]:checked')).map(cb => cb.value);
+        const url = id ? `/api/admin/roles/${id}/update` : "/api/admin/roles/create";
+        const method = id ? "PUT" : "POST";
+        const res = await fetch(url, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({
+            name: name,
+            description: description,
+            permissions: permissions
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        } else {
+          alert("Erreur: " + data.message);
+        }
+      }
+
+      async function deleteRole(roleId, roleName) {
+        if (confirm(`Supprimer le rôle "${roleName}" ? Cette action est irréversible.`)) {
+          const res = await fetch(`/api/admin/roles/${roleId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) location.reload(); else alert("Erreur: " + data.message);
+        }
+      }
+    </script>
+  @endsection
+  

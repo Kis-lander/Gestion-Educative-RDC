@@ -1,222 +1,297 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Paiements - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Paiements des enfants{{# /section }}
-{{# section('dashboardSubtitle') }}Consultez l'historique des transactions{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportPayments()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+  @section('title')
+    Paiements - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Paiements des enfants
+  @endsection
+  @section('dashboardSubtitle')
+    Consultez l'historique des transactions
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="exportPayments()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Sélection enfant -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="flex flex-wrap gap-4 items-center">
-    <label class="font-medium text-gray-700 dark:text-gray-300">Enfant:</label>
-    <select id="childSelect" class="px-4 py-2 border rounded-lg">
-      @each(child in children)
-      <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>{{ child.name }} - {{ child.className }}</option>
-      @end
-    </select>
-    <label class="font-medium text-gray-700 dark:text-gray-300 ml-4">Année:</label>
-    <select id="yearSelect" class="px-4 py-2 border rounded-lg">
-      <option value="{{ currentYear }}" {{ selectedYear == currentYear ? 'selected' : '' }}>{{ currentYear }}</option>
-      <option value="{{ currentYear - 1 }}" {{ selectedYear == currentYear - 1 ? 'selected' : '' }}>{{ currentYear - 1 }}</option>
-    </select>
-    <button id="applyFilters" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-      <i class="fas fa-search mr-2"></i> Voir
+    </div>
+  @endsection
+  
+  @section('content')
+    <!-- Sélection enfant -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="flex flex-wrap gap-4 items-center">
+        <label class="font-medium text-gray-700 dark:text-gray-300">Enfant:</label>
+        <select id="childSelect" class="px-4 py-2 border rounded-lg">
+          @each(child in children)
+            <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>
+              {{ child.name }} - {{ child.className }}
+            </option>
+          @end
+        </select>
+        <label class="font-medium text-gray-700 dark:text-gray-300 ml-4">Année:</label>
+        <select id="yearSelect" class="px-4 py-2 border rounded-lg">
+          <option value="{{ currentYear }}" {{ selectedYear == currentYear ? 'selected' : '' }}>
+            {{ currentYear }}
+          </option>
+          <option value="{{ currentYear - 1 }}" {{ selectedYear == currentYear - 1 ? 'selected' : '' }}>
+            {{ currentYear - 1 }}
+          </option>
+        </select>
+        <button id="applyFilters" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i class="fas fa-search mr-2"></i>Voir
     </button>
-  </div>
-</div>
-
-@if(selectedChild)
-<!-- Carte récapitulative -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-sm opacity-90">Total payé</p>
-        <p class="text-2xl font-bold">{{ formatCurrency(totalPaid, 'USD') }}</p>
       </div>
-      <i class="fas fa-check-circle text-3xl opacity-50"></i>
     </div>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-sm opacity-90">Total dû</p>
-        <p class="text-2xl font-bold">{{ formatCurrency(totalDue, 'USD') }}</p>
-      </div>
-      <i class="fas fa-coins text-3xl opacity-50"></i>
-    </div>
-  </div>
-  <div class="bg-gradient-to-br {{ balance > 0 ? 'from-red-500 to-red-600' : 'from-blue-500 to-blue-600' }} rounded-xl p-4 text-white">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-sm opacity-90">Solde</p>
-        <p class="text-2xl font-bold">{{ formatCurrency(balance, 'USD') }}</p>
-      </div>
-      <i class="fas {{ balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle' }} text-3xl opacity-50"></i>
-    </div>
-    @if(balance > 0)
-    <p class="text-xs mt-2">Paiement en attente</p>
-    @else
-    <p class="text-xs mt-2">Situation soldée</p>
-    @endif
-  </div>
-</div>
 
-<!-- Barre de progression -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="flex justify-between text-sm mb-2">
-    <span>Progression des paiements</span>
-    <span>{{ paymentProgress }}%</span>
-  </div>
-  <div class="w-full bg-gray-200 rounded-full h-2">
-    <div class="bg-green-500 rounded-full h-2" style="width: {{ paymentProgress }}%"></div>
-  </div>
-</div>
-
-<!-- Détail des frais par type -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Détail des frais par type</h3>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(fee in feeDetails)
-    <div class="p-4">
-      <div class="flex flex-wrap justify-between items-start gap-3">
-        <div class="flex-1">
-          <div class="flex items-center gap-2">
-            <h4 class="font-medium">{{ fee.type }}</h4>
-            <span class="text-xs bg-gray-100 px-2 py-0.5 rounded">{{ fee.term || 'Annuel' }}</span>
+    @if(selectedChild)
+      <!-- Carte récapitulative -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm opacity-90">
+                Total payé
+              </p>
+              <p class="text-2xl font-bold">
+                {{ formatCurrency(totalPaid, 'USD') }}
+              </p>
+            </div>
+            <i class="fas fa-check-circle text-3xl opacity-50"></i>
           </div>
-          <p class="text-sm text-gray-500 mt-1">{{ fee.description }}</p>
         </div>
-        <div class="text-right">
-          <p class="text-sm text-gray-500">Montant</p>
-          <p class="font-bold">{{ formatCurrency(fee.amount, 'USD') }}</p>
+        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm opacity-90">
+                Total dû
+              </p>
+              <p class="text-2xl font-bold">
+                {{ formatCurrency(totalDue, 'USD') }}
+              </p>
+            </div>
+            <i class="fas fa-coins text-3xl opacity-50"></i>
+          </div>
+        </div>
+        <div
+          class="bg-gradient-to-br {{ balance > 0 ? 'from-red-500 to-red-600' : 'from-blue-500 to-blue-600' }} rounded-xl p-4 text-white"
+        >
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm opacity-90">
+                Solde
+              </p>
+              <p class="text-2xl font-bold">
+                {{ formatCurrency(balance, 'USD') }}
+              </p>
+            </div>
+            <i
+              class="fas {{ balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle' }} text-3xl opacity-50"
+            ></i>
+          </div>
+          @if(balance > 0)
+            <p class="text-xs mt-2">
+              Paiement en attente
+            </p>
+          @else
+            <p class="text-xs mt-2">
+              Situation soldée
+            </p>
+          @endif
         </div>
       </div>
-      <div class="mt-3">
-        <div class="flex justify-between text-sm mb-1">
-          <span>Payé: {{ formatCurrency(fee.paid, 'USD') }}</span>
-          <span class="{{ fee.balance > 0 ? 'text-red-600' : 'text-green-600' }}">
-            Reste: {{ formatCurrency(fee.balance, 'USD') }}
-          </span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-1.5">
-          <div class="bg-green-500 rounded-full h-1.5" style="width: {{ fee.percentage }}%"></div>
-        </div>
-      </div>
-      @if(fee.dueDate)
-      <p class="text-xs text-gray-400 mt-2">
-        <i class="fas fa-calendar mr-1"></i> Échéance: {{ formatDate(fee.dueDate) }}
-        @if(fee.isOverdue)
-        <span class="text-red-600 ml-2">(En retard)</span>
-        @endif
-      </p>
-      @endif
-    </div>
-    @end
-  </div>
-</div>
 
-<!-- Derniers paiements -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-    <h3 class="font-semibold">Derniers paiements</h3>
-    <a href="/parent/payments/history?child_id={{ selectedChild.id }}" class="text-primary text-sm hover:underline">Voir tout</a>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Reçu n°</th>
-          <th class="px-4 py-2">Type</th>
-          <th class="px-4 py-2 text-right">Montant</th>
-          <th class="px-4 py-2">Mode</th>
-          <th class="px-4 py-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(payment in recentPayments)
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-4 py-2">{{ formatDate(payment.date) }}</td>
-          <td class="px-4 py-2 font-mono text-xs">{{ payment.receiptNumber }}</td>
-          <td class="px-4 py-2">{{ payment.feeType }}</td>
-          <td class="px-4 py-2 text-right font-bold text-green-600">{{ formatCurrency(payment.amount, 'USD') }}</td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+      <!-- Barre de progression -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+        <div class="flex justify-between text-sm mb-2">
+          <span>Progression des paiements</span>
+          <span>{{ paymentProgress }}%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-green-500 rounded-full h-2" style="width: {{ paymentProgress }}%">
+          </div>
+        </div>
+      </div>
+
+      <!-- Détail des frais par type -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
+        <div class="px-4 py-3 border-b dark:border-gray-700">
+          <h3 class="font-semibold">
+            Détail des frais par type
+          </h3>
+        </div>
+        <div class="divide-y dark:divide-gray-700">
+          @each(fee in feeDetails)
+            <div class="p-4">
+              <div class="flex flex-wrap justify-between items-start gap-3">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-medium">
+                      {{ fee.type }}
+                    </h4>
+                    <span class="text-xs bg-gray-100 px-2 py-0.5 rounded">{{ fee.term || 'Annuel' }}</span>
+                  </div>
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ fee.description }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-gray-500">
+                    Montant
+                  </p>
+                  <p class="font-bold">
+                    {{ formatCurrency(fee.amount, 'USD') }}
+                  </p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <div class="flex justify-between text-sm mb-1">
+                  <span>Payé: {{ formatCurrency(fee.paid, 'USD') }}</span>
+                  <span class="{{ fee.balance > 0 ? 'text-red-600' : 'text-green-600' }}">
+                    Reste: {{ formatCurrency(fee.balance, 'USD') }}
+          </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                  <div class="bg-green-500 rounded-full h-1.5" style="width: {{ fee.percentage }}%">
+                  </div>
+                </div>
+              </div>
+              @if(fee.dueDate)
+                <p class="text-xs text-gray-400 mt-2">
+                  <i class="fas fa-calendar mr-1"></i>Échéance: {{ formatDate(fee.dueDate) }}
+                  @if(fee.isOverdue)
+                    <span class="text-red-600 ml-2">(En retard)</span>
+                  @endif
+                </p>
+              @endif
+            </div>
+          @end
+        </div>
+      </div>
+
+      <!-- Derniers paiements -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 class="font-semibold">
+            Derniers paiements
+          </h3>
+          <a
+            href="/parent/payments/history?child_id={{ selectedChild.id }}"
+            class="text-primary text-sm hover:underline"
+          >Voir tout</a>
+        </div>
+        <div class="table-responsive">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-4 py-2">
+                  Date
+                </th>
+                <th class="px-4 py-2">
+                  Reçu n°
+                </th>
+                <th class="px-4 py-2">
+                  Type
+                </th>
+                <th class="px-4 py-2 text-right">
+                  Montant
+                </th>
+                <th class="px-4 py-2">
+                  Mode
+                </th>
+                <th class="px-4 py-2 text-center">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @each(payment in recentPayments)
+                <tr class="border-b dark:border-gray-700">
+                  <td class="px-4 py-2">
+                    {{ formatDate(payment.date) }}
+                  </td>
+                  <td class="px-4 py-2 font-mono text-xs">
+                    {{ payment.receiptNumber }}
+                  </td>
+                  <td class="px-4 py-2">
+                    {{ payment.feeType }}
+                  </td>
+                  <td class="px-4 py-2 text-right font-bold text-green-600">
+                    {{ formatCurrency(payment.amount, 'USD') }}
+                  </td>
+                  <td class="px-4 py-2">
+                    <span
+                      class="px-2 py-1 rounded-full text-xs
               {{ payment.method === 'cash' ? 'bg-green-100 text-green-800' : 
                  (payment.method === 'bank_transfer' ? 'bg-blue-100 text-blue-800' : 
-                 (payment.method === 'mobile_money' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')) }}">
-              {{ payment.methodLabel }}
+                 (payment.method === 'mobile_money' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')) }}"
+                    >
+                      {{ payment.methodLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2 text-center">
-            <button onclick="viewReceipt('{{ payment.id }}')" class="text-primary hover:underline text-sm">
-              <i class="fas fa-receipt"></i>
-            </button>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="6" class="text-center py-8 text-gray-500">
-            <i class="fas fa-receipt text-4xl mb-2 block"></i>
-            Aucun paiement enregistré
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-</div>
+                  </td>
+                  <td class="px-4 py-2 text-center">
+                    <button onclick="viewReceipt('{{ payment.id }}')" class="text-primary hover:underline text-sm">
+                      <i class="fas fa-receipt"></i>
+                    </button>
+                  </td>
+                </tr>
+                @else
+                <tr>
+                  <td colspan="6" class="text-center py-8 text-gray-500">
+                    <i class="fas fa-receipt text-4xl mb-2 block"></i>
+                    Aucun paiement enregistré
+                  </td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-<!-- Bouton d'action -->
-@if(balance > 0)
-<div class="mt-6 text-center">
-  <button onclick="requestPaymentPlan()" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-hand-holding-usd mr-2"></i> Demander un plan de paiement
+      <!-- Bouton d'action -->
+      @if(balance > 0)
+        <div class="mt-6 text-center">
+          <button
+            onclick="requestPaymentPlan()"
+            class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            <i class="fas fa-hand-holding-usd mr-2"></i>Demander un plan de paiement
   </button>
-</div>
-@endif
+        </div>
+      @endif
+      
+    @else
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+        <i class="fas fa-coins text-5xl text-gray-400 mb-3"></i>
+        <p class="text-gray-500">
+          Sélectionnez un enfant pour voir ses paiements
+        </p>
+      </div>
+    @endif
+    
+    <script>
+      document.getElementById("applyFilters")?.addEventListener("click", () => {
+        const childId = document.getElementById("childSelect").value;
+        const year = document.getElementById("yearSelect").value;
+        window.location.href = `/parent/payments?child_id=${childId}&year=${year}`;
+      });
 
-@else
-<div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-  <i class="fas fa-coins text-5xl text-gray-400 mb-3"></i>
-  <p class="text-gray-500">Sélectionnez un enfant pour voir ses paiements</p>
-</div>
-@endif
+      function viewReceipt(paymentId) {
+        window.open(`/parent/payments/receipt/${paymentId}`, "_blank", "width=800,height=600");
+      }
 
-<script>
-  document.getElementById('applyFilters')?.addEventListener('click', () => {
-    const childId = document.getElementById('childSelect').value
-    const year = document.getElementById('yearSelect').value
-    window.location.href = `/parent/payments?child_id=${childId}&year=${year}`
-  })
-  
-  function viewReceipt(paymentId) {
-    window.open(`/parent/payments/receipt/${paymentId}`, '_blank', 'width=800,height=600')
-  }
-  
-  function exportPayments() {
-    const childId = document.getElementById('childSelect').value
-    const year = document.getElementById('yearSelect').value
-    window.location.href = `/api/parent/payments/export?child_id=${childId}&year=${year}`
-  }
-  
-  function requestPaymentPlan() {
-    const childId = document.getElementById('childSelect').value
-    window.location.href = `/parent/payments/payment-plan/request?child_id=${childId}`
-  }
-</script>
-{{# /section }}
+      function exportPayments() {
+        const childId = document.getElementById("childSelect").value;
+        const year = document.getElementById("yearSelect").value;
+        window.location.href = `/api/parent/payments/export?child_id=${childId}&year=${year}`;
+      }
 
-{{# /layout }}
+      function requestPaymentPlan() {
+        const childId = document.getElementById("childSelect").value;
+        window.location.href = `/parent/payments/payment-plan/request?child_id=${childId}`;
+      }
+    </script>
+  @endsection
+  

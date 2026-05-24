@@ -1,199 +1,341 @@
-{{# layout('layouts/print') }}
+@layout('layouts/print')
 
-{{# section('title') }}Rapport d'inspection - {{ school.name }}{{# /section }}
+  @section('title')
+    Rapport d'inspection - {{ school.name }}
+  @endsection
+  <div class="inspection-report">
+    <!-- En-tête -->
+    <div class="text-center mb-6">
+      <h1 class="text-xl font-bold">
+        RAPPORT D'INSPECTION PÉDAGOGIQUE
+      </h1>
+      <h2 class="text-lg">
+        République Démocratique du Congo
+      </h2>
+      <p class="text-sm">
+        Inspection Pédagogique Provinciale
+      </p>
+    </div>
 
-<div class="inspection-report">
-  <!-- En-tête -->
-  <div class="text-center mb-6">
-    <h1 class="text-xl font-bold">RAPPORT D'INSPECTION PÉDAGOGIQUE</h1>
-    <h2 class="text-lg">République Démocratique du Congo</h2>
-    <p class="text-sm">Inspection Pédagogique Provinciale</p>
-  </div>
-  
-  <!-- Informations école -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">IDENTIFICATION DE L'ÉTABLISSEMENT</h3>
-    <div class="grid grid-cols-2 gap-3 text-sm">
-      <div><strong>Nom :</strong> {{ school.name }}</div>
-      <div><strong>Code :</strong> {{ school.code }}</div>
-      <div><strong>Province :</strong> {{ school.province }}</div>
-      <div><strong>Territoire :</strong> {{ school.territory }}</div>
-      <div><strong>Adresse :</strong> {{ school.address }}</div>
-      <div><strong>Téléphone :</strong> {{ school.phone }}</div>
-      <div><strong>Directeur :</strong> {{ directorName }}</div>
-      <div><strong>Date inspection :</strong> {{ inspectionDate }}</div>
+    <!-- Informations école -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3">
+        IDENTIFICATION DE L'ÉTABLISSEMENT
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <strong>Nom :</strong>{{ school.name }}
+        </div>
+        <div>
+          <strong>Code :</strong>{{ school.code }}
+        </div>
+        <div>
+          <strong>Province :</strong>{{ school.province }}
+        </div>
+        <div>
+          <strong>Territoire :</strong>{{ school.territory }}
+        </div>
+        <div>
+          <strong>Adresse :</strong>{{ school.address }}
+        </div>
+        <div>
+          <strong>Téléphone :</strong>{{ school.phone }}
+        </div>
+        <div>
+          <strong>Directeur :</strong>{{ directorName }}
+        </div>
+        <div>
+          <strong>Date inspection :</strong>{{ inspectionDate }}
+        </div>
+      </div>
     </div>
-  </div>
-  
-  <!-- Équipe d'inspection -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">ÉQUIPE D'INSPECTION</h3>
-    <div class="grid grid-cols-2 gap-3 text-sm">
-      <div><strong>Inspecteur principal :</strong> {{ leadInspector }}</div>
-      <div><strong>Inspecteur adjoint :</strong> {{ deputyInspector || '-' }}</div>
-      <div><strong>Date de la visite :</strong> {{ visitDate }}</div>
-      <div><strong>Durée de la visite :</strong> {{ visitDuration }} heures</div>
+
+    <!-- Équipe d'inspection -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3">
+        ÉQUIPE D'INSPECTION
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <strong>Inspecteur principal :</strong>{{ leadInspector }}
+        </div>
+        <div>
+          <strong>Inspecteur adjoint :</strong>{{ deputyInspector || '-' }}
+        </div>
+        <div>
+          <strong>Date de la visite :</strong>{{ visitDate }}
+        </div>
+        <div>
+          <strong>Durée de la visite :</strong>{{ visitDuration }} heures
+        </div>
+      </div>
     </div>
-  </div>
-  
-  <!-- Évaluation par domaine -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">ÉVALUATION PAR DOMAINE</h3>
-    <table class="w-full">
-      <thead>
-        <tr>
-          <th class="text-left">Domaine</th>
-          <th class="text-center">Note /20</th>
-          <th class="text-left">Observations</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Infrastructure et équipement</td>
-          <td class="text-center">{{ scores.infrastructure || '-' }}</td>
-          <td>{{ observations.infrastructure || '-' }}</td>
-        </tr>
-        <tr>
-          <td>Personnel enseignant</td>
-          <td class="text-center">{{ scores.staff || '-' }}</td>
-          <td>{{ observations.staff || '-' }}</td>
-        </tr>
-        <tr>
-          <td>Gestion pédagogique</td>
-          <td class="text-center">{{ scores.pedagogy || '-' }}</td>
-          <td>{{ observations.pedagogy || '-' }}</td>
-        </tr>
-        <tr>
-          <td>Résultats académiques</td>
-          <td class="text-center">{{ scores.results || '-' }}</td>
-          <td>{{ observations.results || '-' }}</td>
-        </tr>
-        <tr>
-          <td>Gestion financière</td>
-          <td class="text-center">{{ scores.finance || '-' }}</td>
-          <td>{{ observations.finance || '-' }}</td>
-        </tr>
-        <tr>
-          <td>Discipline et vie scolaire</td>
-          <td class="text-center">{{ scores.discipline || '-' }}</td>
-          <td>{{ observations.discipline || '-' }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <!-- Note globale -->
-  <div class="text-center mb-6">
-    <div class="inline-block bg-blue-100 rounded-lg p-4">
-      <p class="text-sm text-gray-600">NOTE GLOBALE</p>
-      <p class="text-3xl font-bold text-blue-600">{{ overallScore }}/20</p>
-      <p class="text-sm">Appréciation: {{ appreciation }}</p>
+
+    <!-- Évaluation par domaine -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3">
+        ÉVALUATION PAR DOMAINE
+      </h3>
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="text-left">
+              Domaine
+            </th>
+            <th class="text-center">
+              Note /20
+            </th>
+            <th class="text-left">
+              Observations
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              Infrastructure et équipement
+            </td>
+            <td class="text-center">
+              {{ scores.infrastructure || '-' }}
+            </td>
+            <td>
+              {{ observations.infrastructure || '-' }}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Personnel enseignant
+            </td>
+            <td class="text-center">
+              {{ scores.staff || '-' }}
+            </td>
+            <td>
+              {{ observations.staff || '-' }}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Gestion pédagogique
+            </td>
+            <td class="text-center">
+              {{ scores.pedagogy || '-' }}
+            </td>
+            <td>
+              {{ observations.pedagogy || '-' }}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Résultats académiques
+            </td>
+            <td class="text-center">
+              {{ scores.results || '-' }}
+            </td>
+            <td>
+              {{ observations.results || '-' }}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Gestion financière
+            </td>
+            <td class="text-center">
+              {{ scores.finance || '-' }}
+            </td>
+            <td>
+              {{ observations.finance || '-' }}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Discipline et vie scolaire
+            </td>
+            <td class="text-center">
+              {{ scores.discipline || '-' }}
+            </td>
+            <td>
+              {{ observations.discipline || '-' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </div>
-  
-  <!-- Synthèse -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">SYNTHÈSE DE L'INSPECTION</h3>
-    <p class="text-sm leading-relaxed">{{ summary }}</p>
-  </div>
-  
-  <!-- Points forts -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3 text-green-700">POINTS FORTS</h3>
-    <ul class="list-disc list-inside text-sm space-y-1">
-      @each(strength in strengths)
-      <li>{{ strength }}</li>
-      @end
-    </ul>
-  </div>
-  
-  <!-- Points d'amélioration -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3 text-orange-700">POINTS D'AMÉLIORATION</h3>
-    <ul class="list-disc list-inside text-sm space-y-1">
-      @each(improvement in improvements)
-      <li>{{ improvement }}</li>
-      @end
-    </ul>
-  </div>
-  
-  <!-- Recommandations -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3 text-red-700">RECOMMANDATIONS</h3>
-    <ol class="list-decimal list-inside text-sm space-y-2">
-      @each(recommendation in recommendations)
-      <li>{{ recommendation }}</li>
-      @end
-    </ol>
-  </div>
-  
-  <!-- Plan d'action -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">PLAN D'ACTION</h3>
-    <table class="w-full text-sm">
-      <thead>
-        <tr>
-          <th>Action</th>
-          <th class="text-center">Délai</th>
-          <th>Responsable</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(action in actionPlan)
-        <tr>
-          <td>{{ action.description }}</td>
-          <td class="text-center">{{ action.deadline }}</td>
-          <td>{{ action.responsible }}</td>
-        </tr>
+
+    <!-- Note globale -->
+    <div class="text-center mb-6">
+      <div class="inline-block bg-blue-100 rounded-lg p-4">
+        <p class="text-sm text-gray-600">
+          NOTE GLOBALE
+        </p>
+        <p class="text-3xl font-bold text-blue-600">
+          {{ overallScore }}/20
+        </p>
+        <p class="text-sm">
+          Appréciation: {{ appreciation }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Synthèse -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3">
+        SYNTHÈSE DE L'INSPECTION
+      </h3>
+      <p class="text-sm leading-relaxed">
+        {{ summary }}
+      </p>
+    </div>
+
+    <!-- Points forts -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3 text-green-700">
+        POINTS FORTS
+      </h3>
+      <ul class="list-disc list-inside text-sm space-y-1">
+        @each(strength in strengths)
+          <li>
+            {{ strength }}
+          </li>
         @end
-      </tbody>
-    </table>
-  </div>
-  
-  <!-- Calendrier de suivi -->
-  <div class="border rounded-lg p-4 mb-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">CALENDRIER DE SUIVI</h3>
-    <div class="grid grid-cols-2 gap-4 text-sm">
-      <div><strong>Prochaine inspection :</strong> {{ nextInspectionDate || 'À déterminer' }}</div>
-      <div><strong>Date limite rapport :</strong> {{ reportDeadline }}</div>
-      <div><strong>Suivi intermédiaire :</strong> {{ followUpDate || 'Non planifié' }}</div>
+      </ul>
     </div>
-  </div>
-  
-  <!-- Signatures -->
-  <div class="grid grid-cols-3 gap-4 mt-8 pt-4 border-t">
-    <div class="text-center">
-      <p>L'Inspecteur Principal</p>
-      <div class="mt-8">_______________</div>
-      <p class="text-sm mt-1">{{ leadInspector }}</p>
-    </div>
-    <div class="text-center">
-      <p>Le Directeur de l'école</p>
-      <div class="mt-8">_______________</div>
-      <p class="text-sm mt-1">{{ directorName }}</p>
-    </div>
-    <div class="text-center">
-      <p>Cachet de l'inspection</p>
-      <div class="mt-8">[CACHET]</div>
-    </div>
-  </div>
-</div>
 
-<style>
-  .inspection-report {
-    font-family: 'Inter', 'Arial', sans-serif;
-  }
-  table {
-    border-collapse: collapse;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    vertical-align: top;
-  }
-  th {
-    background-color: #f3f4f6;
-  }
-</style>
+    <!-- Points d'amélioration -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3 text-orange-700">
+        POINTS D'AMÉLIORATION
+      </h3>
+      <ul class="list-disc list-inside text-sm space-y-1">
+        @each(improvement in improvements)
+          <li>
+            {{ improvement }}
+          </li>
+        @end
+      </ul>
+    </div>
 
-{{# /layout }}
+    <!-- Recommandations -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3 text-red-700">
+        RECOMMANDATIONS
+      </h3>
+      <ol class="list-decimal list-inside text-sm space-y-2">
+        @each(recommendation in recommendations)
+          <li>
+            {{ recommendation }}
+          </li>
+        @end
+      </ol>
+    </div>
+
+    <!-- Plan d'action -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3">
+        PLAN D'ACTION
+      </h3>
+      <table class="w-full text-sm">
+        <thead>
+          <tr>
+            <th>
+              Action
+            </th>
+            <th class="text-center">
+              Délai
+            </th>
+            <th>
+              Responsable
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(action in actionPlan)
+            <tr>
+              <td>
+                {{ action.description }}
+              </td>
+              <td class="text-center">
+                {{ action.deadline }}
+              </td>
+              <td>
+                {{ action.responsible }}
+              </td>
+            </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Calendrier de suivi -->
+    <div class="border rounded-lg p-4 mb-6">
+      <h3 class="font-semibold border-b pb-2 mb-3">
+        CALENDRIER DE SUIVI
+      </h3>
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <strong>Prochaine inspection :</strong>{{ nextInspectionDate || 'À déterminer' }}
+        </div>
+        <div>
+          <strong>Date limite rapport :</strong>{{ reportDeadline }}
+        </div>
+        <div>
+          <strong>Suivi intermédiaire :</strong>{{ followUpDate || 'Non planifié' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="grid grid-cols-3 gap-4 mt-8 pt-4 border-t">
+      <div class="text-center">
+        <p>
+          L'Inspecteur Principal
+        </p>
+        <div class="mt-8">
+          _______________
+        </div>
+        <p class="text-sm mt-1">
+          {{ leadInspector }}
+        </p>
+      </div>
+      <div class="text-center">
+        <p>
+          Le Directeur de l'école
+        </p>
+        <div class="mt-8">
+          _______________
+        </div>
+        <p class="text-sm mt-1">
+          {{ directorName }}
+        </p>
+      </div>
+      <div class="text-center">
+        <p>
+          Cachet de l'inspection
+        </p>
+        <div class="mt-8">
+          [CACHET]
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .inspection-report {
+      font-family: 'Inter', 'Arial', sans-serif;
+    }
+    
+    table {
+      border-collapse: collapse;
+    }
+    
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+    }
+    
+    th {
+      background-color: #f3f4f6;
+    }
+  </style>
+

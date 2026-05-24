@@ -8,7 +8,7 @@ import Grade from '#models/grade'
 import Assignment from '#models/assignment'
 
 export default class Subject extends SubjectSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

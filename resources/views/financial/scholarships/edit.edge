@@ -1,143 +1,228 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier bourse - {{ scholarship.studentName }}{{# /section }}
-
-{{# section('dashboardTitle') }}Modifier la bourse{{# /section }}
-{{# section('dashboardSubtitle') }}{{ scholarship.typeLabel }} - {{ scholarship.percentage }}%{{# /section }}
-
-{{# section('actions') }}
-<button onclick="cancelScholarship()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-  <i class="fas fa-ban mr-2"></i> Annuler la bourse
+  @section('title')
+    Modifier bourse - {{ scholarship.studentName }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Modifier la bourse
+  @endsection
+  @section('dashboardSubtitle')
+    {{ scholarship.typeLabel }} - {{ scholarship.percentage }}%
+  @endsection
+  
+  @section('actions')
+    <button
+      onclick="cancelScholarship()"
+      class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+    >
+      <i class="fas fa-ban mr-2"></i>Annuler la bourse
 </button>
-{{# /section }}
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/financial/scholarships/{{ scholarship.id }}/update"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="_method" value="PUT" />
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/financial/scholarships/{{ scholarship.id }}/update" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <input type="hidden" name="_method" value="PUT">
-      
-      <div class="space-y-4">
-        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex justify-between items-center">
-          <div>
-            <p class="font-medium">{{ scholarship.studentName }}</p>
-            <p class="text-sm text-gray-500">{{ scholarship.className }} - {{ scholarship.registrationNumber }}</p>
-          </div>
-          <span class="px-2 py-1 rounded-full text-xs {{ scholarship.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-            {{ scholarship.status === 'active' ? 'Active' : 'Expirée' }}
+          <div class="space-y-4">
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <p class="font-medium">
+                  {{ scholarship.studentName }}
+                </p>
+                <p class="text-sm text-gray-500">
+                  {{ scholarship.className }} - {{ scholarship.registrationNumber }}
+                </p>
+              </div>
+              <span
+                class="px-2 py-1 rounded-full text-xs {{ scholarship.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}"
+              >
+                {{ scholarship.status === 'active' ? 'Active' : 'Expirée' }}
           </span>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de bourse</label>
-          <select name="type" class="w-full px-3 py-2 border rounded-lg">
-            <option value="academic" {{ scholarship.type === 'academic' ? 'selected' : '' }}>Académique</option>
-            <option value="sports" {{ scholarship.type === 'sports' ? 'selected' : '' }}>Sportive</option>
-            <option value="social" {{ scholarship.type === 'social' ? 'selected' : '' }}>Sociale</option>
-            <option value="merit" {{ scholarship.type === 'merit' ? 'selected' : '' }}>Au mérite</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Pourcentage de réduction *</label>
-          <div class="flex items-center gap-2">
-            <input type="range" name="percentageRange" min="0" max="100" step="5" value="{{ scholarship.percentage }}"
-                   class="flex-1" id="percentageRange">
-            <input type="number" name="percentage" id="percentageInput" required min="0" max="100" value="{{ scholarship.percentage }}"
-                   class="w-20 px-2 py-2 border rounded-lg text-center">
-            <span>%</span>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de bourse</label>
+              <select name="type" class="w-full px-3 py-2 border rounded-lg">
+                <option value="academic" {{ scholarship.type === 'academic' ? 'selected' : '' }}>
+                  Académique
+                </option>
+                <option value="sports" {{ scholarship.type === 'sports' ? 'selected' : '' }}>
+                  Sportive
+                </option>
+                <option value="social" {{ scholarship.type === 'social' ? 'selected' : '' }}>
+                  Sociale
+                </option>
+                <option value="merit" {{ scholarship.type === 'merit' ? 'selected' : '' }}>
+                  Au mérite
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Pourcentage de réduction *</label>
+              <div class="flex items-center gap-2">
+                <input
+                  type="range"
+                  name="percentageRange"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value="{{ scholarship.percentage }}"
+                  class="flex-1"
+                  id="percentageRange"
+                />
+                <input
+                  type="number"
+                  name="percentage"
+                  id="percentageInput"
+                  required
+                  min="0"
+                  max="100"
+                  value="{{ scholarship.percentage }}"
+                  class="w-20 px-2 py-2 border rounded-lg text-center"
+                />
+                <span>%</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Raison / Justification</label>
+              <textarea name="reason" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ scholarship.reason }}</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value="{{ scholarship.startDate }}"
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value="{{ scholarship.endDate }}"
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Approuvé par</label>
+              <input
+                type="text"
+                name="approvedBy"
+                value="{{ scholarship.approvedBy }}"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  Frais annuels: <span class="font-mono">{{ formatCurrency(scholarship.annualFees, 'USD') }}</span>
+                </div>
+                <div>
+                  Réduction: <span class="font-mono text-green-600">{{ scholarship.percentage }}% ({{ formatCurrency(scholarship.discountAmount, 'USD') }})</span>
+                </div>
+                <div>
+                  Montant à payer: <span class="font-mono font-bold">{{ formatCurrency(scholarship.annualFees - scholarship.discountAmount, 'USD') }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Raison / Justification</label>
-          <textarea name="reason" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ scholarship.reason }}</textarea>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début</label>
-            <input type="date" name="startDate" value="{{ scholarship.startDate }}" class="w-full px-3 py-2 border rounded-lg">
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin</label>
-            <input type="date" name="endDate" value="{{ scholarship.endDate }}" class="w-full px-3 py-2 border rounded-lg">
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Approuvé par</label>
-          <input type="text" name="approvedBy" value="{{ scholarship.approvedBy }}" 
-                 class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        
-        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-          <div class="grid grid-cols-2 gap-2 text-sm">
-            <div>Frais annuels: <span class="font-mono">{{ formatCurrency(scholarship.annualFees, 'USD') }}</span></div>
-            <div>Réduction: <span class="font-mono text-green-600">{{ scholarship.percentage }}% ({{ formatCurrency(scholarship.discountAmount, 'USD') }})</span></div>
-            <div>Montant à payer: <span class="font-mono font-bold">{{ formatCurrency(scholarship.annualFees - scholarship.discountAmount, 'USD') }}</span></div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
         </button>
-        <a href="/financial/scholarships" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
+            <a href="/financial/scholarships" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Historique -->
-  <div class="space-y-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Historique</h3>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between"><span>Créée le</span><span>{{ formatDate(scholarship.createdAt) }}</span></div>
-        <div class="flex justify-between"><span>Par</span><span>{{ scholarship.createdBy }}</span></div>
-        @if(scholarship.modifiedAt)
-        <div class="flex justify-between"><span>Dernière modif</span><span>{{ formatDate(scholarship.modifiedAt) }}</span></div>
-        @endif
+
+      <!-- Historique -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Historique
+          </h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span>Créée le</span>              <span>{{ formatDate(scholarship.createdAt) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Par</span>              <span>{{ scholarship.createdBy }}</span>
+            </div>
+            @if(scholarship.modifiedAt)
+              <div class="flex justify-between">
+                <span>Dernière modif</span>                <span>{{ formatDate(scholarship.modifiedAt) }}</span>
+              </div>
+            @endif
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Impact financier estimé
+          </h3>
+          <div class="text-2xl font-bold text-green-600 text-center">
+            {{ formatCurrency(scholarship.totalImpact, 'USD') }}
+          </div>
+          <p class="text-xs text-center mt-1">
+            Montant total économisé par l'élève
+          </p>
+        </div>
       </div>
     </div>
-    
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Impact financier estimé</h3>
-      <div class="text-2xl font-bold text-green-600 text-center">
-        {{ formatCurrency(scholarship.totalImpact, 'USD') }}
-      </div>
-      <p class="text-xs text-center mt-1">Montant total économisé par l'élève</p>
-    </div>
-  </div>
-</div>
 
-<script>
-  // Synchronisation range et input
-  const rangeInput = document.getElementById('percentageRange')
-  const percentInput = document.getElementById('percentageInput')
-  
-  rangeInput.addEventListener('input', () => { percentInput.value = rangeInput.value })
-  percentInput.addEventListener('input', () => { rangeInput.value = percentInput.value })
-  
-  function cancelScholarship() {
-    if (confirm('Annuler cette bourse ? L\'élève ne bénéficiera plus de la réduction.')) {
-      fetch('/financial/scholarships/{{ scholarship.id }}/cancel', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) window.location.href = '/financial/scholarships'
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-</script>
-{{# /section }}
+    <script>
+      // Synchronisation range et input
+      const rangeInput = document.getElementById("percentageRange");
 
-{{# /layout }}
+      const percentInput = document.getElementById("percentageInput");
+
+      rangeInput.addEventListener("input", () => {
+        percentInput.value = rangeInput.value;
+      });
+
+      percentInput.addEventListener("input", () => {
+        rangeInput.value = percentInput.value;
+      });
+
+      function cancelScholarship() {
+        if (confirm("Annuler cette bourse ? L'élève ne bénéficiera plus de la réduction.")) {
+          fetch("/financial/scholarships/{{ scholarship.id }}/cancel", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.href = "/financial/scholarships"; else alert("Erreur: " + data.message);
+          });
+        }
+      }
+    </script>
+  @endsection
+  

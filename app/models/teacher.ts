@@ -10,7 +10,7 @@ import Class from '#models/class'
 import Assignment from '#models/assignment'
 
 export default class Teacher extends TeacherSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
@@ -45,7 +45,7 @@ export default class Teacher extends TeacherSchema {
   /**
    * RELATIONS
    */
-  
+
   // Accès aux informations d'authentification et profil de base
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>

@@ -1,151 +1,216 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Messages envoyés - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Messages envoyés{{# /section }}
-{{# section('dashboardSubtitle') }}Historique de vos envois{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/communication/messages/compose" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Nouveau message
+  @section('title')
+    Messages envoyés - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Messages envoyés
+  @endsection
+  @section('dashboardSubtitle')
+    Historique de vos envois
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/communication/messages/compose"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Nouveau message
   </a>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total envoyés</p>
-    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Lus</p>
-    <p class="text-3xl font-bold">{{ stats.read || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Non lus</p>
-    <p class="text-3xl font-bold">{{ stats.unread || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Destinataires</p>
-    <p class="text-3xl font-bold">{{ stats.recipients || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
-      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="official">Officiel</option>
-        <option value="parent_teacher">Parent-Enseignant</option>
-        <option value="general">Général</option>
-        <option value="system">Système</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut lecture</label>
-      <select id="filterReadStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="read">Lus</option>
-        <option value="unread">Non lus</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" placeholder="Destinataire, sujet..."
-               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total envoyés
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Lus
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.read || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Non lus
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.unread || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Destinataires
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.recipients || 0 }}
+        </p>
       </div>
     </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
+          <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="official">
+              Officiel
+            </option>
+            <option value="parent_teacher">
+              Parent-Enseignant
+            </option>
+            <option value="general">
+              Général
+            </option>
+            <option value="system">
+              Système
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut lecture</label>
+          <select id="filterReadStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="read">
+              Lus
+            </option>
+            <option value="unread">
+              Non lus
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Destinataire, sujet..."
+              class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Liste messages envoyés -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="divide-y dark:divide-gray-700">
-    @each(message in messages)
-    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/communication/messages/read/{{ message.id }}'">
-      <div class="flex justify-between items-start">
-        <div class="flex-1">
-          <div class="flex items-center gap-3 flex-wrap">
-            <p class="font-medium text-gray-800 dark:text-white">{{ message.receiverName }}</p>
-            <span class="text-xs text-gray-400">{{ message.receiverRole }}</span>
-            <span class="px-2 py-0.5 rounded-full text-xs
+    <!-- Liste messages envoyés -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="divide-y dark:divide-gray-700">
+        @each(message in messages)
+          <div
+            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+            onclick="window.location.href='/communication/messages/read/{{ message.id }}'"
+          >
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <p class="font-medium text-gray-800 dark:text-white">
+                    {{ message.receiverName }}
+                  </p>
+                  <span class="text-xs text-gray-400">{{ message.receiverRole }}</span>
+                  <span
+                    class="px-2 py-0.5 rounded-full text-xs
               {{ message.type === 'official' ? 'bg-red-100 text-red-800' : 
                  (message.type === 'parent_teacher' ? 'bg-green-100 text-green-800' : 
-                 (message.type === 'general' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
-              {{ message.type === 'official' ? 'Officiel' : 
+                 (message.type === 'general' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}"
+                  >
+                    {{ message.type === 'official' ? 'Officiel' : 
                  (message.type === 'parent_teacher' ? 'Parent-Enseignant' : 
                  (message.type === 'general' ? 'Général' : 'Système')) }}
             </span>
-            @if(message.isRead)
-            <span class="text-xs text-green-600"><i class="fas fa-check-circle"></i> Lu</span>
-            @else
-            <span class="text-xs text-yellow-600"><i class="fas fa-clock"></i> Non lu</span>
-            @endif
+                  @if(message.isRead)
+                    <span class="text-xs text-green-600">                      <i class="fas fa-check-circle"></i>Lu</span>
+                  @else
+                    <span class="text-xs text-yellow-600">                      <i class="fas fa-clock"></i>Non lu</span>
+                  @endif
+                </div>
+                <p class="font-semibold text-gray-800 dark:text-white mt-1">
+                  {{ message.subject }}
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
+                  {{ message.preview }}
+                </p>
+              </div>
+              <div class="text-right text-xs text-gray-400">
+                <p>
+                  {{ message.time }}
+                </p>
+                @if(message.readAt)
+                  <p class="text-xs">
+                    Lu le {{ message.readAt }}
+                  </p>
+                @endif
+                @if(message.hasAttachment)
+                  <i class="fas fa-paperclip mt-1 inline-block"></i>
+                @endif
+              </div>
+            </div>
           </div>
-          <p class="font-semibold text-gray-800 dark:text-white mt-1">{{ message.subject }}</p>
-          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{{ message.preview }}</p>
-        </div>
-        <div class="text-right text-xs text-gray-400">
-          <p>{{ message.time }}</p>
-          @if(message.readAt)
-          <p class="text-xs">Lu le {{ message.readAt }}</p>
-          @endif
-          @if(message.hasAttachment)
-          <i class="fas fa-paperclip mt-1 inline-block"></i>
-          @endif
-        </div>
-      </div>
-    </div>
-    @eachelse
-    <div class="p-12 text-center text-gray-500">
-      <i class="fas fa-paper-plane text-5xl mb-3 block"></i>
-      <p>Aucun message envoyé</p>
-      <a href="/communication/messages/compose" class="mt-2 inline-block text-primary hover:underline">
-        Envoyer un message
+          @else
+          <div class="p-12 text-center text-gray-500">
+            <i class="fas fa-paper-plane text-5xl mb-3 block"></i>
+            <p>
+              Aucun message envoyé
+            </p>
+            <a href="/communication/messages/compose" class="mt-2 inline-block text-primary hover:underline">
+              Envoyer un message
       </a>
+          </div>
+        @end
+      </div>
+
+      @include('partials/pagination', { pagination: pagination, url: '/communication/messages/sent' })
     </div>
-    @end
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/communication/messages/sent' })
-</div>
 
-<script>
-  const filterType = document.getElementById('filterType')
-  const filterReadStatus = document.getElementById('filterReadStatus')
-  const searchInput = document.getElementById('searchInput')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterType.value) params.set('type', filterType.value)
-    if (filterReadStatus.value) params.set('read_status', filterReadStatus.value)
-    if (searchInput.value) params.set('search', searchInput.value)
-    window.location.href = `/communication/messages/sent?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/communication/messages/sent'
-  })
-</script>
-{{# /section }}
+    <script>
+      const filterType = document.getElementById("filterType");
 
-{{# /layout }}
+      const filterReadStatus = document.getElementById("filterReadStatus");
+
+      const searchInput = document.getElementById("searchInput");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterType.value) params.set("type", filterType.value);
+        if (filterReadStatus.value) params.set("read_status", filterReadStatus.value);
+        if (searchInput.value) params.set("search", searchInput.value);
+        window.location.href = `/communication/messages/sent?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/communication/messages/sent";
+      });
+    </script>
+  @endsection
+  

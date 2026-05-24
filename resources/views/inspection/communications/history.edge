@@ -1,249 +1,311 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Historique des communications - Inspection RDC{{# /section }}
-
-{{# section('dashboardTitle') }}Historique des communications{{# /section }}
-{{# section('dashboardSubtitle') }}Consultez l'ensemble des messages envoyés{{# /section }}
-
-{{# section('actions') }}
-<a href="/inspection/communications/global" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-  <i class="fas fa-plus mr-2"></i> Nouvelle communication
+  @section('title')
+    Historique des communications - Inspection RDC
+  @endsection
+  
+  @section('dashboardTitle')
+    Historique des communications
+  @endsection
+  @section('dashboardSubtitle')
+    Consultez l'ensemble des messages envoyés
+  @endsection
+  
+  @section('actions')
+    <a
+      href="/inspection/communications/global"
+      class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+    >
+      <i class="fas fa-plus mr-2"></i>Nouvelle communication
 </a>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <p class="text-gray-500 text-sm">Total envoyés</p>
-    <p class="text-2xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <p class="text-gray-500 text-sm">Communications globales</p>
-    <p class="text-2xl font-bold">{{ stats.global || 0 }}</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <p class="text-gray-500 text-sm">Messages urgents</p>
-    <p class="text-2xl font-bold text-red-600">{{ stats.urgent || 0 }}</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <p class="text-gray-500 text-sm">Accusés reçus</p>
-    <p class="text-2xl font-bold">{{ stats.acknowledged || 0 }}%</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
-      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="global">Communication globale</option>
-        <option value="school">Communication ciblée</option>
-      </select>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <p class="text-gray-500 text-sm">
+          Total envoyés
+        </p>
+        <p class="text-2xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <p class="text-gray-500 text-sm">
+          Communications globales
+        </p>
+        <p class="text-2xl font-bold">
+          {{ stats.global || 0 }}
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <p class="text-gray-500 text-sm">
+          Messages urgents
+        </p>
+        <p class="text-2xl font-bold text-red-600">
+          {{ stats.urgent || 0 }}
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <p class="text-gray-500 text-sm">
+          Accusés reçus
+        </p>
+        <p class="text-2xl font-bold">
+          {{ stats.acknowledged || 0 }}%
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Urgent</label>
-      <select id="filterUrgent" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="1">Urgent</option>
-        <option value="0">Normal</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
-      </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        <i class="fas fa-undo"></i>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Liste des communications -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="divide-y dark:divide-gray-700">
-    @each(comm in communications)
-    <div class="p-5 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="viewDetails('{{ comm.id }}')">
-      <div class="flex flex-wrap justify-between items-start gap-3">
-        <div class="flex-1">
-          <div class="flex items-center gap-2 flex-wrap">
-            <h3 class="font-semibold text-gray-800 dark:text-white">{{ comm.subject }}</h3>
-            @if(comm.urgent)
-            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Urgent</span>
-            @endif
-            @if(comm.type === 'global')
-            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-              <i class="fas fa-globe mr-1"></i> Globale
-            </span>
-            @else
-            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-              <i class="fas fa-school mr-1"></i> Ciblée
-            </span>
-            @endif
-          </div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{{ comm.content }}</p>
-          <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-400">
-            <span><i class="fas fa-calendar mr-1"></i> {{ formatDate(comm.createdAt) }}</span>
-            <span><i class="fas fa-user mr-1"></i> {{ comm.senderName }}</span>
-            @if(comm.type === 'global')
-            <span><i class="fas fa-users mr-1"></i> {{ comm.recipientCount || 0 }} destinataires</span>
-            @else
-            <span><i class="fas fa-school mr-1"></i> École: {{ comm.schoolName || '-' }}</span>
-            @endif
-            <span><i class="fas fa-chart-bar mr-1"></i> Taux lecture: {{ comm.readRate || 0 }}%</span>
-          </div>
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
+          <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="global">
+              Communication globale
+            </option>
+            <option value="school">
+              Communication ciblée
+            </option>
+          </select>
         </div>
-        <div class="text-right">
-          <div class="text-sm font-medium" :class="comm.acknowledgedRate >= 50 ? 'text-green-600' : 'text-yellow-600'">
-            {{ comm.acknowledgedCount || 0 }}/{{ comm.recipientCount || 0 }} accusés
-          </div>
-          <div class="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
-            <div class="bg-green-500 rounded-full h-1.5" style="width: {{ comm.acknowledgedRate || 0 }}%"></div>
-          </div>
-          <button onclick="event.stopPropagation();viewDetails('{{ comm.id }}')" class="mt-2 text-primary text-sm hover:underline">
-            Voir détails
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Urgent</label>
+          <select id="filterUrgent" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="1">
+              Urgent
+            </option>
+            <option value="0">
+              Normal
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
+      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+            <i class="fas fa-undo"></i>
           </button>
         </div>
       </div>
     </div>
-    @eachelse
-    <div class="p-12 text-center text-gray-500">
-      <i class="fas fa-comment-slash text-4xl mb-3 block"></i>
-      <p>Aucune communication trouvée</p>
-      <a href="/inspection/communications/global" class="mt-3 inline-block text-primary hover:underline">
-        Envoyer votre première communication
-      </a>
-    </div>
-    @end
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/inspection/communications/history' })
-</div>
 
-<!-- Modal Détails -->
-<div id="detailsModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4" onclick="closeModal()">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-      <h3 class="font-bold text-lg" id="modalTitle">Détails communication</h3>
-      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-    <div class="p-4" id="modalContent">
-      <!-- Contenu chargé dynamiquement -->
-    </div>
-  </div>
-</div>
-
-<script>
-  let currentCommunicationId = null
-  
-  // Filtres
-  const filterType = document.getElementById('filterType')
-  const startDate = document.getElementById('startDate')
-  const endDate = document.getElementById('endDate')
-  const filterUrgent = document.getElementById('filterUrgent')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterType.value) params.set('type', filterType.value)
-    if (startDate.value) params.set('start_date', startDate.value)
-    if (endDate.value) params.set('end_date', endDate.value)
-    if (filterUrgent.value !== '') params.set('urgent', filterUrgent.value)
-    window.location.href = `/inspection/communications/history?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/inspection/communications/history'
-  })
-  
-  function viewDetails(id) {
-    currentCommunicationId = id
-    fetch(`/api/communications/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        const modal = document.getElementById('detailsModal')
-        const content = document.getElementById('modalContent')
-        document.getElementById('modalTitle').textContent = data.subject
-        
-        let recipientsHtml = ''
-        if (data.recipients && data.recipients.length > 0) {
-          recipientsHtml = `
-            <div class="mt-4">
-              <h4 class="font-semibold mb-2">Destinataires (${data.recipients.length})</h4>
-              <div class="max-h-60 overflow-y-auto space-y-2">
-                ${data.recipients.map(r => `
-                  <div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                    <div>
-                      <p class="font-medium">${r.name}</p>
-                      <p class="text-xs text-gray-500">${r.email} - ${r.role}</p>
-                    </div>
-                    <div class="text-right">
-                      <div class="text-sm">${r.read ? '<span class="text-green-600"><i class="fas fa-check-circle"></i> Lu</span>' : '<span class="text-yellow-600"><i class="fas fa-clock"></i> Non lu</span>'}</div>
-                      <div class="text-xs text-gray-400">${r.readAt ? formatDate(r.readAt) : '-'}</div>
-                    </div>
+    <!-- Liste des communications -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="divide-y dark:divide-gray-700">
+        @each(comm in communications)
+          <div
+            class="p-5 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+            onclick="viewDetails('{{ comm.id }}')"
+          >
+            <div class="flex flex-wrap justify-between items-start gap-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="font-semibold text-gray-800 dark:text-white">
+                    {{ comm.subject }}
+                  </h3>
+                  @if(comm.urgent)
+                    <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Urgent</span>
+                  @endif
+                  @if(comm.type === 'global')
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <i class="fas fa-globe mr-1"></i>Globale
+            </span>
+                  @else
+                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                      <i class="fas fa-school mr-1"></i>Ciblée
+            </span>
+                  @endif
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                  {{ comm.content }}
+                </p>
+                <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-400">
+                  <span>                    <i class="fas fa-calendar mr-1"></i>{{ formatDate(comm.createdAt) }}</span>
+                  <span>                    <i class="fas fa-user mr-1"></i>{{ comm.senderName }}</span>
+                  @if(comm.type === 'global')
+                    <span>                      <i class="fas fa-users mr-1"></i>{{ comm.recipientCount || 0 }} destinataires</span>
+                  @else
+                    <span>                      <i class="fas fa-school mr-1"></i>École: {{ comm.schoolName || '-' }}</span>
+                  @endif
+                  <span>                    <i class="fas fa-chart-bar mr-1"></i>Taux lecture: {{ comm.readRate || 0 }}%</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <div
+                  class="text-sm font-medium"
+                  :class="comm.acknowledgedRate >= 50 ? 'text-green-600' : 'text-yellow-600'"
+                >
+                  {{ comm.acknowledgedCount || 0 }}/{{ comm.recipientCount || 0 }} accusés
+                </div>
+                <div class="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
+                  <div class="bg-green-500 rounded-full h-1.5" style="width: {{ comm.acknowledgedRate || 0 }}%">
                   </div>
-                `).join('')}
+                </div>
+                <button
+                  onclick="event.stopPropagation();viewDetails('{{ comm.id }}')"
+                  class="mt-2 text-primary text-sm hover:underline"
+                >
+                  Voir détails
+          </button>
               </div>
             </div>
-          `
-        }
-        
-        content.innerHTML = `
-          <div class="mb-4">
-            <p class="text-gray-500 text-sm">Envoyé le ${formatDate(data.createdAt)} par ${data.senderName}</p>
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mt-3">
-              <div class="whitespace-pre-wrap">${data.content}</div>
-            </div>
           </div>
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded text-center">
-              <p class="text-2xl font-bold text-green-600">${data.readRate || 0}%</p>
-              <p class="text-xs text-gray-500">Taux de lecture</p>
-            </div>
-            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded text-center">
-              <p class="text-2xl font-bold text-blue-600">${data.acknowledgedRate || 0}%</p>
-              <p class="text-xs text-gray-500">Accusés reçus</p>
-            </div>
+          @else
+          <div class="p-12 text-center text-gray-500">
+            <i class="fas fa-comment-slash text-4xl mb-3 block"></i>
+            <p>
+              Aucune communication trouvée
+            </p>
+            <a href="/inspection/communications/global" class="mt-3 inline-block text-primary hover:underline">
+              Envoyer votre première communication
+      </a>
           </div>
-          ${recipientsHtml}
-        `
-        modal.classList.remove('hidden')
-        modal.classList.add('flex')
-      })
-  }
-  
-  function closeModal() {
-    const modal = document.getElementById('detailsModal')
-    modal.classList.add('hidden')
-    modal.classList.remove('flex')
-    currentCommunicationId = null
-  }
-  
-  function formatDate(date) {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-</script>
-{{# /section }}
+        @end
+      </div>
 
-{{# /layout }}
+      @include('partials/pagination')
+    </div>
+
+    <!-- Modal Détails -->
+    <div
+      id="detailsModal"
+      class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4"
+      onclick="closeModal()"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        onclick="event.stopPropagation()"
+      >
+        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 class="font-bold text-lg" id="modalTitle">
+            Détails communication
+          </h3>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="p-4" id="modalContent">
+          <!-- Contenu chargé dynamiquement -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentCommunicationId = null;
+      // Filtres
+
+      const filterType = document.getElementById("filterType");
+
+      const startDate = document.getElementById("startDate");
+
+      const endDate = document.getElementById("endDate");
+
+      const filterUrgent = document.getElementById("filterUrgent");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterType.value) params.set("type", filterType.value);
+        if (startDate.value) params.set("start_date", startDate.value);
+        if (endDate.value) params.set("end_date", endDate.value);
+        if (filterUrgent.value !== "") params.set("urgent", filterUrgent.value);
+        window.location.href = `/inspection/communications/history?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/inspection/communications/history";
+      });
+
+      function viewDetails(id) {
+        currentCommunicationId = id;
+        fetch(`/api/communications/${id}`).then(res => res.json()).then(data => {
+          const modal = document.getElementById("detailsModal");
+          const content = document.getElementById("modalContent");
+          document.getElementById("modalTitle").textContent = data.subject;
+          let recipientsHtml = "";
+          if (data.recipients && data.recipients.length > 0) {
+            recipientsHtml = `
+                      <div class="mt-4">
+                        <h4 class="font-semibold mb-2">Destinataires (${data.recipients.length})</h4>
+                        <div class="max-h-60 overflow-y-auto space-y-2">
+                          ${data.recipients.map(r => `
+                            <div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                              <div>
+                                <p class="font-medium">${r.name}</p>
+                                <p class="text-xs text-gray-500">${r.email} - ${r.role}</p>
+                              </div>
+                              <div class="text-right">
+                                <div class="text-sm">${r.read ? '<span class="text-green-600"><i class="fas fa-check-circle"></i> Lu</span>' : '<span class="text-yellow-600"><i class="fas fa-clock"></i> Non lu</span>'}</div>
+                                <div class="text-xs text-gray-400">${r.readAt ? formatDate(r.readAt) : "-"}</div>
+                              </div>
+                            </div>
+                          `).join("")}
+                        </div>
+                      </div>
+                    `;
+          }
+          content.innerHTML = `
+                    <div class="mb-4">
+                      <p class="text-gray-500 text-sm">Envoyé le ${formatDate(data.createdAt)} par ${data.senderName}</p>
+                      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mt-3">
+                        <div class="whitespace-pre-wrap">${data.content}</div>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                      <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded text-center">
+                        <p class="text-2xl font-bold text-green-600">${data.readRate || 0}%</p>
+                        <p class="text-xs text-gray-500">Taux de lecture</p>
+                      </div>
+                      <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded text-center">
+                        <p class="text-2xl font-bold text-blue-600">${data.acknowledgedRate || 0}%</p>
+                        <p class="text-xs text-gray-500">Accusés reçus</p>
+                      </div>
+                    </div>
+                    ${recipientsHtml}
+                  `;
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        });
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("detailsModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        currentCommunicationId = null;
+      }
+
+      function formatDate(date) {
+        return new Date(date).toLocaleDateString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      }
+    </script>
+  @endsection
+  

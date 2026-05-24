@@ -1,153 +1,226 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Signaler un incident - Discipline{{# /section }}
+  @section('title')
+    Signaler un incident - Discipline
+  @endsection
+  
+  @section('dashboardTitle')
+    Signalement d'incident
+  @endsection
+  @section('dashboardSubtitle')
+    Enregistrer un nouveau comportement
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/discipline/incidents/report"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Signalement d'incident{{# /section }}
-{{# section('dashboardSubtitle') }}Enregistrer un nouveau comportement{{# /section }}
+          <div class="space-y-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève *</label>
+              <select name="studentId" required class="w-full px-3 py-2 border rounded-lg" id="studentSelect">
+                <option value="">
+                  Sélectionner un élève
+                </option>
+                @each(student in students)
+                  <option value="{{ student.id }}" {{ selectedStudentId == student.id ? 'selected' : '' }}>
+                    {{ student.name }} - {{ student.className }} ({{ student.registrationNumber }})
+                  </option>
+                @end
+              </select>
+            </div>
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/discipline/incidents/report" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève *</label>
-          <select name="studentId" required class="w-full px-3 py-2 border rounded-lg" id="studentSelect">
-            <option value="">Sélectionner un élève</option>
-            @each(student in students)
-            <option value="{{ student.id }}" {{ selectedStudentId == student.id ? 'selected' : '' }}>
-              {{ student.name }} - {{ student.className }} ({{ student.registrationNumber }})
-            </option>
-            @end
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'incident *</label>
-          <select name="incidentType" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner</option>
-            <option value="absence">Absence non justifiée</option>
-            <option value="late">Retard répété</option>
-            <option value="misconduct">Inconduite (non-respect du règlement)</option>
-            <option value="violence">Violence (verbale ou physique)</option>
-            <option value="fraud">Fraude / Tricherie</option>
-            <option value="uniform_violation">Non-respect de la tenue</option>
-            <option value="other">Autre</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Gravité *</label>
-          <select name="severity" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="minor">Mineure - Simple avertissement</option>
-            <option value="moderate">Modérée - Sanction légère</option>
-            <option value="major">Majeure - Sanction sévère</option>
-            <option value="critical">Critique - Suspension/Exclusion</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date de l'incident *</label>
-          <input type="date" name="incidentDate" required class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Lieu</label>
-          <input type="text" name="location" class="w-full px-3 py-2 border rounded-lg"
-                 placeholder="Ex: Salle de classe, cour de récréation, cantine...">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Description détaillée *</label>
-          <textarea name="description" required rows="5" 
-                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                    placeholder="Décrivez précisément l'incident..."></textarea>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Action immédiate prise</label>
-          <textarea name="actionTaken" rows="3" 
-                    class="w-full px-3 py-2 border rounded-lg"
-                    placeholder="Action effectuée sur le moment..."></textarea>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Témoins (optionnel)</label>
-          <input type="text" name="witnesses" class="w-full px-3 py-2 border rounded-lg"
-                 placeholder="Noms des témoins séparés par des virgules">
-        </div>
-        
-        <div>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="parentNotified" class="w-4 h-4">
-            <span>Notifier les parents immédiatement</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer l'incident
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'incident *</label>
+              <select name="incidentType" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  Sélectionner
+                </option>
+                <option value="absence">
+                  Absence non justifiée
+                </option>
+                <option value="late">
+                  Retard répété
+                </option>
+                <option value="misconduct">
+                  Inconduite (non-respect du règlement)
+                </option>
+                <option value="violence">
+                  Violence (verbale ou physique)
+                </option>
+                <option value="fraud">
+                  Fraude / Tricherie
+                </option>
+                <option value="uniform_violation">
+                  Non-respect de la tenue
+                </option>
+                <option value="other">
+                  Autre
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Gravité *</label>
+              <select name="severity" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="minor">
+                  Mineure - Simple avertissement
+                </option>
+                <option value="moderate">
+                  Modérée - Sanction légère
+                </option>
+                <option value="major">
+                  Majeure - Sanction sévère
+                </option>
+                <option value="critical">
+                  Critique - Suspension/Exclusion
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date de l'incident *</label>
+              <input type="date" name="incidentDate" required class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Lieu</label>
+              <input
+                type="text"
+                name="location"
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Ex: Salle de classe, cour de récréation, cantine..."
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Description détaillée *</label>
+              <textarea
+                name="description"
+                required
+                rows="5"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Décrivez précisément l'incident..."
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Action immédiate prise</label>
+              <textarea
+                name="actionTaken"
+                rows="3"
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Action effectuée sur le moment..."
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Témoins (optionnel)</label>
+              <input
+                type="text"
+                name="witnesses"
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Noms des témoins séparés par des virgules"
+              />
+            </div>
+
+            <div>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="parentNotified" class="w-4 h-4" />
+                <span>Notifier les parents immédiatement</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer l'incident
         </button>
-        <a href="/discipline/incidents" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
+            <a href="/discipline/incidents" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Guide des gravités</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2"><i class="fas fa-circle text-green-500 text-xs mt-1"></i> <strong>Mineure:</strong> Retard, tenue non réglementaire</li>
-        <li class="flex gap-2"><i class="fas fa-circle text-yellow-500 text-xs mt-1"></i> <strong>Modérée:</strong> Absence non justifiée, bavardages</li>
-        <li class="flex gap-2"><i class="fas fa-circle text-orange-500 text-xs mt-1"></i> <strong>Majeure:</strong> Inconduite, manque de respect</li>
-        <li class="flex gap-2"><i class="fas fa-circle text-red-500 text-xs mt-1"></i> <strong>Critique:</strong> Violence, fraude, dégradations</li>
-      </ul>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Conseils</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Soyez précis et factuel</li>
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Mentionnez les mesures prises</li>
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Documentez si possible</li>
-      </ul>
-    </div>
-    
-    @if(selectedStudentId)
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-history text-yellow-600"></i>
-        <span>Cet élève a déjà {{ studentIncidentCount }} incident(s) signalé(s) cette année.</span>
-      </p>
-    </div>
-    @endif
-  </div>
-</div>
 
-<script>
-  // Date par défaut
-  document.querySelector('input[name="incidentDate"]').value = new Date().toISOString().split('T')[0]
-  
-  // Afficher l'historique de l'élève sélectionné
-  const studentSelect = document.getElementById('studentSelect')
-  studentSelect?.addEventListener('change', async function() {
-    const studentId = this.value
-    if (studentId) {
-      const res = await fetch(`/api/discipline/students/${studentId}/stats`)
-      const data = await res.json()
-      // Mise à jour du message d'information
-    }
-  })
-</script>
-{{# /section }}
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Guide des gravités
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-circle text-green-500 text-xs mt-1"></i>              <strong>Mineure:</strong>Retard, tenue non réglementaire
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-circle text-yellow-500 text-xs mt-1"></i>              <strong>Modérée:</strong>Absence non justifiée, bavardages
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-circle text-orange-500 text-xs mt-1"></i>              <strong>Majeure:</strong>Inconduite, manque de respect
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-circle text-red-500 text-xs mt-1"></i>              <strong>Critique:</strong>Violence, fraude, dégradations
+            </li>
+          </ul>
+        </div>
 
-{{# /layout }}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Conseils
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Soyez précis et factuel
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Mentionnez les mesures prises
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Documentez si possible
+            </li>
+          </ul>
+        </div>
+
+        @if(selectedStudentId)
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+            <p class="text-sm flex gap-2">
+              <i class="fas fa-history text-yellow-600"></i>
+              <span>Cet élève a déjà {{ studentIncidentCount }} incident(s) signalé(s) cette année.</span>
+            </p>
+          </div>
+        @endif
+      </div>
+    </div>
+
+    <script>
+      // Date par défaut
+      document.querySelector('input[name="incidentDate"]').value = new Date().toISOString().split("T")[0];
+      // Afficher l'historique de l'élève sélectionné
+
+      const studentSelect = document.getElementById("studentSelect");
+
+      studentSelect?.addEventListener("change", async function() {
+        const studentId = this.value;
+        if (studentId) {
+          const res = await fetch(`/api/discipline/students/${studentId}/stats`);
+          const data = await res.json();
+          // Mise à jour du message d'information
+        }
+      });
+    </script>
+  @endsection
+  

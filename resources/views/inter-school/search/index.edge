@@ -1,183 +1,303 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Rechercher des écoles - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Rechercher des écoles{{# /section }}
-{{# section('dashboardSubtitle') }}Trouvez et échangez avec d'autres établissements{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire de recherche -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Critères de recherche</h3>
-    
-    <form method="GET" action="/inter-school/search/results" x-data="{ loading: false }" @submit="loading = true">
-      <div class="space-y-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de l'école</label>
-          <div class="relative">
-            <i class="fas fa-school absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input type="text" name="q" class="w-full pl-10 pr-3 py-2 border rounded-lg" 
-                   placeholder="Nom de l'établissement...">
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Province</label>
-          <select name="province" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Toutes les provinces</option>
-            <option value="Kinshasa">Kinshasa</option>
-            <option value="Kongo Central">Kongo Central</option>
-            <option value="Kwilu">Kwilu</option>
-            <option value="Kwango">Kwango</option>
-            <option value="Mai-Ndombe">Mai-Ndombe</option>
-            <option value="Equateur">Equateur</option>
-            <option value="Mongala">Mongala</option>
-            <option value="Nord-Ubangi">Nord-Ubangi</option>
-            <option value="Sud-Ubangi">Sud-Ubangi</option>
-            <option value="Bas-Uele">Bas-Uele</option>
-            <option value="Haut-Uele">Haut-Uele</option>
-            <option value="Ituri">Ituri</option>
-            <option value="Tshopo">Tshopo</option>
-            <option value="Tshuapa">Tshuapa</option>
-            <option value="Maniema">Maniema</option>
-            <option value="Nord-Kivu">Nord-Kivu</option>
-            <option value="Sud-Kivu">Sud-Kivu</option>
-            <option value="Lomami">Lomami</option>
-            <option value="Sankuru">Sankuru</option>
-            <option value="Kasaï">Kasaï</option>
-            <option value="Kasaï-Central">Kasaï-Central</option>
-            <option value="Kasaï-Oriental">Kasaï-Oriental</option>
-            <option value="Haut-Lomami">Haut-Lomami</option>
-            <option value="Lualaba">Lualaba</option>
-            <option value="Haut-Katanga">Haut-Katanga</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Territoire / Commune</label>
-          <input type="text" name="territory" class="w-full px-3 py-2 border rounded-lg" 
-                 placeholder="Territoire ou commune...">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Niveau d'enseignement</label>
-          <select name="level" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Tous</option>
-            <option value="Maternel">Maternel</option>
-            <option value="Primaire">Primaire</option>
-            <option value="Secondaire">Secondaire</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'établissement</label>
-          <select name="type" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Tous</option>
-            <option value="public">Public</option>
-            <option value="private">Privé</option>
-            <option value="confessional">Confessionnel</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="flex-1 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          <i x-show="!loading" class="fas fa-search mr-2"></i>
-          Rechercher
-        </button>
-        <button type="reset" onclick="document.querySelector('form').reset()" 
-                class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Effacer
-        </button>
-      </div>
-    </form>
-  </div>
+  @section('title')
+    Rechercher des écoles - {{ school.name }}
+  @endsection
   
-  <!-- Informations -->
-  <div class="lg:col-span-2 space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Recherche inter-établissements</h3>
-      <p class="text-sm text-gray-700 dark:text-gray-300">
-        Cette fonctionnalité vous permet de rechercher d'autres établissements scolaires en RDC 
-        pour établir des partenariats, organiser des événements communs ou échanger des bonnes pratiques.
-      </p>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center gap-3 mb-2">
-          <i class="fas fa-handshake text-green-500 text-xl"></i>
-          <h4 class="font-semibold">Partenariats scolaires</h4>
-        </div>
-        <p class="text-sm text-gray-600">Établissez des partenariats éducatifs, culturels ou sportifs.</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center gap-3 mb-2">
-          <i class="fas fa-trophy text-yellow-500 text-xl"></i>
-          <h4 class="font-semibold">Compétitions interscolaires</h4>
-        </div>
-        <p class="text-sm text-gray-600">Organisez des compétitions sportives et académiques.</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center gap-3 mb-2">
-          <i class="fas fa-chalkboard-user text-purple-500 text-xl"></i>
-          <h4 class="font-semibold">Échanges d'enseignants</h4>
-        </div>
-        <p class="text-sm text-gray-600">Programmes d'échange de professeurs.</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-        <div class="flex items-center gap-3 mb-2">
-          <i class="fas fa-lightbulb text-yellow-500 text-xl"></i>
-          <h4 class="font-semibold">Bonnes pratiques</h4>
-        </div>
-        <p class="text-sm text-gray-600">Partagez et découvrez des pratiques pédagogiques innovantes.</p>
-      </div>
-    </div>
-    
-    <!-- Recherches récentes -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <div class="px-4 py-3 border-b dark:border-gray-700">
-        <h3 class="font-semibold">Recherches récentes</h3>
-      </div>
-      <div class="divide-y dark:divide-gray-700">
-        @each(recent in recentSearches)
-        <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-             onclick="window.location.href='/inter-school/search/results?q={{ recent.query }}'">
-          <div class="flex justify-between items-center">
+  @section('dashboardTitle')
+    Rechercher des écoles
+  @endsection
+  @section('dashboardSubtitle')
+    Trouvez et échangez avec d'autres établissements
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire de recherche -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+          Critères de recherche
+        </h3>
+
+        <form
+          method="GET"
+          action="/inter-school/search/results"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <div class="space-y-4">
             <div>
-              <p class="font-medium">{{ recent.query }}</p>
-              <p class="text-xs text-gray-500">{{ recent.date }}</p>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de l'école</label>
+              <div class="relative">
+                <i class="fas fa-school absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input
+                  type="text"
+                  name="q"
+                  class="w-full pl-10 pr-3 py-2 border rounded-lg"
+                  placeholder="Nom de l'établissement..."
+                />
+              </div>
             </div>
-            <i class="fas fa-search text-gray-400"></i>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Province</label>
+              <select name="province" class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  Toutes les provinces
+                </option>
+                <option value="Kinshasa">
+                  Kinshasa
+                </option>
+                <option value="Kongo Central">
+                  Kongo Central
+                </option>
+                <option value="Kwilu">
+                  Kwilu
+                </option>
+                <option value="Kwango">
+                  Kwango
+                </option>
+                <option value="Mai-Ndombe">
+                  Mai-Ndombe
+                </option>
+                <option value="Equateur">
+                  Equateur
+                </option>
+                <option value="Mongala">
+                  Mongala
+                </option>
+                <option value="Nord-Ubangi">
+                  Nord-Ubangi
+                </option>
+                <option value="Sud-Ubangi">
+                  Sud-Ubangi
+                </option>
+                <option value="Bas-Uele">
+                  Bas-Uele
+                </option>
+                <option value="Haut-Uele">
+                  Haut-Uele
+                </option>
+                <option value="Ituri">
+                  Ituri
+                </option>
+                <option value="Tshopo">
+                  Tshopo
+                </option>
+                <option value="Tshuapa">
+                  Tshuapa
+                </option>
+                <option value="Maniema">
+                  Maniema
+                </option>
+                <option value="Nord-Kivu">
+                  Nord-Kivu
+                </option>
+                <option value="Sud-Kivu">
+                  Sud-Kivu
+                </option>
+                <option value="Lomami">
+                  Lomami
+                </option>
+                <option value="Sankuru">
+                  Sankuru
+                </option>
+                <option value="Kasaï">
+                  Kasaï
+                </option>
+                <option value="Kasaï-Central">
+                  Kasaï-Central
+                </option>
+                <option value="Kasaï-Oriental">
+                  Kasaï-Oriental
+                </option>
+                <option value="Haut-Lomami">
+                  Haut-Lomami
+                </option>
+                <option value="Lualaba">
+                  Lualaba
+                </option>
+                <option value="Haut-Katanga">
+                  Haut-Katanga
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Territoire / Commune</label>
+              <input
+                type="text"
+                name="territory"
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Territoire ou commune..."
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Niveau d'enseignement</label>
+              <select name="level" class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  Tous
+                </option>
+                <option value="Maternelle">
+                  Maternelle
+                </option>
+                <option value="Primaire">
+                  Primaire
+                </option>
+                <option value="Secondaire">
+                  Secondaire
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'établissement</label>
+              <select name="type" class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  Tous
+                </option>
+                <option value="public">
+                  Public
+                </option>
+                <option value="private">
+                  Privé
+                </option>
+                <option value="confessional">
+                  Confessionnel
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="flex-1 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              <i x-show="!loading" class="fas fa-search mr-2"></i>
+              Rechercher
+        </button>
+            <button
+              type="reset"
+              onclick="document.querySelector('form').reset()"
+              class="px-6 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Effacer
+        </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Informations -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Recherche inter-établissements
+          </h3>
+          <p class="text-sm text-gray-700 dark:text-gray-300">
+            Cette fonctionnalité vous permet de rechercher d'autres établissements scolaires en RDC 
+        pour établir des partenariats, organiser des événements communs ou échanger des bonnes pratiques.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-handshake text-green-500 text-xl"></i>
+              <h4 class="font-semibold">
+                Partenariats scolaires
+              </h4>
+            </div>
+            <p class="text-sm text-gray-600">
+              Établissez des partenariats éducatifs, culturels ou sportifs.
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-trophy text-yellow-500 text-xl"></i>
+              <h4 class="font-semibold">
+                Compétitions interscolaires
+              </h4>
+            </div>
+            <p class="text-sm text-gray-600">
+              Organisez des compétitions sportives et académiques.
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-chalkboard-user text-purple-500 text-xl"></i>
+              <h4 class="font-semibold">
+                Échanges d'enseignants
+              </h4>
+            </div>
+            <p class="text-sm text-gray-600">
+              Programmes d'échange de professeurs.
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-lightbulb text-yellow-500 text-xl"></i>
+              <h4 class="font-semibold">
+                Bonnes pratiques
+              </h4>
+            </div>
+            <p class="text-sm text-gray-600">
+              Partagez et découvrez des pratiques pédagogiques innovantes.
+            </p>
           </div>
         </div>
-        @eachelse
-        <div class="p-6 text-center text-gray-500">
-          <i class="fas fa-history text-3xl mb-2 block"></i>
-          Aucune recherche récente
+
+        <!-- Recherches récentes -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          <div class="px-4 py-3 border-b dark:border-gray-700">
+            <h3 class="font-semibold">
+              Recherches récentes
+            </h3>
+          </div>
+          <div class="divide-y dark:divide-gray-700">
+            @each(recent in recentSearches)
+              <div
+                class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                onclick="window.location.href='/inter-school/search/results?q={{ recent.query }}'"
+              >
+                <div class="flex justify-between items-center">
+                  <div>
+                    <p class="font-medium">
+                      {{ recent.query }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ recent.date }}
+                    </p>
+                  </div>
+                  <i class="fas fa-search text-gray-400"></i>
+                </div>
+              </div>
+              @else
+              <div class="p-6 text-center text-gray-500">
+                <i class="fas fa-history text-3xl mb-2 block"></i>
+                Aucune recherche récente
+              </div>
+            @end
+          </div>
         </div>
-        @end
       </div>
     </div>
-  </div>
-</div>
 
-<script>
-  // Sauvegarder la recherche récente
-  document.querySelector('form')?.addEventListener('submit', function() {
-    const query = this.querySelector('input[name="q"]').value
-    if (query) {
-      // Sauvegarde automatique côté navigateur
-      localStorage.setItem('lastSearch', query)
-    }
-  })
-</script>
-{{# /section }}
-
-{{# /layout }}
+    <script>
+      // Sauvegarder la recherche récente
+      document.querySelector("form")?.addEventListener("submit", function() {
+        const query = this.querySelector('input[name="q"]').value;
+        if (query) {
+          // Sauvegarde automatique côté navigateur
+          localStorage.setItem("lastSearch", query);
+        }
+      });
+    </script>
+  @endsection
+  

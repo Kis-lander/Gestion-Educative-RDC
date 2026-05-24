@@ -1,0 +1,144 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Inspection - {{ school.name }}
+  @endsection
+
+  @section('dashboardTitle')
+    Démarrer une inspection
+  @endsection
+  @section('dashboardSubtitle')
+    {{ school.name }}
+  @endsection
+
+  @section('actions')
+    <a href="/inspection/schools/{{ school.id }}" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+      <i class="fas fa-arrow-left mr-2"></i>Retour
+    </a>
+  @endsection
+
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b dark:border-gray-700 pb-3 mb-5">
+          Rapport d'inspection
+        </h3>
+
+        <form method="POST" action="/inspection/schools/{{ school.id }}/inspect" x-data="{ loading: false }" @submit="loading = true">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="schoolId" value="{{ school.id }}" />
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date d'inspection *</label>
+              <input
+                type="date"
+                name="inspectionDate"
+                value="{{ today }}"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Inspecteur *</label>
+              <input
+                type="text"
+                name="inspector"
+                value="{{ inspector }}"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Note globale /10</label>
+              <input
+                type="number"
+                name="rating"
+                min="0"
+                max="10"
+                step="1"
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Ex: 8"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date de suivi</label>
+              <input
+                type="date"
+                name="followUpDate"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Constats et rapport *</label>
+              <textarea
+                name="report"
+                rows="7"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Décrivez les constats pédagogiques, administratifs et matériels observés..."
+              ></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Recommandations</label>
+              <textarea
+                name="recommendations"
+                rows="4"
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Actions recommandées, priorités et mesures de suivi..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t dark:border-gray-700 flex flex-col sm:flex-row gap-3 justify-end">
+            <a href="/inspection/schools/{{ school.id }}" class="px-5 py-2 border rounded-lg text-center hover:bg-gray-50 dark:hover:bg-gray-700">
+              Annuler
+            </a>
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 disabled:opacity-70"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer l'inspection
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 h-fit">
+        <h3 class="font-semibold text-lg border-b dark:border-gray-700 pb-3 mb-4">
+          Établissement
+        </h3>
+        <div class="space-y-3 text-sm">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Nom</p>
+            <p class="font-medium">{{ school.name }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Code</p>
+            <p class="font-mono">{{ school.code }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Province</p>
+            <p class="font-medium">{{ school.province }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Territoire/Commune</p>
+            <p class="font-medium">{{ school.territory }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 dark:text-gray-400">Statut</p>
+            <p class="font-medium">
+              {{ school.status === 'active' ? 'Actif' : (school.status === 'pending' ? 'En attente' : 'Suspendu') }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endsection

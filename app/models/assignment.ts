@@ -10,7 +10,7 @@ import Subject from '#models/subject'
 import AssignmentSubmission from '#models/assignment_submission'
 
 export default class Assignment extends AssignmentSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

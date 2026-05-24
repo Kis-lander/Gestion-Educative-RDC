@@ -1,216 +1,311 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Prévisions financières - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Prévisions financières{{# /section }}
-{{# section('dashboardSubtitle') }}Projections des revenus et dépenses{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-file-pdf mr-2"></i> PDF
+  @section('title')
+    Prévisions financières - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Prévisions financières
+  @endsection
+  @section('dashboardSubtitle')
+    Projections des revenus et dépenses
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button
+        onclick="exportReport('pdf')"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>PDF
   </button>
-  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-file-excel mr-2"></i> Excel
+      <button
+        onclick="exportReport('excel')"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-file-excel mr-2"></i>Excel
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Horizon prévision</label>
-      <select id="horizon" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="3">3 mois</option>
-        <option value="6">6 mois</option>
-        <option value="12">12 mois</option>
-        <option value="24">24 mois</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Scénario</label>
-      <select id="scenario" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="optimistic">Optimiste</option>
-        <option value="realistic">Réaliste</option>
-        <option value="pessimistic">Pessimiste</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-chart-line mr-2"></i> Générer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Horizon prévision</label>
+          <select id="horizon" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="3">
+              3 mois
+            </option>
+            <option value="6">
+              6 mois
+            </option>
+            <option value="12">
+              12 mois
+            </option>
+            <option value="24">
+              24 mois
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Scénario</label>
+          <select id="scenario" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="optimistic">
+              Optimiste
+            </option>
+            <option value="realistic">
+              Réaliste
+            </option>
+            <option value="pessimistic">
+              Pessimiste
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-chart-line mr-2"></i>Générer
       </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Indicateurs prévisionnels -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Revenus projetés</p>
-    <p class="text-3xl font-bold" id="projectedIncome">0 $</p>
-  </div>
-  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Dépenses projetées</p>
-    <p class="text-3xl font-bold" id="projectedExpenses">0 $</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Solde projeté</p>
-    <p class="text-3xl font-bold" id="projectedBalance">0 $</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Taux croissance</p>
-    <p class="text-3xl font-bold" id="growthRate">0%</p>
-  </div>
-</div>
+    <!-- Indicateurs prévisionnels -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Revenus projetés
+        </p>
+        <p class="text-3xl font-bold" id="projectedIncome">
+          0 $
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Dépenses projetées
+        </p>
+        <p class="text-3xl font-bold" id="projectedExpenses">
+          0 $
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Solde projeté
+        </p>
+        <p class="text-3xl font-bold" id="projectedBalance">
+          0 $
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Taux croissance
+        </p>
+        <p class="text-3xl font-bold" id="growthRate">
+          0%
+        </p>
+      </div>
+    </div>
 
-<!-- Graphiques prévisionnels -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Projection revenus vs dépenses</h3>
-    <canvas id="forecastChart" height="250"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution du solde</h3>
-    <canvas id="balanceForecastChart" height="250"></canvas>
-  </div>
-</div>
+    <!-- Graphiques prévisionnels -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Projection revenus vs dépenses
+        </h3>
+        <canvas id="forecastChart" height="250">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Évolution du solde
+        </h3>
+        <canvas id="balanceForecastChart" height="250">
+        </canvas>
+      </div>
+    </div>
 
-<!-- Scénarios comparatifs -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <h3 class="font-semibold mb-3">Comparaison des scénarios</h3>
-  <canvas id="scenariosChart" height="250"></canvas>
-</div>
+    <!-- Scénarios comparatifs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <h3 class="font-semibold mb-3">
+        Comparaison des scénarios
+      </h3>
+      <canvas id="scenariosChart" height="250">
+      </canvas>
+    </div>
 
-<!-- Tableau des prévisions mensuelles -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Prévisions détaillées</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Mois</th>
-          <th class="px-4 py-2 text-right">Revenus projetés</th>
-          <th class="px-4 py-2 text-right">Dépenses projetées</th>
-          <th class="px-4 py-2 text-right">Solde projeté</th>
-          <th class="px-4 py-2 text-center">Tendance</th>
-        </tr>
-      </thead>
-      <tbody id="forecastTable">
-        <!-- Dynamique -->
-      </tbody>
-      <tfoot class="bg-gray-50 dark:bg-gray-700 font-bold">
-        <tr>
-          <td class="px-4 py-2">TOTAL</td>
-          <td class="px-4 py-2 text-right" id="totalIncomeFoot">0 $</td>
-          <td class="px-4 py-2 text-right" id="totalExpensesFoot">0 $</td>
-          <td class="px-4 py-2 text-right" id="totalBalanceFoot">0 $</td>
-          <td class="px-4 py-2"></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-</div>
+    <!-- Tableau des prévisions mensuelles -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Prévisions détaillées
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Mois
+              </th>
+              <th class="px-4 py-2 text-right">
+                Revenus projetés
+              </th>
+              <th class="px-4 py-2 text-right">
+                Dépenses projetées
+              </th>
+              <th class="px-4 py-2 text-right">
+                Solde projeté
+              </th>
+              <th class="px-4 py-2 text-center">
+                Tendance
+              </th>
+            </tr>
+          </thead>
+          <tbody id="forecastTable">
+            <!-- Dynamique -->
+          </tbody>
+          <tfoot class="bg-gray-50 dark:bg-gray-700 font-bold">
+            <tr>
+              <td class="px-4 py-2">
+                TOTAL
+              </td>
+              <td class="px-4 py-2 text-right" id="totalIncomeFoot">
+                0 $
+              </td>
+              <td class="px-4 py-2 text-right" id="totalExpensesFoot">
+                0 $
+              </td>
+              <td class="px-4 py-2 text-right" id="totalBalanceFoot">
+                0 $
+              </td>
+              <td class="px-4 py-2">
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
 
-<!-- Recommandations -->
-<div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-  <h4 class="font-semibold flex items-center gap-2">
-    <i class="fas fa-lightbulb text-yellow-500"></i> Recommandations
-  </h4>
-  <p class="text-sm text-gray-700 dark:text-gray-300 mt-2" id="recommendations"></p>
-</div>
+    <!-- Recommandations -->
+    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h4 class="font-semibold flex items-center gap-2">
+        <i class="fas fa-lightbulb text-yellow-500"></i>Recommandations
+      </h4>
+      <p class="text-sm text-gray-700 dark:text-gray-300 mt-2" id="recommendations">
+      </p>
+    </div>
 
-<script>
-  let forecastChart, balanceChart, scenariosChart
+    <script>
+      let forecastChart, balanceChart, scenariosChart;
+
+      async function loadReport() {
+        const horizon = document.getElementById("horizon").value;
+        const scenario = document.getElementById("scenario").value;
+        const res = await fetch(`/api/reports/financial/forecasts?horizon=${horizon}&scenario=${scenario}`);
+        const data = await res.json();
+        document.getElementById("projectedIncome").textContent = `$ ${data.summary.totalIncome.toLocaleString()}`;
+        document.getElementById("projectedExpenses").textContent = `$ ${data.summary.totalExpenses.toLocaleString()}`;
+        document.getElementById("projectedBalance").textContent = `$ ${data.summary.netBalance.toLocaleString()}`;
+        document.getElementById("growthRate").textContent = `${data.summary.growthRate}%`;
+        if (forecastChart) forecastChart.destroy();
+        const forecastCtx = document.getElementById("forecastChart").getContext("2d");
+        forecastChart = new Chart(forecastCtx, {
+          type: "line",
+          data: {
+            labels: data.monthly.labels,
+            datasets: [ {
+              label: "Revenus projetés",
+              data: data.monthly.income,
+              borderColor: "#10b981",
+              fill: false,
+              tension: .4
+            }, {
+              label: "Dépenses projetées",
+              data: data.monthly.expenses,
+              borderColor: "#ef4444",
+              fill: false,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        if (balanceChart) balanceChart.destroy();
+        const balanceCtx = document.getElementById("balanceForecastChart").getContext("2d");
+        balanceChart = new Chart(balanceCtx, {
+          type: "bar",
+          data: {
+            labels: data.monthly.labels,
+            datasets: [ {
+              label: "Solde projeté ($)",
+              data: data.monthly.balance,
+              backgroundColor: "#2563eb",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        if (scenariosChart) scenariosChart.destroy();
+        const scenariosCtx = document.getElementById("scenariosChart").getContext("2d");
+        scenariosChart = new Chart(scenariosCtx, {
+          type: "line",
+          data: {
+            labels: data.monthly.labels,
+            datasets: [ {
+              label: "Optimiste",
+              data: data.scenarios.optimistic,
+              borderColor: "#10b981",
+              borderDash: []
+            }, {
+              label: "Réaliste",
+              data: data.scenarios.realistic,
+              borderColor: "#2563eb",
+              borderDash: []
+            }, {
+              label: "Pessimiste",
+              data: data.scenarios.pessimistic,
+              borderColor: "#ef4444",
+              borderDash: [ 5, 5 ]
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        let totalIncome = 0, totalExpenses = 0, totalBalance = 0;
+        document.getElementById("forecastTable").innerHTML = data.details.map(d => {
+          totalIncome += d.income;
+          totalExpenses += d.expenses;
+          totalBalance += d.balance;
+          return `
+                  <tr class="border-b dark:border-gray-700">
+                    <td class="px-4 py-2 font-medium">${d.month}</td>
+                    <td class="px-4 py-2 text-right text-green-600">$ ${d.income.toLocaleString()}</td>
+                    <td class="px-4 py-2 text-right text-red-600">$ ${d.expenses.toLocaleString()}</td>
+                    <td class="px-4 py-2 text-right font-bold ${d.balance >= 0 ? "text-green-600" : "text-red-600"}">$ ${d.balance.toLocaleString()}</td>
+                    <td class="px-4 py-2 text-center"><i class="fas fa-arrow-${d.trend > 0 ? "up text-green-500" : d.trend < 0 ? "down text-red-500" : "right text-gray-400"}"></i>${Math.abs(d.trend)}%</td>
+                  </tr>
+                `;
+        }).join("");
+        document.getElementById("totalIncomeFoot").textContent = `$ ${totalIncome.toLocaleString()}`;
+        document.getElementById("totalExpensesFoot").textContent = `$ ${totalExpenses.toLocaleString()}`;
+        document.getElementById("totalBalanceFoot").textContent = `$ ${totalBalance.toLocaleString()}`;
+        document.getElementById("recommendations").innerHTML = data.recommendations;
+      }
+
+      document.getElementById("applyFilters").addEventListener("click", loadReport);
+
+      function exportReport(format) {
+        const horizon = document.getElementById("horizon").value;
+        const scenario = document.getElementById("scenario").value;
+        window.location.href = `/api/reports/financial/forecasts/export?format=${format}&horizon=${horizon}&scenario=${scenario}`;
+      }
+
+      loadReport();
+    </script>
+  @endsection
   
-  async function loadReport() {
-    const horizon = document.getElementById('horizon').value
-    const scenario = document.getElementById('scenario').value
-    
-    const res = await fetch(`/api/reports/financial/forecasts?horizon=${horizon}&scenario=${scenario}`)
-    const data = await res.json()
-    
-    document.getElementById('projectedIncome').textContent = `$ ${data.summary.totalIncome.toLocaleString()}`
-    document.getElementById('projectedExpenses').textContent = `$ ${data.summary.totalExpenses.toLocaleString()}`
-    document.getElementById('projectedBalance').textContent = `$ ${data.summary.netBalance.toLocaleString()}`
-    document.getElementById('growthRate').textContent = `${data.summary.growthRate}%`
-    
-    if (forecastChart) forecastChart.destroy()
-    const forecastCtx = document.getElementById('forecastChart').getContext('2d')
-    forecastChart = new Chart(forecastCtx, {
-      type: 'line',
-      data: {
-        labels: data.monthly.labels,
-        datasets: [
-          { label: 'Revenus projetés', data: data.monthly.income, borderColor: '#10b981', fill: false, tension: 0.4 },
-          { label: 'Dépenses projetées', data: data.monthly.expenses, borderColor: '#ef4444', fill: false, tension: 0.4 }
-        ]
-      },
-      options: { responsive: true }
-    })
-    
-    if (balanceChart) balanceChart.destroy()
-    const balanceCtx = document.getElementById('balanceForecastChart').getContext('2d')
-    balanceChart = new Chart(balanceCtx, {
-      type: 'bar',
-      data: {
-        labels: data.monthly.labels,
-        datasets: [{ label: 'Solde projeté ($)', data: data.monthly.balance, backgroundColor: '#2563eb', borderRadius: 8 }]
-      },
-      options: { responsive: true }
-    })
-    
-    if (scenariosChart) scenariosChart.destroy()
-    const scenariosCtx = document.getElementById('scenariosChart').getContext('2d')
-    scenariosChart = new Chart(scenariosCtx, {
-      type: 'line',
-      data: {
-        labels: data.monthly.labels,
-        datasets: [
-          { label: 'Optimiste', data: data.scenarios.optimistic, borderColor: '#10b981', borderDash: [] },
-          { label: 'Réaliste', data: data.scenarios.realistic, borderColor: '#2563eb', borderDash: [] },
-          { label: 'Pessimiste', data: data.scenarios.pessimistic, borderColor: '#ef4444', borderDash: [5, 5] }
-        ]
-      },
-      options: { responsive: true }
-    })
-    
-    let totalIncome = 0, totalExpenses = 0, totalBalance = 0
-    document.getElementById('forecastTable').innerHTML = data.details.map(d => {
-      totalIncome += d.income
-      totalExpenses += d.expenses
-      totalBalance += d.balance
-      return `
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-4 py-2 font-medium">${d.month}</td>
-          <td class="px-4 py-2 text-right text-green-600">$ ${d.income.toLocaleString()}</td>
-          <td class="px-4 py-2 text-right text-red-600">$ ${d.expenses.toLocaleString()}</td>
-          <td class="px-4 py-2 text-right font-bold ${d.balance >= 0 ? 'text-green-600' : 'text-red-600'}">$ ${d.balance.toLocaleString()}</td>
-          <td class="px-4 py-2 text-center"><i class="fas fa-arrow-${d.trend > 0 ? 'up text-green-500' : (d.trend < 0 ? 'down text-red-500' : 'right text-gray-400')}"></i>${Math.abs(d.trend)}%</td>
-        </tr>
-      `
-    }).join('')
-    
-    document.getElementById('totalIncomeFoot').textContent = `$ ${totalIncome.toLocaleString()}`
-    document.getElementById('totalExpensesFoot').textContent = `$ ${totalExpenses.toLocaleString()}`
-    document.getElementById('totalBalanceFoot').textContent = `$ ${totalBalance.toLocaleString()}`
-    
-    document.getElementById('recommendations').innerHTML = data.recommendations
-  }
-  
-  document.getElementById('applyFilters').addEventListener('click', loadReport)
-  
-  function exportReport(format) {
-    const horizon = document.getElementById('horizon').value
-    const scenario = document.getElementById('scenario').value
-    window.location.href = `/api/reports/financial/forecasts/export?format=${format}&horizon=${horizon}&scenario=${scenario}`
-  }
-  
-  loadReport()
-</script>
-{{# /section }}
-
-{{# /layout }}

@@ -1,5 +1,8 @@
 import { type HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
+import hash from '@adonisjs/core/services/hash'
+import { DateTime } from 'luxon'
+import User from '#models/user'
 import {
   createAcademicSessionValidator,
   updateAcademicSessionValidator,
@@ -8,8 +11,50 @@ import {
   createHolidayValidator,
   transferSessionValidator,
 } from '#validators/session'
+import { loginValidator } from '#validators/auth'
 
 export default class SessionController {
+  private getRedirectPath(role: string) {
+    if (role === 'inspection') return '/inspection/dashboard'
+
+    return '/dashboard'
+  }
+
+  public async create({ inertia }: HttpContext) {
+    return inertia.render('auth/login', {})
+  }
+
+  public async store({ auth, request, response, session }: HttpContext) {
+    const { email, password } = await request.validateUsing(loginValidator)
+
+    try {
+      const user = await User.query().where('email', email).where('status', 'active').firstOrFail()
+      const isPasswordValid = await hash.verify(user.password, password)
+
+      if (!isPasswordValid) {
+        throw new Error('Invalid credentials')
+      }
+
+      await auth.use('web').login(user)
+
+      user.lastLogin = DateTime.now()
+      await user.save()
+
+      session.flash('success', 'Connexion reussie')
+      return response.redirect(this.getRedirectPath(user.role))
+    } catch {
+      session.flash('error', 'Email ou mot de passe incorrect ou compte inactif')
+      return response.redirect().back()
+    }
+  }
+
+  public async destroy({ auth, response, session }: HttpContext) {
+    await auth.use('web').logout()
+    session.flash('success', 'Deconnexion reussie')
+
+    return response.redirect('/login')
+  }
+
   /**
    * Créer une session académique
    */

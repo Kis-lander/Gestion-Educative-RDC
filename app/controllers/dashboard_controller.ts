@@ -11,6 +11,88 @@ import {
 } from '#validators/dashboard'
 
 export default class DashboardController {
+  public async workspace({ auth, response, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    if (user.role === 'inspection') {
+      return response.redirect('/inspection/dashboard')
+    }
+
+    const roleLabels: Record<string, string> = {
+      director: "Direction d'école",
+      finance_director: 'Direction financière',
+      discipline_director: 'Direction de discipline',
+      teacher: 'Enseignant',
+      parent: 'Parent',
+      student: 'Élève',
+    }
+
+    return view.render('dashboard/index', {
+      title: 'Tableau de bord - Gestion Éducative RDC',
+      stats: {
+        totalStudents: 0,
+        newStudents: 0,
+        totalTeachers: 0,
+        totalClasses: 0,
+        averageGrade: '0.0',
+      },
+      recentActivities: [
+        {
+          description: `Connecté en tant que ${roleLabels[user.role] ?? user.role}`,
+          time: 'Maintenant',
+        },
+      ],
+    })
+  }
+
+  /**
+   * Page dashboard Inspection
+   */
+  public async inspection({ view }: HttpContext) {
+    const [schoolStats, studentCount, teacherCount, schoolsByProvince, pendingSchools] =
+      await Promise.all([
+        School.query()
+          .select(
+            db.raw('count(*) as total'),
+            db.raw("count(*) filter (where status = 'active') as active"),
+            db.raw("count(*) filter (where status = 'pending') as pending")
+          )
+          .first(),
+        db.from('students').count('* as total').first(),
+        User.query().where('role', 'teacher').count('* as total').first(),
+        db.from('schools').select('province').count('* as total').groupBy('province'),
+        School.query().where('status', 'pending').orderBy('created_at', 'desc').limit(5),
+      ])
+
+    const totalSchools = Number(schoolStats?.$extras.total || 0)
+    const provinceRows = schoolsByProvince.map((province) => {
+      const count = Number(province.total || 0)
+
+      return {
+        name: province.province || 'Non renseignée',
+        count,
+        percentage: totalSchools ? Math.round((count / totalSchools) * 100) : 0,
+      }
+    })
+
+    return view.render('dashboard/inspection', {
+      title: 'Inspection Pédagogique - Gestion Éducative RDC',
+      stats: {
+        schools: {
+          total: totalSchools,
+          active: Number(schoolStats?.$extras.active || 0),
+          pending: Number(schoolStats?.$extras.pending || 0),
+        },
+        students: Number(studentCount?.total || 0),
+        teachers: Number(teacherCount?.$extras.total || 0),
+        coverageRate: totalSchools ? 100 : 0,
+        schoolsByProvince: provinceRows,
+      },
+      pendingSchools,
+      systemAlerts: [],
+    })
+  }
+
   /**
    * Dashboard principal
    */

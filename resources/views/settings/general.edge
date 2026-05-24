@@ -1,138 +1,204 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Paramètres généraux - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Paramètres généraux{{# /section }}
-{{# section('dashboardSubtitle') }}Configuration de votre espace{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire principal -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/settings/general" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="space-y-6">
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Affichage</h3>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom d'affichage</label>
-              <input type="text" name="display_name" value="{{ settings.displayName }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Bio / Description</label>
-              <textarea name="bio" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ settings.bio }}</textarea>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Site web / Blog</label>
-              <input type="url" name="website" value="{{ settings.website }}" 
-                     class="w-full px-3 py-2 border rounded-lg" placeholder="https://...">
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Affichage des données</h3>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Format de date</label>
-              <select name="date_format" class="w-full px-3 py-2 border rounded-lg">
-                <option value="DD/MM/YYYY" {{ settings.dateFormat === 'DD/MM/YYYY' ? 'selected' : '' }}>JJ/MM/AAAA</option>
-                <option value="YYYY-MM-DD" {{ settings.dateFormat === 'YYYY-MM-DD' ? 'selected' : '' }}>AAAA-MM-JJ</option>
-                <option value="MM/DD/YYYY" {{ settings.dateFormat === 'MM/DD/YYYY' ? 'selected' : '' }}>MM/JJ/AAAA</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Format de l'heure</label>
-              <select name="time_format" class="w-full px-3 py-2 border rounded-lg">
-                <option value="24h" {{ settings.timeFormat === '24h' ? 'selected' : '' }}>24h (13:00)</option>
-                <option value="12h" {{ settings.timeFormat === '12h' ? 'selected' : '' }}>12h (01:00 PM)</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre d'éléments par page</label>
-              <select name="items_per_page" class="w-full px-3 py-2 border rounded-lg">
-                <option value="10" {{ settings.itemsPerPage == 10 ? 'selected' : '' }}>10</option>
-                <option value="25" {{ settings.itemsPerPage == 25 ? 'selected' : '' }}>25</option>
-                <option value="50" {{ settings.itemsPerPage == 50 ? 'selected' : '' }}>50</option>
-                <option value="100" {{ settings.itemsPerPage == 100 ? 'selected' : '' }}>100</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Téléchargements</h3>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Format d'export par défaut</label>
-              <select name="default_export_format" class="w-full px-3 py-2 border rounded-lg">
-                <option value="pdf" {{ settings.defaultExportFormat === 'pdf' ? 'selected' : '' }}>PDF</option>
-                <option value="excel" {{ settings.defaultExportFormat === 'excel' ? 'selected' : '' }}>Excel</option>
-                <option value="csv" {{ settings.defaultExportFormat === 'csv' ? 'selected' : '' }}>CSV</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="compress_exports" {{ settings.compressExports ? 'checked' : '' }} class="w-4 h-4">
-                <span>Compresser automatiquement les exports (ZIP)</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer
-        </button>
-        <button type="button" onclick="resetSettings()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Réinitialiser
-        </button>
-      </div>
-    </form>
-  </div>
+  @section('title')
+    Paramètres généraux - {{ school.name }}
+  @endsection
   
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Informations</h3>
-      <p class="text-sm">Ces paramètres s'appliquent à l'ensemble de votre espace personnel.</p>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Résumé</h3>
-      <div class="space-y-1 text-sm">
-        <div class="flex justify-between"><span>Date actuelle</span><span>{{ currentDate }}</span></div>
-        <div class="flex justify-between"><span>Heure</span><span>{{ currentTime }}</span></div>
-        <div class="flex justify-between"><span>Fuseau horaire</span><span>Afrique/Kinshasa</span></div>
+  @section('dashboardTitle')
+    Paramètres généraux
+  @endsection
+  @section('dashboardSubtitle')
+    Configuration de votre espace
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire principal -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form method="POST" action="/settings/general" x-data="{ loading: false }" @submit="loading = true">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+          <div class="space-y-6">
+            <div>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Affichage
+              </h3>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom d'affichage</label>
+                  <input
+                    type="text"
+                    name="display_name"
+                    value="{{ settings.displayName }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Bio / Description</label>
+                  <textarea name="bio" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ settings.bio }}</textarea>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Site web / Blog</label>
+                  <input
+                    type="url"
+                    name="website"
+                    value="{{ settings.website }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Affichage des données
+              </h3>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Format de date</label>
+                  <select name="date_format" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="DD/MM/YYYY" {{ settings.dateFormat === 'DD/MM/YYYY' ? 'selected' : '' }}>
+                      JJ/MM/AAAA
+                    </option>
+                    <option value="YYYY-MM-DD" {{ settings.dateFormat === 'YYYY-MM-DD' ? 'selected' : '' }}>
+                      AAAA-MM-JJ
+                    </option>
+                    <option value="MM/DD/YYYY" {{ settings.dateFormat === 'MM/DD/YYYY' ? 'selected' : '' }}>
+                      MM/JJ/AAAA
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Format de l'heure</label>
+                  <select name="time_format" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="24h" {{ settings.timeFormat === '24h' ? 'selected' : '' }}>
+                      24h (13:00)
+                    </option>
+                    <option value="12h" {{ settings.timeFormat === '12h' ? 'selected' : '' }}>
+                      12h (01:00 PM)
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre d'éléments par page</label>
+                  <select name="items_per_page" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="10" {{ settings.itemsPerPage == 10 ? 'selected' : '' }}>
+                      10
+                    </option>
+                    <option value="25" {{ settings.itemsPerPage == 25 ? 'selected' : '' }}>
+                      25
+                    </option>
+                    <option value="50" {{ settings.itemsPerPage == 50 ? 'selected' : '' }}>
+                      50
+                    </option>
+                    <option value="100" {{ settings.itemsPerPage == 100 ? 'selected' : '' }}>
+                      100
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Téléchargements
+              </h3>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Format d'export par défaut</label>
+                  <select name="default_export_format" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="pdf" {{ settings.defaultExportFormat === 'pdf' ? 'selected' : '' }}>
+                      PDF
+                    </option>
+                    <option value="excel" {{ settings.defaultExportFormat === 'excel' ? 'selected' : '' }}>
+                      Excel
+                    </option>
+                    <option value="csv" {{ settings.defaultExportFormat === 'csv' ? 'selected' : '' }}>
+                      CSV
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="compress_exports"
+                      class="w-4 h-4"
+                      {{ settings.compressExports ? 'checked' : '' }}
+                    />
+                    <span>Compresser automatiquement les exports (ZIP)</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
+        </button>
+            <button type="button" onclick="resetSettings()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Réinitialiser
+        </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Informations
+          </h3>
+          <p class="text-sm">
+            Ces paramètres s'appliquent à l'ensemble de votre espace personnel.
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Résumé
+          </h3>
+          <div class="space-y-1 text-sm">
+            <div class="flex justify-between">
+              <span>Date actuelle</span>              <span>{{ currentDate }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Heure</span>              <span>{{ currentTime }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Fuseau horaire</span>              <span>Afrique/Kinshasa</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<script>
-  function resetSettings() {
-    if (confirm('Réinitialiser tous les paramètres généraux ?')) {
-      fetch('/api/settings/general/reset', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(() => location.reload())
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+    <script>
+      function resetSettings() {
+        if (confirm("Réinitialiser tous les paramètres généraux ?")) {
+          fetch("/api/settings/general/reset", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(() => location.reload());
+        }
+      }
+    </script>
+  @endsection
+  

@@ -1,202 +1,294 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Gestion des sanctions - Discipline{{# /section }}
-
-{{# section('dashboardTitle') }}Sanctions disciplinaires{{# /section }}
-{{# section('dashboardSubtitle') }}Consultez et gérez toutes les sanctions appliquées{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/discipline/incidents/report" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Nouvel incident
+  @section('title')
+    Gestion des sanctions - Discipline
+  @endsection
+  
+  @section('dashboardTitle')
+    Sanctions disciplinaires
+  @endsection
+  @section('dashboardSubtitle')
+    Consultez et gérez toutes les sanctions appliquées
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/discipline/incidents/report"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Nouvel incident
   </a>
-  <button onclick="exportSanctions()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportSanctions()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Total sanctions</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-red-600">{{ stats.active || 0 }}</p>
-    <p class="text-sm text-gray-500">En cours</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.thisMonth || 0 }}</p>
-    <p class="text-sm text-gray-500">Ce mois</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.avgDuration || 0 }}j</p>
-    <p class="text-sm text-gray-500">Durée moyenne</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type de sanction</label>
-      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="warning">Avertissement</option>
-        <option value="community_service">Travail d'intérêt général</option>
-        <option value="suspension">Suspension</option>
-        <option value="expulsion">Exclusion</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="active">En cours</option>
-        <option value="expired">Terminée</option>
-        <option value="cancelled">Annulée</option>
-      </select>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total sanctions
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-red-600">
+          {{ stats.active || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          En cours
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.thisMonth || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Ce mois
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.avgDuration || 0 }}j
+        </p>
+        <p class="text-sm text-gray-500">
+          Durée moyenne
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
-      <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        @each(classObj in classes)
-        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
-        @end
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <input type="text" id="searchInput" placeholder="Nom élève..."
-             class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type de sanction</label>
+          <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="warning">
+              Avertissement
+            </option>
+            <option value="community_service">
+              Travail d'intérêt général
+            </option>
+            <option value="suspension">
+              Suspension
+            </option>
+            <option value="expulsion">
+              Exclusion
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="active">
+              En cours
+            </option>
+            <option value="expired">
+              Terminée
+            </option>
+            <option value="cancelled">
+              Annulée
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+          <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            @each(classObj in classes)
+              <option value="{{ classObj.id }}">
+                {{ classObj.name }}
+              </option>
+            @end
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Nom élève..."
+            class="w-full px-3 py-2 border rounded-lg text-sm"
+          />
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Liste des sanctions -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3">Date</th>
-          <th class="px-4 py-3">Élève</th>
-          <th class="px-4 py-3">Classe</th>
-          <th class="px-4 py-3">Sanction</th>
-          <th class="px-4 py-3">Incident</th>
-          <th class="px-4 py-3 text-center">Période</th>
-          <th class="px-4 py-3 text-center">Statut</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(sanction in sanctions)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-3">{{ formatDate(sanction.appliedDate) }}</td>
-          <td class="px-4 py-3 font-medium">{{ sanction.studentName }}<br><span class="text-xs text-gray-500">{{ sanction.registrationNumber }}</span></td>
-          <td class="px-4 py-3">{{ sanction.className }}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-1 rounded-full text-xs
+    <!-- Liste des sanctions -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3">
+                Date
+              </th>
+              <th class="px-4 py-3">
+                Élève
+              </th>
+              <th class="px-4 py-3">
+                Classe
+              </th>
+              <th class="px-4 py-3">
+                Sanction
+              </th>
+              <th class="px-4 py-3">
+                Incident
+              </th>
+              <th class="px-4 py-3 text-center">
+                Période
+              </th>
+              <th class="px-4 py-3 text-center">
+                Statut
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(sanction in sanctions)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-3">
+                  {{ formatDate(sanction.appliedDate) }}
+                </td>
+                <td class="px-4 py-3 font-medium">
+                  {{ sanction.studentName }}<br />                  <span class="text-xs text-gray-500">{{ sanction.registrationNumber }}</span>
+                </td>
+                <td class="px-4 py-3">
+                  {{ sanction.className }}
+                </td>
+                <td class="px-4 py-3">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ sanction.type === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
                  (sanction.type === 'community_service' ? 'bg-blue-100 text-blue-800' : 
-                 (sanction.type === 'suspension' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
-              {{ sanction.typeLabel }}
+                 (sanction.type === 'suspension' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}"
+                  >
+                    {{ sanction.typeLabel }}
             </span>
-          </td>
-          <td class="px-4 py-3">{{ sanction.incidentType }}</td>
-          <td class="px-4 py-3 text-center">
-            @if(sanction.startDate && sanction.endDate)
-            {{ formatDate(sanction.startDate) }}<br>au<br>{{ formatDate(sanction.endDate) }}
-            @else
-            -
-            @endif
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="px-2 py-1 rounded-full text-xs
+                </td>
+                <td class="px-4 py-3">
+                  {{ sanction.incidentType }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  @if(sanction.startDate && sanction.endDate)
+                    {{ formatDate(sanction.startDate) }}<br />au<br />{{ formatDate(sanction.endDate) }}
+                  @else
+                    -
+                  @endif
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ sanction.status === 'active' ? 'bg-red-100 text-red-800' : 
-                 (sanction.status === 'expired' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}">
-              {{ sanction.status === 'active' ? 'En cours' : (sanction.status === 'expired' ? 'Terminée' : 'Annulée') }}
+                 (sanction.status === 'expired' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}"
+                  >
+                    {{ sanction.status === 'active' ? 'En cours' : (sanction.status === 'expired' ? 'Terminée' : 'Annulée') }}
             </span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex justify-center gap-2">
-              <a href="/discipline/sanctions/{{ sanction.id }}/edit" class="text-primary hover:underline" title="Modifier">
-                <i class="fas fa-edit"></i>
-              </a>
-              <button onclick="cancelSanction('{{ sanction.id }}')" class="text-red-500 hover:text-red-700" title="Annuler">
-                <i class="fas fa-ban"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="8" class="text-center py-12 text-gray-500">
-            <i class="fas fa-gavel text-4xl mb-2 block"></i>
-            Aucune sanction enregistrée
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/discipline/sanctions' })
-</div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex justify-center gap-2">
+                    <a
+                      href="/discipline/sanctions/{{ sanction.id }}/edit"
+                      class="text-primary hover:underline"
+                      title="Modifier"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button
+                      onclick="cancelSanction('{{ sanction.id }}')"
+                      class="text-red-500 hover:text-red-700"
+                      title="Annuler"
+                    >
+                      <i class="fas fa-ban"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="8" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-gavel text-4xl mb-2 block"></i>
+                  Aucune sanction enregistrée
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
 
-<script>
-  const filterType = document.getElementById('filterType')
-  const filterStatus = document.getElementById('filterStatus')
-  const filterClass = document.getElementById('filterClass')
-  const searchInput = document.getElementById('searchInput')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterType.value) params.set('type', filterType.value)
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    if (filterClass.value) params.set('class_id', filterClass.value)
-    if (searchInput.value) params.set('search', searchInput.value)
-    window.location.href = `/discipline/sanctions?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/discipline/sanctions'
-  })
-  
-  function cancelSanction(sanctionId) {
-    if (confirm('Annuler cette sanction ?')) {
-      fetch(`/discipline/sanctions/${sanctionId}/cancel`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  function exportSanctions() {
-    const params = new URLSearchParams()
-    if (filterType.value) params.set('type', filterType.value)
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    if (filterClass.value) params.set('class_id', filterClass.value)
-    window.location.href = `/api/discipline/sanctions/export?${params.toString()}`
-  }
-</script>
-{{# /section }}
+      @include('partials/pagination', { pagination: pagination, url: '/discipline/sanctions' })
+    </div>
 
-{{# /layout }}
+    <script>
+      const filterType = document.getElementById("filterType");
+
+      const filterStatus = document.getElementById("filterStatus");
+
+      const filterClass = document.getElementById("filterClass");
+
+      const searchInput = document.getElementById("searchInput");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterType.value) params.set("type", filterType.value);
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (filterClass.value) params.set("class_id", filterClass.value);
+        if (searchInput.value) params.set("search", searchInput.value);
+        window.location.href = `/discipline/sanctions?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/discipline/sanctions";
+      });
+
+      function cancelSanction(sanctionId) {
+        if (confirm("Annuler cette sanction ?")) {
+          fetch(`/discipline/sanctions/${sanctionId}/cancel`, {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      function exportSanctions() {
+        const params = new URLSearchParams();
+        if (filterType.value) params.set("type", filterType.value);
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (filterClass.value) params.set("class_id", filterClass.value);
+        window.location.href = `/api/discipline/sanctions/export?${params.toString()}`;
+      }
+    </script>
+  @endsection
+  

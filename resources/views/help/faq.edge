@@ -1,205 +1,264 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}FAQ - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Questions fréquemment posées{{# /section }}
-{{# section('dashboardSubtitle') }}Trouvez rapidement des réponses{{# /section }}
-
-{{# section('content') }}
-<!-- Catégories FAQ -->
-<div class="flex flex-wrap gap-2 mb-6">
-  <button class="faq-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all">Toutes</button>
-  <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="account">Compte</button>
-  <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="school">École</button>
-  <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="grades">Notes</button>
-  <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="payments">Paiements</button>
-  <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="technical">Technique</button>
-</div>
-
-<!-- Questions -->
-<div class="space-y-4">
-  <!-- Catégorie Compte -->
-  <div class="faq-section" data-cat="account">
-    <h3 class="font-semibold text-lg mb-3">Compte et connexion</h3>
-    <div class="space-y-3">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment créer un compte ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Pour créer un compte, rendez-vous sur la page d'accueil et cliquez sur "Inscription". Remplissez le formulaire avec vos informations. Un email de confirmation vous sera envoyé pour activer votre compte.</p>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>J'ai oublié mon mot de passe, que faire ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Cliquez sur "Mot de passe oublié" sur la page de connexion. Entrez votre email et vous recevrez un lien de réinitialisation. Suivez les instructions pour créer un nouveau mot de passe.</p>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment changer mon mot de passe ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Allez dans votre profil, puis onglet "Sécurité". Vous pouvez y changer votre mot de passe en entrant votre mot de passe actuel et le nouveau.</p>
-        </div>
-      </div>
-    </div>
-  </div>
+  @section('title')
+    FAQ - {{ school.name }}
+  @endsection
   
-  <!-- Catégorie École -->
-  <div class="faq-section" data-cat="school">
-    <h3 class="font-semibold text-lg mb-3">Gestion de l'école</h3>
-    <div class="space-y-3">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment inscrire mon école sur la plateforme ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Rendez-vous sur la page d'accueil et cliquez sur "Inscrire mon école". Remplissez le formulaire avec les informations de votre établissement. Votre demande sera examinée par l'inspection pédagogique.</p>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment ajouter des enseignants ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>En tant que directeur, allez dans la section "Enseignants" puis cliquez sur "Ajouter un enseignant". Remplissez ses informations et un compte sera automatiquement créé.</p>
-        </div>
-      </div>
-    </div>
-  </div>
+  @section('dashboardTitle')
+    Questions fréquemment posées
+  @endsection
+  @section('dashboardSubtitle')
+    Trouvez rapidement des réponses
+  @endsection
   
-  <!-- Catégorie Notes -->
-  <div class="faq-section" data-cat="grades">
-    <h3 class="font-semibold text-lg mb-3">Notes et évaluations</h3>
-    <div class="space-y-3">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment saisir des notes ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Les enseignants peuvent saisir des notes dans la section "Notes". Sélectionnez la classe, la matière et le trimestre, puis entrez les notes pour chaque élève.</p>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment publier les bulletins ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Une fois toutes les notes saisies, allez dans "Bulletins" et sélectionnez "Publier". Les parents et élèves pourront alors consulter les résultats.</p>
-        </div>
-      </div>
+  @section('content')
+    <!-- Catégories FAQ -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button class="faq-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all">Toutes</button>
+      <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="account">Compte</button>
+      <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="school">École</button>
+      <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="grades">Notes</button>
+      <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="payments">Paiements</button>
+      <button class="faq-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="technical">Technique</button>
     </div>
-  </div>
-  
-  <!-- Catégorie Paiements -->
-  <div class="faq-section" data-cat="payments">
-    <h3 class="font-semibold text-lg mb-3">Paiements</h3>
-    <div class="space-y-3">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment définir les frais scolaires ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Le directeur financier peut définir les frais dans la section "Frais". Vous pouvez créer différents types de frais (inscription, minerval, etc.) avec leurs montants.</p>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Comment enregistrer un paiement ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Dans la section "Paiements", cliquez sur "Enregistrer paiement". Sélectionnez l'élève, le type de frais, le montant et le mode de paiement. Un reçu sera généré automatiquement.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Catégorie Technique -->
-  <div class="faq-section" data-cat="technical">
-    <h3 class="font-semibold text-lg mb-3">Problèmes techniques</h3>
-    <div class="space-y-3">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>La plateforme est lente, que faire ?</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Vérifiez votre connexion internet. Essayez de vider le cache de votre navigateur. Si le problème persiste, contactez le support technique.</p>
-        </div>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-        <button class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-          <span>Je n'arrive pas à me connecter</span>
-          <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-        </button>
-        <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
-          <p>Vérifiez que votre email et mot de passe sont corrects. Si vous avez oublié votre mot de passe, utilisez la fonction "Mot de passe oublié". Si le problème persiste, contactez l'administrateur de votre école.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Pas de réponse -->
-<div class="mt-8 text-center">
-  <p class="text-gray-600">Vous n'avez pas trouvé votre réponse ?</p>
-  <a href="/help/contact" class="mt-2 inline-block text-primary hover:underline">
-    Contactez notre support →
+    <!-- Questions -->
+    <div class="space-y-4">
+      <!-- Catégorie Compte -->
+      <div class="faq-section" data-cat="account">
+        <h3 class="font-semibold text-lg mb-3">
+          Compte et connexion
+        </h3>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment créer un compte ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Pour créer un compte, rendez-vous sur la page d'accueil et cliquez sur "Inscription". Remplissez le formulaire avec vos informations. Un email de confirmation vous sera envoyé pour activer votre compte.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>J'ai oublié mon mot de passe, que faire ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Cliquez sur "Mot de passe oublié" sur la page de connexion. Entrez votre email et vous recevrez un lien de réinitialisation. Suivez les instructions pour créer un nouveau mot de passe.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment changer mon mot de passe ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Allez dans votre profil, puis onglet "Sécurité". Vous pouvez y changer votre mot de passe en entrant votre mot de passe actuel et le nouveau.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catégorie École -->
+      <div class="faq-section" data-cat="school">
+        <h3 class="font-semibold text-lg mb-3">
+          Gestion de l'école
+        </h3>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment inscrire mon école sur la plateforme ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Rendez-vous sur la page d'accueil et cliquez sur "Inscrire mon école". Remplissez le formulaire avec les informations de votre établissement. Votre demande sera examinée par l'inspection pédagogique.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment ajouter des enseignants ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                En tant que directeur, allez dans la section "Enseignants" puis cliquez sur "Ajouter un enseignant". Remplissez ses informations et un compte sera automatiquement créé.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catégorie Notes -->
+      <div class="faq-section" data-cat="grades">
+        <h3 class="font-semibold text-lg mb-3">
+          Notes et évaluations
+        </h3>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment saisir des notes ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Les enseignants peuvent saisir des notes dans la section "Notes". Sélectionnez la classe, la matière et le trimestre, puis entrez les notes pour chaque élève.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment publier les bulletins ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Une fois toutes les notes saisies, allez dans "Bulletins" et sélectionnez "Publier". Les parents et élèves pourront alors consulter les résultats.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catégorie Paiements -->
+      <div class="faq-section" data-cat="payments">
+        <h3 class="font-semibold text-lg mb-3">
+          Paiements
+        </h3>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment définir les frais scolaires ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Le directeur financier peut définir les frais dans la section "Frais". Vous pouvez créer différents types de frais (inscription, minerval, etc.) avec leurs montants.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Comment enregistrer un paiement ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Dans la section "Paiements", cliquez sur "Enregistrer paiement". Sélectionnez l'élève, le type de frais, le montant et le mode de paiement. Un reçu sera généré automatiquement.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catégorie Technique -->
+      <div class="faq-section" data-cat="technical">
+        <h3 class="font-semibold text-lg mb-3">
+          Problèmes techniques
+        </h3>
+        <div class="space-y-3">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>La plateforme est lente, que faire ?</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Vérifiez votre connexion internet. Essayez de vider le cache de votre navigateur. Si le problème persiste, contactez le support technique.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <button
+              class="faq-question w-full text-left p-4 font-medium flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <span>Je n'arrive pas à me connecter</span>
+              <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden p-4 pt-0 text-gray-600 border-t dark:border-gray-700">
+              <p>
+                Vérifiez que votre email et mot de passe sont corrects. Si vous avez oublié votre mot de passe, utilisez la fonction "Mot de passe oublié". Si le problème persiste, contactez l'administrateur de votre école.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pas de réponse -->
+    <div class="mt-8 text-center">
+      <p class="text-gray-600">
+        Vous n'avez pas trouvé votre réponse ?
+      </p>
+      <a href="/help/contact" class="mt-2 inline-block text-primary hover:underline">
+        Contactez notre support →
   </a>
-</div>
+    </div>
 
-<script>
-  // Accordéon FAQ
-  document.querySelectorAll('.faq-question').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const answer = btn.nextElementSibling
-      const icon = btn.querySelector('i')
-      answer.classList.toggle('hidden')
-      icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)'
-    })
-  })
+    <script>
+      // Accordéon FAQ
+      document.querySelectorAll(".faq-question").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const answer = btn.nextElementSibling;
+          const icon = btn.querySelector("i");
+          answer.classList.toggle("hidden");
+          icon.style.transform = answer.classList.contains("hidden") ? "rotate(0deg)" : "rotate(180deg)";
+        });
+      });
+      // Filtres catégories
+
+      document.querySelectorAll(".faq-cat").forEach(cat => {
+        cat.addEventListener("click", () => {
+          const selectedCat = cat.dataset.cat;
+          document.querySelectorAll(".faq-cat").forEach(c => {
+            c.classList.remove("bg-primary", "text-white");
+            c.classList.add("border");
+          });
+          cat.classList.add("bg-primary", "text-white");
+          cat.classList.remove("border");
+          document.querySelectorAll(".faq-section").forEach(section => {
+            if (selectedCat === "all" || section.dataset.cat === selectedCat) {
+              section.style.display = "block";
+            } else {
+              section.style.display = "none";
+            }
+          });
+        });
+      });
+    </script>
+  @endsection
   
-  // Filtres catégories
-  document.querySelectorAll('.faq-cat').forEach(cat => {
-    cat.addEventListener('click', () => {
-      const selectedCat = cat.dataset.cat
-      
-      document.querySelectorAll('.faq-cat').forEach(c => {
-        c.classList.remove('bg-primary', 'text-white')
-        c.classList.add('border')
-      })
-      cat.classList.add('bg-primary', 'text-white')
-      cat.classList.remove('border')
-      
-      document.querySelectorAll('.faq-section').forEach(section => {
-        if (selectedCat === 'all' || section.dataset.cat === selectedCat) {
-          section.style.display = 'block'
-        } else {
-          section.style.display = 'none'
-        }
-      })
-    })
-  })
-</script>
-{{# /section }}
-
-{{# /layout }}

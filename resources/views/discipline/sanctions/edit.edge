@@ -1,158 +1,218 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier sanction - Discipline{{# /section }}
-
-{{# section('dashboardTitle') }}Modification de la sanction{{# /section }}
-{{# section('dashboardSubtitle') }}{{ sanction.studentName }} - {{ sanction.typeLabel }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="deleteSanction()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-trash mr-2"></i> Supprimer
-  </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/discipline/sanctions/{{ sanction.id }}/update" x-data="{ loading: false, sanctionType: '{{ sanction.type }}' }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <input type="hidden" name="_method" value="PUT">
-      
-      <div class="space-y-4">
-        <!-- Informations incident lié -->
-        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-medium">{{ sanction.studentName }}</p>
-              <p class="text-sm text-gray-500">{{ sanction.incidentType }} - {{ formatDate(sanction.incidentDate) }}</p>
-              <a href="/discipline/incidents/{{ sanction.incidentId }}/show" class="text-primary text-sm hover:underline">Voir l'incident</a>
-            </div>
-            <span class="px-2 py-1 rounded-full text-xs
-              {{ sanction.status === 'active' ? 'bg-red-100 text-red-800' : 
-                 (sanction.status === 'expired' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}">
-              {{ sanction.status === 'active' ? 'En cours' : (sanction.status === 'expired' ? 'Terminée' : 'Annulée') }}
-            </span>
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de sanction</label>
-          <select name="sanctionType" required x-model="sanctionType" class="w-full px-3 py-2 border rounded-lg">
-            <option value="warning" {{ sanction.type === 'warning' ? 'selected' : '' }}>Avertissement</option>
-            <option value="community_service" {{ sanction.type === 'community_service' ? 'selected' : '' }}>Travail d'intérêt général</option>
-            <option value="suspension" {{ sanction.type === 'suspension' ? 'selected' : '' }}>Suspension</option>
-            <option value="expulsion" {{ sanction.type === 'expulsion' ? 'selected' : '' }}>Exclusion</option>
-          </select>
-        </div>
-        
-        <!-- Détails selon le type -->
-        <div x-show="sanctionType === 'community_service' || sanctionType === 'suspension'" x-cloak>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début</label>
-              <input type="date" name="startDate" value="{{ sanction.startDate }}" class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin</label>
-              <input type="date" name="endDate" value="{{ sanction.endDate }}" class="w-full px-3 py-2 border rounded-lg">
-            </div>
-          </div>
-          <div x-show="sanctionType === 'community_service'">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nature du travail</label>
-            <input type="text" name="workNature" value="{{ sanction.workNature || '' }}" class="w-full px-3 py-2 border rounded-lg">
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Détails / Observations</label>
-          <textarea name="details" rows="4" class="w-full px-3 py-2 border rounded-lg">{{ sanction.details || '' }}</textarea>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
-          <select name="status" class="w-full px-3 py-2 border rounded-lg">
-            <option value="active" {{ sanction.status === 'active' ? 'selected' : '' }}>En cours</option>
-            <option value="expired" {{ sanction.status === 'expired' ? 'selected' : '' }}>Terminée</option>
-            <option value="cancelled" {{ sanction.status === 'cancelled' ? 'selected' : '' }}>Annulée</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="notifyParent" class="w-4 h-4">
-            <span>Notifier les parents des modifications</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer
-        </button>
-        <a href="/discipline/sanctions" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
-        </a>
-      </div>
-    </form>
-  </div>
+  @section('title')
+    Modifier sanction - Discipline
+  @endsection
   
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Informations système</h3>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Appliquée par</span>
-          <span>{{ sanction.appliedByName }}</span>
+  @section('dashboardTitle')
+    Modification de la sanction
+  @endsection
+  @section('dashboardSubtitle')
+    {{ sanction.studentName }} - {{ sanction.typeLabel }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="deleteSanction()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        <i class="fas fa-trash mr-2"></i>Supprimer
+  </button>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/discipline/sanctions/{{ sanction.id }}/update"
+          x-data="{ loading: false, sanctionType: '{{ sanction.type }}' }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="_method" value="PUT" />
+
+          <div class="space-y-4">
+            <!-- Informations incident lié -->
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-medium">
+                    {{ sanction.studentName }}
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    {{ sanction.incidentType }} - {{ formatDate(sanction.incidentDate) }}
+                  </p>
+                  <a
+                    href="/discipline/incidents/{{ sanction.incidentId }}/show"
+                    class="text-primary text-sm hover:underline"
+                  >Voir l'incident</a>
+                </div>
+                <span
+                  class="px-2 py-1 rounded-full text-xs
+              {{ sanction.status === 'active' ? 'bg-red-100 text-red-800' : 
+                 (sanction.status === 'expired' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}"
+                >
+                  {{ sanction.status === 'active' ? 'En cours' : (sanction.status === 'expired' ? 'Terminée' : 'Annulée') }}
+            </span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de sanction</label>
+              <select name="sanctionType" required x-model="sanctionType" class="w-full px-3 py-2 border rounded-lg">
+                <option value="warning" {{ sanction.type === 'warning' ? 'selected' : '' }}>
+                  Avertissement
+                </option>
+                <option value="community_service" {{ sanction.type === 'community_service' ? 'selected' : '' }}>
+                  Travail d'intérêt général
+                </option>
+                <option value="suspension" {{ sanction.type === 'suspension' ? 'selected' : '' }}>
+                  Suspension
+                </option>
+                <option value="expulsion" {{ sanction.type === 'expulsion' ? 'selected' : '' }}>
+                  Exclusion
+                </option>
+              </select>
+            </div>
+
+            <!-- Détails selon le type -->
+            <div x-show="sanctionType === 'community_service' || sanctionType === 'suspension'" x-cloak>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value="{{ sanction.startDate }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin</label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value="{{ sanction.endDate }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+              </div>
+              <div x-show="sanctionType === 'community_service'">
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Nature du travail</label>
+                <input
+                  type="text"
+                  name="workNature"
+                  value="{{ sanction.workNature || '' }}"
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Détails / Observations</label>
+              <textarea name="details" rows="4" class="w-full px-3 py-2 border rounded-lg">{{ sanction.details || '' }}</textarea>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
+              <select name="status" class="w-full px-3 py-2 border rounded-lg">
+                <option value="active" {{ sanction.status === 'active' ? 'selected' : '' }}>
+                  En cours
+                </option>
+                <option value="expired" {{ sanction.status === 'expired' ? 'selected' : '' }}>
+                  Terminée
+                </option>
+                <option value="cancelled" {{ sanction.status === 'cancelled' ? 'selected' : '' }}>
+                  Annulée
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="notifyParent" class="w-4 h-4" />
+                <span>Notifier les parents des modifications</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
+        </button>
+            <a href="/discipline/sanctions" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
+        </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Informations système
+          </h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Appliquée par</span>
+              <span>{{ sanction.appliedByName }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Date d'application</span>
+              <span>{{ formatDate(sanction.appliedDate) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Dernière modification</span>
+              <span>{{ formatDate(sanction.updatedAt) }}</span>
+            </div>
+          </div>
         </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Date d'application</span>
-          <span>{{ formatDate(sanction.appliedDate) }}</span>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Suivi
+          </h3>
+          <div class="text-sm">
+            <p>
+              📊 Cette sanction a été appliquée suite à un incident de type <strong>{{ sanction.incidentType }}</strong>
+            </p>
+            <p class="mt-2">
+              ⚖️ Gravité de l'incident: <strong>{{ sanction.incidentSeverityLabel }}</strong>
+            </p>
+          </div>
         </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Dernière modification</span>
-          <span>{{ formatDate(sanction.updatedAt) }}</span>
-        </div>
+
+        @if(sanction.status === 'active')
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+            <p class="text-sm flex gap-2">
+              <i class="fas fa-calendar-check text-green-600"></i>
+              <span>Date de fin prévue: <strong>{{ formatDate(sanction.endDate) || 'Non définie' }}</strong></span>
+            </p>
+          </div>
+        @endif
       </div>
     </div>
-    
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Suivi</h3>
-      <div class="text-sm">
-        <p>📊 Cette sanction a été appliquée suite à un incident de type <strong>{{ sanction.incidentType }}</strong></p>
-        <p class="mt-2">⚖️ Gravité de l'incident: <strong>{{ sanction.incidentSeverityLabel }}</strong></p>
-      </div>
-    </div>
-    
-    @if(sanction.status === 'active')
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-calendar-check text-green-600"></i>
-        <span>Date de fin prévue: <strong>{{ formatDate(sanction.endDate) || 'Non définie' }}</strong></span>
-      </p>
-    </div>
-    @endif
-  </div>
-</div>
 
-<script>
-  function deleteSanction() {
-    if (confirm('Supprimer définitivement cette sanction ? Cette action est irréversible.')) {
-      fetch('/discipline/sanctions/{{ sanction.id }}', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) window.location.href = '/discipline/sanctions'
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+    <script>
+      function deleteSanction() {
+        if (confirm("Supprimer définitivement cette sanction ? Cette action est irréversible.")) {
+          fetch("/discipline/sanctions/{{ sanction.id }}", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.href = "/discipline/sanctions"; else alert("Erreur: " + data.message);
+          });
+        }
+      }
+    </script>
+  @endsection
+  

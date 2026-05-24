@@ -20,6 +20,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
      */
     const error = session?.flashMessages.get('error') as string
     const success = session?.flashMessages.get('success') as string
+    const locale = (session?.get('locale') as string | undefined) ?? 'fr'
 
     /**
      * Data shared with all Inertia pages. Make sure you are using
@@ -31,6 +32,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
         error,
         success,
       }),
+      locale: ctx.inertia.always(locale),
       user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
     }
   }

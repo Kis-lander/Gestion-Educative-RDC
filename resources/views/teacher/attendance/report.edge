@@ -1,146 +1,244 @@
-{{# layout('layouts/print') }}
+@layout('layouts/print')
 
-{{# section('title') }}Rapport de présence - {{ className }} - {{ school.name }}{{# /section }}
+  @section('title')
+    Rapport de présence - {{ className }} - {{ school.name }}
+  @endsection
+  <div class="attendance-report">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold">
+        {{ school.name }}
+      </h1>
+      <h2 class="text-xl">
+        RAPPORT DE PRÉSENCE
+      </h2>
+      <p class="text-md">
+        Classe: {{ className }}
+      </p>
+      <p class="text-sm">
+        Période: {{ periodLabel }}
+      </p>
+      <p class="text-sm">
+        Généré le {{ generationDate }}
+      </p>
+    </div>
 
-<div class="attendance-report">
-  <div class="text-center mb-6">
-    <h1 class="text-2xl font-bold">{{ school.name }}</h1>
-    <h2 class="text-xl">RAPPORT DE PRÉSENCE</h2>
-    <p class="text-md">Classe: {{ className }}</p>
-    <p class="text-sm">Période: {{ periodLabel }}</p>
-    <p class="text-sm">Généré le {{ generationDate }}</p>
-  </div>
-  
-  <!-- Résumé global -->
-  <div class="summary-box mb-6 p-3 bg-gray-50 border">
-    <h3 class="font-bold mb-2">Résumé global</h3>
-    <div class="grid grid-cols-2 gap-3 text-sm">
-      <div><strong>Total élèves:</strong> {{ totalStudents }}</div>
-      <div><strong>Jours ouvrables:</strong> {{ totalDays }}</div>
-      <div><strong>Total présences:</strong> {{ totalPresent }} ({{ presentRate }}%)</div>
-      <div><strong>Total absences:</strong> {{ totalAbsent }} ({{ absentRate }}%)</div>
-      <div><strong>Total retards:</strong> {{ totalLate }} ({{ lateRate }}%)</div>
-      <div><strong>Taux présence global:</strong> <span class="font-bold text-green-600">{{ overallRate }}%</span></div>
-    </div>
-  </div>
-  
-  <!-- Tableau des présences par élève -->
-  <div class="mb-6">
-    <h3 class="font-bold mb-2">Détail par élève</h3>
-    <div class="table-responsive">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="px-2 py-2 text-left">#</th>
-            <th class="px-2 py-2 text-left">Matricule</th>
-            <th class="px-2 py-2 text-left">Élève</th>
-            <th class="px-2 py-2 text-center">Présents</th>
-            <th class="px-2 py-2 text-center">Absents</th>
-            <th class="px-2 py-2 text-center">Retards</th>
-            <th class="px-2 py-2 text-center">Taux</th>
-          </tr>
-        </thead>
-        <tbody>
-          @each(student in students)
-          <tr class="border-b">
-            <td class="px-2 py-2 text-center">{{ student.rank }}</td>
-            <td class="px-2 py-2 font-mono">{{ student.registrationNumber }}</td>
-            <td class="px-2 py-2">{{ student.name }}</td>
-            <td class="px-2 py-2 text-center text-green-600">{{ student.present }}</td>
-            <td class="px-2 py-2 text-center text-red-600">{{ student.absent }}</td>
-            <td class="px-2 py-2 text-center text-yellow-600">{{ student.late }}</td>
-            <td class="px-2 py-2 text-center">
-              <div class="flex items-center gap-1">
-                <div class="w-16 bg-gray-200 rounded-full h-1.5">
-                  <div class="bg-green-500 rounded-full h-1.5" style="width: {{ student.rate }}%"></div>
-                </div>
-                <span>{{ student.rate }}%</span>
-              </div>
-            </td>
-          </tr>
-          @end
-        </tbody>
-        <tfoot class="bg-gray-100 font-bold">
-          <tr>
-            <td colspan="3" class="px-2 py-2">TOTAUX</td>
-            <td class="px-2 py-2 text-center">{{ totalPresent }}</td>
-            <td class="px-2 py-2 text-center">{{ totalAbsent }}</td>
-            <td class="px-2 py-2 text-center">{{ totalLate }}</td>
-            <td class="px-2 py-2 text-center">{{ overallRate }}%</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  </div>
-  
-  <!-- Graphique -->
-  <div class="mt-6">
-    <h3 class="font-bold mb-2">Analyse des présences</h3>
-    <div class="text-center">
-      <div class="inline-block w-32 text-center p-2 m-2 bg-green-100 rounded">
-        <div class="text-2xl font-bold text-green-600">{{ presentRate }}%</div>
-        <div class="text-xs">Présents</div>
-      </div>
-      <div class="inline-block w-32 text-center p-2 m-2 bg-red-100 rounded">
-        <div class="text-2xl font-bold text-red-600">{{ absentRate }}%</div>
-        <div class="text-xs">Absents</div>
-      </div>
-      <div class="inline-block w-32 text-center p-2 m-2 bg-yellow-100 rounded">
-        <div class="text-2xl font-bold text-yellow-600">{{ lateRate }}%</div>
-        <div class="text-xs">Retards</div>
+    <!-- Résumé global -->
+    <div class="summary-box mb-6 p-3 bg-gray-50 border">
+      <h3 class="font-bold mb-2">
+        Résumé global
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <strong>Total élèves:</strong>{{ totalStudents }}
+        </div>
+        <div>
+          <strong>Jours ouvrables:</strong>{{ totalDays }}
+        </div>
+        <div>
+          <strong>Total présences:</strong>{{ totalPresent }} ({{ presentRate }}%)
+        </div>
+        <div>
+          <strong>Total absences:</strong>{{ totalAbsent }} ({{ absentRate }}%)
+        </div>
+        <div>
+          <strong>Total retards:</strong>{{ totalLate }} ({{ lateRate }}%)
+        </div>
+        <div>
+          <strong>Taux présence global:</strong>          <span class="font-bold text-green-600">{{ overallRate }}%</span>
+        </div>
       </div>
     </div>
-    <div class="w-full bg-gray-200 rounded-full h-3 mt-4">
-      <div class="bg-green-500 rounded-full h-3" style="width: {{ presentRate }}%"></div>
-    </div>
-  </div>
-  
-  <!-- Observations -->
-  <div class="mt-6 pt-4 border-t">
-    <p class="font-bold">Observations:</p>
-    <p class="text-sm mt-1">_________________________________________</p>
-    <p class="text-sm mt-1">_________________________________________</p>
-  </div>
-  
-  <!-- Signatures -->
-  <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
-    <div class="text-center">
-      <p>L'Enseignant</p>
-      <div class="mt-12">_______________</div>
-    </div>
-    <div class="text-center">
-      <p>Le Chef d'Établissement</p>
-      <div class="mt-12">_______________</div>
-    </div>
-  </div>
-</div>
 
-<style>
-  .attendance-report {
-    font-family: 'Inter', 'Arial', sans-serif;
-    padding: 20px;
-  }
-  table {
-    border-collapse: collapse;
-  }
-  .border {
-    border: 1px solid #ddd;
-  }
-  .border-b {
-    border-bottom: 1px solid #ddd;
-  }
-  .bg-gray-100 {
-    background-color: #f3f4f6;
-  }
-  @media print {
-    body {
-      padding: 0;
-      margin: 0;
-    }
+    <!-- Tableau des présences par élève -->
+    <div class="mb-6">
+      <h3 class="font-bold mb-2">
+        Détail par élève
+      </h3>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-2 py-2 text-left">
+                #
+              </th>
+              <th class="px-2 py-2 text-left">
+                Matricule
+              </th>
+              <th class="px-2 py-2 text-left">
+                Élève
+              </th>
+              <th class="px-2 py-2 text-center">
+                Présents
+              </th>
+              <th class="px-2 py-2 text-center">
+                Absents
+              </th>
+              <th class="px-2 py-2 text-center">
+                Retards
+              </th>
+              <th class="px-2 py-2 text-center">
+                Taux
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(student in students)
+              <tr class="border-b">
+                <td class="px-2 py-2 text-center">
+                  {{ student.rank }}
+                </td>
+                <td class="px-2 py-2 font-mono">
+                  {{ student.registrationNumber }}
+                </td>
+                <td class="px-2 py-2">
+                  {{ student.name }}
+                </td>
+                <td class="px-2 py-2 text-center text-green-600">
+                  {{ student.present }}
+                </td>
+                <td class="px-2 py-2 text-center text-red-600">
+                  {{ student.absent }}
+                </td>
+                <td class="px-2 py-2 text-center text-yellow-600">
+                  {{ student.late }}
+                </td>
+                <td class="px-2 py-2 text-center">
+                  <div class="flex items-center gap-1">
+                    <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                      <div class="bg-green-500 rounded-full h-1.5" style="width: {{ student.rate }}%">
+                      </div>
+                    </div>
+                    <span>{{ student.rate }}%</span>
+                  </div>
+                </td>
+              </tr>
+            @end
+          </tbody>
+          <tfoot class="bg-gray-100 font-bold">
+            <tr>
+              <td colspan="3" class="px-2 py-2">
+                TOTAUX
+              </td>
+              <td class="px-2 py-2 text-center">
+                {{ totalPresent }}
+              </td>
+              <td class="px-2 py-2 text-center">
+                {{ totalAbsent }}
+              </td>
+              <td class="px-2 py-2 text-center">
+                {{ totalLate }}
+              </td>
+              <td class="px-2 py-2 text-center">
+                {{ overallRate }}%
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Graphique -->
+    <div class="mt-6">
+      <h3 class="font-bold mb-2">
+        Analyse des présences
+      </h3>
+      <div class="text-center">
+        <div class="inline-block w-32 text-center p-2 m-2 bg-green-100 rounded">
+          <div class="text-2xl font-bold text-green-600">
+            {{ presentRate }}%
+          </div>
+          <div class="text-xs">
+            Présents
+          </div>
+        </div>
+        <div class="inline-block w-32 text-center p-2 m-2 bg-red-100 rounded">
+          <div class="text-2xl font-bold text-red-600">
+            {{ absentRate }}%
+          </div>
+          <div class="text-xs">
+            Absents
+          </div>
+        </div>
+        <div class="inline-block w-32 text-center p-2 m-2 bg-yellow-100 rounded">
+          <div class="text-2xl font-bold text-yellow-600">
+            {{ lateRate }}%
+          </div>
+          <div class="text-xs">
+            Retards
+          </div>
+        </div>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-3 mt-4">
+        <div class="bg-green-500 rounded-full h-3" style="width: {{ presentRate }}%">
+        </div>
+      </div>
+    </div>
+
+    <!-- Observations -->
+    <div class="mt-6 pt-4 border-t">
+      <p class="font-bold">
+        Observations:
+      </p>
+      <p class="text-sm mt-1">
+        _________________________________________
+      </p>
+      <p class="text-sm mt-1">
+        _________________________________________
+      </p>
+    </div>
+
+    <!-- Signatures -->
+    <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
+      <div class="text-center">
+        <p>
+          L'Enseignant
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+      <div class="text-center">
+        <p>
+          Le Chef d'Établissement
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
     .attendance-report {
-      padding: 0;
+      font-family: 'Inter', 'Arial', sans-serif;
+      padding: 20px;
     }
-  }
-</style>
+    
+    table {
+      border-collapse: collapse;
+    }
+    
+    .border {
+      border: 1px solid #ddd;
+    }
+    
+    .border-b {
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .bg-gray-100 {
+      background-color: #f3f4f6;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+    
+      .attendance-report {
+        padding: 0;
+      }
+    }
+  </style>
 
-{{# /layout }}

@@ -1,140 +1,186 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Nouveau message - {{ school.name }}{{# /section }}
+  @section('title')
+    Nouveau message - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Nouveau message
+  @endsection
+  @section('dashboardSubtitle')
+    Envoyez un message à un enseignant
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/parent/messages/send"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Nouveau message{{# /section }}
-{{# section('dashboardSubtitle') }}Envoyez un message à un enseignant{{# /section }}
+          <div class="space-y-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataire *</label>
+              <select name="receiverId" required class="w-full px-3 py-2 border rounded-lg" id="receiverSelect">
+                <option value="">
+                  Sélectionner un enseignant
+                </option>
+                @each(teacher in teachers)
+                  <option
+                    value="{{ teacher.id }}"
+                    data-subject="{{ teacher.subject }}"
+                    {{ selectedTeacherId == teacher.id ? 'selected' : '' }}
+                  >
+                    {{ teacher.name }} - {{ teacher.subject }}
+                  </option>
+                @end
+              </select>
+            </div>
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/parent/messages/send" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataire *</label>
-          <select name="receiverId" required class="w-full px-3 py-2 border rounded-lg" id="receiverSelect">
-            <option value="">Sélectionner un enseignant</option>
-            @each(teacher in teachers)
-            <option value="{{ teacher.id }}" data-subject="{{ teacher.subject }}" {{ selectedTeacherId == teacher.id ? 'selected' : '' }}>
-              {{ teacher.name }} - {{ teacher.subject }}
-            </option>
-            @end
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Enfant concerné (optionnel)</label>
-          <select name="studentId" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">-- Aucun --</option>
-            @each(child in children)
-            <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>
-              {{ child.name }} - {{ child.className }}
-            </option>
-            @end
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Sujet *</label>
-          <input type="text" name="subject" required 
-                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                 placeholder="Sujet du message" id="subjectInput">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Message *</label>
-          <textarea name="content" required rows="8" 
-                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                    placeholder="Rédigez votre message ici..."></textarea>
-        </div>
-        
-        <div>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="urgent" class="w-4 h-4">
-            <span class="text-red-600">Marquer comme urgent</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Envoyer le message
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Enfant concerné (optionnel)</label>
+              <select name="studentId" class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  -- Aucun --
+                </option>
+                @each(child in children)
+                  <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>
+                    {{ child.name }} - {{ child.className }}
+                  </option>
+                @end
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Sujet *</label>
+              <input
+                type="text"
+                name="subject"
+                required
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Sujet du message"
+                id="subjectInput"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Message *</label>
+              <textarea
+                name="content"
+                required
+                rows="8"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Rédigez votre message ici..."
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="urgent" class="w-4 h-4" />
+                <span class="text-red-600">Marquer comme urgent</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Envoyer le message
         </button>
-        <a href="/parent/messages" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
+            <a href="/parent/messages" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Conseils</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Soyez clair et précis dans votre message</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Indiquez l'enfant concerné si nécessaire</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Les messages urgents sont traités en priorité</span>
-        </li>
-      </ul>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Exemples de sujets</h3>
-      <div class="space-y-1 text-sm">
-        <button onclick="setSubject('Suivi scolaire de mon enfant')" class="block w-full text-left p-2 hover:bg-gray-50 rounded">
-          📚 Suivi scolaire de mon enfant
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Conseils
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Soyez clair et précis dans votre message</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Indiquez l'enfant concerné si nécessaire</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Les messages urgents sont traités en priorité</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Exemples de sujets
+          </h3>
+          <div class="space-y-1 text-sm">
+            <button
+              onclick="setSubject('Suivi scolaire de mon enfant')"
+              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+            >
+              📚 Suivi scolaire de mon enfant
         </button>
-        <button onclick="setSubject('Demande de rendez-vous')" class="block w-full text-left p-2 hover:bg-gray-50 rounded">
-          📅 Demande de rendez-vous
+            <button
+              onclick="setSubject('Demande de rendez-vous')"
+              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+            >
+              📅 Demande de rendez-vous
         </button>
-        <button onclick="setSubject('Information importante')" class="block w-full text-left p-2 hover:bg-gray-50 rounded">
-          ⚠️ Information importante
+            <button
+              onclick="setSubject('Information importante')"
+              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+            >
+              ⚠️ Information importante
         </button>
-        <button onclick="setSubject('Question sur les devoirs')" class="block w-full text-left p-2 hover:bg-gray-50 rounded">
-          📝 Question sur les devoirs
+            <button
+              onclick="setSubject('Question sur les devoirs')"
+              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+            >
+              📝 Question sur les devoirs
         </button>
+          </div>
+        </div>
+
+        @if(selectedTeacherId)
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+            <p class="text-sm flex gap-2">
+              <i class="fas fa-info-circle text-green-600"></i>
+              <span>Vous allez envoyer un message à l'enseignant de {{ selectedSubject }}</span>
+            </p>
+          </div>
+        @endif
       </div>
     </div>
-    
-    @if(selectedTeacherId)
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-info-circle text-green-600"></i>
-        <span>Vous allez envoyer un message à l'enseignant de {{ selectedSubject }}</span>
-      </p>
-    </div>
-    @endif
-  </div>
-</div>
 
-<script>
-  function setSubject(subject) {
-    document.getElementById('subjectInput').value = subject
-  }
+    <script>
+      function setSubject(subject) {
+        document.getElementById("subjectInput").value = subject;
+      }
+      // Pré-remplir le sujet si destinataire sélectionné
+
+      document.getElementById("receiverSelect")?.addEventListener("change", e => {
+        const option = e.target.options[e.target.selectedIndex];
+        const subject = option.dataset.subject;
+        if (subject && !document.getElementById("subjectInput").value) {
+          document.getElementById("subjectInput").value = `Question concernant ${subject}`;
+        }
+      });
+    </script>
+  @endsection
   
-  // Pré-remplir le sujet si destinataire sélectionné
-  document.getElementById('receiverSelect')?.addEventListener('change', (e) => {
-    const option = e.target.options[e.target.selectedIndex]
-    const subject = option.dataset.subject
-    if (subject && !document.getElementById('subjectInput').value) {
-      document.getElementById('subjectInput').value = `Question concernant ${subject}`
-    }
-  })
-</script>
-{{# /section }}
-
-{{# /layout }}

@@ -22,5 +22,4 @@ export const controllers = {
   Students: () => import('#controllers/students_controller'),
   Teachers: () => import('#controllers/teachers_controller'),
   Transfers: () => import('#controllers/transfers_controller'),
-  Welcome: () => import('#controllers/welcome_controller'),
 }

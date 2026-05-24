@@ -17,10 +17,12 @@ export default class StudentsSchema extends BaseSchema {
       table.enum('gender', ['male', 'female'])
       table.text('medical_info')
       table.text('address')
-      table.enum('academic_status', ['active', 'transferred', 'graduated', 'suspended', 'expelled']).defaultTo('active')
+      table
+        .enum('academic_status', ['active', 'transferred', 'graduated', 'suspended', 'expelled'])
+        .defaultTo('active')
       date: 'enrollment_date'
       table.timestamps(true)
-      
+
       table.index(['school_id', 'class_id', 'academic_status'])
       table.index(['registration_number'])
     })

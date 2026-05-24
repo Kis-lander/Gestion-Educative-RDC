@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import app from '@adonisjs/core/services/app'
 import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
 import { DateTime } from 'luxon'
@@ -13,6 +14,164 @@ import {
 } from '#validators/auth'
 
 export default class AuthController {
+  /**
+   * Afficher la page profil.
+   */
+  public async profile({ auth, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('school')
+
+    const roleLabels: Record<string, string> = {
+      inspection: 'Inspection pédagogique',
+      director: "Direction d'école",
+      finance_director: 'Direction financière',
+      discipline_director: 'Direction de discipline',
+      teacher: 'Enseignant',
+      parent: 'Parent',
+      student: 'Élève',
+    }
+
+    const filledFields = [
+      user.firstName,
+      user.lastName,
+      user.email,
+      user.phone,
+      user.role,
+      user.schoolId,
+      user.avatarUrl,
+    ].filter(Boolean).length
+
+    return view.render('profile/index', {
+      title: `Mon profil - ${user.firstName} ${user.lastName}`,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        role: user.role,
+        roleLabel: roleLabels[user.role] ?? user.role,
+        avatarUrl: user.avatarUrl,
+        schoolName: user.school?.name,
+        className: null,
+        qualification: null,
+      },
+      stats: {
+        memberSince: user.createdAt?.toFormat('dd/LL/yyyy') ?? '-',
+        lastLogin: user.lastLogin?.toFormat('dd/LL/yyyy') ?? '-',
+        loginCount: 0,
+        documentsCount: 0,
+        messagesSent: 0,
+        documentsShared: 0,
+        activeDays: 0,
+      },
+      profileCompletion: Math.round((filledFields / 7) * 100),
+      recentActivities: [],
+    })
+  }
+
+  public async editProfilePage({ auth, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('school')
+
+    return view.render('profile/edit', {
+      title: `Modifier mon profil - ${user.firstName} ${user.lastName}`,
+      user: this.getProfileViewUser(user),
+    })
+  }
+
+  public async securityPage({ auth, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('school')
+
+    return view.render('profile/security', {
+      title: `Sécurité - ${user.firstName} ${user.lastName}`,
+      user: this.getProfileViewUser(user),
+      stats: {
+        passwordStrength: 'Bon',
+        lastPasswordChange: '-',
+        activeSessions: 1,
+        twoFactorEnabled: false,
+      },
+      sessions: [],
+    })
+  }
+
+  public async preferencesPage({ auth, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('school')
+
+    return view.render('profile/preferences', {
+      title: `Préférences - ${user.firstName} ${user.lastName}`,
+      user: this.getProfileViewUser(user),
+      preferences: {
+        theme: 'dark',
+        language: 'fr',
+        timezone: 'Africa/Kinshasa',
+        dateFormat: 'dd/mm/yyyy',
+        notifyMessages: true,
+        notifyReports: true,
+        notifySecurity: true,
+      },
+    })
+  }
+
+  public async activityPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('school')
+    const page = Number(request.input('page', 1))
+
+    return view.render('profile/activity', {
+      title: `Mon activité - ${user.firstName} ${user.lastName}`,
+      user: this.getProfileViewUser(user),
+      activities: [],
+      url: '/profile/activity',
+      pagination: {
+        total: 0,
+        perPage: 20,
+        currentPage: page,
+        lastPage: 1,
+        from: 0,
+        to: 0,
+      },
+      stats: {
+        total: 0,
+        thisMonth: 0,
+        activeDays: 0,
+        currentStreak: 0,
+        byType: {},
+        byDay: {},
+        byHour: {},
+      },
+    })
+  }
+
+  private getProfileViewUser(user: User) {
+    const roleLabels: Record<string, string> = {
+      inspection: 'Inspection pédagogique',
+      director: "Direction d'école",
+      finance_director: 'Direction financière',
+      discipline_director: 'Direction de discipline',
+      teacher: 'Enseignant',
+      parent: 'Parent',
+      student: 'Élève',
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      role: user.role,
+      roleLabel: roleLabels[user.role] ?? user.role,
+      avatarUrl: user.avatarUrl,
+      schoolName: user.school?.name,
+      className: null,
+      qualification: null,
+    }
+  }
+
   /**
    * Connexion utilisateur via la session `web`.
    */
@@ -133,6 +292,51 @@ export default class AuthController {
       success: true,
       message: 'Profil mis a jour avec succes',
       user,
+    })
+  }
+
+  public async updateAvatar({ request, auth, response }: HttpContext) {
+    const avatar = request.file('avatar', {
+      size: '2mb',
+      extnames: ['jpg', 'jpeg', 'png', 'webp'],
+    })
+
+    if (!avatar) {
+      return response.badRequest({
+        success: false,
+        message: 'Aucune image sélectionnée',
+      })
+    }
+
+    if (!avatar.isValid) {
+      return response.badRequest({
+        success: false,
+        message: avatar.errors[0]?.message ?? 'Image invalide',
+      })
+    }
+
+    const user = auth.getUserOrFail()
+    const fileName = `${user.id}-${Date.now()}.${avatar.extname}`
+
+    await avatar.move(app.publicPath('uploads/avatars'), {
+      name: fileName,
+      overwrite: true,
+    })
+
+    if (!avatar.state || avatar.state !== 'moved') {
+      return response.badRequest({
+        success: false,
+        message: "L'image n'a pas pu être enregistrée",
+      })
+    }
+
+    user.avatarUrl = `/uploads/avatars/${fileName}`
+    await user.save()
+
+    return response.ok({
+      success: true,
+      message: 'Photo de profil mise à jour',
+      avatarUrl: user.avatarUrl,
     })
   }
 

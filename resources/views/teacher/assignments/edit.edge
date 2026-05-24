@@ -1,163 +1,240 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier devoir - {{ assignment.title }}{{# /section }}
-
-{{# section('dashboardTitle') }}Modifier le devoir{{# /section }}
-{{# section('dashboardSubtitle') }}{{ assignment.title }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="deleteAssignment()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-trash mr-2"></i> Supprimer
+  @section('title')
+    Modifier devoir - {{ assignment.title }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Modifier le devoir
+  @endsection
+  @section('dashboardSubtitle')
+    {{ assignment.title }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="deleteAssignment()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        <i class="fas fa-trash mr-2"></i>Supprimer
   </button>
-</div>
-{{# /section }}
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/teacher/assignments/{{ assignment.id }}/update"
+          enctype="multipart/form-data"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="_method" value="PUT" />
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/teacher/assignments/{{ assignment.id }}/update" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <input type="hidden" name="_method" value="PUT">
-      
-      <div class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe</label>
-            <input type="text" value="{{ assignment.className }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe</label>
+                <input
+                  type="text"
+                  value="{{ assignment.className }}"
+                  class="w-full px-3 py-2 border rounded-lg bg-gray-50"
+                  readonly
+                  disabled
+                />
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière</label>
+                <input
+                  type="text"
+                  value="{{ assignment.subjectName }}"
+                  class="w-full px-3 py-2 border rounded-lg bg-gray-50"
+                  readonly
+                  disabled
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
+              <input
+                type="text"
+                name="title"
+                value="{{ assignment.title }}"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea name="description" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ assignment.description || '' }}</textarea>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
+              <textarea name="instructions" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ assignment.instructions || '' }}</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Date limite *</label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  value="{{ assignment.dueDate }}"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure limite</label>
+                <input
+                  type="time"
+                  name="dueTime"
+                  value="{{ assignment.dueTime || '' }}"
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Points maximum</label>
+                <input
+                  type="number"
+                  name="maxPoints"
+                  value="{{ assignment.maxPoints }}"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Fichier joint</label>
+              @if(assignment.attachmentUrl)
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="fas fa-file-alt text-blue-500"></i>
+                  <a
+                    href="{{ assignment.attachmentUrl }}"
+                    target="_blank"
+                    class="text-primary text-sm hover:underline"
+                  >Fichier actuel</a>
+                  <button type="button" onclick="removeAttachment()" class="text-red-500 text-sm">Supprimer</button>
+                </div>
+              @endif
+              <div
+                class="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:border-primary transition"
+                onclick="document.getElementById('fileInput').click()"
+              >
+                <input
+                  type="file"
+                  name="attachment"
+                  id="fileInput"
+                  class="hidden"
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.png"
+                />
+                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-1"></i>
+                <p class="text-sm text-gray-500">
+                  Remplacer le fichier
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
+              <select name="status" class="w-full px-3 py-2 border rounded-lg">
+                <option value="draft" {{ assignment.status === 'draft' ? 'selected' : '' }}>
+                  Brouillon
+                </option>
+                <option value="published" {{ assignment.status === 'published' ? 'selected' : '' }}>
+                  Publié
+                </option>
+                <option value="closed" {{ assignment.status === 'closed' ? 'selected' : '' }}>
+                  Clôturé
+                </option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière</label>
-            <input type="text" value="{{ assignment.subjectName }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
-          <input type="text" name="title" value="{{ assignment.title }}" required 
-                 class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
-          <textarea name="description" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ assignment.description || '' }}</textarea>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
-          <textarea name="instructions" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ assignment.instructions || '' }}</textarea>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Date limite *</label>
-            <input type="date" name="dueDate" value="{{ assignment.dueDate }}" required class="w-full px-3 py-2 border rounded-lg">
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure limite</label>
-            <input type="time" name="dueTime" value="{{ assignment.dueTime || '' }}" class="w-full px-3 py-2 border rounded-lg">
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Points maximum</label>
-            <input type="number" name="maxPoints" value="{{ assignment.maxPoints }}" min="0" max="100" step="0.5"
-                   class="w-full px-3 py-2 border rounded-lg">
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Fichier joint</label>
-          @if(assignment.attachmentUrl)
-          <div class="flex items-center gap-2 mb-2">
-            <i class="fas fa-file-alt text-blue-500"></i>
-            <a href="{{ assignment.attachmentUrl }}" target="_blank" class="text-primary text-sm hover:underline">Fichier actuel</a>
-            <button type="button" onclick="removeAttachment()" class="text-red-500 text-sm">Supprimer</button>
-          </div>
-          @endif
-          <div class="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:border-primary transition"
-               onclick="document.getElementById('fileInput').click()">
-            <input type="file" name="attachment" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.txt,.jpg,.png">
-            <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-1"></i>
-            <p class="text-sm text-gray-500">Remplacer le fichier</p>
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
-          <select name="status" class="w-full px-3 py-2 border rounded-lg">
-            <option value="draft" {{ assignment.status === 'draft' ? 'selected' : '' }}>Brouillon</option>
-            <option value="published" {{ assignment.status === 'published' ? 'selected' : '' }}>Publié</option>
-            <option value="closed" {{ assignment.status === 'closed' ? 'selected' : '' }}>Clôturé</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
         </button>
-        <a href="/teacher/assignments/{{ assignment.id }}/show" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
+            <a
+              href="/teacher/assignments/{{ assignment.id }}/show"
+              class="px-6 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Annuler
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Statistiques -->
-  <div class="space-y-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-3">Statistiques</h3>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span>Élèves concernés</span>
-          <span class="font-bold">{{ assignment.totalStudents || 0 }}</span>
+
+      <!-- Statistiques -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-3">
+            Statistiques
+          </h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span>Élèves concernés</span>
+              <span class="font-bold">{{ assignment.totalStudents || 0 }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Soumissions reçues</span>
+              <span class="font-bold">{{ assignment.submittedCount || 0 }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Soumissions notées</span>
+              <span class="font-bold">{{ assignment.gradedCount || 0 }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Taux de rendu</span>
+              <span class="font-bold">{{ assignment.submissionRate || 0 }}%</span>
+            </div>
+          </div>
         </div>
-        <div class="flex justify-between">
-          <span>Soumissions reçues</span>
-          <span class="font-bold">{{ assignment.submittedCount || 0 }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Soumissions notées</span>
-          <span class="font-bold">{{ assignment.gradedCount || 0 }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Taux de rendu</span>
-          <span class="font-bold">{{ assignment.submissionRate || 0 }}%</span>
+
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-info-circle text-yellow-600"></i>
+            <span>Le statut "Clôturé" bloque les soumissions supplémentaires.</span>
+          </p>
         </div>
       </div>
     </div>
-    
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-info-circle text-yellow-600"></i>
-        <span>Le statut "Clôturé" bloque les soumissions supplémentaires.</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  function deleteAssignment() {
-    if (confirm('Supprimer définitivement ce devoir ? Cette action est irréversible.')) {
-      fetch('/teacher/assignments/{{ assignment.id }}', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) window.location.href = '/teacher/assignments'
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
+    <script>
+      function deleteAssignment() {
+        if (confirm("Supprimer définitivement ce devoir ? Cette action est irréversible.")) {
+          fetch("/teacher/assignments/{{ assignment.id }}", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.href = "/teacher/assignments"; else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      function removeAttachment() {
+        fetch("/teacher/assignments/{{ assignment.id }}/remove-attachment", {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        }).then(() => location.reload());
+      }
+    </script>
+  @endsection
   
-  function removeAttachment() {
-    fetch('/teacher/assignments/{{ assignment.id }}/remove-attachment', {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-    }).then(() => location.reload())
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}

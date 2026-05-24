@@ -1,242 +1,329 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Espace Élève - Gestion Éducative RDC{{# /section }}
-
-{{# section('dashboardTitle') }}Espace Élève{{# /section }}
-{{# section('dashboardSubtitle') }}Suivez votre parcours scolaire{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Moyenne générale</p>
-        <p class="text-2xl font-bold" :class="{
-          'text-green-600': {{ stats.averageGrade }} >= 15,
-          'text-yellow-600': {{ stats.averageGrade }} >= 10 && {{ stats.averageGrade }} < 15,
-          'text-red-600': {{ stats.averageGrade }} < 10
-        }">{{ stats.averageGrade || '-' }}/20</p>
-      </div>
-      <i class="fas fa-star text-yellow-500 text-xl"></i>
-    </div>
-  </div>
+  @section('title')
+    Espace Élève - Gestion Éducative RDC
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Rang</p>
-        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.rank || '-' }}/{{ stats.totalStudents || 0 }}</p>
-      </div>
-      <i class="fas fa-trophy text-yellow-500 text-xl"></i>
-    </div>
-  </div>
+  @section('dashboardTitle')
+    Espace Élève
+  @endsection
+  @section('dashboardSubtitle')
+    Suivez votre parcours scolaire
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Devoirs à rendre</p>
-        <p class="text-2xl font-bold text-orange-600">{{ stats.pendingAssignments || 0 }}</p>
-      </div>
-      <i class="fas fa-tasks text-orange-500 text-xl"></i>
-    </div>
-  </div>
-  
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Présences</p>
-        <p class="text-2xl font-bold text-green-600">{{ stats.attendanceRate || 0 }}%</p>
-      </div>
-      <i class="fas fa-calendar-check text-green-500 text-xl"></i>
-    </div>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Informations personnelles -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl">
-        {{ student.firstName?.charAt(0) || 'E' }}{{ student.lastName?.charAt(0) || '' }}
-      </div>
-      <div>
-        <h3 class="font-semibold text-gray-800 dark:text-white">{{ student.firstName }} {{ student.lastName }}</h3>
-        <p class="text-xs text-gray-500">{{ student.className }} - {{ student.schoolName }}</p>
-      </div>
-    </div>
-    <div class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-gray-500">Matricule</span>
-        <span class="font-mono">{{ student.registrationNumber }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Date naissance</span>
-        <span>{{ student.birthDate || '-' }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Tuteur</span>
-        <span>{{ student.parentName || '-' }}</span>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Dernières notes -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-semibold text-gray-800 dark:text-white">Dernières notes</h3>
-      <a href="/student/grades" class="text-primary text-sm hover:underline">Voir tout</a>
-    </div>
-    <div class="space-y-2">
-      @each(grade in recentGrades)
-      <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
-        <div>
-          <p class="font-medium text-sm">{{ grade.subjectName }}</p>
-          <p class="text-xs text-gray-500">{{ grade.examType }} - {{ grade.date }}</p>
-        </div>
-        <div class="text-right">
-          <span class="font-bold text-lg" :class="{
-            'text-green-600': {{ grade.score }} >= 15,
-            'text-yellow-600': {{ grade.score }} >= 10 && {{ grade.score }} < 15,
-            'text-red-600': {{ grade.score }} < 10
-          }">{{ grade.score }}/20</span>
-        </div>
-      </div>
-      @eachelse
-      <p class="text-gray-500 text-center py-6">Aucune note disponible</p>
-      @end
-    </div>
-  </div>
-  
-  <!-- Devoirs à rendre -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-semibold text-gray-800 dark:text-white">Devoirs à rendre</h3>
-      <a href="/student/assignments" class="text-primary text-sm hover:underline">Voir tout</a>
-    </div>
-    <div class="space-y-2">
-      @each(assignment in pendingAssignments)
-      <div class="p-2 border-b dark:border-gray-700">
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
         <div class="flex justify-between items-start">
           <div>
-            <p class="font-medium text-sm">{{ assignment.title }}</p>
-            <p class="text-xs text-gray-500">{{ assignment.subjectName }} - {{ assignment.className }}</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Moyenne générale
+            </p>
+            <p class="text-2xl font-bold" :class='text-green-600' : {{ stats.averageGrade }}>
+              = 15,
+          'text-yellow-600': {{ stats.averageGrade }} >= 10 && {{ stats.averageGrade }}
+              <text-red-600 : {{ stats.averageGrade }}>
+                {{ stats.averageGrade || '-' }}/20
+              </p>
+            </div>
+            <i class="fas fa-star text-yellow-500 text-xl"></i>
           </div>
-          <span class="text-xs text-red-500">{{ assignment.daysLeft }} jours restants</span>
         </div>
-        <div class="mt-2">
-          <a href="/student/assignments/{{ assignment.id }}" class="text-primary text-xs hover:underline">
-            <i class="fas fa-upload mr-1"></i> Soumettre
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                Rang
+              </p>
+              <p class="text-2xl font-bold text-gray-800 dark:text-white">
+                {{ stats.rank || '-' }}/{{ stats.totalStudents || 0 }}
+              </p>
+            </div>
+            <i class="fas fa-trophy text-yellow-500 text-xl"></i>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                Devoirs à rendre
+              </p>
+              <p class="text-2xl font-bold text-orange-600">
+                {{ stats.pendingAssignments || 0 }}
+              </p>
+            </div>
+            <i class="fas fa-tasks text-orange-500 text-xl"></i>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                Présences
+              </p>
+              <p class="text-2xl font-bold text-green-600">
+                {{ stats.attendanceRate || 0 }}%
+              </p>
+            </div>
+            <i class="fas fa-calendar-check text-green-500 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    @endsection
+    
+    @section('content')
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Informations personnelles -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+          <div class="flex items-center gap-3 mb-4">
+            <div
+              class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl"
+            >
+              {{ student.firstName?.charAt(0) || 'E' }}{{ student.lastName?.charAt(0) || '' }}
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-800 dark:text-white">
+                {{ student.firstName }} {{ student.lastName }}
+              </h3>
+              <p class="text-xs text-gray-500">
+                {{ student.className }} - {{ student.schoolName }}
+              </p>
+            </div>
+          </div>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Matricule</span>
+              <span class="font-mono">{{ student.registrationNumber }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Date naissance</span>
+              <span>{{ student.birthDate || '-' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Tuteur</span>
+              <span>{{ student.parentName || '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dernières notes -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-gray-800 dark:text-white">
+              Dernières notes
+            </h3>
+            <a href="/student/grades" class="text-primary text-sm hover:underline">Voir tout</a>
+          </div>
+          <div class="space-y-2">
+            @each(grade in recentGrades)
+              <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
+                <div>
+                  <p class="font-medium text-sm">
+                    {{ grade.subjectName }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ grade.examType }} - {{ grade.date }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <span class="font-bold text-lg" :class='text-green-600' : {{ grade.score }}>= 15,
+            'text-yellow-600': {{ grade.score }} >= 10 && {{ grade.score }}
+                    <text-red-600 : {{ grade.score }}>
+                      {{ grade.score }}/20</span>
+                  </div>
+                </div>
+                @else
+                <p class="text-gray-500 text-center py-6">
+                  Aucune note disponible
+                </p>
+              @end
+            </div>
+          </div>
+
+          <!-- Devoirs à rendre -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-semibold text-gray-800 dark:text-white">
+                Devoirs à rendre
+              </h3>
+              <a href="/student/assignments" class="text-primary text-sm hover:underline">Voir tout</a>
+            </div>
+            <div class="space-y-2">
+              @each(assignment in pendingAssignments)
+                <div class="p-2 border-b dark:border-gray-700">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <p class="font-medium text-sm">
+                        {{ assignment.title }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        {{ assignment.subjectName }} - {{ assignment.className }}
+                      </p>
+                    </div>
+                    <span class="text-xs text-red-500">{{ assignment.daysLeft }} jours restants</span>
+                  </div>
+                  <div class="mt-2">
+                    <a href="/student/assignments/{{ assignment.id }}" class="text-primary text-xs hover:underline">
+                      <i class="fas fa-upload mr-1"></i>Soumettre
           </a>
+                  </div>
+                </div>
+                @else
+                <p class="text-gray-500 text-center py-6">
+                  Aucun devoir en attente
+                </p>
+              @end
+            </div>
+          </div>
         </div>
-      </div>
-      @eachelse
-      <p class="text-gray-500 text-center py-6">Aucun devoir en attente</p>
-      @end
-    </div>
-  </div>
-</div>
 
-<!-- Emploi du temps de la semaine -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold text-gray-800 dark:text-white">Emploi du temps de la semaine</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-2 py-2">Horaire</th>
-          <th class="px-2 py-2">Lundi</th>
-          <th class="px-2 py-2">Mardi</th>
-          <th class="px-2 py-2">Mercredi</th>
-          <th class="px-2 py-2">Jeudi</th>
-          <th class="px-2 py-2">Vendredi</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(slot in timetable)
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-2 py-2 font-medium">{{ slot.time }}</td>
-          <td class="px-2 py-2">{{ slot.monday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.tuesday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.wednesday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.thursday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.friday || '-' }}</td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="6" class="text-center py-8 text-gray-500">Aucun emploi du temps disponible</td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  <div class="px-4 py-2 text-right">
-    <a href="/student/timetable/print" class="text-primary text-sm hover:underline" target="_blank">
-      <i class="fas fa-print mr-1"></i> Imprimer
+        <!-- Emploi du temps de la semaine -->
+        <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          <div class="px-4 py-3 border-b dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">
+              Emploi du temps de la semaine
+            </h3>
+          </div>
+          <div class="table-responsive">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th class="px-2 py-2">
+                    Horaire
+                  </th>
+                  <th class="px-2 py-2">
+                    Lundi
+                  </th>
+                  <th class="px-2 py-2">
+                    Mardi
+                  </th>
+                  <th class="px-2 py-2">
+                    Mercredi
+                  </th>
+                  <th class="px-2 py-2">
+                    Jeudi
+                  </th>
+                  <th class="px-2 py-2">
+                    Vendredi
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @each(slot in timetable)
+                  <tr class="border-b dark:border-gray-700">
+                    <td class="px-2 py-2 font-medium">
+                      {{ slot.time }}
+                    </td>
+                    <td class="px-2 py-2">
+                      {{ slot.monday || '-' }}
+                    </td>
+                    <td class="px-2 py-2">
+                      {{ slot.tuesday || '-' }}
+                    </td>
+                    <td class="px-2 py-2">
+                      {{ slot.wednesday || '-' }}
+                    </td>
+                    <td class="px-2 py-2">
+                      {{ slot.thursday || '-' }}
+                    </td>
+                    <td class="px-2 py-2">
+                      {{ slot.friday || '-' }}
+                    </td>
+                  </tr>
+                  @else
+                  <tr>
+                    <td colspan="6" class="text-center py-8 text-gray-500">
+                      Aucun emploi du temps disponible
+                    </td>
+                  </tr>
+                @end
+              </tbody>
+            </table>
+          </div>
+          <div class="px-4 py-2 text-right">
+            <a href="/student/timetable/print" class="text-primary text-sm hover:underline" target="_blank">
+              <i class="fas fa-print mr-1"></i>Imprimer
     </a>
-  </div>
-</div>
+          </div>
+        </div>
 
-<!-- Forum récent -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-  <div class="flex justify-between items-center mb-4">
-    <h3 class="font-semibold text-gray-800 dark:text-white">Forum - Questions récentes</h3>
-    <a href="/student/forum/create" class="text-primary text-sm hover:underline">
-      <i class="fas fa-plus mr-1"></i> Poser une question
+        <!-- Forum récent -->
+        <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-gray-800 dark:text-white">
+              Forum - Questions récentes
+            </h3>
+            <a href="/student/forum/create" class="text-primary text-sm hover:underline">
+              <i class="fas fa-plus mr-1"></i>Poser une question
     </a>
-  </div>
-  <div class="space-y-2">
-    @each(topic in forumTopics)
-    <div class="flex justify-between items-center p-2 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
-         onclick="window.location.href='/student/forum/topic/{{ topic.id }}'">
-      <div>
-        <p class="font-medium text-sm">{{ topic.title }}</p>
-        <p class="text-xs text-gray-500">{{ topic.subjectName }} - par {{ topic.authorName }}</p>
-      </div>
-      <div class="text-right text-xs text-gray-400">
-        <span class="mr-2"><i class="fas fa-comment"></i> {{ topic.repliesCount }}</span>
-        <span><i class="fas fa-eye"></i> {{ topic.views }}</span>
-      </div>
-    </div>
-    @eachelse
-    <p class="text-gray-500 text-center py-6">Aucune question récente</p>
-    @end
-  </div>
-</div>
+          </div>
+          <div class="space-y-2">
+            @each(topic in forumTopics)
+              <div
+                class="flex justify-between items-center p-2 border-b dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
+                onclick="window.location.href='/student/forum/topic/{{ topic.id }}'"
+              >
+                <div>
+                  <p class="font-medium text-sm">
+                    {{ topic.title }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ topic.subjectName }} - par {{ topic.authorName }}
+                  </p>
+                </div>
+                <div class="text-right text-xs text-gray-400">
+                  <span class="mr-2">                    <i class="fas fa-comment"></i>{{ topic.repliesCount }}</span>
+                  <span>                    <i class="fas fa-eye"></i>{{ topic.views }}</span>
+                </div>
+              </div>
+              @else
+              <p class="text-gray-500 text-center py-6">
+                Aucune question récente
+              </p>
+            @end
+          </div>
+        </div>
 
-<!-- Actions rapides -->
-<div class="mt-6 flex flex-wrap gap-3">
-  <a href="/student/grades/report-card" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-file-pdf mr-2"></i> Télécharger bulletin
+        <!-- Actions rapides -->
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a
+            href="/student/grades/report-card"
+            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            <i class="fas fa-file-pdf mr-2"></i>Télécharger bulletin
   </a>
-  <a href="/student/assignments" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-tasks mr-2"></i> Mes devoirs
+          <a
+            href="/student/assignments"
+            class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-tasks mr-2"></i>Mes devoirs
   </a>
-  <a href="/student/forum" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-comments mr-2"></i> Forum
+          <a
+            href="/student/forum"
+            class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-comments mr-2"></i>Forum
   </a>
-</div>
+        </div>
 
-<script>
-  // Vérifier les nouveaux devoirs
-  function checkNewAssignments() {
-    fetch('/api/student/pending-assignments-count')
-      .then(res => res.json())
-      .then(data => {
-        if (data.count > 0) {
-          const badge = document.getElementById('assignmentsBadge')
-          if (badge) {
-            badge.style.display = 'inline-block'
-            badge.textContent = data.count
+        <script>
+          // Vérifier les nouveaux devoirs
+          function checkNewAssignments() {
+            fetch("/api/student/pending-assignments-count").then(res => res.json()).then(data => {
+              if (data.count > 0) {
+                const badge = document.getElementById("assignmentsBadge");
+                if (badge) {
+                  badge.style.display = "inline-block";
+                  badge.textContent = data.count;
+                }
+              }
+            });
           }
-        }
-      })
-  }
-  setInterval(checkNewAssignments, 60000)
-</script>
-{{# /section }}
 
-{{# /layout }}
+          setInterval(checkNewAssignments, 6e4);
+        </script>
+      @endsection
+      

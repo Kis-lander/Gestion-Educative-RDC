@@ -1,148 +1,182 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Créer session académique - {{ school.name }}{{# /section }}
+  @section('title')
+    CrÃ©er session acadÃ©mique - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Nouvelle session acadÃ©mique
+  @endsection
+  @section('dashboardSubtitle')
+    CrÃ©ez une nouvelle annÃ©e scolaire
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-3xl mx-auto">
+      <form
+        method="POST"
+        action="/academic/sessions/create"
+        x-data="{ loading: false, terms: [{}] }"
+        @submit="loading = true"
+      >
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Nouvelle session académique{{# /section }}
-{{# section('dashboardSubtitle') }}Créez une nouvelle année scolaire{{# /section }}
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la session *</label>
+            <input
+              type="text"
+              name="name"
+              required
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+              placeholder="Ex: Année scolaire 2024-2025"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Format recommandÃ©: Année scolaire 2024-2025
+            </p>
+          </div>
 
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-3xl mx-auto">
-  <form method="POST" action="/academic/sessions/create" x-data="{ loading: false, terms: [{}] }" @submit="loading = true">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    
-    <div class="space-y-4">
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la session *</label>
-        <input type="text" name="name" required 
-               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-               placeholder="Ex: Année académique 2024-2025">
-        <p class="text-xs text-gray-500 mt-1">Format recommandé: Année académique 2024-2025</p>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début *</label>
-          <input type="date" name="startDate" required class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
-          <input type="date" name="endDate" required class="w-full px-3 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="isActive" class="w-4 h-4">
-          <span class="font-medium">Définir comme session active immédiatement</span>
-        </label>
-      </div>
-      
-      <div class="border-t pt-4 mt-2">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-semibold">Trimestres / Périodes</h3>
-          <button type="button" onclick="addTerm()" class="text-primary text-sm hover:underline">
-            <i class="fas fa-plus mr-1"></i> Ajouter un trimestre
-          </button>
-        </div>
-        
-        <div id="termsContainer" class="space-y-3">
-          <div class="term-item p-3 border rounded-lg">
-            <div class="flex justify-between items-center mb-2">
-              <h4 class="font-medium">Trimestre 1</h4>
-              <button type="button" onclick="removeTerm(this)" class="text-red-500 text-sm">Supprimer</button>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date dÃ©but *</label>
+              <input type="date" name="startDate" required class="w-full px-3 py-2 border rounded-lg" />
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-gray-600 text-sm mb-1">Nom</label>
-                <input type="text" name="terms[0][name]" value="Premier Trimestre" class="w-full px-2 py-1 border rounded text-sm">
-              </div>
-              <div>
-                <label class="block text-gray-600 text-sm mb-1">Date début</label>
-                <input type="date" name="terms[0][startDate]" class="w-full px-2 py-1 border rounded text-sm">
-              </div>
-              <div>
-                <label class="block text-gray-600 text-sm mb-1">Date fin</label>
-                <input type="date" name="terms[0][endDate]" class="w-full px-2 py-1 border rounded text-sm">
-              </div>
-              <div>
-                <label class="block text-gray-600 text-sm mb-1">Début examens</label>
-                <input type="date" name="terms[0][examStartDate]" class="w-full px-2 py-1 border rounded text-sm">
-              </div>
-              <div>
-                <label class="block text-gray-600 text-sm mb-1">Fin examens</label>
-                <input type="date" name="terms[0][examEndDate]" class="w-full px-2 py-1 border rounded text-sm">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
+              <input type="date" name="endDate" required class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+          </div>
+
+          <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="isActive" class="w-4 h-4" />
+              <span class="font-medium">DÃ©finir comme session active immÃ©diatement</span>
+            </label>
+          </div>
+
+          <div class="border-t pt-4 mt-2">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-semibold">
+                Trimestres / PÃ©riodes
+              </h3>
+              <button type="button" onclick="addTerm()" class="text-primary text-sm hover:underline">
+                <i class="fas fa-plus mr-1"></i>Ajouter un trimestre
+          </button>
+            </div>
+
+            <div id="termsContainer" class="space-y-3">
+              <div class="term-item p-3 border rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                  <h4 class="font-medium">
+                    Trimestre 1
+                  </h4>
+                  <button type="button" onclick="removeTerm(this)" class="text-red-500 text-sm">Supprimer</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Nom</label>
+                    <input
+                      type="text"
+                      name="terms[0][name]"
+                      value="Premier Trimestre"
+                      class="w-full px-2 py-1 border rounded text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Date dÃ©but</label>
+                    <input type="date" name="terms[0][startDate]" class="w-full px-2 py-1 border rounded text-sm" />
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Date fin</label>
+                    <input type="date" name="terms[0][endDate]" class="w-full px-2 py-1 border rounded text-sm" />
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">DÃ©but examens</label>
+                    <input type="date" name="terms[0][examStartDate]" class="w-full px-2 py-1 border rounded text-sm" />
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Fin examens</label>
+                    <input type="date" name="terms[0][examEndDate]" class="w-full px-2 py-1 border rounded text-sm" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    
-    <div class="flex gap-3 mt-8 pt-4 border-t">
-      <button type="submit" :disabled="loading"
-              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-        Créer la session
+
+        <div class="flex gap-3 mt-8 pt-4 border-t">
+          <button
+            type="submit"
+            :disabled="loading"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+            CrÃ©er la session
       </button>
-      <a href="/academic/sessions" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-        Annuler
+          <a href="/academic/sessions" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+            Annuler
       </a>
+        </div>
+      </form>
     </div>
-  </form>
-</div>
 
-<script>
-  let termCounter = 1
-  
-  function addTerm() {
-    const container = document.getElementById('termsContainer')
-    const termDiv = document.createElement('div')
-    termDiv.className = 'term-item p-3 border rounded-lg mt-3'
-    termDiv.innerHTML = `
-      <div class="flex justify-between items-center mb-2">
-        <h4 class="font-medium">Trimestre ${termCounter + 1}</h4>
-        <button type="button" onclick="removeTerm(this)" class="text-red-500 text-sm">Supprimer</button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Nom</label>
-          <input type="text" name="terms[${termCounter}][name]" value="Trimestre ${termCounter + 1}" class="w-full px-2 py-1 border rounded text-sm">
-        </div>
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Date début</label>
-          <input type="date" name="terms[${termCounter}][startDate]" class="w-full px-2 py-1 border rounded text-sm">
-        </div>
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Date fin</label>
-          <input type="date" name="terms[${termCounter}][endDate]" class="w-full px-2 py-1 border rounded text-sm">
-        </div>
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Début examens</label>
-          <input type="date" name="terms[${termCounter}][examStartDate]" class="w-full px-2 py-1 border rounded text-sm">
-        </div>
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Fin examens</label>
-          <input type="date" name="terms[${termCounter}][examEndDate]" class="w-full px-2 py-1 border rounded text-sm">
-        </div>
-      </div>
-    `
-    container.appendChild(termDiv)
-    termCounter++
-  }
-  
-  function removeTerm(btn) {
-    btn.closest('.term-item').remove()
-  }
-  
-  // Dates par défaut
-  const startDateInput = document.querySelector('input[name="startDate"]')
-  const endDateInput = document.querySelector('input[name="endDate"]')
-  const today = new Date()
-  const defaultStart = new Date(today.getFullYear(), 8, 1)
-  const defaultEnd = new Date(today.getFullYear() + 1, 5, 30)
-  startDateInput.value = defaultStart.toISOString().split('T')[0]
-  endDateInput.value = defaultEnd.toISOString().split('T')[0]
-</script>
-{{# /section }}
+    <script>
+      let termCounter = 1;
 
-{{# /layout }}
+      function addTerm() {
+        const container = document.getElementById("termsContainer");
+        const termDiv = document.createElement("div");
+        termDiv.className = "term-item p-3 border rounded-lg mt-3";
+        termDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                  <h4 class="font-medium">Trimestre ${termCounter + 1}</h4>
+                  <button type="button" onclick="removeTerm(this)" class="text-red-500 text-sm">Supprimer</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Nom</label>
+                    <input type="text" name="terms[${termCounter}][name]" value="Trimestre ${termCounter + 1}" class="w-full px-2 py-1 border rounded text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Date dÃ©but</label>
+                    <input type="date" name="terms[${termCounter}][startDate]" class="w-full px-2 py-1 border rounded text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Date fin</label>
+                    <input type="date" name="terms[${termCounter}][endDate]" class="w-full px-2 py-1 border rounded text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">DÃ©but examens</label>
+                    <input type="date" name="terms[${termCounter}][examStartDate]" class="w-full px-2 py-1 border rounded text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-gray-600 text-sm mb-1">Fin examens</label>
+                    <input type="date" name="terms[${termCounter}][examEndDate]" class="w-full px-2 py-1 border rounded text-sm">
+                  </div>
+                </div>
+              `;
+        container.appendChild(termDiv);
+        termCounter++;
+      }
+
+      function removeTerm(btn) {
+        btn.closest(".term-item").remove();
+      }
+      // Dates par dÃ©faut
+
+      const startDateInput = document.querySelector('input[name="startDate"]');
+
+      const endDateInput = document.querySelector('input[name="endDate"]');
+
+      const today = new Date();
+
+      const defaultStart = new Date(today.getFullYear(), 8, 1);
+
+      const defaultEnd = new Date(today.getFullYear() + 1, 5, 30);
+
+      startDateInput.value = defaultStart.toISOString().split("T")[0];
+
+      endDateInput.value = defaultEnd.toISOString().split("T")[0];
+    </script>
+  @endsection
+  

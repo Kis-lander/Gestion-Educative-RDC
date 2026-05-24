@@ -1,143 +1,229 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Rapport de classe - {{ className }}{{# /section }}
-
-{{# section('dashboardTitle') }}Rapport de classe{{# /section }}
-{{# section('dashboardSubtitle') }}{{ className }} - {{ term }} {{ academicYear }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="printReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
+  @section('title')
+    Rapport de classe - {{ className }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Rapport de classe
+  @endsection
+  @section('dashboardSubtitle')
+    {{ className }} - {{ term }} {{ academicYear }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="printReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
   </button>
-  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-file-pdf mr-2"></i> PDF
+      <button
+        onclick="exportReport('pdf')"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>PDF
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.totalStudents || 0 }}</p>
-    <p class="text-sm text-gray-500">Élèves</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.averageGrade || '0.0' }}/20</p>
-    <p class="text-sm text-gray-500">Moyenne classe</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.successRate || 0 }}%</p>
-    <p class="text-sm text-gray-500">Taux réussite</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.bestStudent }}</p>
-    <p class="text-sm text-gray-500">Meilleur élève</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Distribution des notes</h3>
-    <canvas id="distributionChart" height="200"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Performance par matière</h3>
-    <canvas id="subjectsChart" height="200"></canvas>
-  </div>
-</div>
-
-<!-- Tableau des résultats -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Résultats des élèves</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">#</th>
-          <th class="px-4 py-2">Matricule</th>
-          <th class="px-4 py-2">Élève</th>
-          @each(subject in subjects)
-          <th class="px-4 py-2 text-center">{{ subject.name }}</th>
-          @end
-          <th class="px-4 py-2 text-center bg-blue-50">Moyenne</th>
-          <th class="px-4 py-2 text-center">Rang</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(student in students)
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-4 py-2 text-center">{{ student.rank }}</td>
-          <td class="px-4 py-2 font-mono">{{ student.registrationNumber }}</td>
-          <td class="px-4 py-2 font-medium">{{ student.name }}</td>
-          @each(grade in student.grades)
-          <td class="px-4 py-2 text-center {{ grade >= 15 ? 'text-green-600' : (grade >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-            {{ grade }}
-          </td>
-          @end
-          <td class="px-4 py-2 text-center font-bold {{ student.average >= 15 ? 'text-green-600' : (student.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-            {{ student.average }}/20
-          </td>
-          <td class="px-4 py-2 text-center">{{ student.rank }}/{{ stats.totalStudents }}</td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Synthèse des appréciations -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-  <h3 class="font-semibold mb-3">Appréciations des enseignants</h3>
-  <div class="space-y-3">
-    @each(comment in teacherComments)
-    <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-      <p class="font-medium">{{ comment.teacher }}</p>
-      <p class="text-sm text-gray-600 mt-1">{{ comment.comment }}</p>
     </div>
-    @end
-  </div>
-</div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.totalStudents || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Élèves
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.averageGrade || '0.0' }}/20
+        </p>
+        <p class="text-sm text-gray-500">
+          Moyenne classe
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.successRate || 0 }}%
+        </p>
+        <p class="text-sm text-gray-500">
+          Taux réussite
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.bestStudent }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Meilleur élève
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Distribution des notes
+        </h3>
+        <canvas id="distributionChart" height="200">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Performance par matière
+        </h3>
+        <canvas id="subjectsChart" height="200">
+        </canvas>
+      </div>
+    </div>
 
-<script>
-  let distChart, subjectsChart
-  
-  function renderCharts() {
-    const distCtx = document.getElementById('distributionChart').getContext('2d')
-    distChart = new Chart(distCtx, {
-      type: 'bar',
-      data: {
-        labels: ['0-5', '5-10', '10-12', '12-14', '14-16', '16-18', '18-20'],
-        datasets: [{ label: "Nombre d'élèves", data: {{ distributionData|json_encode|raw }}, backgroundColor: '#2563eb', borderRadius: 8 }]
-      },
-      options: { responsive: true, scales: { y: { beginAtZero: true, stepSize: 1 } } }
-    })
-    
-    const subjectsCtx = document.getElementById('subjectsChart').getContext('2d')
-    subjectsChart = new Chart(subjectsCtx, {
-      type: 'bar',
-      data: {
-        labels: {{ subjectLabels|json_encode|raw }},
-        datasets: [{ label: 'Moyenne /20', data: {{ subjectAverages|json_encode|raw }}, backgroundColor: '#16a34a', borderRadius: 8 }]
-      },
-      options: { responsive: true, scales: { y: { max: 20 } } }
-    })
-  }
-  
-  function printReport() {
-    window.print()
-  }
-  
-  function exportReport(format) {
-    window.location.href = `/api/reports/academic/class/{{ classId }}/export?format=${format}&term={{ term }}&year={{ academicYear }}`
-  }
-  
-  renderCharts()
-</script>
-{{# /section }}
+    <!-- Tableau des résultats -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Résultats des élèves
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                #
+              </th>
+              <th class="px-4 py-2">
+                Matricule
+              </th>
+              <th class="px-4 py-2">
+                Élève
+              </th>
+              @each(subject in subjects)
+                <th class="px-4 py-2 text-center">
+                  {{ subject.name }}
+                </th>
+              @end
+              <th class="px-4 py-2 text-center bg-blue-50">
+                Moyenne
+              </th>
+              <th class="px-4 py-2 text-center">
+                Rang
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(student in students)
+              <tr class="border-b dark:border-gray-700">
+                <td class="px-4 py-2 text-center">
+                  {{ student.rank }}
+                </td>
+                <td class="px-4 py-2 font-mono">
+                  {{ student.registrationNumber }}
+                </td>
+                <td class="px-4 py-2 font-medium">
+                  {{ student.name }}
+                </td>
+                @each(grade in student.grades)
+                  <td
+                    class="px-4 py-2 text-center {{ grade >= 15 ? 'text-green-600' : (grade >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  >
+                    {{ grade }}
+                  </td>
+                @end
+                <td
+                  class="px-4 py-2 text-center font-bold {{ student.average >= 15 ? 'text-green-600' : (student.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                >
+                  {{ student.average }}/20
+                </td>
+                <td class="px-4 py-2 text-center">
+                  {{ student.rank }}/{{ stats.totalStudents }}
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-{{# /layout }}
+    <!-- Synthèse des appréciations -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-3">
+        Appréciations des enseignants
+      </h3>
+      <div class="space-y-3">
+        @each(comment in teacherComments)
+          <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="font-medium">
+              {{ comment.teacher }}
+            </p>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ comment.comment }}
+            </p>
+          </div>
+        @end
+      </div>
+    </div>
+
+    <script>
+      let distChart, subjectsChart;
+
+      function renderCharts() {
+        const distCtx = document.getElementById("distributionChart").getContext("2d");
+        distChart = new Chart(distCtx, {
+          type: "bar",
+          data: {
+            labels: [ "0-5", "5-10", "10-12", "12-14", "14-16", "16-18", "18-20" ],
+            datasets: [ {
+              label: "Nombre d'élèves",
+              data: {{ distributionData|json_encode|raw }},
+              backgroundColor: "#2563eb",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                stepSize: 1
+              }
+            }
+          }
+        });
+        const subjectsCtx = document.getElementById("subjectsChart").getContext("2d");
+        subjectsChart = new Chart(subjectsCtx, {
+          type: "bar",
+          data: {
+            labels: {{ subjectLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Moyenne /20",
+              data: {{ subjectAverages|json_encode|raw }},
+              backgroundColor: "#16a34a",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                max: 20
+              }
+            }
+          }
+        });
+      }
+
+      function printReport() {
+        window.print();
+      }
+
+      function exportReport(format) {
+        window.location.href = `/api/reports/academic/class/{{ classId }}/export?format=${format}&term={{ term }}&year={{ academicYear }}`;
+      }
+
+      renderCharts();
+    </script>
+  @endsection
+  

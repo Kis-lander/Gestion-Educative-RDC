@@ -1,161 +1,217 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Session active - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Session académique en cours{{# /section }}
-{{# section('dashboardSubtitle') }}{{ activeSession.name }}{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Info session -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-        <i class="fas fa-calendar-check text-green-600 text-xl"></i>
-      </div>
-      <div>
-        <h3 class="font-bold text-xl">{{ activeSession.name }}</h3>
-        <p class="text-sm text-gray-500">{{ activeSession.startDate }} - {{ activeSession.endDate }}</p>
-      </div>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p class="text-2xl font-bold text-primary">{{ activeSession.termsCount || 0 }}</p>
-        <p class="text-sm text-gray-500">Trimestres</p>
-      </div>
-      <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p class="text-2xl font-bold text-green-600">{{ activeSession.totalStudents || 0 }}</p>
-        <p class="text-sm text-gray-500">Élèves inscrits</p>
-      </div>
-      <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p class="text-2xl font-bold text-purple-600">{{ activeSession.progress || 0 }}%</p>
-        <p class="text-sm text-gray-500">Progression</p>
-      </div>
-    </div>
-    
-    <div class="mb-4">
-      <div class="flex justify-between text-sm mb-1">
-        <span>Progression de l'année</span>
-        <span>{{ activeSession.progress || 0 }}%</span>
-      </div>
-      <div class="w-full bg-gray-200 rounded-full h-2">
-        <div class="bg-primary rounded-full h-2" style="width: {{ activeSession.progress || 0 }}%"></div>
-      </div>
-    </div>
-    
-    <div class="space-y-3 mt-4">
-      <h4 class="font-semibold">Trimestres</h4>
-      @each(term in activeSession.terms)
-      <div class="border rounded-lg p-3">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-medium">{{ term.name }}</p>
-            <p class="text-xs text-gray-500">{{ term.startDate }} - {{ term.endDate }}</p>
+  @section('title')
+    Session active - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Session académique en cours
+  @endsection
+  @section('dashboardSubtitle')
+    {{ activeSession.name }}
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Info session -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+            <i class="fas fa-calendar-check text-green-600 text-xl"></i>
           </div>
-          <div class="text-right">
-            <span class="text-sm">Examens: {{ term.examStartDate }} au {{ term.examEndDate }}</span>
-            <div class="w-32 bg-gray-200 rounded-full h-1 mt-1">
-              <div class="bg-green-500 rounded-full h-1" style="width: {{ term.progress || 0 }}%"></div>
+          <div>
+            <h3 class="font-bold text-xl">
+              {{ activeSession.name }}
+            </h3>
+            <p class="text-sm text-gray-500">
+              {{ activeSession.startDate }} - {{ activeSession.endDate }}
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-2xl font-bold text-primary">
+              {{ activeSession.termsCount || 0 }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Trimestres
+            </p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-2xl font-bold text-green-600">
+              {{ activeSession.totalStudents || 0 }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Élèves inscrits
+            </p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="text-2xl font-bold text-purple-600">
+              {{ activeSession.progress || 0 }}%
+            </p>
+            <p class="text-sm text-gray-500">
+              Progression
+            </p>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex justify-between text-sm mb-1">
+            <span>Progression de l'année</span>
+            <span>{{ activeSession.progress || 0 }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-primary rounded-full h-2" style="width: {{ activeSession.progress || 0 }}%">
             </div>
           </div>
         </div>
-      </div>
-      @end
-    </div>
-  </div>
-  
-  <!-- Actions et infos -->
-  <div class="space-y-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-      <h3 class="font-semibold mb-3">Actions</h3>
-      <div class="space-y-2">
-        <a href="/academic/sessions/{{ activeSession.id }}/edit" class="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
-          <i class="fas fa-edit text-primary w-5"></i>
-          <span>Modifier la session</span>
-        </a>
-        <button onclick="transferData()" class="flex items-center gap-3 p-2 rounded hover:bg-gray-50 w-full text-left">
-          <i class="fas fa-exchange-alt text-purple-600 w-5"></i>
-          <span>Transférer vers nouvelle session</span>
-        </button>
-        <button onclick="archiveCurrent()" class="flex items-center gap-3 p-2 rounded hover:bg-gray-50 w-full text-left">
-          <i class="fas fa-archive text-yellow-600 w-5"></i>
-          <span>Archiver la session</span>
-        </button>
-      </div>
-    </div>
-    
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Dates importantes</h3>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span>Rentrée scolaire</span>
-          <span class="font-medium">{{ activeSession.startDate }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Vacances de Noël</span>
-          <span>20/12 - 05/01</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Fin des cours</span>
-          <span class="font-medium">{{ activeSession.endDate }}</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-info-circle text-yellow-600"></i>
-        <span>La session active détermine l'année scolaire en cours pour toutes les opérations (notes, inscriptions, bulletins).</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<!-- Calendrier de la session -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-  <h3 class="font-semibold mb-3">Calendrier de la session</h3>
-  <div id="timeline" class="relative">
-    <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300"></div>
-    @each(event in timelineEvents)
-    <div class="relative pl-10 pb-6">
-      <div class="absolute left-0 w-8 h-8 rounded-full {{ event.type === 'term' ? 'bg-green-500' : (event.type === 'exam' ? 'bg-red-500' : 'bg-blue-500') }} flex items-center justify-center text-white text-xs">
-        <i class="fas {{ event.type === 'term' ? 'fa-calendar' : (event.type === 'exam' ? 'fa-pen' : 'fa-bell') }}"></i>
+        <div class="space-y-3 mt-4">
+          <h4 class="font-semibold">
+            Trimestres
+          </h4>
+          @each(term in activeSession.terms)
+            <div class="border rounded-lg p-3">
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="font-medium">
+                    {{ term.name }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ term.startDate }} - {{ term.endDate }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <span class="text-sm">Examens: {{ term.examStartDate }} au {{ term.examEndDate }}</span>
+                  <div class="w-32 bg-gray-200 rounded-full h-1 mt-1">
+                    <div class="bg-green-500 rounded-full h-1" style="width: {{ term.progress || 0 }}%">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          @end
+        </div>
       </div>
-      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="font-medium">{{ event.title }}</p>
-            <p class="text-sm text-gray-500">{{ event.date }} {{ event.time ? `à ${event.time}` : '' }}</p>
+
+      <!-- Actions et infos -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+          <h3 class="font-semibold mb-3">
+            Actions
+          </h3>
+          <div class="space-y-2">
+            <a
+              href="/academic/sessions/{{ activeSession.id }}/edit"
+              class="flex items-center gap-3 p-2 rounded hover:bg-gray-50"
+            >
+              <i class="fas fa-edit text-primary w-5"></i>
+              <span>Modifier la session</span>
+            </a>
+            <button
+              onclick="transferData()"
+              class="flex items-center gap-3 p-2 rounded hover:bg-gray-50 w-full text-left"
+            >
+              <i class="fas fa-exchange-alt text-purple-600 w-5"></i>
+              <span>Transférer vers nouvelle session</span>
+            </button>
+            <button
+              onclick="archiveCurrent()"
+              class="flex items-center gap-3 p-2 rounded hover:bg-gray-50 w-full text-left"
+            >
+              <i class="fas fa-archive text-yellow-600 w-5"></i>
+              <span>Archiver la session</span>
+            </button>
           </div>
-          <span class="text-xs px-2 py-0.5 rounded {{ event.type === 'term' ? 'bg-green-100 text-green-800' : (event.type === 'exam' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">
-            {{ event.type === 'term' ? 'Trimestre' : (event.type === 'exam' ? 'Examen' : 'Événement') }}
-          </span>
         </div>
-        {{ event.description ? `<p class="text-sm text-gray-600 mt-1">${event.description}</p>` : '' }}
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Dates importantes
+          </h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span>Rentrée scolaire</span>
+              <span class="font-medium">{{ activeSession.startDate }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Vacances de Noël</span>
+              <span>20/12 - 05/01</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Fin des cours</span>
+              <span class="font-medium">{{ activeSession.endDate }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-info-circle text-yellow-600"></i>
+            <span>La session active détermine l'année scolaire en cours pour toutes les opérations (notes, inscriptions, bulletins).</span>
+          </p>
+        </div>
       </div>
     </div>
-    @end
-  </div>
-</div>
 
-<script>
-  function transferData() {
-    window.location.href = '/academic/sessions/{{ activeSession.id }}/transfer'
-  }
+    <!-- Calendrier de la session -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-3">
+        Calendrier de la session
+      </h3>
+      <div id="timeline" class="relative">
+        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300">
+        </div>
+        @each(event in timelineEvents)
+          <div class="relative pl-10 pb-6">
+            <div
+              class="absolute left-0 w-8 h-8 rounded-full {{ event.type === 'term' ? 'bg-green-500' : (event.type === 'exam' ? 'bg-red-500' : 'bg-blue-500') }} flex items-center justify-center text-white text-xs"
+            >
+              <i
+                class="fas {{ event.type === 'term' ? 'fa-calendar' : (event.type === 'exam' ? 'fa-pen' : 'fa-bell') }}"
+              ></i>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-medium">
+                    {{ event.title }}
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    {{ event.date }} {{ event.time ? `à ${event.time}` : '' }}
+                  </p>
+                </div>
+                <span
+                  class="text-xs px-2 py-0.5 rounded {{ event.type === 'term' ? 'bg-green-100 text-green-800' : (event.type === 'exam' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}"
+                >
+                  {{ event.type === 'term' ? 'Trimestre' : (event.type === 'exam' ? 'Examen' : 'Événement') }}
+          </span>
+              </div>
+              {{ event.description ? `<p class="text-sm text-gray-600 mt-1">${event.description}</p>` : '' }}
+            </div>
+          </div>
+        @end
+      </div>
+    </div>
+
+    <script>
+      function transferData() {
+        window.location.href = "/academic/sessions/{{ activeSession.id }}/transfer";
+      }
+
+      function archiveCurrent() {
+        if (confirm("Archiver la session active ? Une nouvelle session devra être activée.")) {
+          fetch("/academic/sessions/{{ activeSession.id }}/archive", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
+    </script>
+  @endsection
   
-  function archiveCurrent() {
-    if (confirm('Archiver la session active ? Une nouvelle session devra être activée.')) {
-      fetch('/academic/sessions/{{ activeSession.id }}/archive', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) window.location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}

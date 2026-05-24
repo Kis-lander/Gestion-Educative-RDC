@@ -1,126 +1,209 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier frais - {{ fee.type }}{{# /section }}
+  @section('title')
+    Modifier frais - {{ fee.type }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Modifier les frais
+  @endsection
+  @section('dashboardSubtitle')
+    {{ fee.type }}
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl mx-auto">
+      <form
+        method="POST"
+        action="/financial/fees/{{ fee.id }}/update"
+        x-data="{ loading: false }"
+        @submit="loading = true"
+      >
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+        <input type="hidden" name="_method" value="PUT" />
 
-{{# section('dashboardTitle') }}Modifier les frais{{# /section }}
-{{# section('dashboardSubtitle') }}{{ fee.type }}{{# /section }}
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de frais *</label>
+            <select name="feeType" required class="w-full px-3 py-2 border rounded-lg">
+              <option value="Inscription" {{ fee.type === 'Inscription' ? 'selected' : '' }}>
+                Inscription
+              </option>
+              <option value="Minerval" {{ fee.type === 'Minerval' ? 'selected' : '' }}>
+                Minerval
+              </option>
+              <option value="Assurance" {{ fee.type === 'Assurance' ? 'selected' : '' }}>
+                Assurance
+              </option>
+              <option value="Transport" {{ fee.type === 'Transport' ? 'selected' : '' }}>
+                Transport
+              </option>
+              <option value="Cantine" {{ fee.type === 'Cantine' ? 'selected' : '' }}>
+                Cantine
+              </option>
+              <option value="Uniforme" {{ fee.type === 'Uniforme' ? 'selected' : '' }}>
+                Uniforme
+              </option>
+              <option value="Autre" {{ fee.type === 'Autre' ? 'selected' : '' }}>
+                Autre
+              </option>
+            </select>
+          </div>
 
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl mx-auto">
-  <form method="POST" action="/financial/fees/{{ fee.id }}/update" x-data="{ loading: false }" @submit="loading = true">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <input type="hidden" name="_method" value="PUT">
-    
-    <div class="space-y-4">
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de frais *</label>
-        <select name="feeType" required class="w-full px-3 py-2 border rounded-lg">
-          <option value="Inscription" {{ fee.type === 'Inscription' ? 'selected' : '' }}>Inscription</option>
-          <option value="Minerval" {{ fee.type === 'Minerval' ? 'selected' : '' }}>Minerval</option>
-          <option value="Assurance" {{ fee.type === 'Assurance' ? 'selected' : '' }}>Assurance</option>
-          <option value="Transport" {{ fee.type === 'Transport' ? 'selected' : '' }}>Transport</option>
-          <option value="Cantine" {{ fee.type === 'Cantine' ? 'selected' : '' }}>Cantine</option>
-          <option value="Uniforme" {{ fee.type === 'Uniforme' ? 'selected' : '' }}>Uniforme</option>
-          <option value="Autre" {{ fee.type === 'Autre' ? 'selected' : '' }}>Autre</option>
-        </select>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
-        <textarea name="description" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ fee.description || '' }}</textarea>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Montant *</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{{ fee.currency === 'USD' ? '$' : (fee.currency === 'EUR' ? '€' : 'FC') }}</span>
-            <input type="number" name="amount" step="0.01" min="0" value="{{ fee.amount }}" required 
-                   class="w-full pl-8 pr-3 py-2 border rounded-lg">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+            <textarea name="description" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ fee.description || '' }}</textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Montant *</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{{ fee.currency === 'USD' ? '$' : (fee.currency === 'EUR' ? 'â‚¬' : 'FC') }}</span>
+                <input
+                  type="number"
+                  name="amount"
+                  step="0.01"
+                  min="0"
+                  value="{{ fee.amount }}"
+                  required
+                  class="w-full pl-8 pr-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Devise</label>
+              <select name="currency" class="w-full px-3 py-2 border rounded-lg">
+                <option value="USD" {{ fee.currency === 'USD' ? 'selected' : '' }}>
+                  USD ($)
+                </option>
+                <option value="CDF" {{ fee.currency === 'CDF' ? 'selected' : '' }}>
+                  CDF (FC)
+                </option>
+                <option value="EUR" {{ fee.currency === 'EUR' ? 'selected' : '' }}>
+                  EUR (â‚¬)
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre</label>
+              <select name="term" class="w-full px-3 py-2 border rounded-lg">
+                <option value="" {{ !fee.term ? 'selected' : '' }}>
+                  Annuel
+                </option>
+                <option value="T1" {{ fee.term === 'T1' ? 'selected' : '' }}>
+                  Trimestre 1
+                </option>
+                <option value="T2" {{ fee.term === 'T2' ? 'selected' : '' }}>
+                  Trimestre 2
+                </option>
+                <option value="T3" {{ fee.term === 'T3' ? 'selected' : '' }}>
+                  Trimestre 3
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Année scolaire</label>
+              <input
+                type="text"
+                value="{{ fee.academicYear }}"
+                class="w-full px-3 py-2 border rounded-lg bg-gray-50"
+                readonly
+                disabled
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date d'Ã©chÃ©ance</label>
+              <input type="date" name="dueDate" value="{{ fee.dueDate }}" class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+            <div>
+              <label class="flex items-center gap-2 mt-7">
+                <input type="checkbox" name="isMandatory" class="w-4 h-4" {{ fee.isMandatory ? 'checked' : '' }} />
+                <span>Frais obligatoire</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Montant retard</label>
+              <input
+                type="number"
+                name="lateFee"
+                step="0.01"
+                min="0"
+                value="{{ fee.lateFee || '' }}"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Pourcentage rÃ©duction</label>
+              <input
+                type="number"
+                name="discountPercentage"
+                step="1"
+                min="0"
+                max="100"
+                value="{{ fee.discountPercentage || '' }}"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
+            <select name="status" class="w-full px-3 py-2 border rounded-lg">
+              <option value="active" {{ fee.status === 'active' ? 'selected' : '' }}>
+                Actif
+              </option>
+              <option value="inactive" {{ fee.status === 'inactive' ? 'selected' : '' }}>
+                Inactif
+              </option>
+              <option value="archived" {{ fee.status === 'archived' ? 'selected' : '' }}>
+                ArchivÃ©
+              </option>
+            </select>
           </div>
         </div>
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Devise</label>
-          <select name="currency" class="w-full px-3 py-2 border rounded-lg">
-            <option value="USD" {{ fee.currency === 'USD' ? 'selected' : '' }}>USD ($)</option>
-            <option value="CDF" {{ fee.currency === 'CDF' ? 'selected' : '' }}>CDF (FC)</option>
-            <option value="EUR" {{ fee.currency === 'EUR' ? 'selected' : '' }}>EUR (€)</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre</label>
-          <select name="term" class="w-full px-3 py-2 border rounded-lg">
-            <option value="" {{ !fee.term ? 'selected' : '' }}>Annuel</option>
-            <option value="T1" {{ fee.term === 'T1' ? 'selected' : '' }}>Trimestre 1</option>
-            <option value="T2" {{ fee.term === 'T2' ? 'selected' : '' }}>Trimestre 2</option>
-            <option value="T3" {{ fee.term === 'T3' ? 'selected' : '' }}>Trimestre 3</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique</label>
-          <input type="text" value="{{ fee.academicYear }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date d'échéance</label>
-          <input type="date" name="dueDate" value="{{ fee.dueDate }}" class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="flex items-center gap-2 mt-7">
-            <input type="checkbox" name="isMandatory" {{ fee.isMandatory ? 'checked' : '' }} class="w-4 h-4">
-            <span>Frais obligatoire</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Montant retard</label>
-          <input type="number" name="lateFee" step="0.01" min="0" value="{{ fee.lateFee || '' }}" class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Pourcentage réduction</label>
-          <input type="number" name="discountPercentage" step="1" min="0" max="100" value="{{ fee.discountPercentage || '' }}" class="w-full px-3 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
-        <select name="status" class="w-full px-3 py-2 border rounded-lg">
-          <option value="active" {{ fee.status === 'active' ? 'selected' : '' }}>Actif</option>
-          <option value="inactive" {{ fee.status === 'inactive' ? 'selected' : '' }}>Inactif</option>
-          <option value="archived" {{ fee.status === 'archived' ? 'selected' : '' }}>Archivé</option>
-        </select>
-      </div>
-    </div>
-    
-    <!-- Statistiques -->
-    <div class="mt-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-      <div class="grid grid-cols-2 gap-3 text-sm">
-        <div>Total payé: <span class="font-bold">{{ formatCurrency(fee.totalCollected || 0, fee.currency) }}</span></div>
-        <div>Taux recouvrement: <span class="font-bold">{{ fee.collectionRate || 0 }}%</span></div>
-        <div>Nombre de payeurs: <span class="font-bold">{{ fee.payersCount || 0 }}</span></div>
-        <div>Impayés: <span class="font-bold">{{ fee.outstandingCount || 0 }}</span></div>
-      </div>
-    </div>
-    
-    <div class="flex gap-3 mt-6 pt-4 border-t">
-      <button type="submit" :disabled="loading"
-              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-        Enregistrer
-      </button>
-      <a href="/financial/fees" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-        Annuler
-      </a>
-    </div>
-  </form>
-</div>
-{{# /section }}
 
-{{# /layout }}
+        <!-- Statistiques -->
+        <div class="mt-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              Total payÃ©: <span class="font-bold">{{ formatCurrency(fee.totalCollected || 0, fee.currency) }}</span>
+            </div>
+            <div>
+              Taux recouvrement: <span class="font-bold">{{ fee.collectionRate || 0 }}%</span>
+            </div>
+            <div>
+              Nombre de payeurs: <span class="font-bold">{{ fee.payersCount || 0 }}</span>
+            </div>
+            <div>
+              ImpayÃ©s: <span class="font-bold">{{ fee.outstandingCount || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6 pt-4 border-t">
+          <button
+            type="submit"
+            :disabled="loading"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+            Enregistrer
+      </button>
+          <a href="/financial/fees" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+            Annuler
+      </a>
+        </div>
+      </form>
+    </div>
+  @endsection
+  

@@ -1,269 +1,343 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Élèves de {{ classObj.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Élèves - {{ classObj.name }}{{# /section }}
-{{# section('dashboardSubtitle') }}Liste des élèves inscrits dans cette classe{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/students/create?class_id={{ classObj.id }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-user-plus mr-2"></i> Ajouter un élève
+  @section('title')
+    Élèves de {{ classObj.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Élèves - {{ classObj.name }}
+  @endsection
+  @section('dashboardSubtitle')
+    Liste des élèves inscrits dans cette classe
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/students/create?class_id={{ classObj.id }}"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-user-plus mr-2"></i>Ajouter un élève
   </a>
-  <button onclick="exportStudents()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportStudents()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="active">Actifs</option>
-        <option value="all">Tous</option>
-        <option value="suspended">Suspendus</option>
-        <option value="transferred">Transférés</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Genre</label>
-      <select id="filterGender" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="male">Masculin</option>
-        <option value="female">Féminin</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" placeholder="Nom, prénom, matricule..." 
-               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="active">
+              Actifs
+            </option>
+            <option value="all">
+              Tous
+            </option>
+            <option value="suspended">
+              Suspendus
+            </option>
+            <option value="transferred">
+              Transférés
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Genre</label>
+          <select id="filterGender" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="male">
+              Masculin
+            </option>
+            <option value="female">
+              Féminin
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Nom, prénom, matricule..."
+              class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
+      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
       </div>
     </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
-      </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+
+    <!-- Résumé rapide -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
+        <p class="text-2xl font-bold text-blue-600" id="totalCount">
+          0
+        </p>
+        <p class="text-xs text-gray-500">
+          Total élèves
+        </p>
+      </div>
+      <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
+        <p class="text-2xl font-bold text-green-600" id="boysCount">
+          0
+        </p>
+        <p class="text-xs text-gray-500">
+          Garçons
+        </p>
+      </div>
+      <div class="bg-pink-50 dark:bg-pink-900/20 rounded-lg p-3 text-center">
+        <p class="text-2xl font-bold text-pink-600" id="girlsCount">
+          0
+        </p>
+        <p class="text-xs text-gray-500">
+          Filles
+        </p>
+      </div>
+      <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
+        <p class="text-2xl font-bold text-purple-600" id="avgGrade">
+          0.0
+        </p>
+        <p class="text-xs text-gray-500">
+          Moyenne classe
+        </p>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Résumé rapide -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
-    <p class="text-2xl font-bold text-blue-600" id="totalCount">0</p>
-    <p class="text-xs text-gray-500">Total élèves</p>
-  </div>
-  <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
-    <p class="text-2xl font-bold text-green-600" id="boysCount">0</p>
-    <p class="text-xs text-gray-500">Garçons</p>
-  </div>
-  <div class="bg-pink-50 dark:bg-pink-900/20 rounded-lg p-3 text-center">
-    <p class="text-2xl font-bold text-pink-600" id="girlsCount">0</p>
-    <p class="text-xs text-gray-500">Filles</p>
-  </div>
-  <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
-    <p class="text-2xl font-bold text-purple-600" id="avgGrade">0.0</p>
-    <p class="text-xs text-gray-500">Moyenne classe</p>
-  </div>
-</div>
-
-<!-- Tableau des élèves -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm" id="studentsTable">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Matricule</th>
-          <th class="px-4 py-3 text-left">Nom complet</th>
-          <th class="px-4 py-3 text-left">Genre</th>
-          <th class="px-4 py-3 text-center">Moyenne</th>
-          <th class="px-4 py-3 text-center">Présences</th>
-          <th class="px-4 py-3 text-center">Statut</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="studentsTableBody">
-        @each(student in students)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 student-row"
-            data-gender="{{ student.gender }}"
-            data-status="{{ student.academicStatus }}"
-            data-name="{{ student.user.firstName }} {{ student.user.lastName }}"
-            data-matricule="{{ student.registrationNumber }}">
-          <td class="px-4 py-3 font-mono text-xs">{{ student.registrationNumber }}</td>
-          <td class="px-4 py-3 font-medium">{{ student.user.firstName }} {{ student.user.lastName }}</td>
-          <td class="px-4 py-3">{{ student.gender === 'male' ? 'Masculin' : 'Féminin' }}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="font-bold" :class="{
-              'text-green-600': {{ student.averageGrade || 0 }} >= 15,
-              'text-yellow-600': {{ student.averageGrade || 0 }} >= 10 && {{ student.averageGrade || 0 }} < 15,
-              'text-red-600': {{ student.averageGrade || 0 }} < 10
-            }">{{ student.averageGrade || '-' }}/20</span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex items-center justify-center gap-1">
-              <div class="w-16 bg-gray-200 rounded-full h-1.5">
-                <div class="bg-green-500 rounded-full h-1.5" style="width: {{ student.attendanceRate || 0 }}%"></div>
-              </div>
-              <span class="text-xs">{{ student.attendanceRate || 0 }}%</span>
-            </div>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="px-2 py-1 rounded-full text-xs" :class="{
+    <!-- Tableau des élèves -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm" id="studentsTable">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Matricule
+              </th>
+              <th class="px-4 py-3 text-left">
+                Nom complet
+              </th>
+              <th class="px-4 py-3 text-left">
+                Genre
+              </th>
+              <th class="px-4 py-3 text-center">
+                Moyenne
+              </th>
+              <th class="px-4 py-3 text-center">
+                Présences
+              </th>
+              <th class="px-4 py-3 text-center">
+                Statut
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody">
+            @each(student in students)
+              <tr
+                class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 student-row"
+                data-gender="{{ student.gender }}"
+                data-status="{{ student.academicStatus }}"
+                data-name="{{ student.user.firstName }} {{ student.user.lastName }}"
+                data-matricule="{{ student.registrationNumber }}"
+              >
+                <td class="px-4 py-3 font-mono text-xs">
+                  {{ student.registrationNumber }}
+                </td>
+                <td class="px-4 py-3 font-medium">
+                  {{ student.user.firstName }} {{ student.user.lastName }}
+                </td>
+                <td class="px-4 py-3">
+                  {{ student.gender === 'male' ? 'Masculin' : 'Féminin' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="font-bold" :class='text-green-600' : {{ student.averageGrade || 0 }}>= 15,
+              'text-yellow-600': {{ student.averageGrade || 0 }} >= 10 && {{ student.averageGrade || 0 }}
+                    <text-red-600 : {{ student.averageGrade || 0 }}>
+                      {{ student.averageGrade || '-' }}/20</span>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div class="bg-green-500 rounded-full h-1.5" style="width: {{ student.attendanceRate || 0 }}%">
+                        </div>
+                      </div>
+                      <span class="text-xs">{{ student.attendanceRate || 0 }}%</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <span
+                      class="px-2 py-1 rounded-full text-xs"
+                      :class="{
               'bg-green-100 text-green-800': '{{ student.academicStatus }}' === 'active',
               'bg-yellow-100 text-yellow-800': '{{ student.academicStatus }}' === 'suspended',
               'bg-gray-100 text-gray-800': '{{ student.academicStatus }}' === 'transferred'
-            }">
-              {{ student.academicStatus === 'active' ? 'Actif' : (student.academicStatus === 'suspended' ? 'Suspendu' : 'Transféré') }}
+            }"
+                    >
+                      {{ student.academicStatus === 'active' ? 'Actif' : (student.academicStatus === 'suspended' ? 'Suspendu' : 'Transféré') }}
             </span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex justify-center gap-2">
-              <a href="/students/{{ student.id }}" class="text-primary hover:underline" title="Voir">
-                <i class="fas fa-eye"></i>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <div class="flex justify-center gap-2">
+                      <a href="/students/{{ student.id }}" class="text-primary hover:underline" title="Voir">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <a
+                        href="/academic/grades/student/{{ student.id }}"
+                        class="text-blue-600 hover:text-blue-800"
+                        title="Notes"
+                      >
+                        <i class="fas fa-star"></i>
+                      </a>
+                      <button
+                        onclick="transferStudent('{{ student.id }}', '{{ student.user.firstName }} {{ student.user.lastName }}')"
+                        class="text-yellow-600 hover:text-yellow-800"
+                        title="Transférer"
+                      >
+                        <i class="fas fa-exchange-alt"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                @else
+                <tr>
+                  <td colspan="7" class="text-center py-12 text-gray-500">
+                    <i class="fas fa-users text-4xl mb-3 block"></i>
+                    Aucun élève dans cette classe
+                    <div class="mt-3">
+                      <a href="/students/create?class_id={{ classObj.id }}" class="text-primary hover:underline">
+                        Ajouter un élève
               </a>
-              <a href="/academic/grades/student/{{ student.id }}" class="text-blue-600 hover:text-blue-800" title="Notes">
-                <i class="fas fa-star"></i>
-              </a>
-              <button onclick="transferStudent('{{ student.id }}', '{{ student.user.firstName }} {{ student.user.lastName }}')" 
-                      class="text-yellow-600 hover:text-yellow-800" title="Transférer">
-                <i class="fas fa-exchange-alt"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="7" class="text-center py-12 text-gray-500">
-            <i class="fas fa-users text-4xl mb-3 block"></i>
-            Aucun élève dans cette classe
-            <div class="mt-3">
-              <a href="/students/create?class_id={{ classObj.id }}" class="text-primary hover:underline">
-                Ajouter un élève
-              </a>
-            </div>
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/schools/classes/' + classObj.id + '/students' })
-</div>
+                    </div>
+                  </td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+        </div>
 
-<script>
-  const filterStatus = document.getElementById('filterStatus')
-  const filterGender = document.getElementById('filterGender')
-  const searchInput = document.getElementById('searchInput')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  const tbody = document.getElementById('studentsTableBody')
-  
-  function updateStats() {
-    const rows = tbody.querySelectorAll('.student-row:not([style*="display: none"])')
-    let total = 0, boys = 0, girls = 0, gradeSum = 0, gradeCount = 0
-    
-    rows.forEach(row => {
-      total++
-      const gender = row.dataset.gender
-      if (gender === 'male') boys++
-      else if (gender === 'female') girls++
-      
-      const gradeCell = row.cells[3]
-      const gradeText = gradeCell?.innerText || ''
-      const grade = parseFloat(gradeText.split('/')[0])
-      if (!isNaN(grade) && grade > 0) {
-        gradeSum += grade
-        gradeCount++
-      }
-    })
-    
-    document.getElementById('totalCount').textContent = total
-    document.getElementById('boysCount').textContent = boys
-    document.getElementById('girlsCount').textContent = girls
-    document.getElementById('avgGrade').textContent = gradeCount > 0 ? (gradeSum / gradeCount).toFixed(1) : '0.0'
-  }
-  
-  function filterStudents() {
-    const status = filterStatus.value
-    const gender = filterGender.value
-    const search = searchInput.value.toLowerCase()
-    
-    const rows = tbody.querySelectorAll('.student-row')
-    let visibleCount = 0
-    
-    rows.forEach(row => {
-      let show = true
-      
-      if (status !== 'all' && row.dataset.status !== status) show = false
-      if (gender && row.dataset.gender !== gender) show = false
-      if (search && !row.dataset.name.includes(search) && !row.dataset.matricule.includes(search)) show = false
-      
-      row.style.display = show ? '' : 'none'
-      if (show) visibleCount++
-    })
-    
-    updateStats()
-    
-    let noResultMsg = tbody.querySelector('.no-result-msg')
-    if (visibleCount === 0 && rows.length > 0) {
-      if (!noResultMsg) {
-        noResultMsg = document.createElement('tr')
-        noResultMsg.className = 'no-result-msg'
-        noResultMsg.innerHTML = '<td colspan="7" class="text-center py-8 text-gray-500">Aucun élève ne correspond aux critères</td>'
-        tbody.appendChild(noResultMsg)
-      }
-    } else if (noResultMsg) {
-      noResultMsg.remove()
-    }
-  }
-  
-  applyBtn.addEventListener('click', filterStudents)
-  resetBtn.addEventListener('click', () => {
-    filterStatus.value = 'active'
-    filterGender.value = ''
-    searchInput.value = ''
-    filterStudents()
-  })
-  searchInput.addEventListener('keyup', filterStudents)
-  
-  function exportStudents() {
-    window.location.href = '/schools/classes/{{ classObj.id }}/students/export'
-  }
-  
-  function transferStudent(studentId, studentName) {
-    const targetSchool = prompt(`Entrez le code de l'école de destination pour l'élève ${studentName} :`)
-    if (targetSchool) {
-      fetch('/api/students/transfer-request', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': '{{ csrfToken }}'
-        },
-        body: JSON.stringify({ studentId, targetSchoolCode: targetSchool })
-      }).then(res => res.json()).then(data => {
-        if (data.success) {
-          alert(`Demande de transfert envoyée. Code: ${data.authorizationCode}`)
-          location.reload()
-        } else {
-          alert('Erreur: ' + data.message)
+        @include('partials/pagination', { pagination: pagination, url: '/schools/classes/' + classObj.id + '/students' })
+      </div>
+
+      <script>
+        const filterStatus = document.getElementById("filterStatus");
+
+        const filterGender = document.getElementById("filterGender");
+
+        const searchInput = document.getElementById("searchInput");
+
+        const applyBtn = document.getElementById("applyFilters");
+
+        const resetBtn = document.getElementById("resetFilters");
+
+        const tbody = document.getElementById("studentsTableBody");
+
+        function updateStats() {
+          const rows = tbody.querySelectorAll('.student-row:not([style*="display: none"])');
+          let total = 0, boys = 0, girls = 0, gradeSum = 0, gradeCount = 0;
+          rows.forEach(row => {
+            total++;
+            const gender = row.dataset.gender;
+            if (gender === "male") boys++; else if (gender === "female") girls++;
+            const gradeCell = row.cells[3];
+            const gradeText = gradeCell?.innerText || "";
+            const grade = parseFloat(gradeText.split("/")[0]);
+            if (!isNaN(grade) && grade > 0) {
+              gradeSum += grade;
+              gradeCount++;
+            }
+          });
+          document.getElementById("totalCount").textContent = total;
+          document.getElementById("boysCount").textContent = boys;
+          document.getElementById("girlsCount").textContent = girls;
+          document.getElementById("avgGrade").textContent = gradeCount > 0 ? (gradeSum / gradeCount).toFixed(1) : "0.0";
         }
-      })
-    }
-  }
-  
-  // Initialisation des stats
-  updateStats()
-</script>
-{{# /section }}
 
-{{# /layout }}
+        function filterStudents() {
+          const status = filterStatus.value;
+          const gender = filterGender.value;
+          const search = searchInput.value.toLowerCase();
+          const rows = tbody.querySelectorAll(".student-row");
+          let visibleCount = 0;
+          rows.forEach(row => {
+            let show = true;
+            if (status !== "all" && row.dataset.status !== status) show = false;
+            if (gender && row.dataset.gender !== gender) show = false;
+            if (search && !row.dataset.name.includes(search) && !row.dataset.matricule.includes(search)) show = false;
+            row.style.display = show ? "" : "none";
+            if (show) visibleCount++;
+          });
+          updateStats();
+          let noResultMsg = tbody.querySelector(".no-result-msg");
+          if (visibleCount === 0 && rows.length > 0) {
+            if (!noResultMsg) {
+              noResultMsg = document.createElement("tr");
+              noResultMsg.className = "no-result-msg";
+              noResultMsg.innerHTML = '<td colspan="7" class="text-center py-8 text-gray-500">Aucun élève ne correspond aux critères</td>';
+              tbody.appendChild(noResultMsg);
+            }
+          } else if (noResultMsg) {
+            noResultMsg.remove();
+          }
+        }
+
+        applyBtn.addEventListener("click", filterStudents);
+
+        resetBtn.addEventListener("click", () => {
+          filterStatus.value = "active";
+          filterGender.value = "";
+          searchInput.value = "";
+          filterStudents();
+        });
+
+        searchInput.addEventListener("keyup", filterStudents);
+
+        function exportStudents() {
+          window.location.href = "/schools/classes/{{ classObj.id }}/students/export";
+        }
+
+        function transferStudent(studentId, studentName) {
+          const targetSchool = prompt(`Entrez le code de l'école de destination pour l'élève ${studentName} :`);
+          if (targetSchool) {
+            fetch("/api/students/transfer-request", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrfToken }}"
+              },
+              body: JSON.stringify({
+                studentId: studentId,
+                targetSchoolCode: targetSchool
+              })
+            }).then(res => res.json()).then(data => {
+              if (data.success) {
+                alert(`Demande de transfert envoyée. Code: ${data.authorizationCode}`);
+                location.reload();
+              } else {
+                alert("Erreur: " + data.message);
+              }
+            });
+          }
+        }
+        // Initialisation des stats
+
+        updateStats();
+      </script>
+    @endsection
+    

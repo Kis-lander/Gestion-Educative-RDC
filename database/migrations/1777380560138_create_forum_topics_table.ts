@@ -15,7 +15,7 @@ export default class ForumTopicsSchema extends BaseSchema {
       table.boolean('is_locked').defaultTo(false)
       table.integer('views_count').defaultTo(0)
       table.timestamps(true)
-      
+
       table.index(['subject_id', 'class_id'])
       table.index(['created_at'])
     })

@@ -1,205 +1,286 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Statistiques disciplinaires - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Statistiques disciplinaires{{# /section }}
-{{# section('dashboardSubtitle') }}Analyse globale des comportements{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportStatistics()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+  @section('title')
+    Statistiques disciplinaires - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Statistiques disciplinaires
+  @endsection
+  @section('dashboardSubtitle')
+    Analyse globale des comportements
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="exportStatistics()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="flex gap-3 items-center">
-    <label class="font-medium">Année académique:</label>
-    <select id="yearSelect" class="px-3 py-2 border rounded-lg">
-      <option value="{{ currentYear }}">{{ currentYear }}</option>
-      <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
-    </select>
-    <button id="refreshStats" class="px-4 py-2 bg-primary text-white rounded-lg">Actualiser</button>
-  </div>
-</div>
-
-<!-- KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total incidents</p>
-    <p class="text-3xl font-bold" id="totalIncidents">0</p>
-  </div>
-  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Incidents majeurs</p>
-    <p class="text-3xl font-bold" id="majorIncidents">0</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Taux résolution</p>
-    <p class="text-3xl font-bold" id="resolutionRate">0%</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Élèves concernés</p>
-    <p class="text-3xl font-bold" id="affectedStudents">0</p>
-  </div>
-</div>
-
-<!-- Graphiques principaux -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution mensuelle</h3>
-    <canvas id="monthlyTrendChart" height="250"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par type</h3>
-    <canvas id="typeDistributionChart" height="250"></canvas>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par gravité</h3>
-    <canvas id="severityDistributionChart" height="250"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Sanctions appliquées</h3>
-    <canvas id="sanctionsChart" height="250"></canvas>
-  </div>
-</div>
-
-<!-- Tableau par classe -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Récapitulatif par classe</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Classe</th>
-          <th class="px-4 py-2 text-center">Incidents</th>
-          <th class="px-4 py-2 text-center">Majeurs</th>
-          <th class="px-4 py-2 text-center">Taux incidence</th>
-          <th class="px-4 py-2 text-center">Sanctions</th>
-          <th class="px-4 py-2 text-center">Taux résolution</th>
-        </tr>
-      </thead>
-      <tbody id="classTableBody">
-        <!-- Dynamique -->
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Comparaison trimestrielle -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-  <h3 class="font-semibold mb-3">Comparaison trimestrielle</h3>
-  <canvas id="quarterlyComparisonChart" height="200"></canvas>
-</div>
-
-<script>
-  let monthlyChart, typeChart, severityChart, sanctionsChart, quarterlyChart
+    </div>
+  @endsection
   
-  async function loadStatistics() {
-    const year = document.getElementById('yearSelect').value
-    
-    const res = await fetch(`/api/discipline/statistics?year=${year}`)
-    const data = await res.json()
-    
-    // KPI
-    document.getElementById('totalIncidents').textContent = data.kpi.totalIncidents || 0
-    document.getElementById('majorIncidents').textContent = data.kpi.majorIncidents || 0
-    document.getElementById('resolutionRate').textContent = `${data.kpi.resolutionRate || 0}%`
-    document.getElementById('affectedStudents').textContent = data.kpi.affectedStudents || 0
-    
-    // Graphique tendance mensuelle
-    if (monthlyChart) monthlyChart.destroy()
-    const monthlyCtx = document.getElementById('monthlyTrendChart').getContext('2d')
-    monthlyChart = new Chart(monthlyCtx, {
-      type: 'line',
-      data: {
-        labels: data.monthly.labels,
-        datasets: [{ label: "Incidents", data: data.monthly.values, borderColor: '#dc2626', fill: true, tension: 0.4 }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Graphique par type
-    if (typeChart) typeChart.destroy()
-    const typeCtx = document.getElementById('typeDistributionChart').getContext('2d')
-    typeChart = new Chart(typeCtx, {
-      type: 'doughnut',
-      data: {
-        labels: data.byType.labels,
-        datasets: [{ data: data.byType.values, backgroundColor: ['#2563eb', '#f59e0b', '#8b5cf6', '#dc2626', '#6b7280'] }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Graphique par gravité
-    if (severityChart) severityChart.destroy()
-    const severityCtx = document.getElementById('severityDistributionChart').getContext('2d')
-    severityChart = new Chart(severityCtx, {
-      type: 'bar',
-      data: {
-        labels: data.bySeverity.labels,
-        datasets: [{ label: "Nombre d'incidents", data: data.bySeverity.values, backgroundColor: '#2563eb', borderRadius: 8 }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Graphique sanctions
-    if (sanctionsChart) sanctionsChart.destroy()
-    const sanctionsCtx = document.getElementById('sanctionsChart').getContext('2d')
-    sanctionsChart = new Chart(sanctionsCtx, {
-      type: 'pie',
-      data: {
-        labels: data.bySanction.labels,
-        datasets: [{ data: data.bySanction.values, backgroundColor: ['#f59e0b', '#3b82f6', '#f97316', '#ef4444'] }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Tableau par classe
-    document.getElementById('classTableBody').innerHTML = data.byClass.map(c => `
-      <tr class="border-b dark:border-gray-700">
-        <td class="px-4 py-2 font-medium">${c.className}</td>
-        <td class="px-4 py-2 text-center ${c.incidentCount > 10 ? 'text-red-600' : 'text-gray-600'}">${c.incidentCount}</td>
-        <td class="px-4 py-2 text-center">${c.majorCount || 0}</td>
-        <td class="px-4 py-2 text-center">${c.incidenceRate}%</td>
-        <td class="px-4 py-2 text-center">${c.sanctionsCount}</td>
-        <td class="px-4 py-2 text-center">${c.resolutionRate}%</td>
-      </tr>
-    `).join('')
-    
-    // Graphique comparaison trimestrielle
-    if (quarterlyChart) quarterlyChart.destroy()
-    const quarterlyCtx = document.getElementById('quarterlyComparisonChart').getContext('2d')
-    quarterlyChart = new Chart(quarterlyCtx, {
-      type: 'bar',
-      data: {
-        labels: data.quarterly.labels,
-        datasets: [
-          { label: 'Incidents', data: data.quarterly.incidents, backgroundColor: '#dc2626', borderRadius: 8 },
-          { label: 'Résolus', data: data.quarterly.resolved, backgroundColor: '#16a34a', borderRadius: 8 }
-        ]
-      },
-      options: { responsive: true }
-    })
-  }
-  
-  document.getElementById('refreshStats').addEventListener('click', loadStatistics)
-  document.getElementById('yearSelect').addEventListener('change', loadStatistics)
-  
-  function exportStatistics() {
-    const year = document.getElementById('yearSelect').value
-    window.location.href = `/api/discipline/statistics/export?year=${year}`
-  }
-  
-  loadStatistics()
-</script>
-{{# /section }}
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="flex gap-3 items-center">
+        <label class="font-medium">Année scolaire:</label>
+        <select id="yearSelect" class="px-3 py-2 border rounded-lg">
+          <option value="{{ currentYear }}">
+            {{ currentYear }}
+          </option>
+          <option value="{{ currentYear - 1 }}">
+            {{ currentYear - 1 }}
+          </option>
+        </select>
+        <button id="refreshStats" class="px-4 py-2 bg-primary text-white rounded-lg">Actualiser</button>
+      </div>
+    </div>
 
-{{# /layout }}
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total incidents
+        </p>
+        <p class="text-3xl font-bold" id="totalIncidents">
+          0
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Incidents majeurs
+        </p>
+        <p class="text-3xl font-bold" id="majorIncidents">
+          0
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Taux rÃ©solution
+        </p>
+        <p class="text-3xl font-bold" id="resolutionRate">
+          0%
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Ã‰lÃ¨ves concernÃ©s
+        </p>
+        <p class="text-3xl font-bold" id="affectedStudents">
+          0
+        </p>
+      </div>
+    </div>
+
+    <!-- Graphiques principaux -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Ã‰volution mensuelle
+        </h3>
+        <canvas id="monthlyTrendChart" height="250">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          RÃ©partition par type
+        </h3>
+        <canvas id="typeDistributionChart" height="250">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          RÃ©partition par gravitÃ©
+        </h3>
+        <canvas id="severityDistributionChart" height="250">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Sanctions appliquÃ©es
+        </h3>
+        <canvas id="sanctionsChart" height="250">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Tableau par classe -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          RÃ©capitulatif par classe
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Classe
+              </th>
+              <th class="px-4 py-2 text-center">
+                Incidents
+              </th>
+              <th class="px-4 py-2 text-center">
+                Majeurs
+              </th>
+              <th class="px-4 py-2 text-center">
+                Taux incidence
+              </th>
+              <th class="px-4 py-2 text-center">
+                Sanctions
+              </th>
+              <th class="px-4 py-2 text-center">
+                Taux rÃ©solution
+              </th>
+            </tr>
+          </thead>
+          <tbody id="classTableBody">
+            <!-- Dynamique -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Comparaison trimestrielle -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-3">
+        Comparaison trimestrielle
+      </h3>
+      <canvas id="quarterlyComparisonChart" height="200">
+      </canvas>
+    </div>
+
+    <script>
+      let monthlyChart, typeChart, severityChart, sanctionsChart, quarterlyChart;
+
+      async function loadStatistics() {
+        const year = document.getElementById("yearSelect").value;
+        const res = await fetch(`/api/discipline/statistics?year=${year}`);
+        const data = await res.json();
+        // KPI
+        document.getElementById("totalIncidents").textContent = data.kpi.totalIncidents || 0;
+        document.getElementById("majorIncidents").textContent = data.kpi.majorIncidents || 0;
+        document.getElementById("resolutionRate").textContent = `${data.kpi.resolutionRate || 0}%`;
+        document.getElementById("affectedStudents").textContent = data.kpi.affectedStudents || 0;
+        // Graphique tendance mensuelle
+        if (monthlyChart) monthlyChart.destroy();
+        const monthlyCtx = document.getElementById("monthlyTrendChart").getContext("2d");
+        monthlyChart = new Chart(monthlyCtx, {
+          type: "line",
+          data: {
+            labels: data.monthly.labels,
+            datasets: [ {
+              label: "Incidents",
+              data: data.monthly.values,
+              borderColor: "#dc2626",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Graphique par type
+        if (typeChart) typeChart.destroy();
+        const typeCtx = document.getElementById("typeDistributionChart").getContext("2d");
+        typeChart = new Chart(typeCtx, {
+          type: "doughnut",
+          data: {
+            labels: data.byType.labels,
+            datasets: [ {
+              data: data.byType.values,
+              backgroundColor: [ "#2563eb", "#f59e0b", "#8b5cf6", "#dc2626", "#6b7280" ]
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Graphique par gravitÃ©
+        if (severityChart) severityChart.destroy();
+        const severityCtx = document.getElementById("severityDistributionChart").getContext("2d");
+        severityChart = new Chart(severityCtx, {
+          type: "bar",
+          data: {
+            labels: data.bySeverity.labels,
+            datasets: [ {
+              label: "Nombre d'incidents",
+              data: data.bySeverity.values,
+              backgroundColor: "#2563eb",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Graphique sanctions
+        if (sanctionsChart) sanctionsChart.destroy();
+        const sanctionsCtx = document.getElementById("sanctionsChart").getContext("2d");
+        sanctionsChart = new Chart(sanctionsCtx, {
+          type: "pie",
+          data: {
+            labels: data.bySanction.labels,
+            datasets: [ {
+              data: data.bySanction.values,
+              backgroundColor: [ "#f59e0b", "#3b82f6", "#f97316", "#ef4444" ]
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Tableau par classe
+        document.getElementById("classTableBody").innerHTML = data.byClass.map(c => `
+                <tr class="border-b dark:border-gray-700">
+                  <td class="px-4 py-2 font-medium">${c.className}</td>
+                  <td class="px-4 py-2 text-center ${c.incidentCount > 10 ? "text-red-600" : "text-gray-600"}">${c.incidentCount}</td>
+                  <td class="px-4 py-2 text-center">${c.majorCount || 0}</td>
+                  <td class="px-4 py-2 text-center">${c.incidenceRate}%</td>
+                  <td class="px-4 py-2 text-center">${c.sanctionsCount}</td>
+                  <td class="px-4 py-2 text-center">${c.resolutionRate}%</td>
+                </tr>
+              `).join("");
+        // Graphique comparaison trimestrielle
+        if (quarterlyChart) quarterlyChart.destroy();
+        const quarterlyCtx = document.getElementById("quarterlyComparisonChart").getContext("2d");
+        quarterlyChart = new Chart(quarterlyCtx, {
+          type: "bar",
+          data: {
+            labels: data.quarterly.labels,
+            datasets: [ {
+              label: "Incidents",
+              data: data.quarterly.incidents,
+              backgroundColor: "#dc2626",
+              borderRadius: 8
+            }, {
+              label: "RÃ©solus",
+              data: data.quarterly.resolved,
+              backgroundColor: "#16a34a",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+      }
+
+      document.getElementById("refreshStats").addEventListener("click", loadStatistics);
+
+      document.getElementById("yearSelect").addEventListener("change", loadStatistics);
+
+      function exportStatistics() {
+        const year = document.getElementById("yearSelect").value;
+        window.location.href = `/api/discipline/statistics/export?year=${year}`;
+      }
+
+      loadStatistics();
+    </script>
+  @endsection
+  

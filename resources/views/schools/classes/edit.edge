@@ -1,120 +1,179 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier - {{ classObj.name }}{{# /section }}
+  @section('title')
+    Modifier - {{ classObj.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Modifier la classe
+  @endsection
+  @section('dashboardSubtitle')
+    {{ classObj.name }}
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl">
+      <form
+        method="POST"
+        action="/schools/classes/{{ classObj.id }}"
+        x-data="{ loading: false, showDeleteConfirm: false }"
+        @submit="loading = true"
+      >
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+        <input type="hidden" name="_method" value="PUT" />
 
-{{# section('dashboardTitle') }}Modifier la classe{{# /section }}
-{{# section('dashboardSubtitle') }}{{ classObj.name }}{{# /section }}
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la classe</label>
+            <input
+              type="text"
+              name="name"
+              value="{{ classObj.name }}"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+            />
+          </div>
 
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl">
-  <form method="POST" action="/schools/classes/{{ classObj.id }}" x-data="{ loading: false, showDeleteConfirm: false }" @submit="loading = true">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <input type="hidden" name="_method" value="PUT">
-    
-    <div class="space-y-4">
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la classe</label>
-        <input type="text" name="name" value="{{ classObj.name }}"
-               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Capacité maximale</label>
-        <input type="number" name="maxCapacity" value="{{ classObj.maxCapacity }}" min="10" max="100"
-               class="w-full px-4 py-2 border rounded-lg">
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Période</label>
-        <select name="shift" class="w-full px-4 py-2 border rounded-lg">
-          <option value="morning" {{ classObj.shift === 'morning' ? 'selected' : '' }}>Matin (8h - 12h)</option>
-          <option value="afternoon" {{ classObj.shift === 'afternoon' ? 'selected' : '' }}>Après-midi (13h - 17h)</option>
-          <option value="evening" {{ classObj.shift === 'evening' ? 'selected' : '' }}>Soir (17h - 21h)</option>
-        </select>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Enseignant principal</label>
-        <select name="teacherId" class="w-full px-4 py-2 border rounded-lg">
-          <option value="">-- Aucun --</option>
-          @each(teacher in teachers)
-          <option value="{{ teacher.id }}" {{ classObj.teacherId === teacher.id ? 'selected' : '' }}>
-            {{ teacher.user.firstName }} {{ teacher.user.lastName }}
-          </option>
-          @end
-        </select>
-      </div>
-      
-      <!-- Informations supplémentaires (non modifiables) -->
-      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm">
-        <p class="text-gray-500 mb-1">Informations système :</p>
-        <div class="grid grid-cols-2 gap-2">
-          <div><span class="text-gray-400">Niveau:</span> {{ classObj.level }}</div>
-          <div><span class="text-gray-400">Grade:</span> {{ classObj.gradeLevel }}</div>
-          <div><span class="text-gray-400">Année académique:</span> {{ classObj.academicYear }}</div>
-          <div><span class="text-gray-400">Créée le:</span> {{ formatDate(classObj.createdAt) }}</div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="flex justify-between mt-8 pt-4 border-t dark:border-gray-700">
-      <div class="flex gap-3">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Sauvegarder
-        </button>
-        <a href="/schools/classes/{{ classObj.id }}" class="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-          Annuler
-        </a>
-      </div>
-      
-      <div>
-        <button type="button" @click="showDeleteConfirm = true"
-                class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-          <i class="fas fa-trash mr-2"></i> Supprimer
-        </button>
-      </div>
-    </div>
-    
-    <!-- Modal confirmation suppression -->
-    <div x-show="showDeleteConfirm" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.away="showDeleteConfirm = false">
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full" @click.stop>
-        <div class="text-center">
-          <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-3"></i>
-          <h3 class="text-lg font-bold mb-2">Supprimer la classe</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">
-            Êtes-vous sûr de vouloir supprimer la classe <strong>{{ classObj.name }}</strong> ?
-            Cette action est irréversible.
-          </p>
-          <div class="flex gap-3">
-            <button @click="showDeleteConfirm = false" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
-              Annuler
-            </button>
-            <button onclick="deleteClass()" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-              Supprimer
-            </button>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">CapacitÃ© maximale</label>
+            <input
+              type="number"
+              name="maxCapacity"
+              value="{{ classObj.maxCapacity }}"
+              min="10"
+              max="100"
+              class="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">PÃ©riode</label>
+            <select name="shift" class="w-full px-4 py-2 border rounded-lg">
+              <option value="morning" {{ classObj.shift === 'morning' ? 'selected' : '' }}>
+                Matin (8h - 12h)
+              </option>
+              <option value="afternoon" {{ classObj.shift === 'afternoon' ? 'selected' : '' }}>
+                AprÃ¨s-midi (13h - 17h)
+              </option>
+              <option value="evening" {{ classObj.shift === 'evening' ? 'selected' : '' }}>
+                Soir (17h - 21h)
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Enseignant principal</label>
+            <select name="teacherId" class="w-full px-4 py-2 border rounded-lg">
+              <option value="">
+                -- Aucun --
+              </option>
+              @each(teacher in teachers)
+                <option value="{{ teacher.id }}" {{ classObj.teacherId === teacher.id ? 'selected' : '' }}>
+                  {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+                </option>
+              @end
+            </select>
+          </div>
+
+          <!-- Informations supplÃ©mentaires (non modifiables) -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm">
+            <p class="text-gray-500 mb-1">
+              Informations systÃ¨me :
+            </p>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-gray-400">Niveau:</span>{{ classObj.level }}
+              </div>
+              <div>
+                <span class="text-gray-400">Grade:</span>{{ classObj.gradeLevel }}
+              </div>
+              <div>
+                <span class="text-gray-400">Année scolaire:</span>{{ classObj.academicYear }}
+              </div>
+              <div>
+                <span class="text-gray-400">CrÃ©Ã©e le:</span>{{ formatDate(classObj.createdAt) }}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div class="flex justify-between mt-8 pt-4 border-t dark:border-gray-700">
+          <div class="flex gap-3">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Sauvegarder
+        </button>
+            <a
+              href="/schools/classes/{{ classObj.id }}"
+              class="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Annuler
+        </a>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              @click="showDeleteConfirm = true"
+              class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              <i class="fas fa-trash mr-2"></i>Supprimer
+        </button>
+          </div>
+        </div>
+
+        <!-- Modal confirmation suppression -->
+        <div
+          x-show="showDeleteConfirm"
+          x-cloak
+          class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          @click.away="showDeleteConfirm = false"
+        >
+          <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full" @click.stop>
+            <div class="text-center">
+              <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-3"></i>
+              <h3 class="text-lg font-bold mb-2">
+                Supprimer la classe
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-4">
+                ÃŠtes-vous sÃ»r de vouloir supprimer la classe <strong>{{ classObj.name }}</strong>?
+            Cette action est irrÃ©versible.
+              </p>
+              <div class="flex gap-3">
+                <button @click="showDeleteConfirm = false" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+                  Annuler
+            </button>
+                <button
+                  onclick="deleteClass()"
+                  class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                >
+                  Supprimer
+            </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
-  </form>
-</div>
 
-<script>
-  function deleteClass() {
-    fetch('/schools/classes/{{ classObj.id }}', {
-      method: 'DELETE',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-    }).then(res => res.json()).then(data => {
-      if (data.success) {
-        window.location.href = '/schools/classes'
-      } else {
-        alert('Erreur: ' + data.message)
+    <script>
+      function deleteClass() {
+        fetch("/schools/classes/{{ classObj.id }}", {
+          method: "DELETE",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        }).then(res => res.json()).then(data => {
+          if (data.success) {
+            window.location.href = "/schools/classes";
+          } else {
+            alert("Erreur: " + data.message);
+          }
+        });
       }
-    })
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+    </script>
+  @endsection
+  

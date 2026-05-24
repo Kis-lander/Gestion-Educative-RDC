@@ -1,294 +1,500 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Permissions - {{ role.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Permissions du rôle{{# /section }}
-{{# section('dashboardSubtitle') }}{{ role.name }} - {{ role.description || 'Aucune description' }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="savePermissions()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-save mr-2"></i> Enregistrer
+  @section('title')
+    Permissions - {{ role.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Permissions du rôle
+  @endsection
+  @section('dashboardSubtitle')
+    {{ role.name }} - {{ role.description || 'Aucune description' }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="savePermissions()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-save mr-2"></i>Enregistrer
   </button>
-  <button onclick="selectAll()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-check-double mr-2"></i> Tout sélectionner
+      <button onclick="selectAll()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-check-double mr-2"></i>Tout sélectionner
   </button>
-  <button onclick="deselectAll()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-times mr-2"></i> Tout désélectionner
+      <button onclick="deselectAll()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-times mr-2"></i>Tout désélectionner
   </button>
-</div>
-{{# /section }}
+    </div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ role.permissionsCount || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Permissions actives
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.selected || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Sélectionnées
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Permissions totales
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ role.usersCount || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Utilisateurs concernés
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="font-semibold">
+          Permissions par catégorie
+        </h3>
+        <div>
+          <span class="text-sm text-gray-500">Progression: </span>
+          <span class="text-sm font-bold" id="progressPercent">0</span>
+          <span class="text-sm text-gray-500">%</span>
+        </div>
+      </div>
 
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ role.permissionsCount || 0 }}</p>
-    <p class="text-sm text-gray-500">Permissions actives</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.selected || 0 }}</p>
-    <p class="text-sm text-gray-500">Sélectionnées</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Permissions totales</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ role.usersCount || 0 }}</p>
-    <p class="text-sm text-gray-500">Utilisateurs concernés</p>
-  </div>
-</div>
-{{# /section }}
+      <div class="divide-y dark:divide-gray-700">
+        <!-- Catégorie: Utilisateurs -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-users mr-2"></i>Gestion des utilisateurs
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="users.view"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('users.view') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Voir la liste des utilisateurs</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="users.create"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('users.create') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Créer des utilisateurs</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="users.edit"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('users.edit') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Modifier des utilisateurs</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="users.delete"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('users.delete') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Supprimer des utilisateurs</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="users.roles"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('users.roles') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les rôles</span>
+            </label>
+          </div>
+        </div>
 
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-    <h3 class="font-semibold">Permissions par catégorie</h3>
-    <div>
-      <span class="text-sm text-gray-500">Progression: </span>
-      <span class="text-sm font-bold" id="progressPercent">0</span>
-      <span class="text-sm text-gray-500">%</span>
-    </div>
-  </div>
-  
-  <div class="divide-y dark:divide-gray-700">
-    <!-- Catégorie: Utilisateurs -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-users mr-2"></i> Gestion des utilisateurs
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="users.view" class="perm-checkbox w-4 h-4" {{ role.hasPermission('users.view') ? 'checked' : '' }}>
-          <span class="text-sm">Voir la liste des utilisateurs</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="users.create" class="perm-checkbox w-4 h-4" {{ role.hasPermission('users.create') ? 'checked' : '' }}>
-          <span class="text-sm">Créer des utilisateurs</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="users.edit" class="perm-checkbox w-4 h-4" {{ role.hasPermission('users.edit') ? 'checked' : '' }}>
-          <span class="text-sm">Modifier des utilisateurs</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="users.delete" class="perm-checkbox w-4 h-4" {{ role.hasPermission('users.delete') ? 'checked' : '' }}>
-          <span class="text-sm">Supprimer des utilisateurs</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="users.roles" class="perm-checkbox w-4 h-4" {{ role.hasPermission('users.roles') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les rôles</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Catégorie: Écoles -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-building mr-2"></i> Gestion des écoles
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="schools.view" class="perm-checkbox w-4 h-4" {{ role.hasPermission('schools.view') ? 'checked' : '' }}>
-          <span class="text-sm">Voir les écoles</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="schools.create" class="perm-checkbox w-4 h-4" {{ role.hasPermission('schools.create') ? 'checked' : '' }}>
-          <span class="text-sm">Créer des écoles</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="schools.edit" class="perm-checkbox w-4 h-4" {{ role.hasPermission('schools.edit') ? 'checked' : '' }}>
-          <span class="text-sm">Modifier des écoles</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="schools.approve" class="perm-checkbox w-4 h-4" {{ role.hasPermission('schools.approve') ? 'checked' : '' }}>
-          <span class="text-sm">Approuver des écoles</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="schools.suspend" class="perm-checkbox w-4 h-4" {{ role.hasPermission('schools.suspend') ? 'checked' : '' }}>
-          <span class="text-sm">Suspendre des écoles</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Catégorie: Académique -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-graduation-cap mr-2"></i> Gestion académique
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="classes.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('classes.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les classes</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="subjects.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('subjects.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les matières</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="grades.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('grades.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les notes</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="exams.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('exams.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les examens</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="timetable.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('timetable.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les emplois du temps</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Catégorie: Finances -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-coins mr-2"></i> Gestion financière
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="finance.view" class="perm-checkbox w-4 h-4" {{ role.hasPermission('finance.view') ? 'checked' : '' }}>
-          <span class="text-sm">Voir les transactions</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="fees.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('fees.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les frais</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="payments.record" class="perm-checkbox w-4 h-4" {{ role.hasPermission('payments.record') ? 'checked' : '' }}>
-          <span class="text-sm">Enregistrer des paiements</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="scholarships.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('scholarships.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les bourses</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Catégorie: Discipline -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-gavel mr-2"></i> Discipline
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="incidents.report" class="perm-checkbox w-4 h-4" {{ role.hasPermission('incidents.report') ? 'checked' : '' }}>
-          <span class="text-sm">Signaler des incidents</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="sanctions.apply" class="perm-checkbox w-4 h-4" {{ role.hasPermission('sanctions.apply') ? 'checked' : '' }}>
-          <span class="text-sm">Appliquer des sanctions</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="appeals.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('appeals.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les appels</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Catégorie: Communications -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-comments mr-2"></i> Communications
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="messages.send" class="perm-checkbox w-4 h-4" {{ role.hasPermission('messages.send') ? 'checked' : '' }}>
-          <span class="text-sm">Envoyer des messages</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="notifications.send" class="perm-checkbox w-4 h-4" {{ role.hasPermission('notifications.send') ? 'checked' : '' }}>
-          <span class="text-sm">Envoyer des notifications</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="groups.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('groups.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les groupes</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Catégorie: Rapports -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-chart-line mr-2"></i> Rapports
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="reports.view" class="perm-checkbox w-4 h-4" {{ role.hasPermission('reports.view') ? 'checked' : '' }}>
-          <span class="text-sm">Voir les rapports</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="reports.export" class="perm-checkbox w-4 h-4" {{ role.hasPermission('reports.export') ? 'checked' : '' }}>
-          <span class="text-sm">Exporter les rapports</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Catégorie: Système -->
-    <div class="p-4">
-      <h4 class="font-semibold text-primary mb-3">
-        <i class="fas fa-cog mr-2"></i> Administration système
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="settings.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('settings.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les paramètres</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="logs.view" class="perm-checkbox w-4 h-4" {{ role.hasPermission('logs.view') ? 'checked' : '' }}>
-          <span class="text-sm">Voir les logs système</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="permission" value="backup.manage" class="perm-checkbox w-4 h-4" {{ role.hasPermission('backup.manage') ? 'checked' : '' }}>
-          <span class="text-sm">Gérer les sauvegardes</span>
-        </label>
-      </div>
-    </div>
-  </div>
-</div>
+        <!-- Catégorie: Écoles -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-building mr-2"></i>Gestion des écoles
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="schools.view"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('schools.view') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Voir les écoles</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="schools.create"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('schools.create') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Créer des écoles</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="schools.edit"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('schools.edit') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Modifier des écoles</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="schools.approve"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('schools.approve') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Approuver des écoles</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="schools.suspend"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('schools.suspend') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Suspendre des écoles</span>
+            </label>
+          </div>
+        </div>
 
-<script>
-  const checkboxes = document.querySelectorAll('.perm-checkbox')
-  const progressSpan = document.getElementById('progressPercent')
-  
-  function updateProgress() {
-    const total = checkboxes.length
-    const checked = Array.from(checkboxes).filter(cb => cb.checked).length
-    const percent = total > 0 ? Math.round((checked / total) * 100) : 0
-    progressSpan.textContent = percent
-  }
-  
-  function selectAll() {
-    checkboxes.forEach(cb => cb.checked = true)
-    updateProgress()
-  }
-  
-  function deselectAll() {
-    checkboxes.forEach(cb => cb.checked = false)
-    updateProgress()
-  }
-  
-  checkboxes.forEach(cb => cb.addEventListener('change', updateProgress))
-  updateProgress()
-  
-  async function savePermissions() {
-    const permissions = Array.from(checkboxes.filter(cb => cb.checked)).map(cb => cb.value)
-    
-    const res = await fetch('/api/admin/roles/{{ role.id }}/permissions', {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrfToken }}'
-      },
-      body: JSON.stringify({ permissions })
-    })
-    const data = await res.json()
-    if (data.success) {
-      alert('Permissions sauvegardées avec succès')
-    } else {
-      alert('Erreur: ' + data.message)
-    }
-  }
-</script>
-{{# /section }}
+        <!-- Catégorie: Académique -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-graduation-cap mr-2"></i>Gestion académique
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="classes.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('classes.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les classes</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="subjects.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('subjects.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les matières</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="grades.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('grades.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les notes</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="exams.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('exams.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les examens</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="timetable.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('timetable.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les emplois du temps</span>
+            </label>
+          </div>
+        </div>
 
-{{# /layout }}
+        <!-- Catégorie: Finances -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-coins mr-2"></i>Gestion financière
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="finance.view"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('finance.view') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Voir les transactions</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="fees.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('fees.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les frais</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="payments.record"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('payments.record') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Enregistrer des paiements</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="scholarships.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('scholarships.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les bourses</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Catégorie: Discipline -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-gavel mr-2"></i>Discipline
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="incidents.report"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('incidents.report') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Signaler des incidents</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="sanctions.apply"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('sanctions.apply') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Appliquer des sanctions</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="appeals.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('appeals.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les appels</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Catégorie: Communications -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-comments mr-2"></i>Communications
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="messages.send"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('messages.send') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Envoyer des messages</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="notifications.send"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('notifications.send') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Envoyer des notifications</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="groups.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('groups.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les groupes</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Catégorie: Rapports -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-chart-line mr-2"></i>Rapports
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="reports.view"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('reports.view') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Voir les rapports</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="reports.export"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('reports.export') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Exporter les rapports</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Catégorie: Système -->
+        <div class="p-4">
+          <h4 class="font-semibold text-primary mb-3">
+            <i class="fas fa-cog mr-2"></i>Administration système
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="settings.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('settings.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les paramètres</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="logs.view"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('logs.view') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Voir les logs système</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="permission"
+                value="backup.manage"
+                class="perm-checkbox w-4 h-4"
+                {{ role.hasPermission('backup.manage') ? 'checked' : '' }}
+              />
+              <span class="text-sm">Gérer les sauvegardes</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const checkboxes = document.querySelectorAll(".perm-checkbox");
+
+      const progressSpan = document.getElementById("progressPercent");
+
+      function updateProgress() {
+        const total = checkboxes.length;
+        const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+        const percent = total > 0 ? Math.round(checked / total * 100) : 0;
+        progressSpan.textContent = percent;
+      }
+
+      function selectAll() {
+        checkboxes.forEach(cb => cb.checked = true);
+        updateProgress();
+      }
+
+      function deselectAll() {
+        checkboxes.forEach(cb => cb.checked = false);
+        updateProgress();
+      }
+
+      checkboxes.forEach(cb => cb.addEventListener("change", updateProgress));
+
+      updateProgress();
+
+      async function savePermissions() {
+        const permissions = Array.from(checkboxes.filter(cb => cb.checked)).map(cb => cb.value);
+        const res = await fetch("/api/admin/roles/{{ role.id }}/permissions", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({
+            permissions: permissions
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("Permissions sauvegardées avec succès");
+        } else {
+          alert("Erreur: " + data.message);
+        }
+      }
+    </script>
+  @endsection
+  

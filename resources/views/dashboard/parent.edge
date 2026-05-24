@@ -1,166 +1,234 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Espace Parent - Gestion Éducative RDC{{# /section }}
-
-{{# section('dashboardTitle') }}Espace Parent{{# /section }}
-{{# section('dashboardSubtitle') }}Suivez la scolarité de vos enfants{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Enfants</p>
-        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.childrenCount || 0 }}</p>
-      </div>
-      <i class="fas fa-child text-blue-500 text-xl"></i>
-    </div>
-  </div>
+  @section('title')
+    Espace Parent - Gestion Éducative RDC
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Moyenne générale</p>
-        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.averageGrade || '-' }}/20</p>
-      </div>
-      <i class="fas fa-star text-yellow-500 text-xl"></i>
-    </div>
-  </div>
+  @section('dashboardTitle')
+    Espace Parent
+  @endsection
+  @section('dashboardSubtitle')
+    Suivez la scolarité de vos enfants
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Messages</p>
-        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.unreadMessages || 0 }}</p>
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Enfants
+            </p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">
+              {{ stats.childrenCount || 0 }}
+            </p>
+          </div>
+          <i class="fas fa-child text-blue-500 text-xl"></i>
+        </div>
       </div>
-      <i class="fas fa-envelope text-purple-500 text-xl"></i>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Moyenne générale
+            </p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">
+              {{ stats.averageGrade || '-' }}/20
+            </p>
+          </div>
+          <i class="fas fa-star text-yellow-500 text-xl"></i>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Messages
+            </p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">
+              {{ stats.unreadMessages || 0 }}
+            </p>
+          </div>
+          <i class="fas fa-envelope text-purple-500 text-xl"></i>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">
+          Non lus
+        </p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Paiements en attente
+            </p>
+            <p class="text-2xl font-bold text-red-600">
+              {{ stats.pendingPayments || 0 }} $
+            </p>
+          </div>
+          <i class="fas fa-coins text-green-500 text-xl"></i>
+        </div>
+      </div>
     </div>
-    <p class="text-xs text-gray-400 mt-2">Non lus</p>
-  </div>
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Paiements en attente</p>
-        <p class="text-2xl font-bold text-red-600">{{ stats.pendingPayments || 0 }} $</p>
-      </div>
-      <i class="fas fa-coins text-green-500 text-xl"></i>
-    </div>
-  </div>
-</div>
-{{# /section }}
+  @section('content')
+    <!-- Liste des enfants -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      @each(child in children)
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-r from-primary to-blue-700 px-4 py-3">
+            <div class="flex justify-between items-center">
+              <h3 class="font-semibold text-white">
+                {{ child.user.firstName }} {{ child.user.lastName }}
+              </h3>
+              <span class="text-xs bg-white/20 text-white px-2 py-1 rounded">{{ child.class.name }}</span>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Matricule
+                </p>
+                <p class="font-mono text-sm">
+                  {{ child.registrationNumber }}
+                </p>
+              </div>
+              <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Moyenne
+                </p>
+                <p class="font-bold text-lg" :class='text-green-600' : {{ child.averageGrade }}>
+                  = 15,
+            'text-yellow-600': {{ child.averageGrade }} >= 10 && {{ child.averageGrade }}
+                  <text-red-600 : {{ child.averageGrade }}>
+                    {{ child.averageGrade || '-' }}/20
+                  </p>
+                </div>
+              </div>
 
-{{# section('content') }}
-<!-- Liste des enfants -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  @each(child in children)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="bg-gradient-to-r from-primary to-blue-700 px-4 py-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-semibold text-white">{{ child.user.firstName }} {{ child.user.lastName }}</h3>
-        <span class="text-xs bg-white/20 text-white px-2 py-1 rounded">{{ child.class.name }}</span>
+              <div class="flex flex-wrap gap-2">
+                <a
+                  href="/parent/grades/child/{{ child.id }}"
+                  class="flex-1 text-center px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                >
+                  <i class="fas fa-star mr-1"></i>Notes
+        </a>
+                <a
+                  href="/parent/discipline/child/{{ child.id }}"
+                  class="flex-1 text-center px-3 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700"
+                >
+                  <i class="fas fa-gavel mr-1"></i>Discipline
+        </a>
+                <a
+                  href="/parent/payments/child/{{ child.id }}"
+                  class="flex-1 text-center px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
+                >
+                  <i class="fas fa-coins mr-1"></i>Frais
+        </a>
+                <a
+                  href="/parent/messages/send?student_id={{ child.id }}"
+                  class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <i class="fas fa-envelope"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          @else
+          <div class="col-span-2 text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+            <i class="fas fa-child text-4xl text-gray-400 mb-3"></i>
+            <p class="text-gray-500 dark:text-gray-400">
+              Aucun enfant associé à votre compte
+            </p>
+            <p class="text-sm text-gray-400 mt-2">
+              Contactez l'école pour lier vos enfants
+            </p>
+          </div>
+        @end
       </div>
-    </div>
-    <div class="p-4">
-      <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p class="text-xs text-gray-500 dark:text-gray-400">Matricule</p>
-          <p class="font-mono text-sm">{{ child.registrationNumber }}</p>
-        </div>
-        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p class="text-xs text-gray-500 dark:text-gray-400">Moyenne</p>
-          <p class="font-bold text-lg" :class="{
-            'text-green-600': {{ child.averageGrade }} >= 15,
-            'text-yellow-600': {{ child.averageGrade }} >= 10 && {{ child.averageGrade }} < 15,
-            'text-red-600': {{ child.averageGrade }} < 10
-          }">{{ child.averageGrade || '-' }}/20</p>
-        </div>
-      </div>
-      
-      <div class="flex flex-wrap gap-2">
-        <a href="/parent/grades/child/{{ child.id }}" class="flex-1 text-center px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-          <i class="fas fa-star mr-1"></i> Notes
-        </a>
-        <a href="/parent/discipline/child/{{ child.id }}" class="flex-1 text-center px-3 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700">
-          <i class="fas fa-gavel mr-1"></i> Discipline
-        </a>
-        <a href="/parent/payments/child/{{ child.id }}" class="flex-1 text-center px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
-          <i class="fas fa-coins mr-1"></i> Frais
-        </a>
-        <a href="/parent/messages/send?student_id={{ child.id }}" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
-          <i class="fas fa-envelope"></i>
-        </a>
-      </div>
-    </div>
-  </div>
-  @eachelse
-  <div class="col-span-2 text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
-    <i class="fas fa-child text-4xl text-gray-400 mb-3"></i>
-    <p class="text-gray-500 dark:text-gray-400">Aucun enfant associé à votre compte</p>
-    <p class="text-sm text-gray-400 mt-2">Contactez l'école pour lier vos enfants</p>
-  </div>
-  @end
-</div>
 
-<!-- Messages récents -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-  <div class="flex justify-between items-center mb-4">
-    <h3 class="font-semibold text-gray-800 dark:text-white">Messages récents</h3>
-    <a href="/parent/messages" class="text-primary text-sm hover:underline">Voir tous</a>
-  </div>
-  <div class="space-y-2">
-    @each(message in recentMessages)
-    <div class="flex items-center justify-between p-3 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
-         onclick="window.location.href='/parent/messages/{{ message.id }}'">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-          <i class="fas fa-user text-gray-500 dark:text-gray-400 text-sm"></i>
+      <!-- Messages récents -->
+      <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold text-gray-800 dark:text-white">
+            Messages récents
+          </h3>
+          <a href="/parent/messages" class="text-primary text-sm hover:underline">Voir tous</a>
         </div>
-        <div>
-          <p class="font-medium text-sm text-gray-800 dark:text-white">{{ message.senderName }}</p>
-          <p class="text-xs text-gray-500">{{ message.subject }}</p>
+        <div class="space-y-2">
+          @each(message in recentMessages)
+            <div
+              class="flex items-center justify-between p-3 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
+              onclick="window.location.href='/parent/messages/{{ message.id }}'"
+            >
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  <i class="fas fa-user text-gray-500 dark:text-gray-400 text-sm"></i>
+                </div>
+                <div>
+                  <p class="font-medium text-sm text-gray-800 dark:text-white">
+                    {{ message.senderName }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ message.subject }}
+                  </p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-xs text-gray-400">
+                  {{ message.time }}
+                </p>
+                @if(!message.isRead)
+                  <span class="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+                @endif
+              </div>
+            </div>
+            @else
+            <p class="text-gray-500 dark:text-gray-400 text-center py-6">
+              Aucun message récent
+            </p>
+          @end
         </div>
       </div>
-      <div class="text-right">
-        <p class="text-xs text-gray-400">{{ message.time }}</p>
-        @if(!message.isRead)
-        <span class="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
-        @endif
-      </div>
-    </div>
-    @eachelse
-    <p class="text-gray-500 dark:text-gray-400 text-center py-6">Aucun message récent</p>
-    @end
-  </div>
-</div>
 
-<!-- Actions rapides parent -->
-<div class="mt-6 flex flex-wrap gap-3">
-  <a href="/parent/messages/send" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-envelope mr-2"></i> Contacter un enseignant
+      <!-- Actions rapides parent -->
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a
+          href="/parent/messages/send"
+          class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+        >
+          <i class="fas fa-envelope mr-2"></i>Contacter un enseignant
   </a>
-  <a href="/parent/payments" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-history mr-2"></i> Historique des paiements
+        <a
+          href="/parent/payments"
+          class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+        >
+          <i class="fas fa-history mr-2"></i>Historique des paiements
   </a>
-  <button onclick="window.location.href='/parent/appointments/request'" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-calendar-plus mr-2"></i> Demander rendez-vous
+        <button
+          onclick="window.location.href='/parent/appointments/request'"
+          class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+        >
+          <i class="fas fa-calendar-plus mr-2"></i>Demander rendez-vous
   </button>
-</div>
+      </div>
 
-<script>
-  // Chargement automatique des notifications
-  function checkNewMessages() {
-    fetch('/api/parent/unread-count')
-      .then(res => res.json())
-      .then(data => {
-        if (data.count > 0) {
-          document.getElementById('unreadBadge').style.display = 'inline-block'
-          document.getElementById('unreadBadge').textContent = data.count
+      <script>
+        // Chargement automatique des notifications
+        function checkNewMessages() {
+          fetch("/api/parent/unread-count").then(res => res.json()).then(data => {
+            if (data.count > 0) {
+              document.getElementById("unreadBadge").style.display = "inline-block";
+              document.getElementById("unreadBadge").textContent = data.count;
+            }
+          });
         }
-      })
-  }
-  setInterval(checkNewMessages, 30000)
-</script>
-{{# /section }}
 
-{{# /layout }}
+        setInterval(checkNewMessages, 3e4);
+      </script>
+    @endsection
+    

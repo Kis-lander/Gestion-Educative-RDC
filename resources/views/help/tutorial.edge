@@ -1,130 +1,164 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Tutoriels - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Tutoriels vidéo{{# /section }}
-{{# section('dashboardSubtitle') }}Apprenez en vidéo{{# /section }}
-
-{{# section('content') }}
-<!-- Catégories -->
-<div class="flex flex-wrap gap-2 mb-6">
-  <button class="tuto-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all">Tous</button>
-  <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="basics">Bases</button>
-  <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="features">Fonctionnalités</button>
-  <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="advanced">Avancé</button>
-</div>
-
-<!-- Grille des tutoriels -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  @each(tutorial in tutorials)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden tutorial-card" data-cat="{{ tutorial.category }}">
-    <div class="relative">
-      <img src="{{ tutorial.thumbnail }}" alt="{{ tutorial.title }}" class="w-full h-40 object-cover">
-      <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-        <button class="w-12 h-12 rounded-full bg-white text-primary flex items-center justify-center" onclick="playVideo('{{ tutorial.videoId }}')">
-          <i class="fas fa-play ml-1"></i>
-        </button>
-      </div>
-      <div class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-        {{ tutorial.duration }}
-      </div>
-    </div>
-    <div class="p-4">
-      <h3 class="font-bold text-lg">{{ tutorial.title }}</h3>
-      <p class="text-sm text-gray-600 mt-1">{{ tutorial.description }}</p>
-      <div class="flex items-center gap-3 mt-3 text-xs text-gray-400">
-        <span><i class="fas fa-eye mr-1"></i> {{ tutorial.views }} vues</span>
-        <span><i class="fas fa-thumbs-up mr-1"></i> {{ tutorial.likes }}</span>
-      </div>
-    </div>
-  </div>
-  @eachelse
-  <div class="col-span-full text-center py-12 text-gray-500">
-    <i class="fas fa-video text-4xl mb-3 block"></i>
-    <p>Aucun tutoriel disponible</p>
-  </div>
-  @end
-</div>
-
-<!-- Prochains tutoriels -->
-<div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-  <h3 class="font-semibold text-lg mb-3">À venir</h3>
-  <div class="space-y-2">
-    <div class="flex items-center gap-3 p-2 border-b">
-      <div class="w-16 h-12 bg-gray-200 rounded"></div>
-      <div>
-        <p class="font-medium">Gestion avancée des notes</p>
-        <p class="text-sm text-gray-500">Sortie prévue: 15/12/2024</p>
-      </div>
-    </div>
-    <div class="flex items-center gap-3 p-2 border-b">
-      <div class="w-16 h-12 bg-gray-200 rounded"></div>
-      <div>
-        <p class="font-medium">Rapports personnalisés</p>
-        <p class="text-sm text-gray-500">Sortie prévue: 22/12/2024</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal vidéo -->
-<div id="videoModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full p-4">
-    <div class="flex justify-between items-center mb-2">
-      <h3 class="font-bold" id="videoTitle"></h3>
-      <button onclick="closeVideo()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-    <div class="aspect-video bg-black rounded-lg overflow-hidden">
-      <iframe id="videoFrame" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </div>
-  </div>
-</div>
-
-<script>
-  function playVideo(videoId, title = 'Tutoriel') {
-    const modal = document.getElementById('videoModal')
-    const frame = document.getElementById('videoFrame')
-    const titleEl = document.getElementById('videoTitle')
-    
-    titleEl.textContent = title
-    frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`
-    
-    modal.classList.remove('hidden')
-    modal.classList.add('flex')
-  }
+  @section('title')
+    Tutoriels - {{ school.name }}
+  @endsection
   
-  function closeVideo() {
-    const modal = document.getElementById('videoModal')
-    const frame = document.getElementById('videoFrame')
-    
-    frame.src = ''
-    modal.classList.add('hidden')
-    modal.classList.remove('flex')
-  }
+  @section('dashboardTitle')
+    Tutoriels vidéo
+  @endsection
+  @section('dashboardSubtitle')
+    Apprenez en vidéo
+  @endsection
   
-  document.querySelectorAll('.tuto-cat').forEach(cat => {
-    cat.addEventListener('click', () => {
-      const selectedCat = cat.dataset.cat
-      
-      document.querySelectorAll('.tuto-cat').forEach(c => {
-        c.classList.remove('bg-primary', 'text-white')
-        c.classList.add('border')
-      })
-      cat.classList.add('bg-primary', 'text-white')
-      cat.classList.remove('border')
-      
-      document.querySelectorAll('.tutorial-card').forEach(card => {
-        if (selectedCat === 'all' || card.dataset.cat === selectedCat) {
-          card.style.display = ''
-        } else {
-          card.style.display = 'none'
-        }
-      })
-    })
-  })
-</script>
-{{# /section }}
+  @section('content')
+    <!-- Catégories -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all">Tous</button>
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="basics">Bases</button>
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="features">Fonctionnalités</button>
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="advanced">Avancé</button>
+    </div>
 
-{{# /layout }}
+    <!-- Grille des tutoriels -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @each(tutorial in tutorials)
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden tutorial-card"
+          data-cat="{{ tutorial.category }}"
+        >
+          <div class="relative">
+            <img src="{{ tutorial.thumbnail }}" alt="{{ tutorial.title }}" class="w-full h-40 object-cover" />
+            <div
+              class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition"
+            >
+              <button
+                class="w-12 h-12 rounded-full bg-white text-primary flex items-center justify-center"
+                onclick="playVideo('{{ tutorial.videoId }}')"
+              >
+                <i class="fas fa-play ml-1"></i>
+              </button>
+            </div>
+            <div class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+              {{ tutorial.duration }}
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-lg">
+              {{ tutorial.title }}
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ tutorial.description }}
+            </p>
+            <div class="flex items-center gap-3 mt-3 text-xs text-gray-400">
+              <span>                <i class="fas fa-eye mr-1"></i>{{ tutorial.views }} vues</span>
+              <span>                <i class="fas fa-thumbs-up mr-1"></i>{{ tutorial.likes }}</span>
+            </div>
+          </div>
+        </div>
+        @else
+        <div class="col-span-full text-center py-12 text-gray-500">
+          <i class="fas fa-video text-4xl mb-3 block"></i>
+          <p>
+            Aucun tutoriel disponible
+          </p>
+        </div>
+      @end
+    </div>
+
+    <!-- Prochains tutoriels -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <h3 class="font-semibold text-lg mb-3">
+        À venir
+      </h3>
+      <div class="space-y-2">
+        <div class="flex items-center gap-3 p-2 border-b">
+          <div class="w-16 h-12 bg-gray-200 rounded">
+          </div>
+          <div>
+            <p class="font-medium">
+              Gestion avancée des notes
+            </p>
+            <p class="text-sm text-gray-500">
+              Sortie prévue: 15/12/2024
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 p-2 border-b">
+          <div class="w-16 h-12 bg-gray-200 rounded">
+          </div>
+          <div>
+            <p class="font-medium">
+              Rapports personnalisés
+            </p>
+            <p class="text-sm text-gray-500">
+              Sortie prévue: 22/12/2024
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal vidéo -->
+    <div id="videoModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full p-4">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-bold" id="videoTitle">
+          </h3>
+          <button onclick="closeVideo()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="aspect-video bg-black rounded-lg overflow-hidden">
+          <iframe
+            id="videoFrame"
+            class="w-full h-full"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          >
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function playVideo(videoId, title = "Tutoriel") {
+        const modal = document.getElementById("videoModal");
+        const frame = document.getElementById("videoFrame");
+        const titleEl = document.getElementById("videoTitle");
+        titleEl.textContent = title;
+        frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+
+      function closeVideo() {
+        const modal = document.getElementById("videoModal");
+        const frame = document.getElementById("videoFrame");
+        frame.src = "";
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      document.querySelectorAll(".tuto-cat").forEach(cat => {
+        cat.addEventListener("click", () => {
+          const selectedCat = cat.dataset.cat;
+          document.querySelectorAll(".tuto-cat").forEach(c => {
+            c.classList.remove("bg-primary", "text-white");
+            c.classList.add("border");
+          });
+          cat.classList.add("bg-primary", "text-white");
+          cat.classList.remove("border");
+          document.querySelectorAll(".tutorial-card").forEach(card => {
+            if (selectedCat === "all" || card.dataset.cat === selectedCat) {
+              card.style.display = "";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+      });
+    </script>
+  @endsection
+  

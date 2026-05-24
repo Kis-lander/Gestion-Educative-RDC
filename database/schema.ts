@@ -333,6 +333,23 @@ export class ParentSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class RoleSchema extends BaseModel {
+  static $columns = ['createdAt', 'description', 'id', 'name', 'permissions', 'updatedAt'] as const
+  $columns = RoleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare permissions: any
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class SchoolFeeSchema extends BaseModel {
   static $columns = ['academicYear', 'amount', 'createdAt', 'currency', 'description', 'feeType', 'id', 'isMandatory', 'schoolId', 'term', 'updatedAt'] as const
   $columns = SchoolFeeSchema.$columns
@@ -356,6 +373,31 @@ export class SchoolFeeSchema extends BaseModel {
   declare schoolId: string | null
   @column()
   declare term: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class SchoolInspectionSchema extends BaseModel {
+  static $columns = ['createdAt', 'followUpDate', 'id', 'inspectionDate', 'inspector', 'rating', 'recommendations', 'report', 'schoolId', 'updatedAt'] as const
+  $columns = SchoolInspectionSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.date()
+  declare followUpDate: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column.date()
+  declare inspectionDate: DateTime
+  @column()
+  declare inspector: string
+  @column()
+  declare rating: number | null
+  @column()
+  declare recommendations: string | null
+  @column()
+  declare report: string
+  @column()
+  declare schoolId: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

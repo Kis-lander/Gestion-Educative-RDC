@@ -1,143 +1,185 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Détails utilisateur - {{ user.firstName }} {{ user.lastName }}{{# /section }}
-
-{{# section('dashboardTitle') }}Détails utilisateur{{# /section }}
-{{# section('dashboardSubtitle') }}{{ user.firstName }} {{ user.lastName }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/admin/users/{{ user.id }}/edit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-edit mr-2"></i> Modifier
+  @section('title')
+    Détails utilisateur - {{ user.firstName }} {{ user.lastName }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Détails utilisateur
+  @endsection
+  @section('dashboardSubtitle')
+    {{ user.firstName }} {{ user.lastName }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/admin/users/{{ user.id }}/edit"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-edit mr-2"></i>Modifier
   </a>
-  <button onclick="impersonateUser()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-mask mr-2"></i> Se connecter en tant que
+      <button onclick="impersonateUser()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-mask mr-2"></i>Se connecter en tant que
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Profil -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
-    <div class="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold mx-auto mb-3">
-      {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
     </div>
-    <h2 class="text-xl font-bold">{{ user.firstName }} {{ user.lastName }}</h2>
-    <p class="text-gray-500 text-sm">{{ user.roleLabel }}</p>
-    <div class="mt-2">
-      <span class="px-2 py-1 rounded-full text-xs
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Profil -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
+        <div
+          class="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold mx-auto mb-3"
+        >
+          {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+        </div>
+        <h2 class="text-xl font-bold">
+          {{ user.firstName }} {{ user.lastName }}
+        </h2>
+        <p class="text-gray-500 text-sm">
+          {{ user.roleLabel }}
+        </p>
+        <div class="mt-2">
+          <span
+            class="px-2 py-1 rounded-full text-xs
         {{ user.status === 'active' ? 'bg-green-100 text-green-800' : 
-           (user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800') }}">
-        {{ user.status === 'active' ? 'Actif' : (user.status === 'inactive' ? 'Inactif' : 'Suspendu') }}
+           (user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800') }}"
+          >
+            {{ user.status === 'active' ? 'Actif' : (user.status === 'inactive' ? 'Inactif' : 'Suspendu') }}
       </span>
-    </div>
-  </div>
-  
-  <!-- Informations personnelles -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">Informations personnelles</h3>
-    <div class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-gray-500">Email</span>
-        <span>{{ user.email }}</span>
+        </div>
       </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Téléphone</span>
-        <span>{{ user.phone || '-' }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Rôle</span>
-        <span>{{ user.roleLabel }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">École</span>
-        <span>{{ user.schoolName || 'N/A' }}</span>
-      </div>
-      @if(user.role === 'student' && user.className)
-      <div class="flex justify-between">
-        <span class="text-gray-500">Classe</span>
-        <span>{{ user.className }}</span>
-      </div>
-      @endif
-      @if(user.role === 'teacher' && user.qualification)
-      <div class="flex justify-between">
-        <span class="text-gray-500">Qualification</span>
-        <span>{{ user.qualification }}</span>
-      </div>
-      @endif
-    </div>
-  </div>
-  
-  <!-- Activité -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">Activité</h3>
-    <div class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-gray-500">Dernière connexion</span>
-        <span>{{ user.lastLogin || 'Jamais' }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Date création</span>
-        <span>{{ formatDate(user.createdAt) }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Dernière modification</span>
-        <span>{{ formatDate(user.updatedAt) }}</span>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Historique des actions -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Historique des actions</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Action</th>
-          <th class="px-4 py-2">Détails</th>
-          <th class="px-4 py-2">IP</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(log in activityLogs)
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-4 py-2">{{ formatDateTime(log.createdAt) }}</td>
-          <td class="px-4 py-2">{{ log.action }}</td>
-          <td class="px-4 py-2">{{ log.details }}</td>
-          <td class="px-4 py-2 font-mono">{{ log.ip || '-' }}</td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="4" class="text-center py-8 text-gray-500">Aucune activité enregistrée</td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-</div>
+      <!-- Informations personnelles -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Informations personnelles
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Email</span>
+            <span>{{ user.email }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Téléphone</span>
+            <span>{{ user.phone || '-' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Rôle</span>
+            <span>{{ user.roleLabel }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">École</span>
+            <span>{{ user.schoolName || 'N/A' }}</span>
+          </div>
+          @if(user.role === 'student' && user.className)
+            <div class="flex justify-between">
+              <span class="text-gray-500">Classe</span>
+              <span>{{ user.className }}</span>
+            </div>
+          @endif
+          @if(user.role === 'teacher' && user.qualification)
+            <div class="flex justify-between">
+              <span class="text-gray-500">Qualification</span>
+              <span>{{ user.qualification }}</span>
+            </div>
+          @endif
+        </div>
+      </div>
 
-<script>
-  async function impersonateUser() {
-    if (confirm(`Vous allez vous connecter en tant que ${user.firstName} ${user.lastName}. Votre session actuelle sera sauvegardée.`)) {
-      const res = await fetch(`/admin/users/{{ user.id }}/impersonate`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) {
-        window.location.href = '/dashboard'
-      } else {
-        alert('Erreur: ' + data.message)
+      <!-- Activité -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Activité
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Dernière connexion</span>
+            <span>{{ user.lastLogin || 'Jamais' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Date création</span>
+            <span>{{ formatDate(user.createdAt) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Dernière modification</span>
+            <span>{{ formatDate(user.updatedAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique des actions -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Historique des actions
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date
+              </th>
+              <th class="px-4 py-2">
+                Action
+              </th>
+              <th class="px-4 py-2">
+                Détails
+              </th>
+              <th class="px-4 py-2">
+                IP
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(log in activityLogs)
+              <tr class="border-b dark:border-gray-700">
+                <td class="px-4 py-2">
+                  {{ formatDateTime(log.createdAt) }}
+                </td>
+                <td class="px-4 py-2">
+                  {{ log.action }}
+                </td>
+                <td class="px-4 py-2">
+                  {{ log.details }}
+                </td>
+                <td class="px-4 py-2 font-mono">
+                  {{ log.ip || '-' }}
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="4" class="text-center py-8 text-gray-500">
+                  Aucune activité enregistrée
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      async function impersonateUser() {
+        if (confirm(`Vous allez vous connecter en tant que ${user.firstName} ${user.lastName}. Votre session actuelle sera sauvegardée.`)) {
+          const res = await fetch(`/admin/users/{{ user.id }}/impersonate`, {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.location.href = "/dashboard";
+          } else {
+            alert("Erreur: " + data.message);
+          }
+        }
       }
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+    </script>
+  @endsection
+  

@@ -1,204 +1,295 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Paramètres généraux - Administration{{# /section }}
+  @section('title')
+    Paramètres généraux - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Paramètres généraux
+  @endsection
+  @section('dashboardSubtitle')
+    Configuration globale de la plateforme
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire principal -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/admin/settings/general"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Paramètres généraux{{# /section }}
-{{# section('dashboardSubtitle') }}Configuration globale de la plateforme{{# /section }}
+          <div class="space-y-6">
+            <div>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Informations générales
+              </h3>
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire principal -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/admin/settings/general" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="space-y-6">
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Informations générales</h3>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la plateforme</label>
-              <input type="text" name="app_name" value="{{ settings.appName }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Description courte</label>
-              <textarea name="app_description" rows="2" 
-                        class="w-full px-3 py-2 border rounded-lg">{{ settings.appDescription }}</textarea>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">URL de la plateforme</label>
-              <input type="url" name="app_url" value="{{ settings.appUrl }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Localisation</h3>
-          
-          <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
-                <select name="timezone" class="w-full px-3 py-2 border rounded-lg">
-                  <option value="Africa/Kinshasa" {{ settings.timezone === 'Africa/Kinshasa' ? 'selected' : '' }}>Afrique/Kinshasa</option>
-                  <option value="Africa/Lubumbashi" {{ settings.timezone === 'Africa/Lubumbashi' ? 'selected' : '' }}>Afrique/Lubumbashi</option>
-                  <option value="UTC">UTC</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Langue par défaut</label>
-                <select name="default_language" class="w-full px-3 py-2 border rounded-lg">
-                  <option value="fr" {{ settings.defaultLanguage === 'fr' ? 'selected' : '' }}>Français</option>
-                  <option value="en" {{ settings.defaultLanguage === 'en' ? 'selected' : '' }}>English</option>
-                  <option value="ln" {{ settings.defaultLanguage === 'ln' ? 'selected' : '' }}>Lingala</option>
-                  <option value="sw" {{ settings.defaultLanguage === 'sw' ? 'selected' : '' }}>Swahili</option>
-                </select>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la plateforme</label>
+                  <input
+                    type="text"
+                    name="app_name"
+                    value="{{ settings.appName }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Description courte</label>
+                  <textarea name="app_description" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ settings.appDescription }}</textarea>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">URL de la plateforme</label>
+                  <input
+                    type="url"
+                    name="app_url"
+                    value="{{ settings.appUrl }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
               </div>
             </div>
-            
+
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Format de date</label>
-              <select name="date_format" class="w-full px-3 py-2 border rounded-lg">
-                <option value="DD/MM/YYYY" {{ settings.dateFormat === 'DD/MM/YYYY' ? 'selected' : '' }}>JJ/MM/AAAA</option>
-                <option value="YYYY-MM-DD" {{ settings.dateFormat === 'YYYY-MM-DD' ? 'selected' : '' }}>AAAA-MM-JJ</option>
-                <option value="MM/DD/YYYY" {{ settings.dateFormat === 'MM/DD/YYYY' ? 'selected' : '' }}>MM/JJ/AAAA</option>
-              </select>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Localisation
+              </h3>
+
+              <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
+                    <select name="timezone" class="w-full px-3 py-2 border rounded-lg">
+                      <option value="Africa/Kinshasa" {{ settings.timezone === 'Africa/Kinshasa' ? 'selected' : '' }}>
+                        Afrique/Kinshasa
+                      </option>
+                      <option value="Africa/Lubumbashi" {{ settings.timezone === 'Africa/Lubumbashi' ? 'selected' : '' }}>
+                        Afrique/Lubumbashi
+                      </option>
+                      <option value="UTC">
+                        UTC
+                      </option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">Langue par défaut</label>
+                    <select name="default_language" class="w-full px-3 py-2 border rounded-lg">
+                      <option value="fr" {{ settings.defaultLanguage === 'fr' ? 'selected' : '' }}>
+                        Français
+                      </option>
+                      <option value="en" {{ settings.defaultLanguage === 'en' ? 'selected' : '' }}>
+                        English
+                      </option>
+                      <option value="ln" {{ settings.defaultLanguage === 'ln' ? 'selected' : '' }}>
+                        Lingala
+                      </option>
+                      <option value="sw" {{ settings.defaultLanguage === 'sw' ? 'selected' : '' }}>
+                        Swahili
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Format de date</label>
+                  <select name="date_format" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="DD/MM/YYYY" {{ settings.dateFormat === 'DD/MM/YYYY' ? 'selected' : '' }}>
+                      JJ/MM/AAAA
+                    </option>
+                    <option value="YYYY-MM-DD" {{ settings.dateFormat === 'YYYY-MM-DD' ? 'selected' : '' }}>
+                      AAAA-MM-JJ
+                    </option>
+                    <option value="MM/DD/YYYY" {{ settings.dateFormat === 'MM/DD/YYYY' ? 'selected' : '' }}>
+                      MM/JJ/AAAA
+                    </option>
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Apparence</h3>
-          
-          <div class="space-y-4">
+
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Logo de la plateforme</label>
-              <div class="flex items-center gap-4">
-                <div class="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                  @if(settings.logoUrl)
-                  <img src="{{ settings.logoUrl }}" alt="Logo" class="max-w-full max-h-full">
-                  @else
-                  <i class="fas fa-image text-4xl text-gray-400"></i>
-                  @endif
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Apparence
+              </h3>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Logo de la plateforme</label>
+                  <div class="flex items-center gap-4">
+                    <div class="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                      @if(settings.logoUrl)
+                        <img src="{{ settings.logoUrl }}" alt="Logo" class="max-w-full max-h-full" />
+                      @else
+                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                      @endif
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onclick="document.getElementById('logoInput').click()"
+                        class="px-3 py-1 border rounded-lg text-sm hover:bg-gray-50"
+                      >
+                        <i class="fas fa-upload mr-1"></i>Changer le logo
+                  </button>
+                      <input type="file" id="logoInput" name="logo" class="hidden" accept="image/*" />
+                      <p class="text-xs text-gray-400 mt-1">
+                        Format: PNG, JPG. Max 2MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="dark_mode_default"
+                      class="w-4 h-4"
+                      {{ settings.darkModeDefault ? 'checked' : '' }}
+                    />
+                    <span>Activer le mode sombre par défaut</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Limites système
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Taille max fichier (MB)</label>
+                  <input
+                    type="number"
+                    name="max_file_size"
+                    value="{{ settings.maxFileSize || 10 }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
                 </div>
                 <div>
-                  <button type="button" onclick="document.getElementById('logoInput').click()" 
-                          class="px-3 py-1 border rounded-lg text-sm hover:bg-gray-50">
-                    <i class="fas fa-upload mr-1"></i> Changer le logo
-                  </button>
-                  <input type="file" id="logoInput" name="logo" class="hidden" accept="image/*">
-                  <p class="text-xs text-gray-400 mt-1">Format: PNG, JPG. Max 2MB</p>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Timeout session (minutes)</label>
+                  <input
+                    type="number"
+                    name="session_timeout"
+                    value="{{ settings.sessionTimeout || 60 }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Tentatives connexion max</label>
+                  <input
+                    type="number"
+                    name="max_login_attempts"
+                    value="{{ settings.maxLoginAttempts || 5 }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Verrouillage après (minutes)</label>
+                  <input
+                    type="number"
+                    name="lockout_duration"
+                    value="{{ settings.lockoutDuration || 30 }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
                 </div>
               </div>
             </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="dark_mode_default" {{ settings.darkModeDefault ? 'checked' : '' }} class="w-4 h-4">
-                <span>Activer le mode sombre par défaut</span>
-              </label>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
+        </button>
+            <button type="button" onclick="resetSettings()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Réinitialiser
+        </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Version actuelle
+          </h3>
+          <p class="text-2xl font-bold text-primary">
+            {{ version }}
+          </p>
+          <p class="text-sm text-gray-500 mt-1">
+            Dernière mise à jour: {{ lastUpdate }}
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Informations serveur
+          </h3>
+          <div class="space-y-1 text-sm">
+            <div class="flex justify-between">
+              <span>PHP Version:</span>              <span>{{ phpVersion }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Node.js Version:</span>              <span>{{ nodeVersion }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Base de données:</span>              <span>PostgreSQL</span>
             </div>
           </div>
         </div>
-        
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Limites système</h3>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Taille max fichier (MB)</label>
-              <input type="number" name="max_file_size" value="{{ settings.maxFileSize || 10 }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Timeout session (minutes)</label>
-              <input type="number" name="session_timeout" value="{{ settings.sessionTimeout || 60 }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Tentatives connexion max</label>
-              <input type="number" name="max_login_attempts" value="{{ settings.maxLoginAttempts || 5 }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Verrouillage après (minutes)</label>
-              <input type="number" name="lockout_duration" value="{{ settings.lockoutDuration || 30 }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-          </div>
+
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-info-circle text-yellow-600"></i>
+            <span>Les modifications seront appliquées après sauvegarde.</span>
+          </p>
         </div>
       </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer
-        </button>
-        <button type="button" onclick="resetSettings()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Réinitialiser
-        </button>
-      </div>
-    </form>
-  </div>
-  
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Version actuelle</h3>
-      <p class="text-2xl font-bold text-primary">{{ version }}</p>
-      <p class="text-sm text-gray-500 mt-1">Dernière mise à jour: {{ lastUpdate }}</p>
     </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Informations serveur</h3>
-      <div class="space-y-1 text-sm">
-        <div class="flex justify-between"><span>PHP Version:</span><span>{{ phpVersion }}</span></div>
-        <div class="flex justify-between"><span>Node.js Version:</span><span>{{ nodeVersion }}</span></div>
-        <div class="flex justify-between"><span>Base de données:</span><span>PostgreSQL</span></div>
-      </div>
-    </div>
-    
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-info-circle text-yellow-600"></i>
-        <span>Les modifications seront appliquées après sauvegarde.</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  function resetSettings() {
-    if (confirm('Réinitialiser tous les paramètres généraux ?')) {
-      fetch('/api/admin/settings/general/reset', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(() => location.reload())
-    }
-  }
-  
-  document.getElementById('logoInput')?.addEventListener('change', function(e) {
-    const file = e.target.files[0]
-    if (file) {
-      const formData = new FormData()
-      formData.append('logo', file)
-      fetch('/api/admin/settings/upload-logo', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
-        body: formData
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  })
-</script>
-{{# /section }}
+    <script>
+      function resetSettings() {
+        if (confirm("Réinitialiser tous les paramètres généraux ?")) {
+          fetch("/api/admin/settings/general/reset", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(() => location.reload());
+        }
+      }
 
-{{# /layout }}
+      document.getElementById("logoInput")?.addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const formData = new FormData();
+          formData.append("logo", file);
+          fetch("/api/admin/settings/upload-logo", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            },
+            body: formData
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      });
+    </script>
+  @endsection
+  

@@ -1,26 +1,30 @@
 @if(pagination && pagination.lastPage > 1)
-<div class="flex items-center justify-between mt-6">
-  <div class="text-sm text-gray-500">
-    Affichage de {{ pagination.from || 0 }} à {{ pagination.to || 0 }} sur {{ pagination.total || 0 }} résultats
-  </div>
-  <div class="flex gap-2">
-    @if(pagination.currentPage > 1)
-    <a href="{{ url }}?page={{ pagination.currentPage - 1 }}" 
-       class="px-3 py-1 border rounded hover:bg-gray-50 text-sm">
-      <i class="fas fa-chevron-left"></i> Précédent
+  <div class="flex items-center justify-between mt-6">
+    <div class="text-sm text-gray-500">
+      Affichage de {{ pagination.from || 0 }} à {{ pagination.to || 0 }} sur {{ pagination.total || 0 }} résultats
+    </div>
+    <div class="flex gap-2">
+      @if(pagination.currentPage > 1)
+        <a
+          href="{{ url }}?page={{ pagination.currentPage - 1 }}"
+          class="px-3 py-1 border rounded hover:bg-gray-50 text-sm"
+        >
+          <i class="fas fa-chevron-left"></i>Précédent
     </a>
-    @endif
-    
-    <span class="px-3 py-1 bg-primary text-white rounded text-sm">
-      {{ pagination.currentPage }}
+      @endif
+      
+      <span class="px-3 py-1 bg-primary text-white rounded text-sm">
+        {{ pagination.currentPage }}
     </span>
-    
-    @if(pagination.currentPage < pagination.lastPage)
-    <a href="{{ url }}?page={{ pagination.currentPage + 1 }}" 
-       class="px-3 py-1 border rounded hover:bg-gray-50 text-sm">
-      Suivant <i class="fas fa-chevron-right"></i>
-    </a>
-    @endif
+
+      @if(pagination.currentPage < pagination.lastPage)
+        <a
+          href="{{ url }}?page={{ pagination.currentPage + 1 }}"
+          class="px-3 py-1 border rounded hover:bg-gray-50 text-sm"
+        >
+          Suivant <i class="fas fa-chevron-right"></i>
+        </a>
+      @endif
+    </div>
   </div>
-</div>
 @endif

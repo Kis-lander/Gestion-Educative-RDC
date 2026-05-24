@@ -1,140 +1,212 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Nouveau message - {{ school.name }}{{# /section }}
+  @section('title')
+    Nouveau message - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Nouveau message
+  @endsection
+  @section('dashboardSubtitle')
+    Envoyez un message
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/communication/messages/send"
+          enctype="multipart/form-data"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Nouveau message{{# /section }}
-{{# section('dashboardSubtitle') }}Envoyez un message{{# /section }}
+          <div class="space-y-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataire *</label>
+              <select name="receiverId" required class="w-full px-3 py-2 border rounded-lg" id="receiverSelect">
+                <option value="">
+                  Sélectionner un destinataire
+                </option>
+                <option value="" disabled>
+                  --- Direction ---
+                </option>
+                @each(director in directors)
+                  <option value="{{ director.id }}" data-role="Directeur">
+                    {{ director.name }} (Directeur)
+                  </option>
+                @end
+                <option value="" disabled>
+                  --- Enseignants ---
+                </option>
+                @each(teacher in teachers)
+                  <option value="{{ teacher.id }}" data-role="Enseignant">
+                    {{ teacher.name }} - {{ teacher.subject }}
+                  </option>
+                @end
+                <option value="" disabled>
+                  --- Parents ---
+                </option>
+                @each(parent in parents)
+                  <option value="{{ parent.id }}" data-role="Parent">
+                    {{ parent.name }}
+                  </option>
+                @end
+              </select>
+            </div>
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/communication/messages/send" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataire *</label>
-          <select name="receiverId" required class="w-full px-3 py-2 border rounded-lg" id="receiverSelect">
-            <option value="">Sélectionner un destinataire</option>
-            <option value="" disabled>--- Direction ---</option>
-            @each(director in directors)
-            <option value="{{ director.id }}" data-role="Directeur">{{ director.name }} (Directeur)</option>
-            @end
-            <option value="" disabled>--- Enseignants ---</option>
-            @each(teacher in teachers)
-            <option value="{{ teacher.id }}" data-role="Enseignant">{{ teacher.name }} - {{ teacher.subject }}</option>
-            @end
-            <option value="" disabled>--- Parents ---</option>
-            @each(parent in parents)
-            <option value="{{ parent.id }}" data-role="Parent">{{ parent.name }}</option>
-            @end
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Sujet *</label>
-          <input type="text" name="subject" required 
-                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                 placeholder="Sujet du message">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Message *</label>
-          <textarea name="content" required rows="8" 
-                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                    placeholder="Rédigez votre message ici..."></textarea>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de message</label>
-          <select name="type" class="w-full px-3 py-2 border rounded-lg">
-            <option value="general">Général</option>
-            <option value="official">Officiel</option>
-            <option value="parent_teacher">Parent-Enseignant</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Pièce jointe (optionnel)</label>
-          <div class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
-               onclick="document.getElementById('attachmentInput').click()">
-            <input type="file" name="attachment" id="attachmentInput" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx,.txt">
-            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-            <p class="text-gray-500">Cliquez pour ajouter un fichier</p>
-            <p class="text-xs text-gray-400 mt-1">PDF, JPG, PNG, DOC, TXT (max 10MB)</p>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Sujet *</label>
+              <input
+                type="text"
+                name="subject"
+                required
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Sujet du message"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Message *</label>
+              <textarea
+                name="content"
+                required
+                rows="8"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Rédigez votre message ici..."
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de message</label>
+              <select name="type" class="w-full px-3 py-2 border rounded-lg">
+                <option value="general">
+                  Général
+                </option>
+                <option value="official">
+                  Officiel
+                </option>
+                <option value="parent_teacher">
+                  Parent-Enseignant
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Pièce jointe (optionnel)</label>
+              <div
+                class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
+                onclick="document.getElementById('attachmentInput').click()"
+              >
+                <input
+                  type="file"
+                  name="attachment"
+                  id="attachmentInput"
+                  class="hidden"
+                  accept=".pdf,.jpg,.png,.doc,.docx,.txt"
+                />
+                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500">
+                  Cliquez pour ajouter un fichier
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                  PDF, JPG, PNG, DOC, TXT (max 10MB)
+                </p>
+              </div>
+              <div id="fileName" class="text-sm text-green-600 mt-1 hidden">
+              </div>
+            </div>
+
+            <div>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="urgent" class="w-4 h-4" />
+                <span class="text-red-600">Marquer comme urgent</span>
+              </label>
+            </div>
+
+            <div>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="saveCopy" checked class="w-4 h-4" />
+                <span>Conserver une copie dans mes envois</span>
+              </label>
+            </div>
           </div>
-          <div id="fileName" class="text-sm text-green-600 mt-1 hidden"></div>
-        </div>
-        
-        <div>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="urgent" class="w-4 h-4">
-            <span class="text-red-600">Marquer comme urgent</span>
-          </label>
-        </div>
-        
-        <div>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="saveCopy" checked class="w-4 h-4">
-            <span>Conserver une copie dans mes envois</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Envoyer le message
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Envoyer le message
         </button>
-        <a href="/communication/messages/inbox" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
+            <a href="/communication/messages/inbox" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Conseils -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Conseils</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Soyez clair et concis</li>
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Indiquez un objet précis</li>
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Relisez-vous avant d'envoyer</li>
-      </ul>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Types de messages</h3>
-      <div class="space-y-2 text-sm">
-        <p><span class="font-medium">Général:</span> Communication quotidienne</p>
-        <p><span class="font-medium">Officiel:</span> Annonces importantes, notes de service</p>
-        <p><span class="font-medium">Parent-Enseignant:</span> Suivi scolaire</p>
+
+      <!-- Conseils -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Conseils
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Soyez clair et concis
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Indiquez un objet précis
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Relisez-vous avant d'envoyer
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Types de messages
+          </h3>
+          <div class="space-y-2 text-sm">
+            <p>
+              <span class="font-medium">Général:</span>Communication quotidienne
+            </p>
+            <p>
+              <span class="font-medium">Officiel:</span>Annonces importantes, notes de service
+            </p>
+            <p>
+              <span class="font-medium">Parent-Enseignant:</span>Suivi scolaire
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-lock text-yellow-600"></i>
+            <span>Les messages sont confidentiels et sécurisés.</span>
+          </p>
+        </div>
       </div>
     </div>
-    
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-lock text-yellow-600"></i>
-        <span>Les messages sont confidentiels et sécurisés.</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  const fileInput = document.getElementById('attachmentInput')
-  const fileName = document.getElementById('fileName')
+    <script>
+      const fileInput = document.getElementById("attachmentInput");
+
+      const fileName = document.getElementById("fileName");
+
+      fileInput?.addEventListener("change", function() {
+        if (this.files && this.files[0]) {
+          fileName.textContent = `Fichier joint: ${this.files[0].name}`;
+          fileName.classList.remove("hidden");
+        }
+      });
+    </script>
+  @endsection
   
-  fileInput?.addEventListener('change', function() {
-    if (this.files && this.files[0]) {
-      fileName.textContent = `Fichier joint: ${this.files[0].name}`
-      fileName.classList.remove('hidden')
-    }
-  })
-</script>
-{{# /section }}
-
-{{# /layout }}

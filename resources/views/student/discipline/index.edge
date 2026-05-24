@@ -1,176 +1,254 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Ma discipline - {{ student.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Suivi disciplinaire{{# /section }}
-{{# section('dashboardSubtitle') }}Consultez votre dossier disciplinaire{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total incidents</p>
-    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Appréciation</p>
-    <p class="text-2xl font-bold">{{ stats.appreciation }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Dernier incident</p>
-    <p class="text-xl font-bold">{{ stats.lastIncidentDate || 'Aucun' }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Sanctions reçues</p>
-    <p class="text-3xl font-bold">{{ stats.sanctionsCount || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Graphique d'évolution -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <h3 class="font-semibold mb-3">Évolution des incidents</h3>
-  <canvas id="incidentsChart" height="150"></canvas>
-</div>
-
-<!-- Résumé par type -->
-<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-blue-600">{{ stats.byType?.absence || 0 }}</p>
-    <p class="text-xs">Absences</p>
-  </div>
-  <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-yellow-600">{{ stats.byType?.late || 0 }}</p>
-    <p class="text-xs">Retards</p>
-  </div>
-  <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-purple-600">{{ stats.byType?.misconduct || 0 }}</p>
-    <p class="text-xs">Inconduite</p>
-  </div>
-  <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-red-600">{{ stats.byType?.violence || 0 }}</p>
-    <p class="text-xs">Violence</p>
-  </div>
-  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-gray-600">{{ stats.byType?.other || 0 }}</p>
-    <p class="text-xs">Autres</p>
-  </div>
-</div>
-
-<!-- Message d'appréciation -->
-<div class="bg-{{ stats.total === 0 ? 'green' : (stats.total <= 2 ? 'yellow' : 'red') }}-50 dark:bg-{{ stats.total === 0 ? 'green' : (stats.total <= 2 ? 'yellow' : 'red') }}-900/20 rounded-xl p-4 mb-6">
-  <div class="flex items-start gap-3">
-    <i class="fas {{ stats.total === 0 ? 'fa-check-circle' : (stats.total <= 2 ? 'fa-exclamation-triangle' : 'fa-times-circle') }} text-{{ stats.total === 0 ? 'green' : (stats.total <= 2 ? 'yellow' : 'red') }}-500 text-xl"></i>
-    <div>
-      <h4 class="font-semibold">Appréciation disciplinaire</h4>
-      <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
-        {{ stats.total === 0 ? 'Félicitations ! Vous avez un comportement exemplaire. Continuez ainsi.' : 
-           (stats.total <= 2 ? 'Quelques incidents à améliorer. Restez attentif aux règles de l\'établissement.' : 
-           'Des efforts sont nécessaires pour améliorer votre comportement. Respectez le règlement intérieur.') }}
-      </p>
+  @section('title')
+    Ma discipline - {{ student.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Suivi disciplinaire
+  @endsection
+  @section('dashboardSubtitle')
+    Consultez votre dossier disciplinaire
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total incidents
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Appréciation
+        </p>
+        <p class="text-2xl font-bold">
+          {{ stats.appreciation }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Dernier incident
+        </p>
+        <p class="text-xl font-bold">
+          {{ stats.lastIncidentDate || 'Aucun' }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Sanctions reçues
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.sanctionsCount || 0 }}
+        </p>
+      </div>
     </div>
-  </div>
-</div>
+  @endsection
+  
+  @section('content')
+    <!-- Graphique d'évolution -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <h3 class="font-semibold mb-3">
+        Évolution des incidents
+      </h3>
+      <canvas id="incidentsChart" height="150">
+      </canvas>
+    </div>
 
-<!-- Liste des incidents -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Historique des incidents</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Type</th>
-          <th class="px-4 py-2">Gravité</th>
-          <th class="px-4 py-2">Description</th>
-          <th class="px-4 py-2">Sanction</th>
-          <th class="px-4 py-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(incident in incidents)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-2">{{ formatDate(incident.date) }}</td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs 
+    <!-- Résumé par type -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-center">
+        <p class="text-xl font-bold text-blue-600">
+          {{ stats.byType?.absence || 0 }}
+        </p>
+        <p class="text-xs">
+          Absences
+        </p>
+      </div>
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2 text-center">
+        <p class="text-xl font-bold text-yellow-600">
+          {{ stats.byType?.late || 0 }}
+        </p>
+        <p class="text-xs">
+          Retards
+        </p>
+      </div>
+      <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 text-center">
+        <p class="text-xl font-bold text-purple-600">
+          {{ stats.byType?.misconduct || 0 }}
+        </p>
+        <p class="text-xs">
+          Inconduite
+        </p>
+      </div>
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-2 text-center">
+        <p class="text-xl font-bold text-red-600">
+          {{ stats.byType?.violence || 0 }}
+        </p>
+        <p class="text-xs">
+          Violence
+        </p>
+      </div>
+      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
+        <p class="text-xl font-bold text-gray-600">
+          {{ stats.byType?.other || 0 }}
+        </p>
+        <p class="text-xs">
+          Autres
+        </p>
+      </div>
+    </div>
+
+    <!-- Message d'appréciation -->
+    <div
+      class="bg-{{ stats.total === 0 ? 'green' : (stats.total > 2 ? 'red' : 'yellow') }}-50 dark:bg-{{ stats.total === 0 ? 'green' : (stats.total > 2 ? 'red' : 'yellow') }}-900/20 rounded-xl p-4 mb-6"
+    >
+      <div class="flex items-start gap-3">
+        <i
+          class="fas {{ stats.total === 0 ? 'fa-check-circle' : (stats.total > 2 ? 'fa-times-circle' : 'fa-exclamation-triangle') }} text-{{ stats.total === 0 ? 'green' : (stats.total > 2 ? 'red' : 'yellow') }}-500 text-xl"
+        ></i>
+        <div>
+          <h4 class="font-semibold">
+            Appréciation disciplinaire
+          </h4>
+          <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+            {{ stats.total === 0 ? 'Félicitations ! Vous avez un comportement exemplaire. Continuez ainsi.' :            (stats.total <= 2 ? 'Quelques incidents à améliorer. Restez attentif aux règles de l\'établissement.' :            'Des efforts sont nécessaires pour améliorer votre comportement. Respectez le règlement intérieur.') }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des incidents -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Historique des incidents
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date
+              </th>
+              <th class="px-4 py-2">
+                Type
+              </th>
+              <th class="px-4 py-2">
+                Gravité
+              </th>
+              <th class="px-4 py-2">
+                Description
+              </th>
+              <th class="px-4 py-2">
+                Sanction
+              </th>
+              <th class="px-4 py-2 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(incident in incidents)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-2">
+                  {{ formatDate(incident.date) }}
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs 
               {{ incident.type === 'absence' ? 'bg-blue-100 text-blue-800' : 
                  (incident.type === 'late' ? 'bg-yellow-100 text-yellow-800' : 
                  (incident.type === 'misconduct' ? 'bg-purple-100 text-purple-800' : 
-                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}">
-              {{ incident.typeLabel }}
+                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}"
+                  >
+                    {{ incident.typeLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ incident.severity === 'minor' ? 'bg-green-100 text-green-800' : 
                  (incident.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
-                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
-              {{ incident.severityLabel }}
+                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}"
+                  >
+                    {{ incident.severityLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2 max-w-xs">{{ incident.description }}</td>
-          <td class="px-4 py-2">
-            @if(incident.sanction && incident.sanction !== 'none')
-            <span class="font-medium text-red-600">{{ incident.sanctionLabel }}</span>
-            @else
-            <span class="text-gray-400">-</span>
-            @endif
-          </td>
-          <td class="px-4 py-2 text-center">
-            <button onclick="viewDetails('{{ incident.id }}')" class="text-primary hover:underline text-sm">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="6" class="text-center py-12 text-gray-500">
-            <i class="fas fa-check-circle text-4xl mb-2 block text-green-500"></i>
-            Aucun incident disciplinaire enregistré
-            <p class="text-sm mt-1">Félicitations ! Vous avez un comportement exemplaire.</p>
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  @include('partials/pagination', { pagination: pagination, url: '/student/discipline' })
-</div>
+                </td>
+                <td class="px-4 py-2 max-w-xs">
+                  {{ incident.description }}
+                </td>
+                <td class="px-4 py-2">
+                  @if(incident.sanction && incident.sanction !== 'none')
+                    <span class="font-medium text-red-600">{{ incident.sanctionLabel }}</span>
+                  @else
+                    <span class="text-gray-400">-</span>
+                  @endif
+                </td>
+                <td class="px-4 py-2 text-center">
+                  <button onclick="viewDetails('{{ incident.id }}')" class="text-primary hover:underline text-sm">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="6" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-check-circle text-4xl mb-2 block text-green-500"></i>
+                  Aucun incident disciplinaire enregistré
+                  <p class="text-sm mt-1">
+                    Félicitations ! Vous avez un comportement exemplaire.
+                  </p>
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+      @include('partials/pagination', { pagination: pagination, url: '/student/discipline' })
+    </div>
 
-<script>
-  let incidentsChart
-  
-  function renderChart() {
-    const ctx = document.getElementById('incidentsChart').getContext('2d')
-    incidentsChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: {{ chartLabels|json_encode|raw }},
-        datasets: [{
-          label: "Nombre d'incidents",
-          data: {{ chartValues|json_encode|raw }},
-          borderColor: '#dc2626',
-          backgroundColor: 'rgba(220, 38, 38, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: { y: { beginAtZero: true, stepSize: 1, precision: 0 } }
+    <script>
+      let incidentsChart;
+
+      function renderChart() {
+        const ctx = document.getElementById("incidentsChart").getContext("2d");
+        incidentsChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: {{ chartLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Nombre d'incidents",
+              data: {{ chartValues|json_encode|raw }},
+              borderColor: "#dc2626",
+              backgroundColor: "rgba(220, 38, 38, 0.1)",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                stepSize: 1,
+                precision: 0
+              }
+            }
+          }
+        });
       }
-    })
-  }
-  
-  function viewDetails(incidentId) {
-    window.location.href = `/student/discipline/details/${incidentId}`
-  }
-  
-  renderChart()
-</script>
-{{# /section }}
 
-{{# /layout }}
+      function viewDetails(incidentId) {
+        window.location.href = `/student/discipline/details/${incidentId}`;
+      }
+
+      renderChart();
+    </script>
+  @endsection
+  

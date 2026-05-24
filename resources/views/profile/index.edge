@@ -1,173 +1,249 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Mon profil - {{ user.firstName }} {{ user.lastName }}{{# /section }}
-
-{{# section('dashboardTitle') }}Mon profil{{# /section }}
-{{# section('dashboardSubtitle') }}Informations personnelles et compte{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/profile/edit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-edit mr-2"></i> Modifier
-  </a>
-  <a href="/profile/security" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-key mr-2"></i> Sécurité
-  </a>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.memberSince || '-' }}</p>
-    <p class="text-sm text-gray-500">Membre depuis</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.lastLogin || '-' }}</p>
-    <p class="text-sm text-gray-500">Dernière connexion</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.loginCount || 0 }}</p>
-    <p class="text-sm text-gray-500">Connexions</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.documentsCount || 0 }}</p>
-    <p class="text-sm text-gray-500">Documents</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Avatar et infos -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
-    <div class="relative inline-block">
-      <div class="w-32 h-32 rounded-full bg-primary flex items-center justify-center text-white text-4xl font-bold mx-auto">
-        {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
-      </div>
-      <button onclick="document.getElementById('avatarInput').click()" 
-              class="absolute bottom-0 right-0 bg-gray-200 rounded-full p-2 hover:bg-gray-300">
-        <i class="fas fa-camera text-sm"></i>
-      </button>
-      <input type="file" id="avatarInput" class="hidden" accept="image/*">
-    </div>
-    <h2 class="text-xl font-bold mt-3">{{ user.firstName }} {{ user.lastName }}</h2>
-    <p class="text-gray-500 text-sm">{{ user.roleLabel }}</p>
-    @if(user.schoolName)
-    <p class="text-sm text-gray-400 mt-1">{{ user.schoolName }}</p>
-    @endif
-  </div>
+  @section('title')
+    Mon profil - {{ user.firstName }} {{ user.lastName }}
+  @endsection
   
-  <!-- Informations personnelles -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">Informations personnelles</h3>
-    <div class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-gray-500">Nom complet</span>
-        <span class="font-medium">{{ user.firstName }} {{ user.lastName }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Email</span>
-        <span>{{ user.email }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Téléphone</span>
-        <span>{{ user.phone || '-' }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Rôle</span>
-        <span>{{ user.roleLabel }}</span>
-      </div>
-      @if(user.className)
-      <div class="flex justify-between">
-        <span class="text-gray-500">Classe</span>
-        <span>{{ user.className }}</span>
-      </div>
-      @endif
-      @if(user.qualification)
-      <div class="flex justify-between">
-        <span class="text-gray-500">Qualification</span>
-        <span>{{ user.qualification }}</span>
-      </div>
-      @endif
-    </div>
-  </div>
+  @section('dashboardTitle')
+    Mon profil
+  @endsection
+  @section('dashboardSubtitle')
+    Informations personnelles et compte
+  @endsection
   
-  <!-- Statistiques personnelles -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold border-b pb-2 mb-3">Statistiques</h3>
-    <div class="space-y-3">
-      <div>
-        <div class="flex justify-between text-sm mb-1">
-          <span>Complétion du profil</span>
-          <span>{{ profileCompletion }}%</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div class="bg-primary rounded-full h-2" style="width: {{ profileCompletion }}%"></div>
-        </div>
+  @section('actions')
+    <div class="flex gap-2">
+      <a href="/profile/edit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-edit mr-2"></i>Modifier
+  </a>
+      <a href="/profile/security" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-key mr-2"></i>Sécurité
+  </a>
+    </div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.memberSince || '-' }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Membre depuis
+        </p>
       </div>
-      <div class="flex justify-between text-sm">
-        <span class="text-gray-500">Messages envoyés</span>
-        <span>{{ stats.messagesSent || 0 }}</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.lastLogin || '-' }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Dernière connexion
+        </p>
       </div>
-      <div class="flex justify-between text-sm">
-        <span class="text-gray-500">Documents partagés</span>
-        <span>{{ stats.documentsShared || 0 }}</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.loginCount || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Connexions
+        </p>
       </div>
-      <div class="flex justify-between text-sm">
-        <span class="text-gray-500">Jours d'activité</span>
-        <span>{{ stats.activeDays || 0 }}</span>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.documentsCount || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Documents
+        </p>
       </div>
     </div>
-  </div>
-</div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Avatar et infos -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
+        <div class="relative inline-block">
+          @if(user.avatarUrl)
+            <img
+              id="avatarPreview"
+              src="{{ user.avatarUrl }}"
+              alt="Photo de profil"
+              class="w-32 h-32 rounded-full object-cover mx-auto border-4 border-primary/20"
+            />
+          @else
+            <div
+              id="avatarInitials"
+              class="w-32 h-32 rounded-full bg-primary flex items-center justify-center text-white text-4xl font-bold mx-auto"
+            >
+              {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+            </div>
+            <img
+              id="avatarPreview"
+              src=""
+              alt="Photo de profil"
+              class="hidden w-32 h-32 rounded-full object-cover mx-auto border-4 border-primary/20"
+            />
+          @endif
+          <button
+            onclick="document.getElementById('avatarInput').click()"
+            class="absolute bottom-0 right-0 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-white rounded-full p-2 hover:bg-gray-300 dark:hover:bg-gray-600 border border-white dark:border-gray-500 shadow-md"
+            aria-label="Changer la photo de profil"
+          >
+            <i class="fas fa-camera text-sm"></i>
+          </button>
+          <input type="file" id="avatarInput" class="hidden" accept="image/*" />
+        </div>
+        <h2 class="text-xl font-bold mt-3">
+          {{ user.firstName }} {{ user.lastName }}
+        </h2>
+        <p class="text-gray-500 text-sm">
+          {{ user.roleLabel }}
+        </p>
+        @if(user.schoolName)
+          <p class="text-sm text-gray-400 mt-1">
+            {{ user.schoolName }}
+          </p>
+        @endif
+      </div>
 
-<!-- Activités récentes -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-    <h3 class="font-semibold">Activités récentes</h3>
-    <a href="/profile/activity" class="text-primary text-sm hover:underline">Voir tout</a>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(activity in recentActivities)
-    <div class="p-3 flex items-center gap-3">
-      <div class="w-8 h-8 rounded-full 
+      <!-- Informations personnelles -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Informations personnelles
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Nom complet</span>
+            <span class="font-medium">{{ user.firstName }} {{ user.lastName }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Email</span>
+            <span>{{ user.email }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Téléphone</span>
+            <span>{{ user.phone || '-' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Rôle</span>
+            <span>{{ user.roleLabel }}</span>
+          </div>
+          @if(user.className)
+            <div class="flex justify-between">
+              <span class="text-gray-500">Classe</span>
+              <span>{{ user.className }}</span>
+            </div>
+          @endif
+          @if(user.qualification)
+            <div class="flex justify-between">
+              <span class="text-gray-500">Qualification</span>
+              <span>{{ user.qualification }}</span>
+            </div>
+          @endif
+        </div>
+      </div>
+
+      <!-- Statistiques personnelles -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Statistiques
+        </h3>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>Complétion du profil</span>
+              <span>{{ profileCompletion }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-primary rounded-full h-2" style="width: {{ profileCompletion }}%">
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">Messages envoyés</span>
+            <span>{{ stats.messagesSent || 0 }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">Documents partagés</span>
+            <span>{{ stats.documentsShared || 0 }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">Jours d'activité</span>
+            <span>{{ stats.activeDays || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activités récentes -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="font-semibold">
+          Activités récentes
+        </h3>
+        <a href="/profile/activity" class="text-primary text-sm hover:underline">Voir tout</a>
+      </div>
+      <div class="divide-y dark:divide-gray-700">
+        @each(activity in recentActivities)
+          <div class="p-3 flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-full 
         {{ activity.type === 'login' ? 'bg-green-100 text-green-600' : 
            (activity.type === 'message' ? 'bg-blue-100 text-blue-600' : 
            (activity.type === 'document' ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-600')) }} 
-        flex items-center justify-center">
-        <i class="fas {{ activity.type === 'login' ? 'fa-sign-in-alt' : 
+        flex items-center justify-center"
+            >
+              <i
+                class="fas {{ activity.type === 'login' ? 'fa-sign-in-alt' : 
                          (activity.type === 'message' ? 'fa-envelope' : 
-                         (activity.type === 'document' ? 'fa-file-alt' : 'fa-bell')) }} text-sm"></i>
-      </div>
-      <div class="flex-1">
-        <p class="text-sm">{{ activity.description }}</p>
-        <p class="text-xs text-gray-400">{{ activity.time }}</p>
+                         (activity.type === 'document' ? 'fa-file-alt' : 'fa-bell')) }} text-sm"
+              ></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm">
+                {{ activity.description }}
+              </p>
+              <p class="text-xs text-gray-400">
+                {{ activity.time }}
+              </p>
+            </div>
+          </div>
+          @else
+          <div class="p-6 text-center text-gray-500">
+            Aucune activité récente
+          </div>
+        @end
       </div>
     </div>
-    @eachelse
-    <div class="p-6 text-center text-gray-500">Aucune activité récente</div>
-    @end
-  </div>
-</div>
 
-<script>
-  document.getElementById('avatarInput')?.addEventListener('change', async function(e) {
-    const file = e.target.files[0]
-    if (file) {
-      const formData = new FormData()
-      formData.append('avatar', file)
-      const res = await fetch('/api/profile/avatar', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
-        body: formData
-      })
-      const data = await res.json()
-      if (data.success) location.reload()
-      else alert('Erreur: ' + data.message)
-    }
-  })
-</script>
-{{# /section }}
-
-{{# /layout }}
+    <script>
+      document.getElementById("avatarInput")?.addEventListener("change", async function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const formData = new FormData();
+          formData.append("avatar", file);
+          const res = await fetch("/api/profile/avatar", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) {
+            const preview = document.getElementById("avatarPreview");
+            const initials = document.getElementById("avatarInitials");
+            if (preview) {
+              preview.src = data.avatarUrl;
+              preview.classList.remove("hidden");
+            }
+            initials?.classList.add("hidden");
+          } else {
+            alert("Erreur: " + data.message);
+          }
+        }
+      });
+    </script>
+  @endsection
+  

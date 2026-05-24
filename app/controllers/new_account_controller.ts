@@ -1,5 +1,6 @@
 import { type HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
+import vine from '@vinejs/vine'
 import User from '#models/user'
 import Student from '#models/student'
 import Teacher from '#models/teacher'
@@ -11,7 +12,47 @@ import {
 } from '#validators/new_account'
 import { DateTime } from 'luxon'
 
+const webSignupValidator = vine.compile(
+  vine.object({
+    fullName: vine.string().trim().minLength(2),
+    email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
+    role: vine.enum([
+      'inspection',
+      'director',
+      'finance_director',
+      'teacher',
+      'parent',
+      'student',
+      'discipline_director',
+    ]),
+    password: vine.string().minLength(8).confirmed({ confirmationField: 'passwordConfirmation' }),
+  })
+)
+
 export default class NewAccountController {
+  public async create({ inertia }: HttpContext) {
+    return inertia.render('auth/signup', {})
+  }
+
+  public async store({ request, response, session }: HttpContext) {
+    const payload = await request.validateUsing(webSignupValidator)
+    const [firstName, ...lastNameParts] = payload.fullName.split(/\s+/)
+
+    await User.create({
+      email: payload.email,
+      password: payload.password,
+      firstName,
+      lastName: lastNameParts.join(' ') || firstName,
+      role: payload.role,
+      status: 'active',
+      schoolId: null as unknown as string,
+    })
+
+    session.flash('success', 'Compte cree avec succes')
+
+    return response.redirect('/login')
+  }
+
   /**
    * Créer un compte utilisateur individuel
    */

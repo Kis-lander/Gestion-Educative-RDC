@@ -1,250 +1,366 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Résumé disciplinaire - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Résumé disciplinaire{{# /section }}
-{{# section('dashboardSubtitle') }}Synthèse des incidents et sanctions{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-file-pdf mr-2"></i> PDF
+  @section('title')
+    Résumé disciplinaire - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Résumé disciplinaire
+  @endsection
+  @section('dashboardSubtitle')
+    Synthèse des incidents et sanctions
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button
+        onclick="exportReport('pdf')"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>PDF
   </button>
-  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-file-excel mr-2"></i> Excel
+      <button
+        onclick="exportReport('excel')"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-file-excel mr-2"></i>Excel
   </button>
-  <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
+      <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
-      <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="month">Ce mois</option>
-        <option value="quarter">Ce trimestre</option>
-        <option value="year">Cette année</option>
-        <option value="custom">Personnalisée</option>
-      </select>
     </div>
-    <div id="dateRange" class="hidden">
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div id="dateRangeEnd" class="hidden">
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
-      <select id="classFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        @each(classObj in classes)
-        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
-        @end
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-chart-bar mr-2"></i> Générer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
+          <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="month">
+              Ce mois
+            </option>
+            <option value="quarter">
+              Ce trimestre
+            </option>
+            <option value="year">
+              Cette année
+            </option>
+            <option value="custom">
+              Personnalisée
+            </option>
+          </select>
+        </div>
+        <div id="dateRange" class="hidden">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div id="dateRangeEnd" class="hidden">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+          <select id="classFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            @each(classObj in classes)
+              <option value="{{ classObj.id }}">
+                {{ classObj.name }}
+              </option>
+            @end
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-chart-bar mr-2"></i>Générer
       </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Indicateurs clés -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total incidents</p>
-    <p class="text-3xl font-bold" id="totalIncidents">0</p>
-  </div>
-  <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Incidents majeurs</p>
-    <p class="text-3xl font-bold" id="majorIncidents">0</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Sanctions appliquées</p>
-    <p class="text-3xl font-bold" id="totalSanctions">0</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Taux résolution</p>
-    <p class="text-3xl font-bold" id="resolutionRate">0%</p>
-  </div>
-</div>
+    <!-- Indicateurs clés -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total incidents
+        </p>
+        <p class="text-3xl font-bold" id="totalIncidents">
+          0
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Incidents majeurs
+        </p>
+        <p class="text-3xl font-bold" id="majorIncidents">
+          0
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Sanctions appliquées
+        </p>
+        <p class="text-3xl font-bold" id="totalSanctions">
+          0
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Taux résolution
+        </p>
+        <p class="text-3xl font-bold" id="resolutionRate">
+          0%
+        </p>
+      </div>
+    </div>
 
-<!-- Graphiques principaux -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par type d'incident</h3>
-    <canvas id="incidentsByTypeChart" height="200"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par gravité</h3>
-    <canvas id="severityChart" height="200"></canvas>
-  </div>
-</div>
+    <!-- Graphiques principaux -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Répartition par type d'incident
+        </h3>
+        <canvas id="incidentsByTypeChart" height="200">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Répartition par gravité
+        </h3>
+        <canvas id="severityChart" height="200">
+        </canvas>
+      </div>
+    </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Incidents par classe</h3>
-    <canvas id="incidentsByClassChart" height="200"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Sanctions appliquées</h3>
-    <canvas id="sanctionsChart" height="200"></canvas>
-  </div>
-</div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Incidents par classe
+        </h3>
+        <canvas id="incidentsByClassChart" height="200">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Sanctions appliquées
+        </h3>
+        <canvas id="sanctionsChart" height="200">
+        </canvas>
+      </div>
+    </div>
 
-<!-- Top élèves concernés -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Top 10 élèves concernés</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">#</th>
-          <th class="px-4 py-2">Élève</th>
-          <th class="px-4 py-2">Classe</th>
-          <th class="px-4 py-2 text-center">Incidents</th>
-          <th class="px-4 py-2 text-center">Majeurs</th>
-          <th class="px-4 py-2 text-center">Sanctions</th>
-        </tr>
-      </thead>
-      <tbody id="topStudentsTable">
-        <!-- Dynamique -->
-      </tbody>
-    </table>
-  </div>
-</div>
+    <!-- Top élèves concernés -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Top 10 élèves concernés
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                #
+              </th>
+              <th class="px-4 py-2">
+                Élève
+              </th>
+              <th class="px-4 py-2">
+                Classe
+              </th>
+              <th class="px-4 py-2 text-center">
+                Incidents
+              </th>
+              <th class="px-4 py-2 text-center">
+                Majeurs
+              </th>
+              <th class="px-4 py-2 text-center">
+                Sanctions
+              </th>
+            </tr>
+          </thead>
+          <tbody id="topStudentsTable">
+            <!-- Dynamique -->
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<!-- Détail des incidents récents -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Incidents récents</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Élève</th>
-          <th class="px-4 py-2">Type</th>
-          <th class="px-4 py-2">Gravité</th>
-          <th class="px-4 py-2">Sanction</th>
-          <th class="px-4 py-2">Statut</th>
-        </tr>
-      </thead>
-      <tbody id="recentIncidentsTable">
-        <!-- Dynamique -->
-      </tbody>
-    </table>
-  </div>
-</div>
+    <!-- Détail des incidents récents -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Incidents récents
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date
+              </th>
+              <th class="px-4 py-2">
+                Élève
+              </th>
+              <th class="px-4 py-2">
+                Type
+              </th>
+              <th class="px-4 py-2">
+                Gravité
+              </th>
+              <th class="px-4 py-2">
+                Sanction
+              </th>
+              <th class="px-4 py-2">
+                Statut
+              </th>
+            </tr>
+          </thead>
+          <tbody id="recentIncidentsTable">
+            <!-- Dynamique -->
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<script>
-  let typeChart, severityChart, classChart, sanctionsChart
+    <script>
+      let typeChart, severityChart, classChart, sanctionsChart;
+
+      document.getElementById("periodSelect").addEventListener("change", function() {
+        const isCustom = this.value === "custom";
+        document.getElementById("dateRange").classList.toggle("hidden", !isCustom);
+        document.getElementById("dateRangeEnd").classList.toggle("hidden", !isCustom);
+      });
+
+      async function loadReport() {
+        const period = document.getElementById("periodSelect").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const classId = document.getElementById("classFilter").value;
+        const params = new URLSearchParams({
+          period: period
+        });
+        if (startDate) params.append("start_date", startDate);
+        if (endDate) params.append("end_date", endDate);
+        if (classId) params.append("class_id", classId);
+        const res = await fetch(`/api/reports/disciplinary/summary?${params.toString()}`);
+        const data = await res.json();
+        document.getElementById("totalIncidents").textContent = data.summary.totalIncidents;
+        document.getElementById("majorIncidents").textContent = data.summary.majorIncidents;
+        document.getElementById("totalSanctions").textContent = data.summary.totalSanctions;
+        document.getElementById("resolutionRate").textContent = `${data.summary.resolutionRate}%`;
+        if (typeChart) typeChart.destroy();
+        const typeCtx = document.getElementById("incidentsByTypeChart").getContext("2d");
+        typeChart = new Chart(typeCtx, {
+          type: "doughnut",
+          data: {
+            labels: data.byType.labels,
+            datasets: [ {
+              data: data.byType.values,
+              backgroundColor: [ "#3b82f6", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4" ]
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        if (severityChart) severityChart.destroy();
+        const sevCtx = document.getElementById("severityChart").getContext("2d");
+        severityChart = new Chart(sevCtx, {
+          type: "bar",
+          data: {
+            labels: data.bySeverity.labels,
+            datasets: [ {
+              label: "Nombre d'incidents",
+              data: data.bySeverity.values,
+              backgroundColor: [ "#10b981", "#f59e0b", "#f97316", "#ef4444" ],
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                stepSize: 1
+              }
+            }
+          }
+        });
+        if (classChart) classChart.destroy();
+        const classCtx = document.getElementById("incidentsByClassChart").getContext("2d");
+        classChart = new Chart(classCtx, {
+          type: "bar",
+          data: {
+            labels: data.byClass.labels,
+            datasets: [ {
+              label: "Nombre d'incidents",
+              data: data.byClass.values,
+              backgroundColor: "#3b82f6",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        if (sanctionsChart) sanctionsChart.destroy();
+        const sanCtx = document.getElementById("sanctionsChart").getContext("2d");
+        sanctionsChart = new Chart(sanCtx, {
+          type: "pie",
+          data: {
+            labels: data.bySanction.labels,
+            datasets: [ {
+              data: data.bySanction.values,
+              backgroundColor: [ "#f59e0b", "#3b82f6", "#f97316", "#ef4444" ]
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        document.getElementById("topStudentsTable").innerHTML = data.topStudents.map((s, i) => `
+                <tr class="border-b dark:border-gray-700">
+                  <td class="px-4 py-2 text-center font-bold">${i + 1}</td>
+                  <td class="px-4 py-2 font-medium">${s.name}</td>
+                  <td class="px-4 py-2">${s.className}</td>
+                  <td class="px-4 py-2 text-center">${s.incidentCount}</td>
+                  <td class="px-4 py-2 text-center text-red-600">${s.majorCount || 0}</td>
+                  <td class="px-4 py-2 text-center">${s.sanctionsCount || 0}</td>
+                </tr>
+              `).join("");
+        document.getElementById("recentIncidentsTable").innerHTML = data.recentIncidents.map(i => `
+                <tr class="border-b dark:border-gray-700">
+                  <td class="px-4 py-2">${i.date}</td>
+                  <td class="px-4 py-2 font-medium">${i.studentName}</td>
+                  <td class="px-4 py-2">${i.typeLabel}</td>
+                  <td class="px-4 py-2">${i.severityLabel}</td>
+                  <td class="px-4 py-2">${i.sanctionLabel || "-"}</td>
+                  <td class="px-4 py-2"><span class="px-2 py-1 rounded-full text-xs ${i.status === "resolved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">${i.status === "resolved" ? "Résolu" : "En attente"}</span></td>
+                </tr>
+              `).join("");
+      }
+
+      document.getElementById("applyFilters").addEventListener("click", loadReport);
+
+      function exportReport(format) {
+        const period = document.getElementById("periodSelect").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const classId = document.getElementById("classFilter").value;
+        window.location.href = `/api/reports/disciplinary/summary/export?format=${format}&period=${period}&start_date=${startDate}&end_date=${endDate}&class_id=${classId}`;
+      }
+
+      document.getElementById("startDate").value = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0];
+
+      document.getElementById("endDate").value = new Date().toISOString().split("T")[0];
+
+      loadReport();
+    </script>
+  @endsection
   
-  document.getElementById('periodSelect').addEventListener('change', function() {
-    const isCustom = this.value === 'custom'
-    document.getElementById('dateRange').classList.toggle('hidden', !isCustom)
-    document.getElementById('dateRangeEnd').classList.toggle('hidden', !isCustom)
-  })
-  
-  async function loadReport() {
-    const period = document.getElementById('periodSelect').value
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const classId = document.getElementById('classFilter').value
-    
-    const params = new URLSearchParams({ period })
-    if (startDate) params.append('start_date', startDate)
-    if (endDate) params.append('end_date', endDate)
-    if (classId) params.append('class_id', classId)
-    
-    const res = await fetch(`/api/reports/disciplinary/summary?${params.toString()}`)
-    const data = await res.json()
-    
-    document.getElementById('totalIncidents').textContent = data.summary.totalIncidents
-    document.getElementById('majorIncidents').textContent = data.summary.majorIncidents
-    document.getElementById('totalSanctions').textContent = data.summary.totalSanctions
-    document.getElementById('resolutionRate').textContent = `${data.summary.resolutionRate}%`
-    
-    if (typeChart) typeChart.destroy()
-    const typeCtx = document.getElementById('incidentsByTypeChart').getContext('2d')
-    typeChart = new Chart(typeCtx, {
-      type: 'doughnut',
-      data: { labels: data.byType.labels, datasets: [{ data: data.byType.values, backgroundColor: ['#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'] }] },
-      options: { responsive: true }
-    })
-    
-    if (severityChart) severityChart.destroy()
-    const sevCtx = document.getElementById('severityChart').getContext('2d')
-    severityChart = new Chart(sevCtx, {
-      type: 'bar',
-      data: { labels: data.bySeverity.labels, datasets: [{ label: "Nombre d'incidents", data: data.bySeverity.values, backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'], borderRadius: 8 }] },
-      options: { responsive: true, scales: { y: { beginAtZero: true, stepSize: 1 } } }
-    })
-    
-    if (classChart) classChart.destroy()
-    const classCtx = document.getElementById('incidentsByClassChart').getContext('2d')
-    classChart = new Chart(classCtx, {
-      type: 'bar',
-      data: { labels: data.byClass.labels, datasets: [{ label: "Nombre d'incidents", data: data.byClass.values, backgroundColor: '#3b82f6', borderRadius: 8 }] },
-      options: { responsive: true }
-    })
-    
-    if (sanctionsChart) sanctionsChart.destroy()
-    const sanCtx = document.getElementById('sanctionsChart').getContext('2d')
-    sanctionsChart = new Chart(sanCtx, {
-      type: 'pie',
-      data: { labels: data.bySanction.labels, datasets: [{ data: data.bySanction.values, backgroundColor: ['#f59e0b', '#3b82f6', '#f97316', '#ef4444'] }] },
-      options: { responsive: true }
-    })
-    
-    document.getElementById('topStudentsTable').innerHTML = data.topStudents.map((s, i) => `
-      <tr class="border-b dark:border-gray-700">
-        <td class="px-4 py-2 text-center font-bold">${i + 1}</td>
-        <td class="px-4 py-2 font-medium">${s.name}</td>
-        <td class="px-4 py-2">${s.className}</td>
-        <td class="px-4 py-2 text-center">${s.incidentCount}</td>
-        <td class="px-4 py-2 text-center text-red-600">${s.majorCount || 0}</td>
-        <td class="px-4 py-2 text-center">${s.sanctionsCount || 0}</td>
-      </tr>
-    `).join('')
-    
-    document.getElementById('recentIncidentsTable').innerHTML = data.recentIncidents.map(i => `
-      <tr class="border-b dark:border-gray-700">
-        <td class="px-4 py-2">${i.date}</td>
-        <td class="px-4 py-2 font-medium">${i.studentName}</td>
-        <td class="px-4 py-2">${i.typeLabel}</td>
-        <td class="px-4 py-2">${i.severityLabel}</td>
-        <td class="px-4 py-2">${i.sanctionLabel || '-'}</td>
-        <td class="px-4 py-2"><span class="px-2 py-1 rounded-full text-xs ${i.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${i.status === 'resolved' ? 'Résolu' : 'En attente'}</span></td>
-      </tr>
-    `).join('')
-  }
-  
-  document.getElementById('applyFilters').addEventListener('click', loadReport)
-  
-  function exportReport(format) {
-    const period = document.getElementById('periodSelect').value
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const classId = document.getElementById('classFilter').value
-    window.location.href = `/api/reports/disciplinary/summary/export?format=${format}&period=${period}&start_date=${startDate}&end_date=${endDate}&class_id=${classId}`
-  }
-  
-  document.getElementById('startDate').value = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
-  document.getElementById('endDate').value = new Date().toISOString().split('T')[0]
-  loadReport()
-</script>
-{{# /section }}
-
-{{# /layout }}

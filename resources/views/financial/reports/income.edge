@@ -1,277 +1,362 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Rapport des revenus - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Rapport des revenus{{# /section }}
-{{# section('dashboardSubtitle') }}Analyse des encaissements par période{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-file-pdf mr-2"></i> PDF
-  </button>
-  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-file-excel mr-2"></i> Excel
-  </button>
-  <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
-  </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
-      <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="custom">Personnalisée</option>
-        <option value="today">Aujourd'hui</option>
-        <option value="week">Cette semaine</option>
-        <option value="month">Ce mois</option>
-        <option value="year">Cette année</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type frais</label>
-      <select id="feeTypeSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="Inscription">Inscription</option>
-        <option value="Minerval">Minerval</option>
-        <option value="Assurance">Assurance</option>
-        <option value="Transport">Transport</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-chart-line mr-2"></i> Générer
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Indicateurs clés -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total encaissé</p>
-    <p class="text-2xl font-bold" id="totalIncome">0 $</p>
-  </div>
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Moyenne journalière</p>
-    <p class="text-2xl font-bold" id="dailyAverage">0 $</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Transactions</p>
-    <p class="text-2xl font-bold" id="transactionCount">0</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Taux croissance</p>
-    <p class="text-2xl font-bold" id="growthRate">0%</p>
-  </div>
-</div>
-
-<!-- Graphiques -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution quotidienne</h3>
-    <canvas id="dailyChart" height="250"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par type de frais</h3>
-    <canvas id="feesChart" height="250"></canvas>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution mensuelle</h3>
-    <canvas id="monthlyChart" height="250"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Top 10 des payeurs</h3>
-    <div class="space-y-2 max-h-64 overflow-y-auto" id="topPayers">
-      <!-- Dynamique -->
-    </div>
-  </div>
-</div>
-
-<!-- Tableau détaillé -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Détail des transactions</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2 text-left">Date</th>
-          <th class="px-4 py-2 text-left">Élève</th>
-          <th class="px-4 py-2 text-left">Type frais</th>
-          <th class="px-4 py-2 text-right">Montant</th>
-          <th class="px-4 py-2 text-left">Mode</th>
-          <th class="px-4 py-2 text-left">Reçu</th>
-        </tr>
-      </thead>
-      <tbody id="transactionsTable">
-        <!-- Dynamique -->
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<script>
-  let dailyChart, feesChart, monthlyChart
+  @section('title')
+    Rapport des revenus - {{ school.name }}
+  @endsection
   
-  async function loadReport() {
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const feeType = document.getElementById('feeTypeSelect').value
-    
-    const params = new URLSearchParams()
-    if (startDate) params.append('start_date', startDate)
-    if (endDate) params.append('end_date', endDate)
-    if (feeType) params.append('fee_type', feeType)
-    
-    const res = await fetch(`/api/financial/reports/income?${params.toString()}`)
-    const data = await res.json()
-    
-    // Mise à jour des indicateurs
-    document.getElementById('totalIncome').textContent = `$ ${data.summary.total.toLocaleString()}`
-    document.getElementById('dailyAverage').textContent = `$ ${data.summary.dailyAverage.toLocaleString()}`
-    document.getElementById('transactionCount').textContent = data.summary.transactions
-    document.getElementById('growthRate').textContent = `${data.summary.growthRate}%`
-    
-    // Graphique quotidien
-    if (dailyChart) dailyChart.destroy()
-    const dailyCtx = document.getElementById('dailyChart').getContext('2d')
-    dailyChart = new Chart(dailyCtx, {
-      type: 'line',
-      data: {
-        labels: data.daily.labels,
-        datasets: [{
-          label: 'Encaissements ($)',
-          data: data.daily.values,
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true }
-    })
-    
-    // Graphique par type
-    if (feesChart) feesChart.destroy()
-    const feesCtx = document.getElementById('feesChart').getContext('2d')
-    feesChart = new Chart(feesCtx, {
-      type: 'doughnut',
-      data: {
-        labels: data.byFeeType.labels,
-        datasets: [{ data: data.byFeeType.values, backgroundColor: ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#8b5cf6'] }]
-      },
-      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
-    })
-    
-    // Graphique mensuel
-    if (monthlyChart) monthlyChart.destroy()
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d')
-    monthlyChart = new Chart(monthlyCtx, {
-      type: 'bar',
-      data: {
-        labels: data.monthly.labels,
-        datasets: [{
-          label: 'Encaissements ($)',
-          data: data.monthly.values,
-          backgroundColor: '#16a34a',
-          borderRadius: 8
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true }
-    })
-    
-    // Top payeurs
-    document.getElementById('topPayers').innerHTML = data.topPayers.map((p, i) => `
-      <div class="flex justify-between items-center p-2 border-b">
-        <div class="flex items-center gap-2">
-          <span class="w-6 font-bold text-primary">${i + 1}</span>
-          <span>${p.name}</span>
-          <span class="text-xs text-gray-400">${p.className}</span>
+  @section('dashboardTitle')
+    Rapport des revenus
+  @endsection
+  @section('dashboardSubtitle')
+    Analyse des encaissements par période
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button
+        onclick="exportReport('pdf')"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>PDF
+  </button>
+      <button
+        onclick="exportReport('excel')"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-file-excel mr-2"></i>Excel
+  </button>
+      <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
+  </button>
+    </div>
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
-        <span class="font-bold text-green-600">$ ${p.total.toLocaleString()}</span>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
+          <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="custom">
+              Personnalisée
+            </option>
+            <option value="today">
+              Aujourd'hui
+            </option>
+            <option value="week">
+              Cette semaine
+            </option>
+            <option value="month">
+              Ce mois
+            </option>
+            <option value="year">
+              Cette année
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type frais</label>
+          <select id="feeTypeSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="Inscription">
+              Inscription
+            </option>
+            <option value="Minerval">
+              Minerval
+            </option>
+            <option value="Assurance">
+              Assurance
+            </option>
+            <option value="Transport">
+              Transport
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-chart-line mr-2"></i>Générer
+      </button>
+        </div>
       </div>
-    `).join('')
-    
-    // Tableau transactions
-    document.getElementById('transactionsTable').innerHTML = data.transactions.map(t => `
-      <tr class="border-b dark:border-gray-700">
-        <td class="px-4 py-2">${t.date}</td>
-        <td class="px-4 py-2">${t.studentName}</td>
-        <td class="px-4 py-2">${t.feeType}</td>
-        <td class="px-4 py-2 text-right font-bold text-green-600">$ ${t.amount.toLocaleString()}</td>
-        <td class="px-4 py-2">${t.method}</td>
-        <td class="px-4 py-2 font-mono text-xs">${t.receiptNumber}</td>
-      </tr>
-    `).join('')
-  }
-  
-  function setPeriod(period) {
-    const today = new Date()
-    let start, end
-    
-    switch(period) {
-      case 'today':
-        start = end = today.toISOString().split('T')[0]
-        break
-      case 'week':
-        const weekStart = new Date(today)
-        weekStart.setDate(today.getDate() - today.getDay())
-        start = weekStart.toISOString().split('T')[0]
-        end = today.toISOString().split('T')[0]
-        break
-      case 'month':
-        start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
-        end = today.toISOString().split('T')[0]
-        break
-      case 'year':
-        start = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0]
-        end = today.toISOString().split('T')[0]
-        break
-    }
-    
-    if (start) document.getElementById('startDate').value = start
-    if (end) document.getElementById('endDate').value = end
-  }
-  
-  document.getElementById('periodSelect').addEventListener('change', (e) => {
-    if (e.target.value !== 'custom') setPeriod(e.target.value)
-  })
-  
-  document.getElementById('applyFilters').addEventListener('click', loadReport)
-  
-  // Dates par défaut (ce mois)
-  const today = new Date()
-  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
-  document.getElementById('startDate').value = firstDay.toISOString().split('T')[0]
-  document.getElementById('endDate').value = today.toISOString().split('T')[0]
-  
-  function exportReport(format) {
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const feeType = document.getElementById('feeTypeSelect').value
-    window.location.href = `/api/financial/reports/income/export?format=${format}&start_date=${startDate}&end_date=${endDate}&fee_type=${feeType}`
-  }
-  
-  loadReport()
-</script>
-{{# /section }}
+    </div>
 
-{{# /layout }}
+    <!-- Indicateurs clés -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total encaissé
+        </p>
+        <p class="text-2xl font-bold" id="totalIncome">
+          0 $
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Moyenne journalière
+        </p>
+        <p class="text-2xl font-bold" id="dailyAverage">
+          0 $
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Transactions
+        </p>
+        <p class="text-2xl font-bold" id="transactionCount">
+          0
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Taux croissance
+        </p>
+        <p class="text-2xl font-bold" id="growthRate">
+          0%
+        </p>
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Évolution quotidienne
+        </h3>
+        <canvas id="dailyChart" height="250">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Répartition par type de frais
+        </h3>
+        <canvas id="feesChart" height="250">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Évolution mensuelle
+        </h3>
+        <canvas id="monthlyChart" height="250">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Top 10 des payeurs
+        </h3>
+        <div class="space-y-2 max-h-64 overflow-y-auto" id="topPayers">
+          <!-- Dynamique -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Tableau détaillé -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Détail des transactions
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2 text-left">
+                Date
+              </th>
+              <th class="px-4 py-2 text-left">
+                Élève
+              </th>
+              <th class="px-4 py-2 text-left">
+                Type frais
+              </th>
+              <th class="px-4 py-2 text-right">
+                Montant
+              </th>
+              <th class="px-4 py-2 text-left">
+                Mode
+              </th>
+              <th class="px-4 py-2 text-left">
+                Reçu
+              </th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTable">
+            <!-- Dynamique -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let dailyChart, feesChart, monthlyChart;
+
+      async function loadReport() {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const feeType = document.getElementById("feeTypeSelect").value;
+        const params = new URLSearchParams();
+        if (startDate) params.append("start_date", startDate);
+        if (endDate) params.append("end_date", endDate);
+        if (feeType) params.append("fee_type", feeType);
+        const res = await fetch(`/api/financial/reports/income?${params.toString()}`);
+        const data = await res.json();
+        // Mise à jour des indicateurs
+        document.getElementById("totalIncome").textContent = `$ ${data.summary.total.toLocaleString()}`;
+        document.getElementById("dailyAverage").textContent = `$ ${data.summary.dailyAverage.toLocaleString()}`;
+        document.getElementById("transactionCount").textContent = data.summary.transactions;
+        document.getElementById("growthRate").textContent = `${data.summary.growthRate}%`;
+        // Graphique quotidien
+        if (dailyChart) dailyChart.destroy();
+        const dailyCtx = document.getElementById("dailyChart").getContext("2d");
+        dailyChart = new Chart(dailyCtx, {
+          type: "line",
+          data: {
+            labels: data.daily.labels,
+            datasets: [ {
+              label: "Encaissements ($)",
+              data: data.daily.values,
+              borderColor: "#2563eb",
+              backgroundColor: "rgba(37, 99, 235, 0.1)",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+        // Graphique par type
+        if (feesChart) feesChart.destroy();
+        const feesCtx = document.getElementById("feesChart").getContext("2d");
+        feesChart = new Chart(feesCtx, {
+          type: "doughnut",
+          data: {
+            labels: data.byFeeType.labels,
+            datasets: [ {
+              data: data.byFeeType.values,
+              backgroundColor: [ "#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#8b5cf6" ]
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                position: "bottom"
+              }
+            }
+          }
+        });
+        // Graphique mensuel
+        if (monthlyChart) monthlyChart.destroy();
+        const monthlyCtx = document.getElementById("monthlyChart").getContext("2d");
+        monthlyChart = new Chart(monthlyCtx, {
+          type: "bar",
+          data: {
+            labels: data.monthly.labels,
+            datasets: [ {
+              label: "Encaissements ($)",
+              data: data.monthly.values,
+              backgroundColor: "#16a34a",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+        // Top payeurs
+        document.getElementById("topPayers").innerHTML = data.topPayers.map((p, i) => `
+                <div class="flex justify-between items-center p-2 border-b">
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 font-bold text-primary">${i + 1}</span>
+                    <span>${p.name}</span>
+                    <span class="text-xs text-gray-400">${p.className}</span>
+                  </div>
+                  <span class="font-bold text-green-600">$ ${p.total.toLocaleString()}</span>
+                </div>
+              `).join("");
+        // Tableau transactions
+        document.getElementById("transactionsTable").innerHTML = data.transactions.map(t => `
+                <tr class="border-b dark:border-gray-700">
+                  <td class="px-4 py-2">${t.date}</td>
+                  <td class="px-4 py-2">${t.studentName}</td>
+                  <td class="px-4 py-2">${t.feeType}</td>
+                  <td class="px-4 py-2 text-right font-bold text-green-600">$ ${t.amount.toLocaleString()}</td>
+                  <td class="px-4 py-2">${t.method}</td>
+                  <td class="px-4 py-2 font-mono text-xs">${t.receiptNumber}</td>
+                </tr>
+              `).join("");
+      }
+
+      function setPeriod(period) {
+        const today = new Date();
+        let start, end;
+        switch (period) {
+         case "today":
+          start = end = today.toISOString().split("T")[0];
+          break;
+
+         case "week":
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - today.getDay());
+          start = weekStart.toISOString().split("T")[0];
+          end = today.toISOString().split("T")[0];
+          break;
+
+         case "month":
+          start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split("T")[0];
+          end = today.toISOString().split("T")[0];
+          break;
+
+         case "year":
+          start = new Date(today.getFullYear(), 0, 1).toISOString().split("T")[0];
+          end = today.toISOString().split("T")[0];
+          break;
+        }
+        if (start) document.getElementById("startDate").value = start;
+        if (end) document.getElementById("endDate").value = end;
+      }
+
+      document.getElementById("periodSelect").addEventListener("change", e => {
+        if (e.target.value !== "custom") setPeriod(e.target.value);
+      });
+
+      document.getElementById("applyFilters").addEventListener("click", loadReport);
+      // Dates par défaut (ce mois)
+
+      const today = new Date();
+
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      document.getElementById("startDate").value = firstDay.toISOString().split("T")[0];
+
+      document.getElementById("endDate").value = today.toISOString().split("T")[0];
+
+      function exportReport(format) {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const feeType = document.getElementById("feeTypeSelect").value;
+        window.location.href = `/api/financial/reports/income/export?format=${format}&start_date=${startDate}&end_date=${endDate}&fee_type=${feeType}`;
+      }
+
+      loadReport();
+    </script>
+  @endsection
+  

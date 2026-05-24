@@ -1,162 +1,245 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Mes notes - {{ student.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Mes notes{{# /section }}
-{{# section('dashboardSubtitle') }}Consultez vos résultats scolaires{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <select id="termSelect" class="px-3 py-2 border rounded-lg text-sm">
-    <option value="T1" {{ selectedTerm == 'T1' ? 'selected' : '' }}>Trimestre 1</option>
-    <option value="T2" {{ selectedTerm == 'T2' ? 'selected' : '' }}>Trimestre 2</option>
-    <option value="T3" {{ selectedTerm == 'T3' ? 'selected' : '' }}>Trimestre 3</option>
-  </select>
-  <button id="applyTerm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-sync-alt mr-2"></i> Actualiser
+  @section('title')
+    Mes notes - {{ student.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Mes notes
+  @endsection
+  @section('dashboardSubtitle')
+    Consultez vos résultats scolaires
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <select id="termSelect" class="px-3 py-2 border rounded-lg text-sm">
+        <option value="T1" {{ selectedTerm == 'T1' ? 'selected' : '' }}>
+          Trimestre 1
+        </option>
+        <option value="T2" {{ selectedTerm == 'T2' ? 'selected' : '' }}>
+          Trimestre 2
+        </option>
+        <option value="T3" {{ selectedTerm == 'T3' ? 'selected' : '' }}>
+          Trimestre 3
+        </option>
+      </select>
+      <button id="applyTerm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-sync-alt mr-2"></i>Actualiser
   </button>
-  <a href="/student/grades/report-card" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-file-pdf mr-2"></i> Bulletin
+      <a href="/student/grades/report-card" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-file-pdf mr-2"></i>Bulletin
   </a>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-lg text-gray-500">Moyenne {{ selectedTermLabel }}</p>
-    <p class="text-3xl font-bold {{ termAverage >= 15 ? 'text-green-600' : (termAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-      {{ termAverage }}/20
-    </p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-lg text-gray-500">Classement</p>
-    <p class="text-3xl font-bold text-primary">{{ termRank }}/{{ totalStudents }}</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-lg text-gray-500">Meilleure matière</p>
-    <p class="text-xl font-bold text-green-600">{{ bestSubject }}</p>
-    <p class="text-sm">{{ bestGrade }}/20</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-lg text-gray-500">Appréciation</p>
-    <p class="text-xl font-bold {{ termAverage >= 15 ? 'text-green-600' : (termAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-      {{ appreciation }}
-    </p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Tableau des notes par matière -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Matière</th>
-          <th class="px-4 py-3 text-center">Coefficient</th>
-          <th class="px-4 py-3 text-center">Composition</th>
-          <th class="px-4 py-3 text-center">Interrogation</th>
-          <th class="px-4 py-3 text-center">Devoir</th>
-          <th class="px-4 py-3 text-center">Moyenne</th>
-          <th class="px-4 py-3 text-left">Appréciation</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(subject in subjectsGrades)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/student/grades/details?subject_id={{ subject.id }}'">
-          <td class="px-4 py-3 font-medium">{{ subject.name }}</td>
-          <td class="px-4 py-3 text-center">{{ subject.coefficient }}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="{{ subject.compo && subject.compo >= 15 ? 'text-green-600' : (subject.compo && subject.compo >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-              {{ subject.compo || '-' }}
-            </span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="{{ subject.interro && subject.interro >= 15 ? 'text-green-600' : (subject.interro && subject.interro >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-              {{ subject.interro || '-' }}
-            </span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="{{ subject.devoir && subject.devoir >= 15 ? 'text-green-600' : (subject.devoir && subject.devoir >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-              {{ subject.devoir || '-' }}
-            </span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="font-bold {{ subject.average >= 15 ? 'text-green-600' : (subject.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-              {{ subject.average }}/20
-            </span>
-          </td>
-          <td class="px-4 py-3 text-gray-600">{{ subject.appreciation || '-' }}</td>
-        </tr>
-        @end
-      </tbody>
-      <tfoot class="bg-gray-50 dark:bg-gray-700 font-bold">
-        <tr>
-          <td class="px-4 py-3">MOYENNE GÉNÉRALE</td>
-          <td class="px-4 py-3 text-center">{{ totalCoefficient }}</td>
-          <td colspan="3" class="px-4 py-3"></td>
-          <td class="px-4 py-3 text-center text-lg {{ termAverage >= 15 ? 'text-green-600' : (termAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-            {{ termAverage }}/20
-          </td>
-          <td class="px-4 py-3"></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- Graphique radar -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-  <h3 class="font-semibold mb-3">Analyse des performances par matière</h3>
-  <canvas id="radarChart" height="250"></canvas>
-</div>
-
-<!-- Appréciation générale -->
-<div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-  <h4 class="font-semibold">Appréciation générale du conseil de classe</h4>
-  <p class="text-gray-700 dark:text-gray-300 mt-2">{{ generalAppreciation || 'Félicitations pour vos efforts ! Continuez ainsi.' }}</p>
-</div>
-
-<script>
-  let radarChart
+    </div>
+  @endsection
   
-  function renderRadarChart() {
-    const ctx = document.getElementById('radarChart').getContext('2d')
-    radarChart = new Chart(ctx, {
-      type: 'radar',
-      data: {
-        labels: {{ subjectNames|json_encode|raw }},
-        datasets: [{
-          label: 'Votre note /20',
-          data: {{ subjectAverages|json_encode|raw }},
-          backgroundColor: 'rgba(37, 99, 235, 0.2)',
-          borderColor: '#2563eb',
-          pointBackgroundColor: '#2563eb'
-        }, {
-          label: 'Moyenne de la classe',
-          data: {{ classAverages|json_encode|raw }},
-          backgroundColor: 'rgba(22, 163, 74, 0.2)',
-          borderColor: '#16a34a',
-          pointBackgroundColor: '#16a34a'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: { r: { min: 0, max: 20, ticks: { stepSize: 5 } } }
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-lg text-gray-500">
+          Moyenne {{ selectedTermLabel }}
+        </p>
+        <p
+          class="text-3xl font-bold {{ termAverage >= 15 ? 'text-green-600' : (termAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+        >
+          {{ termAverage }}/20
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-lg text-gray-500">
+          Classement
+        </p>
+        <p class="text-3xl font-bold text-primary">
+          {{ termRank }}/{{ totalStudents }}
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-lg text-gray-500">
+          Meilleure matière
+        </p>
+        <p class="text-xl font-bold text-green-600">
+          {{ bestSubject }}
+        </p>
+        <p class="text-sm">
+          {{ bestGrade }}/20
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-lg text-gray-500">
+          Appréciation
+        </p>
+        <p
+          class="text-xl font-bold {{ termAverage >= 15 ? 'text-green-600' : (termAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+        >
+          {{ appreciation }}
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <!-- Tableau des notes par matière -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Matière
+              </th>
+              <th class="px-4 py-3 text-center">
+                Coefficient
+              </th>
+              <th class="px-4 py-3 text-center">
+                Composition
+              </th>
+              <th class="px-4 py-3 text-center">
+                Interrogation
+              </th>
+              <th class="px-4 py-3 text-center">
+                Devoir
+              </th>
+              <th class="px-4 py-3 text-center">
+                Moyenne
+              </th>
+              <th class="px-4 py-3 text-left">
+                Appréciation
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(subject in subjectsGrades)
+              <tr
+                class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                onclick="window.location.href='/student/grades/details?subject_id={{ subject.id }}'"
+              >
+                <td class="px-4 py-3 font-medium">
+                  {{ subject.name }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ subject.coefficient }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="{{ subject.compo && subject.compo >= 15 ? 'text-green-600' : (subject.compo && subject.compo >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  >
+                    {{ subject.compo || '-' }}
+            </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="{{ subject.interro && subject.interro >= 15 ? 'text-green-600' : (subject.interro && subject.interro >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  >
+                    {{ subject.interro || '-' }}
+            </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="{{ subject.devoir && subject.devoir >= 15 ? 'text-green-600' : (subject.devoir && subject.devoir >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  >
+                    {{ subject.devoir || '-' }}
+            </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="font-bold {{ subject.average >= 15 ? 'text-green-600' : (subject.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  >
+                    {{ subject.average }}/20
+            </span>
+                </td>
+                <td class="px-4 py-3 text-gray-600">
+                  {{ subject.appreciation || '-' }}
+                </td>
+              </tr>
+            @end
+          </tbody>
+          <tfoot class="bg-gray-50 dark:bg-gray-700 font-bold">
+            <tr>
+              <td class="px-4 py-3">
+                MOYENNE GÉNÉRALE
+              </td>
+              <td class="px-4 py-3 text-center">
+                {{ totalCoefficient }}
+              </td>
+              <td colspan="3" class="px-4 py-3">
+              </td>
+              <td
+                class="px-4 py-3 text-center text-lg {{ termAverage >= 15 ? 'text-green-600' : (termAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+              >
+                {{ termAverage }}/20
+              </td>
+              <td class="px-4 py-3">
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Graphique radar -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-3">
+        Analyse des performances par matière
+      </h3>
+      <canvas id="radarChart" height="250">
+      </canvas>
+    </div>
+
+    <!-- Appréciation générale -->
+    <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+      <h4 class="font-semibold">
+        Appréciation générale du conseil de classe
+      </h4>
+      <p class="text-gray-700 dark:text-gray-300 mt-2">
+        {{ generalAppreciation || 'Félicitations pour vos efforts ! Continuez ainsi.' }}
+      </p>
+    </div>
+
+    <script>
+      let radarChart;
+
+      function renderRadarChart() {
+        const ctx = document.getElementById("radarChart").getContext("2d");
+        radarChart = new Chart(ctx, {
+          type: "radar",
+          data: {
+            labels: {{ subjectNames|json_encode|raw }},
+            datasets: [ {
+              label: "Votre note /20",
+              data: {{ subjectAverages|json_encode|raw }},
+              backgroundColor: "rgba(37, 99, 235, 0.2)",
+              borderColor: "#2563eb",
+              pointBackgroundColor: "#2563eb"
+            }, {
+              label: "Moyenne de la classe",
+              data: {{ classAverages|json_encode|raw }},
+              backgroundColor: "rgba(22, 163, 74, 0.2)",
+              borderColor: "#16a34a",
+              pointBackgroundColor: "#16a34a"
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              r: {
+                min: 0,
+                max: 20,
+                ticks: {
+                  stepSize: 5
+                }
+              }
+            }
+          }
+        });
       }
-    })
-  }
-  
-  document.getElementById('applyTerm')?.addEventListener('click', () => {
-    const term = document.getElementById('termSelect').value
-    window.location.href = `/student/grades?term=${term}`
-  })
-  
-  renderRadarChart()
-</script>
-{{# /section }}
 
-{{# /layout }}
+      document.getElementById("applyTerm")?.addEventListener("click", () => {
+        const term = document.getElementById("termSelect").value;
+        window.location.href = `/student/grades?term=${term}`;
+      });
+
+      renderRadarChart();
+    </script>
+  @endsection
+  

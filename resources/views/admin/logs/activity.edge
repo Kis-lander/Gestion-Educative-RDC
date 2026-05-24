@@ -1,201 +1,249 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Activités récentes - Administration{{# /section }}
-
-{{# section('dashboardTitle') }}Activités récentes{{# /section }}
-{{# section('dashboardSubtitle') }}Flux d'activités en temps réel{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="refreshActivity()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-sync-alt mr-2"></i> Actualiser
+  @section('title')
+    Activités récentes - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Activités récentes
+  @endsection
+  @section('dashboardSubtitle')
+    Flux d'activités en temps réel
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="refreshActivity()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-sync-alt mr-2"></i>Actualiser
   </button>
-  <button onclick="exportActivity()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportActivity()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Dernière heure</p>
-    <p class="text-3xl font-bold">{{ stats.lastHour || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Aujourd'hui</p>
-    <p class="text-3xl font-bold">{{ stats.today || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Cette semaine</p>
-    <p class="text-3xl font-bold">{{ stats.thisWeek || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Utilisateurs actifs</p>
-    <p class="text-3xl font-bold">{{ stats.activeUsers || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres rapides -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="flex flex-wrap gap-3 items-center">
-    <span class="font-medium text-gray-700">Filtrer par :</span>
-    <button id="filterAll" class="filter-btn px-3 py-1 rounded-full text-sm bg-primary text-white">Toutes</button>
-    <button id="filterLogin" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Connexions</button>
-    <button id="filterCreate" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Créations</button>
-    <button id="filterUpdate" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Modifications</button>
-    <button id="filterDelete" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Suppressions</button>
-    <div class="ml-auto">
-      <select id="roleFilter" class="px-3 py-1 border rounded-lg text-sm">
-        <option value="">Tous les rôles</option>
-        <option value="inspection">Inspection</option>
-        <option value="director">Directeur</option>
-        <option value="teacher">Enseignant</option>
-        <option value="parent">Parent</option>
-        <option value="student">Élève</option>
-      </select>
     </div>
-  </div>
-</div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Dernière heure
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.lastHour || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Aujourd'hui
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.today || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Cette semaine
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.thisWeek || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Utilisateurs actifs
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.activeUsers || 0 }}
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <!-- Filtres rapides -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="flex flex-wrap gap-3 items-center">
+        <span class="font-medium text-gray-700">Filtrer par :</span>
+        <button id="filterAll" class="filter-btn px-3 py-1 rounded-full text-sm bg-primary text-white">Toutes</button>
+        <button id="filterLogin" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Connexions</button>
+        <button id="filterCreate" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Créations</button>
+        <button id="filterUpdate" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Modifications</button>
+        <button id="filterDelete" class="filter-btn px-3 py-1 rounded-full text-sm border hover:bg-gray-50">Suppressions</button>
+        <div class="ml-auto">
+          <select id="roleFilter" class="px-3 py-1 border rounded-lg text-sm">
+            <option value="">
+              Tous les rôles
+            </option>
+            <option value="inspection">
+              Inspection
+            </option>
+            <option value="director">
+              Directeur
+            </option>
+            <option value="teacher">
+              Enseignant
+            </option>
+            <option value="parent">
+              Parent
+            </option>
+            <option value="student">
+              Élève
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
 
-<!-- Flux d'activités -->
-<div class="space-y-3" id="activityFeed">
-  @each(activity in activities)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden activity-item" data-action="{{ activity.action }}">
-    <div class="p-4">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-full 
+    <!-- Flux d'activités -->
+    <div class="space-y-3" id="activityFeed">
+      @each(activity in activities)
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden activity-item"
+          data-action="{{ activity.action }}"
+        >
+          <div class="p-4">
+            <div class="flex items-start gap-3">
+              <div
+                class="w-10 h-10 rounded-full 
           {{ activity.action === 'login' ? 'bg-green-100 text-green-600' : 
              (activity.action === 'create' ? 'bg-blue-100 text-blue-600' : 
              (activity.action === 'update' ? 'bg-yellow-100 text-yellow-600' : 
              (activity.action === 'delete' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'))) }} 
-          flex items-center justify-center">
-          <i class="fas {{ activity.action === 'login' ? 'fa-sign-in-alt' : 
+          flex items-center justify-center"
+              >
+                <i
+                  class="fas {{ activity.action === 'login' ? 'fa-sign-in-alt' : 
                             (activity.action === 'create' ? 'fa-plus' : 
                             (activity.action === 'update' ? 'fa-edit' : 
-                            (activity.action === 'delete' ? 'fa-trash' : 'fa-bell'))) }}"></i>
-        </div>
-        <div class="flex-1">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-medium">
-                <span class="font-bold">{{ activity.userName }}</span>
-                <span class="text-gray-600">
-                  {{ activity.action === 'login' ? 's\'est connecté(e)' : 
+                            (activity.action === 'delete' ? 'fa-trash' : 'fa-bell'))) }}"
+                ></i>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-medium">
+                      <span class="font-bold">{{ activity.userName }}</span>
+                      <span class="text-gray-600">
+                        {{ activity.action === 'login' ? 's\'est connecté(e)' : 
                      (activity.action === 'logout' ? 's\'est déconnecté(e)' : 
                      (activity.action === 'create' ? 'a créé' : 
                      (activity.action === 'update' ? 'a modifié' : 
                      (activity.action === 'delete' ? 'a supprimé' : 'a effectué une action')))) }}
                 </span>
-                @if(activity.target)
-                <span class="font-medium">{{ activity.target }}</span>
+                      @if(activity.target)
+                        <span class="font-medium">{{ activity.target }}</span>
+                      @endif
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                      <span class="capitalize">{{ activity.roleLabel }}</span>• 
+                <i class="fas fa-globe mr-1"></i>{{ activity.ip || 'IP inconnue' }}
+                    </p>
+                  </div>
+                  <span class="text-xs text-gray-400">{{ activity.timeAgo }}</span>
+                </div>
+                @if(activity.details)
+                  <p class="text-sm text-gray-500 mt-2">
+                    {{ activity.details }}
+                  </p>
                 @endif
-              </p>
-              <p class="text-xs text-gray-500 mt-1">
-                <span class="capitalize">{{ activity.roleLabel }}</span> • 
-                <i class="fas fa-globe mr-1"></i> {{ activity.ip || 'IP inconnue' }}
-              </p>
+              </div>
             </div>
-            <span class="text-xs text-gray-400">{{ activity.timeAgo }}</span>
           </div>
-          @if(activity.details)
-          <p class="text-sm text-gray-500 mt-2">{{ activity.details }}</p>
-          @endif
         </div>
-      </div>
+        @else
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+          <i class="fas fa-bell-slash text-5xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500">
+            Aucune activité récente
+          </p>
+        </div>
+      @end
     </div>
-  </div>
-  @eachelse
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-    <i class="fas fa-bell-slash text-5xl text-gray-400 mb-3"></i>
-    <p class="text-gray-500">Aucune activité récente</p>
-  </div>
-  @end
-</div>
 
-@include('partials/pagination', { pagination: pagination, url: '/admin/logs/activity' })
+    @include('partials/pagination', { pagination: pagination, url: '/admin/logs/activity' })
 
-<!-- Auto-refresh -->
-<div class="mt-4 text-center">
-  <label class="flex items-center justify-center gap-2 cursor-pointer">
-    <input type="checkbox" id="autoRefresh" class="w-4 h-4">
-    <span class="text-sm text-gray-500">Actualisation automatique (30s)</span>
-  </label>
-</div>
+    <!-- Auto-refresh -->
+    <div class="mt-4 text-center">
+      <label class="flex items-center justify-center gap-2 cursor-pointer">
+        <input type="checkbox" id="autoRefresh" class="w-4 h-4" />
+        <span class="text-sm text-gray-500">Actualisation automatique (30s)</span>
+      </label>
+    </div>
 
-<script>
-  let autoRefreshInterval = null
-  
-  function refreshActivity() {
-    const params = new URLSearchParams()
-    const roleFilter = document.getElementById('roleFilter')?.value
-    if (roleFilter) params.set('role', roleFilter)
-    window.location.href = `/admin/logs/activity?${params.toString()}`
-  }
-  
-  // Filtres par action
-  const filterAll = document.getElementById('filterAll')
-  const filterLogin = document.getElementById('filterLogin')
-  const filterCreate = document.getElementById('filterCreate')
-  const filterUpdate = document.getElementById('filterUpdate')
-  const filterDelete = document.getElementById('filterDelete')
-  const roleFilter = document.getElementById('roleFilter')
-  
-  function applyFilter(action) {
-    const items = document.querySelectorAll('.activity-item')
-    items.forEach(item => {
-      if (action === 'all') {
-        item.style.display = ''
-      } else {
-        item.style.display = item.dataset.action === action ? '' : 'none'
+    <script>
+      let autoRefreshInterval = null;
+
+      function refreshActivity() {
+        const params = new URLSearchParams();
+        const roleFilter = document.getElementById("roleFilter")?.value;
+        if (roleFilter) params.set("role", roleFilter);
+        window.location.href = `/admin/logs/activity?${params.toString()}`;
       }
-    })
-    
-    // Mettre à jour l'apparence des boutons
-    [filterAll, filterLogin, filterCreate, filterUpdate, filterDelete].forEach(btn => {
-      btn.classList.remove('bg-primary', 'text-white')
-      btn.classList.add('border')
-    })
-    const activeBtn = action === 'all' ? filterAll : 
-                      (action === 'login' ? filterLogin : 
-                      (action === 'create' ? filterCreate : 
-                      (action === 'update' ? filterUpdate : filterDelete)))
-    activeBtn.classList.add('bg-primary', 'text-white')
-    activeBtn.classList.remove('border')
-  }
-  
-  filterAll?.addEventListener('click', () => applyFilter('all'))
-  filterLogin?.addEventListener('click', () => applyFilter('login'))
-  filterCreate?.addEventListener('click', () => applyFilter('create'))
-  filterUpdate?.addEventListener('click', () => applyFilter('update'))
-  filterDelete?.addEventListener('click', () => applyFilter('delete'))
-  
-  roleFilter?.addEventListener('change', () => {
-    refreshActivity()
-  })
-  
-  // Auto-refresh
-  const autoRefreshCheckbox = document.getElementById('autoRefresh')
-  autoRefreshCheckbox?.addEventListener('change', (e) => {
-    if (e.target.checked) {
-      autoRefreshInterval = setInterval(() => {
-        refreshActivity()
-      }, 30000)
-    } else {
-      if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval)
-        autoRefreshInterval = null
-      }
-    }
-  })
-  
-  function exportActivity() {
-    const role = document.getElementById('roleFilter')?.value || ''
-    window.location.href = `/api/admin/logs/activity/export?role=${role}`
-  }
-</script>
-{{# /section }}
+      // Filtres par action
 
-{{# /layout }}
+      const filterAll = document.getElementById("filterAll");
+
+      const filterLogin = document.getElementById("filterLogin");
+
+      const filterCreate = document.getElementById("filterCreate");
+
+      const filterUpdate = document.getElementById("filterUpdate");
+
+      const filterDelete = document.getElementById("filterDelete");
+
+      const roleFilter = document.getElementById("roleFilter");
+
+      function applyFilter(action) {
+        const items = document.querySelectorAll(".activity-item");
+        items.forEach(item => {
+          if (action === "all") {
+            item.style.display = "";
+          } else {
+            item.style.display = item.dataset.action === action ? "" : "none";
+          }
+        })[filterAll, filterLogin, filterCreate, filterUpdate, filterDelete].forEach(btn => {
+          btn.classList.remove("bg-primary", "text-white");
+          btn.classList.add("border");
+        });
+        const activeBtn = action === "all" ? filterAll : action === "login" ? filterLogin : action === "create" ? filterCreate : action === "update" ? filterUpdate : filterDelete;
+        activeBtn.classList.add("bg-primary", "text-white");
+        activeBtn.classList.remove("border");
+      }
+
+      filterAll?.addEventListener("click", () => applyFilter("all"));
+
+      filterLogin?.addEventListener("click", () => applyFilter("login"));
+
+      filterCreate?.addEventListener("click", () => applyFilter("create"));
+
+      filterUpdate?.addEventListener("click", () => applyFilter("update"));
+
+      filterDelete?.addEventListener("click", () => applyFilter("delete"));
+
+      roleFilter?.addEventListener("change", () => {
+        refreshActivity();
+      });
+      // Auto-refresh
+
+      const autoRefreshCheckbox = document.getElementById("autoRefresh");
+
+      autoRefreshCheckbox?.addEventListener("change", e => {
+        if (e.target.checked) {
+          autoRefreshInterval = setInterval(() => {
+            refreshActivity();
+          }, 3e4);
+        } else {
+          if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+          }
+        }
+      });
+
+      function exportActivity() {
+        const role = document.getElementById("roleFilter")?.value || "";
+        window.location.href = `/api/admin/logs/activity/export?role=${role}`;
+      }
+    </script>
+  @endsection
+  

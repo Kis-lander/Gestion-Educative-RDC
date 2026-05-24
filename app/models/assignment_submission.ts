@@ -8,7 +8,7 @@ import Assignment from '#models/assignment'
 import Student from '#models/student'
 
 export default class AssignmentSubmission extends AssignmentSubmissionSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
@@ -68,7 +68,7 @@ export default class AssignmentSubmission extends AssignmentSubmissionSchema {
     // Si l'élève soumet son travail et qu'on a les données du devoir
     if (submission.status === 'submitted' && !submission.submittedAt) {
       submission.submittedAt = DateTime.now()
-      
+
       // On charge le devoir pour comparer les dates si nécessaire
       const assignment = await Assignment.find(submission.assignmentId)
       if (assignment) {

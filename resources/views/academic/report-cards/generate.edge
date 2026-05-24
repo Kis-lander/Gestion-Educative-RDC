@@ -1,173 +1,224 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Générer un bulletin - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Génération de bulletin{{# /section }}
-{{# section('dashboardSubtitle') }}Créez un bulletin pour un élève ou une classe{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/academic/report-cards/generate" x-data="{ loading: false, generateType: 'single' }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de génération *</label>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="generateType" value="single" x-model="generateType" class="w-4 h-4">
-            <span>Bulletin individuel</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="generateType" value="class" x-model="generateType" class="w-4 h-4">
-            <span>Bulletins de toute une classe</span>
-          </label>
-        </div>
-      </div>
-      
-      <!-- Formulaire individuel -->
-      <div x-show="generateType === 'single'">
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève *</label>
-          <select name="studentId" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner un élève</option>
-            @each(student in students)
-            <option value="{{ student.id }}">{{ student.name }} ({{ student.className }})</option>
-            @end
-          </select>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre *</label>
-            <select name="term" required class="w-full px-3 py-2 border rounded-lg">
-              <option value="T1">Trimestre 1</option>
-              <option value="T2">Trimestre 2</option>
-              <option value="T3">Trimestre 3</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique *</label>
-            <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
-              <option value="{{ currentYear }}">{{ currentYear }}</option>
-              <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Formulaire par classe -->
-      <div x-show="generateType === 'class'" x-cloak>
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
-          <select name="classId" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner une classe</option>
-            @each(classObj in classes)
-            <option value="{{ classObj.id }}">{{ classObj.name }} ({{ classObj.studentsCount || 0 }} élèves)</option>
-            @end
-          </select>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre *</label>
-            <select name="term" required class="w-full px-3 py-2 border rounded-lg">
-              <option value="T1">Trimestre 1</option>
-              <option value="T2">Trimestre 2</option>
-              <option value="T3">Trimestre 3</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique *</label>
-            <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
-              <option value="{{ currentYear }}">{{ currentYear }}</option>
-              <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="mb-4">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="notifyParents" class="w-4 h-4">
-            <span>Notifier les parents après génération</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Options</label>
-        <div class="space-y-2">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="includeBehavior" checked class="w-4 h-4">
-            <span>Inclure l'appréciation du comportement</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="includeAttendance" checked class="w-4 h-4">
-            <span>Inclure le relevé de présences</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="includeTeacherComments" checked class="w-4 h-4">
-            <span>Inclure les appréciations des enseignants</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          <span x-text="generateType === 'single' ? 'Générer le bulletin' : 'Générer les bulletins'"></span>
-        </button>
-      </div>
-    </form>
-  </div>
+  @section('title')
+    GÃ©nÃ©rer un bulletin - {{ school.name }}
+  @endsection
   
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Informations</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2">
-          <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-          <span>Le bulletin est généré à partir des notes saisies dans le système</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Les moyennes sont calculées automatiquement avec les coefficients</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5"></i>
-          <span>Vérifiez que toutes les notes sont saisies avant génération</span>
-        </li>
-      </ul>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Derniers bulletins générés</h3>
-      <div class="space-y-2 max-h-60 overflow-y-auto">
-        @each(last in lastReports)
-        <div class="flex justify-between items-center p-2 border-b dark:border-gray-700 text-sm">
-          <div>
-            <p class="font-medium">{{ last.studentName }}</p>
-            <p class="text-xs text-gray-500">{{ last.term }} - {{ last.academicYear }}</p>
+  @section('dashboardTitle')
+    GÃ©nÃ©ration de bulletin
+  @endsection
+  @section('dashboardSubtitle')
+    CrÃ©ez un bulletin pour un Ã©lÃ¨ve ou une classe
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/academic/report-cards/generate"
+          x-data="{ loading: false, generateType: 'single' }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de gÃ©nÃ©ration *</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="generateType" value="single" x-model="generateType" class="w-4 h-4" />
+                <span>Bulletin individuel</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="generateType" value="class" x-model="generateType" class="w-4 h-4" />
+                <span>Bulletins de toute une classe</span>
+              </label>
+            </div>
           </div>
-          <a href="/academic/report-cards/{{ last.id }}/show" class="text-primary hover:underline">Voir</a>
+
+          <!-- Formulaire individuel -->
+          <div x-show="generateType === 'single'">
+            <div class="mb-4">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Ã‰lÃ¨ve *</label>
+              <select name="studentId" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  SÃ©lectionner un Ã©lÃ¨ve
+                </option>
+                @each(student in students)
+                  <option value="{{ student.id }}">
+                    {{ student.name }} ({{ student.className }})
+                  </option>
+                @end
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre *</label>
+                <select name="term" required class="w-full px-3 py-2 border rounded-lg">
+                  <option value="T1">
+                    Trimestre 1
+                  </option>
+                  <option value="T2">
+                    Trimestre 2
+                  </option>
+                  <option value="T3">
+                    Trimestre 3
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Année scolaire *</label>
+                <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
+                  <option value="{{ currentYear }}">
+                    {{ currentYear }}
+                  </option>
+                  <option value="{{ currentYear - 1 }}">
+                    {{ currentYear - 1 }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulaire par classe -->
+          <div x-show="generateType === 'class'" x-cloak>
+            <div class="mb-4">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
+              <select name="classId" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  SÃ©lectionner une classe
+                </option>
+                @each(classObj in classes)
+                  <option value="{{ classObj.id }}">
+                    {{ classObj.name }} ({{ classObj.studentsCount || 0 }} Ã©lÃ¨ves)
+                  </option>
+                @end
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre *</label>
+                <select name="term" required class="w-full px-3 py-2 border rounded-lg">
+                  <option value="T1">
+                    Trimestre 1
+                  </option>
+                  <option value="T2">
+                    Trimestre 2
+                  </option>
+                  <option value="T3">
+                    Trimestre 3
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Année scolaire *</label>
+                <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
+                  <option value="{{ currentYear }}">
+                    {{ currentYear }}
+                  </option>
+                  <option value="{{ currentYear - 1 }}">
+                    {{ currentYear - 1 }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="notifyParents" class="w-4 h-4" />
+                <span>Notifier les parents aprÃ¨s gÃ©nÃ©ration</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Options</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="includeBehavior" checked class="w-4 h-4" />
+                <span>Inclure l'apprÃ©ciation du comportement</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="includeAttendance" checked class="w-4 h-4" />
+                <span>Inclure le relevÃ© de prÃ©sences</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="includeTeacherComments" checked class="w-4 h-4" />
+                <span>Inclure les apprÃ©ciations des enseignants</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              <span x-text="generateType === 'single' ? 'GÃ©nÃ©rer le bulletin' : 'GÃ©nÃ©rer les bulletins'"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Informations
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+              <span>Le bulletin est gÃ©nÃ©rÃ© Ã  partir des notes saisies dans le systÃ¨me</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Les moyennes sont calculÃ©es automatiquement avec les coefficients</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5"></i>
+              <span>VÃ©rifiez que toutes les notes sont saisies avant gÃ©nÃ©ration</span>
+            </li>
+          </ul>
         </div>
-        @eachelse
-        <p class="text-gray-500 text-center py-4">Aucun bulletin récent</p>
-        @end
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Derniers bulletins gÃ©nÃ©rÃ©s
+          </h3>
+          <div class="space-y-2 max-h-60 overflow-y-auto">
+            @each(last in lastReports)
+              <div class="flex justify-between items-center p-2 border-b dark:border-gray-700 text-sm">
+                <div>
+                  <p class="font-medium">
+                    {{ last.studentName }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ last.term }} - {{ last.academicYear }}
+                  </p>
+                </div>
+                <a href="/academic/report-cards/{{ last.id }}/show" class="text-primary hover:underline">Voir</a>
+              </div>
+              @else
+              <p class="text-gray-500 text-center py-4">
+                Aucun bulletin rÃ©cent
+              </p>
+            @end
+          </div>
+        </div>
+
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-lightbulb text-yellow-600"></i>
+            <span>Pour gÃ©nÃ©rer des bulletins de toute une classe, assurez-vous que tous les Ã©lÃ¨ves ont leurs notes au complet.</span>
+          </p>
+        </div>
       </div>
     </div>
-    
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-lightbulb text-yellow-600"></i>
-        <span>Pour générer des bulletins de toute une classe, assurez-vous que tous les élèves ont leurs notes au complet.</span>
-      </p>
-    </div>
-  </div>
-</div>
-{{# /section }}
-
-{{# /layout }}
+  @endsection
+  

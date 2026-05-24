@@ -1,164 +1,246 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Tableau de bord Parent - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Espace Parent{{# /section }}
-{{# section('dashboardSubtitle') }}Suivez la scolarité de vos enfants{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Enfants</p>
-    <p class="text-3xl font-bold">{{ stats.childrenCount || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Moyenne générale</p>
-    <p class="text-3xl font-bold">{{ stats.averageGrade || '-' }}/20</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Messages non lus</p>
-    <p class="text-3xl font-bold">{{ stats.unreadMessages || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Paiements en attente</p>
-    <p class="text-3xl font-bold">{{ formatCurrency(stats.pendingPayments, 'USD') }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Liste des enfants -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-      <h3 class="font-semibold text-gray-800 dark:text-white">Mes enfants</h3>
-      <a href="/parent/children" class="text-primary text-sm hover:underline">Voir tout</a>
-    </div>
-    <div class="divide-y dark:divide-gray-700">
-      @each(child in children)
-      <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/parent/children/{{ child.id }}'">
-        <div class="flex justify-between items-start">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
-              {{ child.name.charAt(0) }}
-            </div>
-            <div>
-              <p class="font-semibold text-gray-800 dark:text-white">{{ child.name }}</p>
-              <p class="text-sm text-gray-500">{{ child.className }} - Matricule: {{ child.registrationNumber }}</p>
-            </div>
-          </div>
-          <div class="text-right">
-            <span class="text-lg font-bold {{ child.averageGrade >= 15 ? 'text-green-600' : (child.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-              {{ child.averageGrade || '-' }}/20
-            </span>
-          </div>
-        </div>
-        <div class="flex gap-3 mt-3">
-          <a href="/parent/grades/child/{{ child.id }}" class="text-primary text-sm hover:underline" onclick="event.stopPropagation()">
-            <i class="fas fa-star mr-1"></i> Notes
-          </a>
-          <a href="/parent/discipline/child/{{ child.id }}" class="text-yellow-600 text-sm hover:underline" onclick="event.stopPropagation()">
-            <i class="fas fa-gavel mr-1"></i> Discipline
-          </a>
-          <a href="/parent/payments/child/{{ child.id }}" class="text-green-600 text-sm hover:underline" onclick="event.stopPropagation()">
-            <i class="fas fa-coins mr-1"></i> Frais
-          </a>
-          <a href="/parent/attendance/child/{{ child.id }}" class="text-purple-600 text-sm hover:underline" onclick="event.stopPropagation()">
-            <i class="fas fa-calendar-check mr-1"></i> Présences
-          </a>
-        </div>
-      </div>
-      @eachelse
-      <div class="p-8 text-center text-gray-500">
-        <i class="fas fa-child text-4xl mb-3 block"></i>
-        Aucun enfant associé à votre compte
-        <p class="text-sm mt-2">Contactez l'école pour lier vos enfants</p>
-      </div>
-      @end
-    </div>
-  </div>
+  @section('title')
+    Tableau de bord Parent - {{ school.name }}
+  @endsection
   
-  <!-- Derniers messages -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-      <h3 class="font-semibold text-gray-800 dark:text-white">Messages récents</h3>
-      <a href="/parent/messages" class="text-primary text-sm hover:underline">Voir tout</a>
+  @section('dashboardTitle')
+    Espace Parent
+  @endsection
+  @section('dashboardSubtitle')
+    Suivez la scolarité de vos enfants
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Enfants
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.childrenCount || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Moyenne générale
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.averageGrade || '-' }}/20
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Messages non lus
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.unreadMessages || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Paiements en attente
+        </p>
+        <p class="text-3xl font-bold">
+          {{ formatCurrency(stats.pendingPayments, 'USD') }}
+        </p>
+      </div>
     </div>
-    <div class="divide-y dark:divide-gray-700">
-      @each(message in recentMessages)
-      <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/parent/messages/{{ message.id }}'">
-        <div class="flex justify-between items-start">
-          <div class="flex-1">
-            <p class="font-medium text-gray-800 dark:text-white">{{ message.senderName }}</p>
-            <p class="text-sm text-gray-600">{{ message.subject }}</p>
-            <p class="text-xs text-gray-400 mt-1">{{ message.time }}</p>
-          </div>
-          @if(!message.isRead)
-          <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-          @endif
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Liste des enfants -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 class="font-semibold text-gray-800 dark:text-white">
+            Mes enfants
+          </h3>
+          <a href="/parent/children" class="text-primary text-sm hover:underline">Voir tout</a>
+        </div>
+        <div class="divide-y dark:divide-gray-700">
+          @each(child in children)
+            <div
+              class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+              onclick="window.location.href='/parent/children/{{ child.id }}'"
+            >
+              <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
+                  >
+                    {{ child.name.charAt(0) }}
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-800 dark:text-white">
+                      {{ child.name }}
+                    </p>
+                    <p class="text-sm text-gray-500">
+                      {{ child.className }} - Matricule: {{ child.registrationNumber }}
+                    </p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span
+                    class="text-lg font-bold {{ child.averageGrade >= 15 ? 'text-green-600' : (child.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  >
+                    {{ child.averageGrade || '-' }}/20
+            </span>
+                </div>
+              </div>
+              <div class="flex gap-3 mt-3">
+                <a
+                  href="/parent/grades/child/{{ child.id }}"
+                  class="text-primary text-sm hover:underline"
+                  onclick="event.stopPropagation()"
+                >
+                  <i class="fas fa-star mr-1"></i>Notes
+          </a>
+                <a
+                  href="/parent/discipline/child/{{ child.id }}"
+                  class="text-yellow-600 text-sm hover:underline"
+                  onclick="event.stopPropagation()"
+                >
+                  <i class="fas fa-gavel mr-1"></i>Discipline
+          </a>
+                <a
+                  href="/parent/payments/child/{{ child.id }}"
+                  class="text-green-600 text-sm hover:underline"
+                  onclick="event.stopPropagation()"
+                >
+                  <i class="fas fa-coins mr-1"></i>Frais
+          </a>
+                <a
+                  href="/parent/attendance/child/{{ child.id }}"
+                  class="text-purple-600 text-sm hover:underline"
+                  onclick="event.stopPropagation()"
+                >
+                  <i class="fas fa-calendar-check mr-1"></i>Présences
+          </a>
+              </div>
+            </div>
+            @else
+            <div class="p-8 text-center text-gray-500">
+              <i class="fas fa-child text-4xl mb-3 block"></i>
+              Aucun enfant associé à votre compte
+              <p class="text-sm mt-2">
+                Contactez l'école pour lier vos enfants
+              </p>
+            </div>
+          @end
         </div>
       </div>
-      @eachelse
-      <div class="p-8 text-center text-gray-500">
-        <i class="fas fa-envelope text-4xl mb-3 block"></i>
-        Aucun message récent
+
+      <!-- Derniers messages -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 class="font-semibold text-gray-800 dark:text-white">
+            Messages récents
+          </h3>
+          <a href="/parent/messages" class="text-primary text-sm hover:underline">Voir tout</a>
+        </div>
+        <div class="divide-y dark:divide-gray-700">
+          @each(message in recentMessages)
+            <div
+              class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+              onclick="window.location.href='/parent/messages/{{ message.id }}'"
+            >
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <p class="font-medium text-gray-800 dark:text-white">
+                    {{ message.senderName }}
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    {{ message.subject }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">
+                    {{ message.time }}
+                  </p>
+                </div>
+                @if(!message.isRead)
+                  <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                @endif
+              </div>
+            </div>
+            @else
+            <div class="p-8 text-center text-gray-500">
+              <i class="fas fa-envelope text-4xl mb-3 block"></i>
+              Aucun message récent
+            </div>
+          @end
+        </div>
       </div>
-      @end
     </div>
-  </div>
-</div>
 
-<!-- Alertes et notifications -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold text-gray-800 dark:text-white">Alertes importantes</h3>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(alert in alerts)
-    <div class="p-4 flex items-start gap-3">
-      <div class="w-8 h-8 rounded-full {{ alert.type === 'danger' ? 'bg-red-100' : (alert.type === 'warning' ? 'bg-yellow-100' : 'bg-blue-100') }} flex items-center justify-center">
-        <i class="fas {{ alert.icon }} {{ alert.type === 'danger' ? 'text-red-600' : (alert.type === 'warning' ? 'text-yellow-600' : 'text-blue-600') }}"></i>
+    <!-- Alertes et notifications -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold text-gray-800 dark:text-white">
+          Alertes importantes
+        </h3>
       </div>
-      <div class="flex-1">
-        <p class="font-medium text-gray-800 dark:text-white">{{ alert.title }}</p>
-        <p class="text-sm text-gray-600">{{ alert.message }}</p>
-        <p class="text-xs text-gray-400 mt-1">{{ alert.date }}</p>
+      <div class="divide-y dark:divide-gray-700">
+        @each(alert in alerts)
+          <div class="p-4 flex items-start gap-3">
+            <div
+              class="w-8 h-8 rounded-full {{ alert.type === 'danger' ? 'bg-red-100' : (alert.type === 'warning' ? 'bg-yellow-100' : 'bg-blue-100') }} flex items-center justify-center"
+            >
+              <i
+                class="fas {{ alert.icon }} {{ alert.type === 'danger' ? 'text-red-600' : (alert.type === 'warning' ? 'text-yellow-600' : 'text-blue-600') }}"
+              ></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-gray-800 dark:text-white">
+                {{ alert.title }}
+              </p>
+              <p class="text-sm text-gray-600">
+                {{ alert.message }}
+              </p>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ alert.date }}
+              </p>
+            </div>
+          </div>
+          @else
+          <div class="p-8 text-center text-gray-500">
+            <i class="fas fa-check-circle text-4xl mb-3 block text-green-500"></i>
+            Aucune alerte importante
+          </div>
+        @end
       </div>
     </div>
-    @eachelse
-    <div class="p-8 text-center text-gray-500">
-      <i class="fas fa-check-circle text-4xl mb-3 block text-green-500"></i>
-      Aucune alerte importante
+
+    <!-- Actions rapides -->
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a
+        href="/parent/messages/send"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-envelope mr-2"></i>Contacter un enseignant
+  </a>
+      <a
+        href="/parent/payments"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-history mr-2"></i>Historique des paiements
+  </a>
+      <a
+        href="/parent/appointments/request"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-calendar-plus mr-2"></i>Demander rendez-vous
+  </a>
     </div>
-    @end
-  </div>
-</div>
 
-<!-- Actions rapides -->
-<div class="mt-6 flex flex-wrap gap-3">
-  <a href="/parent/messages/send" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-envelope mr-2"></i> Contacter un enseignant
-  </a>
-  <a href="/parent/payments" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-history mr-2"></i> Historique des paiements
-  </a>
-  <a href="/parent/appointments/request" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-calendar-plus mr-2"></i> Demander rendez-vous
-  </a>
-</div>
-
-<script>
-  // Rafraîchissement auto messages non lus
-  setInterval(() => {
-    fetch('/api/parent/unread-count')
-      .then(res => res.json())
-      .then(data => {
-        if (data.count > 0) {
-          document.querySelector('.bg-purple-500 .text-3xl').textContent = data.count
-        }
-      })
-  }, 30000)
-</script>
-{{# /section }}
-
-{{# /layout }}
+    <script>
+      // Rafraîchissement auto messages non lus
+      setInterval(() => {
+        fetch("/api/parent/unread-count").then(res => res.json()).then(data => {
+          if (data.count > 0) {
+            document.querySelector(".bg-purple-500 .text-3xl").textContent = data.count;
+          }
+        });
+      }, 3e4);
+    </script>
+  @endsection
+  

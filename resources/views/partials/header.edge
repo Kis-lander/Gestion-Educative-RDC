@@ -2,44 +2,63 @@
   <div class="flex items-center justify-between px-4 py-3">
     <!-- Left section -->
     <div class="flex items-center gap-3">
-      <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <button
+        @click="sidebarOpen = !sidebarOpen"
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      >
         <i class="fas fa-bars text-gray-600 dark:text-gray-300 text-xl"></i>
       </button>
       <div class="flex items-center gap-2">
-        <img src="/images/logo-rdc-min.png" alt="Logo" class="h-8 w-8">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png"
+          alt="Logo RDC"
+          class="h-8 w-8 object-contain"
+        />
         <span class="font-bold text-gray-800 dark:text-white hidden sm:inline">
           Gestion Éducative RDC
         </span>
       </div>
     </div>
-    
+
     <!-- Right section -->
     <div class="flex items-center gap-2">
       <!-- Mode sombre -->
       <button @click="darkMode = !darkMode" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
         <i class="fas" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
       </button>
-      
+
       <!-- Notifications -->
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative">
           <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
-          <span x-show="notifications.filter(n => !n.read).length > 0" 
-                x-text="notifications.filter(n => !n.read).length"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5"></span>
+          <span
+            x-show="notifications.filter(n => !n.read).length > 0"
+            x-text="notifications.filter(n => !n.read).length"
+            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5"
+          ></span>
         </button>
-        
-        <div x-show="open" @click.away="open = false" x-cloak
-             class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border dark:border-gray-700">
+
+        <div
+          x-show="open"
+          @click.away="open = false"
+          x-cloak
+          class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border dark:border-gray-700"
+        >
           <div class="p-3 border-b dark:border-gray-700">
-            <h3 class="font-semibold text-gray-800 dark:text-white">Notifications</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-white">
+              Notifications
+            </h3>
           </div>
           <div class="max-h-96 overflow-y-auto">
             <template x-for="notif in notifications" :key="notif.id">
-              <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 cursor-pointer"
-                   :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }">
-                <p class="text-sm text-gray-800 dark:text-gray-200" x-text="notif.message"></p>
-                <p class="text-xs text-gray-500 mt-1" x-text="notif.time"></p>
+              <div
+                class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 cursor-pointer"
+                :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }"
+              >
+                <p class="text-sm text-gray-800 dark:text-gray-200" x-text="notif.message">
+                </p>
+                <p class="text-xs text-gray-500 mt-1" x-text="notif.time">
+                </p>
               </div>
             </template>
             <div x-show="notifications.length === 0" class="p-4 text-center text-gray-500">
@@ -48,32 +67,50 @@
           </div>
         </div>
       </div>
-      
+
       <!-- User menu -->
       <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-            {{ auth.user?.firstName?.charAt(0) || 'U' }}{{ auth.user?.lastName?.charAt(0) || '' }}
+        <button
+          @click="open = !open"
+          class="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          <div
+            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold"
+          >
+            {{ auth?.user?.firstName?.charAt(0) || 'U' }}{{ auth?.user?.lastName?.charAt(0) || '' }}
           </div>
           <span class="hidden md:inline text-gray-700 dark:text-gray-300 text-sm">
-            {{ auth.user?.firstName }} {{ auth.user?.lastName }}
+            {{ auth?.user?.firstName }} {{ auth?.user?.lastName }}
           </span>
           <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
         </button>
-        
-        <div x-show="open" @click.away="open = false" x-cloak
-             class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border dark:border-gray-700">
-          <a href="/profile" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
-            <i class="fas fa-user w-4"></i> Mon profil
+
+        <div
+          x-show="open"
+          @click.away="open = false"
+          x-cloak
+          class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border dark:border-gray-700"
+        >
+          <a
+            href="/profile"
+            class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            <i class="fas fa-user w-4"></i>Mon profil
           </a>
-          <a href="/settings" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
-            <i class="fas fa-cog w-4"></i> Paramètres
+          <a
+            href="/settings"
+            class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            <i class="fas fa-cog w-4"></i>Paramètres
           </a>
-          <hr class="my-1 dark:border-gray-700">
+          <hr class="my-1 dark:border-gray-700" />
           <form method="POST" action="/logout">
-            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-            <button type="submit" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-red-600">
-              <i class="fas fa-sign-out-alt w-4"></i> Déconnexion
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+            <button
+              type="submit"
+              class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-red-600"
+            >
+              <i class="fas fa-sign-out-alt w-4"></i>Déconnexion
             </button>
           </form>
         </div>

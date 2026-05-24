@@ -1,155 +1,211 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Justifier une absence - {{ school.name }}{{# /section }}
+  @section('title')
+    Justifier une absence - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Justification d'absence
+  @endsection
+  @section('dashboardSubtitle')
+    {{ child.name }} - {{ formatDate(absenceDate) }}
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/parent/attendance/justify"
+          enctype="multipart/form-data"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="recordId" value="{{ recordId }}" />
+          <input type="hidden" name="childId" value="{{ child.id }}" />
 
-{{# section('dashboardTitle') }}Justification d'absence{{# /section }}
-{{# section('dashboardSubtitle') }}{{ child.name }} - {{ formatDate(absenceDate) }}{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/parent/attendance/justify" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <input type="hidden" name="recordId" value="{{ recordId }}">
-      <input type="hidden" name="childId" value="{{ child.id }}">
-      
-      <div class="space-y-4">
-        <!-- Information absence -->
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-          <div class="flex items-start gap-3">
-            <i class="fas fa-info-circle text-yellow-600 text-xl"></i>
-            <div>
-              <p class="font-medium">Absence non justifiée</p>
-              <p class="text-sm text-gray-600 mt-1">
-                {{ child.name }} était absent(e) le {{ formatDate(absenceDate) }}.
+          <div class="space-y-4">
+            <!-- Information absence -->
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+              <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-yellow-600 text-xl"></i>
+                <div>
+                  <p class="font-medium">
+                    Absence non justifiée
+                  </p>
+                  <p class="text-sm text-gray-600 mt-1">
+                    {{ child.name }} était absent(e) le {{ formatDate(absenceDate) }}.
                 Veuillez fournir une justification.
-              </p>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Motif -->
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Motif de l'absence *</label>
+              <select name="reason" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="">
+                  Sélectionner un motif
+                </option>
+                <option value="Maladie">
+                  Maladie
+                </option>
+                <option value="Rendez-vous médical">
+                  Rendez-vous médical
+                </option>
+                <option value="Raison familiale">
+                  Raison familiale
+                </option>
+                <option value="Intempéries">
+                  Intempéries
+                </option>
+                <option value="Transport">
+                  Problème de transport
+                </option>
+                <option value="Autre">
+                  Autre motif
+                </option>
+              </select>
+            </div>
+
+            <!-- Justification détaillée -->
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Explication détaillée</label>
+              <textarea
+                name="justification"
+                rows="4"
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Fournissez une explication détaillée..."
+              ></textarea>
+            </div>
+
+            <!-- Document justificatif -->
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Document justificatif (optionnel)</label>
+              <div
+                class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
+                onclick="document.getElementById('fileInput').click()"
+              >
+                <input type="file" name="document" id="fileInput" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx" />
+                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500">
+                  Cliquez pour télécharger un justificatif
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                  PDF, JPG, PNG, DOC (max 5MB)
+                </p>
+              </div>
+              <div id="fileName" class="text-sm text-green-600 mt-1 hidden">
+              </div>
+            </div>
+
+            <!-- Contact parent -->
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone pour contact</label>
+              <input
+                type="tel"
+                name="contactPhone"
+                value="{{ parent.phone }}"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
             </div>
           </div>
-        </div>
-        
-        <!-- Motif -->
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Motif de l'absence *</label>
-          <select name="reason" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner un motif</option>
-            <option value="Maladie">Maladie</option>
-            <option value="Rendez-vous médical">Rendez-vous médical</option>
-            <option value="Raison familiale">Raison familiale</option>
-            <option value="Intempéries">Intempéries</option>
-            <option value="Transport">Problème de transport</option>
-            <option value="Autre">Autre motif</option>
-          </select>
-        </div>
-        
-        <!-- Justification détaillée -->
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Explication détaillée</label>
-          <textarea name="justification" rows="4" 
-                    class="w-full px-3 py-2 border rounded-lg"
-                    placeholder="Fournissez une explication détaillée..."></textarea>
-        </div>
-        
-        <!-- Document justificatif -->
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Document justificatif (optionnel)</label>
-          <div class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
-               onclick="document.getElementById('fileInput').click()">
-            <input type="file" name="document" id="fileInput" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx">
-            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-            <p class="text-gray-500">Cliquez pour télécharger un justificatif</p>
-            <p class="text-xs text-gray-400 mt-1">PDF, JPG, PNG, DOC (max 5MB)</p>
-          </div>
-          <div id="fileName" class="text-sm text-green-600 mt-1 hidden"></div>
-        </div>
-        
-        <!-- Contact parent -->
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone pour contact</label>
-          <input type="tel" name="contactPhone" value="{{ parent.phone }}" 
-                 class="w-full px-3 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Envoyer la justification
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Envoyer la justification
         </button>
-        <a href="/parent/attendance" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
+            <a href="/parent/attendance" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">À savoir</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Les justifications doivent être fournies dans les 7 jours</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Un justificatif médical est requis pour les absences de plus de 3 jours</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>La direction valide ou non la justification</span>
-        </li>
-      </ul>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Rappel des règles</h3>
-      <div class="text-sm space-y-1">
-        <p>📋 Toute absence doit être justifiée</p>
-        <p>📋 Les absences non justifiées sont considérées comme non excusées</p>
-        <p>📋 Au-delà de 10 absences non justifiées, l'élève peut être exclu</p>
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            À savoir
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Les justifications doivent être fournies dans les 7 jours</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Un justificatif médical est requis pour les absences de plus de 3 jours</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>La direction valide ou non la justification</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Rappel des règles
+          </h3>
+          <div class="text-sm space-y-1">
+            <p>
+              📋 Toute absence doit être justifiée
+            </p>
+            <p>
+              📋 Les absences non justifiées sont considérées comme non excusées
+            </p>
+            <p>
+              📋 Au-delà de 10 absences non justifiées, l'élève peut être exclu
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-info-circle text-green-600"></i>
+            <span>Après soumission, un email de confirmation vous sera envoyé.</span>
+          </p>
+        </div>
       </div>
     </div>
-    
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-info-circle text-green-600"></i>
-        <span>Après soumission, un email de confirmation vous sera envoyé.</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  const fileInput = document.getElementById('fileInput')
-  const fileName = document.getElementById('fileName')
-  
-  fileInput?.addEventListener('change', function() {
-    if (this.files && this.files[0]) {
-      fileName.textContent = `Fichier sélectionné: ${this.files[0].name}`
-      fileName.classList.remove('hidden')
-    }
-  })
-  
-  // Mettre à jour le motif autre
-  const reasonSelect = document.querySelector('select[name="reason"]')
-  reasonSelect?.addEventListener('change', function() {
-    if (this.value === 'Autre') {
-      const otherInput = document.createElement('input')
-      otherInput.type = 'text'
-      otherInput.name = 'otherReason'
-      otherInput.placeholder = 'Précisez le motif...'
-      otherInput.className = 'w-full px-3 py-2 border rounded-lg mt-2'
-      this.parentNode.appendChild(otherInput)
-    } else {
-      const otherInput = this.parentNode.querySelector('input[name="otherReason"]')
-      if (otherInput) otherInput.remove()
-    }
-  })
-</script>
-{{# /section }}
+    <script>
+      const fileInput = document.getElementById("fileInput");
 
-{{# /layout }}
+      const fileName = document.getElementById("fileName");
+
+      fileInput?.addEventListener("change", function() {
+        if (this.files && this.files[0]) {
+          fileName.textContent = `Fichier sélectionné: ${this.files[0].name}`;
+          fileName.classList.remove("hidden");
+        }
+      });
+      // Mettre à jour le motif autre
+
+      const reasonSelect = document.querySelector('select[name="reason"]');
+
+      reasonSelect?.addEventListener("change", function() {
+        if (this.value === "Autre") {
+          const otherInput = document.createElement("input");
+          otherInput.type = "text";
+          otherInput.name = "otherReason";
+          otherInput.placeholder = "Précisez le motif...";
+          otherInput.className = "w-full px-3 py-2 border rounded-lg mt-2";
+          this.parentNode.appendChild(otherInput);
+        } else {
+          const otherInput = this.parentNode.querySelector('input[name="otherReason"]');
+          if (otherInput) otherInput.remove();
+        }
+      });
+    </script>
+  @endsection
+  

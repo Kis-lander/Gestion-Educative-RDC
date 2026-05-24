@@ -12,7 +12,7 @@ export default class ForumPostsSchema extends BaseSchema {
       table.uuid('parent_post_id').references('id').inTable('forum_posts').onDelete('CASCADE')
       table.boolean('is_approved').defaultTo(true)
       table.timestamps(true)
-      
+
       table.index(['topic_id', 'created_at'])
     })
   }

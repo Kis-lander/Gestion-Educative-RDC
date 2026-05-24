@@ -1,189 +1,265 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Plans de paiement - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Plans de paiement{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez les échéanciers de paiement des élèves{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/financial/payment-plans/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Nouveau plan
+  @section('title')
+    Plans de paiement - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Plans de paiement
+  @endsection
+  @section('dashboardSubtitle')
+    Gérez les échéanciers de paiement des élèves
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/financial/payment-plans/create"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Nouveau plan
   </a>
-  <button onclick="exportPlans()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportPlans()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Plans actifs</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.totalAmount || 0 }}</p>
-    <p class="text-sm text-gray-500">Montant total (USD)</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.paid || 0 }}%</p>
-    <p class="text-sm text-gray-500">Taux de paiement</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.overdue || 0 }}</p>
-    <p class="text-sm text-gray-500">Échéances en retard</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="active">Actifs</option>
-        <option value="completed">Terminés</option>
-        <option value="defaulted">Défaillants</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
-      <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        @each(classObj in classes)
-        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
-        @end
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" placeholder="Élève, matricule..."
-               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Plans actifs
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.totalAmount || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Montant total (USD)
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.paid || 0 }}%
+        </p>
+        <p class="text-sm text-gray-500">
+          Taux de paiement
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.overdue || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Échéances en retard
+        </p>
       </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Tri par</label>
-      <select id="filterSort" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="due_date">Date échéance</option>
-        <option value="amount">Montant</option>
-        <option value="progress">Progression</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-search mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="active">
+              Actifs
+            </option>
+            <option value="completed">
+              Terminés
+            </option>
+            <option value="defaulted">
+              Défaillants
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+          <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            @each(classObj in classes)
+              <option value="{{ classObj.id }}">
+                {{ classObj.name }}
+              </option>
+            @end
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Élève, matricule..."
+              class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Tri par</label>
+          <select id="filterSort" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="due_date">
+              Date échéance
+            </option>
+            <option value="amount">
+              Montant
+            </option>
+            <option value="progress">
+              Progression
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-search mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Liste des plans -->
-<div class="space-y-4">
-  @each(plan in paymentPlans)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="border-l-4 {{ plan.status === 'active' ? 'border-green-500' : (plan.status === 'completed' ? 'border-blue-500' : 'border-red-500') }}">
-      <div class="p-4">
-        <div class="flex flex-wrap justify-between items-start gap-3">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 flex-wrap">
-              <h3 class="font-bold text-lg">{{ plan.studentName }}</h3>
-              <span class="text-sm text-gray-500">{{ plan.className }} - {{ plan.registrationNumber }}</span>
-              <span class="px-2 py-1 rounded-full text-xs {{ plan.status === 'active' ? 'bg-green-100 text-green-800' : (plan.status === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') }}">
-                {{ plan.status === 'active' ? 'Actif' : (plan.status === 'completed' ? 'Terminé' : 'Défaillant') }}
+    <!-- Liste des plans -->
+    <div class="space-y-4">
+      @each(plan in paymentPlans)
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          <div
+            class="border-l-4 {{ plan.status === 'active' ? 'border-green-500' : (plan.status === 'completed' ? 'border-blue-500' : 'border-red-500') }}"
+          >
+            <div class="p-4">
+              <div class="flex flex-wrap justify-between items-start gap-3">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 flex-wrap">
+                    <h3 class="font-bold text-lg">
+                      {{ plan.studentName }}
+                    </h3>
+                    <span class="text-sm text-gray-500">{{ plan.className }} - {{ plan.registrationNumber }}</span>
+                    <span
+                      class="px-2 py-1 rounded-full text-xs {{ plan.status === 'active' ? 'bg-green-100 text-green-800' : (plan.status === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') }}"
+                    >
+                      {{ plan.status === 'active' ? 'Actif' : (plan.status === 'completed' ? 'Terminé' : 'Défaillant') }}
               </span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
-              <div><i class="fas fa-calendar w-5 text-gray-400"></i> {{ plan.startDate }}</div>
-              <div><i class="fas fa-coins w-5 text-gray-400"></i> {{ formatCurrency(plan.totalAmount, 'USD') }}</div>
-              <div><i class="fas fa-credit-card w-5 text-gray-400"></i> {{ plan.installmentsCount }} versements</div>
-              <div><i class="fas fa-chart-line w-5 text-gray-400"></i> Progression: {{ plan.progress }}%</div>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <a href="/financial/payment-plans/{{ plan.id }}/show" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">
-              <i class="fas fa-eye mr-1"></i> Détails
+                  </div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
+                    <div>
+                      <i class="fas fa-calendar w-5 text-gray-400"></i>{{ plan.startDate }}
+                    </div>
+                    <div>
+                      <i class="fas fa-coins w-5 text-gray-400"></i>{{ formatCurrency(plan.totalAmount, 'USD') }}
+                    </div>
+                    <div>
+                      <i class="fas fa-credit-card w-5 text-gray-400"></i>{{ plan.installmentsCount }} versements
+                    </div>
+                    <div>
+                      <i class="fas fa-chart-line w-5 text-gray-400"></i>Progression: {{ plan.progress }}%
+                    </div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <a
+                    href="/financial/payment-plans/{{ plan.id }}/show"
+                    class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+                  >
+                    <i class="fas fa-eye mr-1"></i>Détails
             </a>
-            <a href="/financial/payment-plans/{{ plan.id }}/installments" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">
-              <i class="fas fa-list mr-1"></i> Échéances
+                  <a
+                    href="/financial/payment-plans/{{ plan.id }}/installments"
+                    class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+                  >
+                    <i class="fas fa-list mr-1"></i>Échéances
             </a>
+                </div>
+              </div>
+
+              <!-- Barre de progression -->
+              <div class="mt-3">
+                <div class="flex justify-between text-xs mb-1">
+                  <span>Paiement effectué</span>
+                  <span>{{ plan.progress }}% ({{ formatCurrency(plan.paidAmount, 'USD') }} / {{ formatCurrency(plan.totalAmount, 'USD') }})</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-primary rounded-full h-2" style="width: {{ plan.progress }}%">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Prochaine échéance -->
+              @if(plan.nextDueDate && plan.status === 'active')
+                <div
+                  class="mt-3 pt-2 border-t text-sm {{ plan.daysOverdue > 0 ? 'text-red-600' : 'text-yellow-600' }}"
+                >
+                  <i class="fas fa-hourglass-half mr-1"></i>
+                  Prochaine échéance: {{ plan.nextDueDate }}
+                  @if(plan.daysOverdue > 0)
+                    <span class="ml-2">(Retard de {{ plan.daysOverdue }} jours)</span>
+                  @elseif(plan.daysRemaining >= 0)
+                    <span class="ml-2">(Dans {{ plan.daysRemaining }} jours)</span>
+                  @endif
+                </div>
+              @endif
+            </div>
           </div>
         </div>
-        
-        <!-- Barre de progression -->
-        <div class="mt-3">
-          <div class="flex justify-between text-xs mb-1">
-            <span>Paiement effectué</span>
-            <span>{{ plan.progress }}% ({{ formatCurrency(plan.paidAmount, 'USD') }} / {{ formatCurrency(plan.totalAmount, 'USD') }})</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-primary rounded-full h-2" style="width: {{ plan.progress }}%"></div>
-          </div>
-        </div>
-        
-        <!-- Prochaine échéance -->
-        @if(plan.nextDueDate && plan.status === 'active')
-        <div class="mt-3 pt-2 border-t text-sm {{ plan.daysOverdue > 0 ? 'text-red-600' : 'text-yellow-600' }}">
-          <i class="fas fa-hourglass-half mr-1"></i>
-          Prochaine échéance: {{ plan.nextDueDate }}
-          @if(plan.daysOverdue > 0)
-          <span class="ml-2">(Retard de {{ plan.daysOverdue }} jours)</span>
-          @elseif(plan.daysRemaining >= 0)
-          <span class="ml-2">(Dans {{ plan.daysRemaining }} jours)</span>
-          @endif
-        </div>
-        @endif
-      </div>
-    </div>
-  </div>
-  @eachelse
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-    <i class="fas fa-calendar-alt text-5xl text-gray-400 mb-3"></i>
-    <p class="text-gray-500">Aucun plan de paiement trouvé</p>
-    <a href="/financial/payment-plans/create" class="mt-3 inline-block text-primary hover:underline">
-      Créer un plan de paiement
+        @else
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+          <i class="fas fa-calendar-alt text-5xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500">
+            Aucun plan de paiement trouvé
+          </p>
+          <a href="/financial/payment-plans/create" class="mt-3 inline-block text-primary hover:underline">
+            Créer un plan de paiement
     </a>
-  </div>
-  @end
-</div>
+        </div>
+      @end
+    </div>
 
-@include('partials/pagination', { pagination: pagination, url: '/financial/payment-plans' })
+    @include('partials/pagination', { pagination: pagination, url: '/financial/payment-plans' })
 
-<script>
-  const filterStatus = document.getElementById('filterStatus')
-  const filterClass = document.getElementById('filterClass')
-  const searchInput = document.getElementById('searchInput')
-  const filterSort = document.getElementById('filterSort')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    if (filterClass.value) params.set('class_id', filterClass.value)
-    if (searchInput.value) params.set('search', searchInput.value)
-    if (filterSort.value) params.set('sort', filterSort.value)
-    window.location.href = `/financial/payment-plans?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/financial/payment-plans'
-  })
-  
-  function exportPlans() {
-    const params = new URLSearchParams()
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    window.location.href = `/api/payment-plans/export?${params.toString()}`
-  }
-</script>
-{{# /section }}
+    <script>
+      const filterStatus = document.getElementById("filterStatus");
 
-{{# /layout }}
+      const filterClass = document.getElementById("filterClass");
+
+      const searchInput = document.getElementById("searchInput");
+
+      const filterSort = document.getElementById("filterSort");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (filterClass.value) params.set("class_id", filterClass.value);
+        if (searchInput.value) params.set("search", searchInput.value);
+        if (filterSort.value) params.set("sort", filterSort.value);
+        window.location.href = `/financial/payment-plans?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/financial/payment-plans";
+      });
+
+      function exportPlans() {
+        const params = new URLSearchParams();
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        window.location.href = `/api/payment-plans/export?${params.toString()}`;
+      }
+    </script>
+  @endsection
+  

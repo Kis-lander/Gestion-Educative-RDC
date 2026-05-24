@@ -1,65 +1,82 @@
-{{# layout('layouts/auth') }}
+@layout('layouts/auth')
 
-{{# section('title') }}Connexion - Gestion Éducative RDC{{# /section }}
+  @section('title')
+    Connexion - Gestion Éducative RDC
+  @endsection
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
+    <div class="text-center mb-8">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png"
+        alt="Logo RDC"
+        class="h-16 mx-auto mb-4 object-contain"
+      />
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+        Connexion
+      </h2>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">
+        Plateforme de gestion éducative de la RDC
+      </p>
+    </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
-  <div class="text-center mb-8">
-    <img src="/images/logo-rdc-min.png" alt="Logo RDC" class="h-16 mx-auto mb-4">
-    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Connexion</h2>
-    <p class="text-gray-500 dark:text-gray-400 mt-2">Plateforme de gestion éducative de la RDC</p>
-  </div>
-  
-  <form method="POST" action="/login" x-data="{ loading: false }" @submit="loading = true">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    
-    <div class="mb-4">
-      <label class="block text-gray-700 dark:text-gray-300 mb-2">Adresse email</label>
-      <div class="relative">
-        <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input type="email" name="email" required
-               class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-               placeholder="exemple@ecole.cd">
+    <form method="POST" action="/login" x-data="{ loading: false }" @submit="loading = true">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+      <div class="mb-4">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Adresse email</label>
+        <div class="relative">
+          <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input
+            type="email"
+            name="email"
+            required
+            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="exemple@ecole.cd"
+          />
+        </div>
       </div>
-    </div>
-    
-    <div class="mb-6">
-      <label class="block text-gray-700 dark:text-gray-300 mb-2">Mot de passe</label>
-      <div class="relative">
-        <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input type="password" name="password" required
-               class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-               placeholder="••••••••">
+
+      <div class="mb-6">
+        <label class="block text-gray-700 dark:text-gray-300 mb-2">Mot de passe</label>
+        <div class="relative">
+          <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input
+            type="password"
+            name="password"
+            required
+            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="••••••••"
+          />
+        </div>
       </div>
-    </div>
-    
-    <div class="flex items-center justify-between mb-6">
-      <label class="flex items-center cursor-pointer">
-        <input type="checkbox" name="remember" class="mr-2 w-4 h-4">
-        <span class="text-sm text-gray-600 dark:text-gray-400">Se souvenir de moi</span>
-      </label>
-      <a href="/forgot-password" class="text-sm text-primary hover:underline">Mot de passe oublié ?</a>
-    </div>
-    
-    <button type="submit" 
-            :disabled="loading"
-            class="w-full bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
-      <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-      <span>Se connecter</span>
-    </button>
-  </form>
-  
-  <div class="mt-6 text-center">
-    <p class="text-gray-500 dark:text-gray-400">
-      Nouvelle école ? 
+
+      <div class="flex items-center justify-between mb-6">
+        <label class="flex items-center cursor-pointer">
+          <input type="checkbox" name="remember" class="mr-2 w-4 h-4" />
+          <span class="text-sm text-gray-600 dark:text-gray-400">Se souvenir de moi</span>
+        </label>
+        <a href="/forgot-password" class="text-sm text-primary hover:underline">Mot de passe oublié ?</a>
+      </div>
+
+      <button
+        type="submit"
+        :disabled="loading"
+        class="w-full bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+      >
+        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+        <span>Se connecter</span>
+      </button>
+    </form>
+
+    <div class="mt-6 text-center">
+      <p class="text-gray-500 dark:text-gray-400">
+        Nouvelle école ? 
       <a href="/register-school" class="text-primary hover:underline">Inscrivez votre établissement</a>
-    </p>
-  </div>
-  
-  <div class="mt-4 pt-4 border-t dark:border-gray-700 text-center">
-    <p class="text-xs text-gray-400">
-      Inspection Pédagogique de la République Démocratique du Congo
-    </p>
-  </div>
-</div>
+      </p>
+    </div>
 
-{{# /layout }}
+    <div class="mt-4 pt-4 border-t dark:border-gray-700 text-center">
+      <p class="text-xs text-gray-400">
+        Inspection Pédagogique de la République Démocratique du Congo
+      </p>
+    </div>
+  </div>

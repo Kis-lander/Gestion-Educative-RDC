@@ -1,20 +1,191 @@
 import router from '@adonisjs/core/services/router'
+import db from '@adonisjs/lucid/services/db'
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 
-router.get('/', [controllers.Welcome, 'index']).as('welcome.index')
-router.get('/about', [controllers.Welcome, 'about']).as('about')
-router.get('/welcome', [controllers.Welcome, 'landing']).as('welcome.landing')
-router.get('/welcome/about', [controllers.Welcome, 'about']).as('welcome.about')
-router.get('/welcome/features', [controllers.Welcome, 'features']).as('welcome.features')
-router.get('/welcome/contact', [controllers.Welcome, 'contact']).as('welcome.contact')
-router.get('/welcome/terms', [controllers.Welcome, 'terms']).as('welcome.terms')
+async function getWelcomeStats() {
+  const [schools, students, teachers, provinces] = await Promise.all([
+    db.from('schools').count('* as total').first(),
+    db.from('students').count('* as total').first(),
+    db.from('teachers').count('* as total').first(),
+    db.from('schools').whereNotNull('province').countDistinct('province as total').first(),
+  ])
+
+  return {
+    totalSchools: Number(schools?.total ?? 0),
+    totalStudents: Number(students?.total ?? 0),
+    totalTeachers: Number(teachers?.total ?? 0),
+    totalProvinces: Number(provinces?.total ?? 0),
+  }
+}
+
+router
+  .get('/', async ({ view }) => {
+    return view.render('welcome/index', {
+      title: 'Gestion Educative RDC - Plateforme nationale',
+      stats: await getWelcomeStats(),
+    })
+  })
+  .as('welcome.index')
+router.get('/home', async ({ inertia }) => inertia.render('home', {})).as('home')
+router.get('/about', async ({ view }) => view.render('welcome/about')).as('about')
+router
+  .get('/welcome', async ({ view }) => {
+    return view.render('welcome/index', {
+      title: 'Gestion Educative RDC - Plateforme nationale',
+      stats: await getWelcomeStats(),
+    })
+  })
+  .as('welcome.landing')
+router.get('/welcome/about', async ({ view }) => view.render('welcome/about')).as('welcome.about')
+router
+  .get('/welcome/features', async ({ view }) => view.render('welcome/features'))
+  .as('welcome.features')
+router
+  .get('/welcome/contact', async ({ view }) => view.render('welcome/contact'))
+  .as('welcome.contact')
+router.get('/welcome/terms', async ({ view }) => view.render('welcome/terms')).as('welcome.terms')
+router
+  .get('/register-school', async ({ view }) =>
+    view.render('schools/register', { title: "Inscription de l'ecole - Gestion Educative RDC" })
+  )
+  .as('schools.register.create')
+router.post('/register-school', [controllers.Schools, 'registerSchool']).as('schools.register')
 router.get('/help', [controllers.Help, 'index']).as('help.index')
 router.get('/help/faq', [controllers.Help, 'faq']).as('help.faq')
 router.get('/help/guides', [controllers.Help, 'guides']).as('help.guides')
 router.get('/help/tutorial', [controllers.Help, 'tutorial']).as('help.tutorial')
 router.get('/help/contact', [controllers.Help, 'contact']).as('help.contact')
 router.get('/help/documentation', [controllers.Help, 'documentation']).as('help.documentation')
+
+router
+  .group(() => {
+    router.get('/login', [controllers.Session, 'create']).as('session.create')
+    router.post('/login', [controllers.Session, 'store']).as('session.store')
+    router.get('/signup', [controllers.NewAccount, 'create']).as('new_account.create')
+    router.post('/signup', [controllers.NewAccount, 'store']).as('new_account.store')
+  })
+  .use(middleware.guest())
+
+router
+  .post('/logout', [controllers.Session, 'destroy'])
+  .as('session.destroy')
+  .use(middleware.auth())
+
+router
+  .get('/inspection/dashboard', [controllers.Dashboard, 'inspection'])
+  .as('inspection.dashboard')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
+
+router
+  .group(() => {
+    router.get('/schools', [controllers.Inspections, 'schoolsPage'])
+    router.get('/schools/pending', [controllers.Inspections, 'pendingSchoolsPage'])
+    router.get('/schools/:id/classes', [controllers.Inspections, 'schoolClassesPage'])
+    router.get('/schools/:id/inspect', [controllers.Inspections, 'inspectSchoolPage'])
+    router.post('/schools/:id/inspect', [controllers.Inspections, 'storeSchoolInspection'])
+    router.get('/schools/:id', [controllers.Inspections, 'schoolDetailsPage'])
+    router.get('/schools/:id/approve', [controllers.Inspections, 'approveSchoolPage'])
+    router.post('/schools/:id/generate-credentials', [
+      controllers.Inspections,
+      'approveAndGenerateCredentials',
+    ])
+    router.post('/schools/:id/reject', [controllers.Inspections, 'rejectSchool'])
+    router.post('/schools/:id/toggle-suspend', [controllers.Inspections, 'toggleSuspendSchool'])
+    router.get('/communications/global', [controllers.Inspections, 'communicationsGlobalPage'])
+    router
+      .post('/communications/global', [controllers.Inspections, 'sendGlobalCommunication'])
+      .as('inspection.communications.global.store')
+    router.get('/communications/school', [controllers.Inspections, 'communicationsSchoolPage'])
+    router.post('/communications/school', [controllers.Messages, 'sendSchoolCommunication'])
+    router.get('/communications/history', [controllers.Inspections, 'communicationsHistoryPage'])
+    router.get('/communications/:id', [controllers.Inspections, 'communicationDetails'])
+    router.get('/reports/schools', [controllers.Inspections, 'reportsSchoolsPage'])
+    router.get('/reports/performance', [controllers.Inspections, 'reportsPerformancePage'])
+    router.get('/reports/statistics', [controllers.Inspections, 'reportsStatisticsPage'])
+    router.get('/reports/transfers', [controllers.Inspections, 'reportsTransfersPage'])
+    router.get('/reports/school/:id', [controllers.Inspections, 'schoolReportPage'])
+    router.get('/settings', [controllers.Inspections, 'settingsPage'])
+    router
+      .post('/settings/general', [controllers.Inspections, 'saveSettings'])
+      .as('inspection.settings.general.store')
+    router
+      .post('/settings/inspection', [controllers.Inspections, 'saveSettings'])
+      .as('inspection.settings.inspection.store')
+    router
+      .post('/settings/notifications', [controllers.Inspections, 'saveSettings'])
+      .as('inspection.settings.notifications.store')
+    router
+      .post('/settings/backup', [controllers.Inspections, 'saveSettings'])
+      .as('inspection.settings.backup.store')
+    router
+      .post('/settings/security', [controllers.Inspections, 'saveSettings'])
+      .as('inspection.settings.security.store')
+    router.get('/schools/export', [controllers.Inspections, 'exportSchools'])
+  })
+  .prefix('/inspection')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
+
+router
+  .group(() => {
+    router.get('/reports/schools', [controllers.Inspections, 'schoolsReportData'])
+    router.get('/reports/performance', [controllers.Inspections, 'performanceReportData'])
+    router.get('/reports/statistics', [controllers.Inspections, 'statisticsReportData'])
+    router.get('/reports/transfers', [controllers.Inspections, 'transfersReportData'])
+    router.get('/logs', [controllers.Inspections, 'logs'])
+    router.get('/logs/export', [controllers.Inspections, 'exportLogs'])
+  })
+  .prefix('/api/inspection')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
+
+router
+  .get('/dashboard', [controllers.Dashboard, 'workspace'])
+  .as('dashboard')
+  .use(middleware.auth())
+
+router
+  .get('/settings', ({ response }) => response.redirect('/inspection/settings'))
+  .as('settings')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
+
+router
+  .get('/teachers', [controllers.Inspections, 'teachersPage'])
+  .as('inspection.teachers')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
+
+router
+  .get('/communication/messages', ({ response }) =>
+    response.redirect('/inspection/communications/history')
+  )
+  .as('inspection.messages')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
+
+router
+  .get('/api/users/stats', [controllers.Inspections, 'usersStats'])
+  .as('inspection.users.stats')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
+
+router.get('/profile', [controllers.Auth, 'profile']).as('profile').use(middleware.auth())
+router
+  .get('/profile/edit', [controllers.Auth, 'editProfilePage'])
+  .as('profile.edit')
+  .use(middleware.auth())
+router
+  .get('/profile/security', [controllers.Auth, 'securityPage'])
+  .as('profile.security')
+  .use(middleware.auth())
+router
+  .get('/profile/preferences', [controllers.Auth, 'preferencesPage'])
+  .as('profile.preferences')
+  .use(middleware.auth())
+router
+  .get('/profile/activity', [controllers.Auth, 'activityPage'])
+  .as('profile.activity')
+  .use(middleware.auth())
+router
+  .post('/api/profile/avatar', [controllers.Auth, 'updateAvatar'])
+  .as('profile.avatar.update')
+  .use(middleware.auth())
 
 router
   .group(() => {

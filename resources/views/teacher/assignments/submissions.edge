@@ -1,195 +1,268 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Soumissions - {{ assignment.title }}{{# /section }}
-
-{{# section('dashboardTitle') }}Soumissions des élèves{{# /section }}
-{{# section('dashboardSubtitle') }}{{ assignment.title }} - {{ assignment.className }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportSubmissions()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+  @section('title')
+    Soumissions - {{ assignment.title }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Soumissions des élèves
+  @endsection
+  @section('dashboardSubtitle')
+    {{ assignment.title }} - {{ assignment.className }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="exportSubmissions()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Total élèves</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.submitted || 0 }}</p>
-    <p class="text-sm text-gray-500">Soumis</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.graded || 0 }}</p>
-    <p class="text-sm text-gray-500">Notés</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.notSubmitted || 0 }}</p>
-    <p class="text-sm text-gray-500">Non soumis</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="all">Tous</option>
-        <option value="submitted">Soumis</option>
-        <option value="not_submitted">Non soumis</option>
-        <option value="graded">Notés</option>
-        <option value="ungraded">Non notés</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <input type="text" id="searchInput" placeholder="Nom, matricule..."
-             class="w-full px-3 py-2 border rounded-lg text-sm">
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total élèves
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.submitted || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Soumis
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.graded || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Notés
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.notSubmitted || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Non soumis
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trier par</label>
-      <select id="sortBy" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="name">Nom</option>
-        <option value="date">Date soumission</option>
-        <option value="grade">Note</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="all">
+              Tous
+            </option>
+            <option value="submitted">
+              Soumis
+            </option>
+            <option value="not_submitted">
+              Non soumis
+            </option>
+            <option value="graded">
+              Notés
+            </option>
+            <option value="ungraded">
+              Non notés
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Nom, matricule..."
+            class="w-full px-3 py-2 border rounded-lg text-sm"
+          />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trier par</label>
+          <select id="sortBy" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="name">
+              Nom
+            </option>
+            <option value="date">
+              Date soumission
+            </option>
+            <option value="grade">
+              Note
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Tableau des soumissions -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Matricule</th>
-          <th class="px-4 py-3 text-left">Élève</th>
-          <th class="px-4 py-3 text-center">Statut</th>
-          <th class="px-4 py-3 text-center">Date soumission</th>
-          <th class="px-4 py-3 text-center">Note</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="submissionsTableBody">
-        @each(submission in submissions)
-        <tr class="border-b dark:border-gray-700 submission-row"
-            data-status="{{ submission.status }}"
-            data-graded="{{ submission.isGraded }}"
-            data-name="{{ submission.studentName }}"
-            data-matricule="{{ submission.registrationNumber }}">
-          <td class="px-4 py-3 font-mono text-xs">{{ submission.registrationNumber }}</td>
-          <td class="px-4 py-3 font-medium">{{ submission.studentName }}</td>
-          <td class="px-4 py-3 text-center">
-            @if(submission.status === 'submitted')
-            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Soumis</span>
-            @else
-            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">Non soumis</span>
-            @endif
-          </td>
-          <td class="px-4 py-3 text-center">{{ submission.submittedAt ? formatDateTime(submission.submittedAt) : '-' }}</td>
-          <td class="px-4 py-3 text-center">
-            @if(submission.grade !== null)
-            <span class="font-bold text-green-600">{{ submission.grade }}/{{ assignment.maxPoints }}</span>
-            @else
-            <span class="text-gray-400">-</span>
-            @endif
-          </td>
-          <td class="px-4 py-3 text-center">
-            @if(submission.status === 'submitted')
-              @if(submission.grade === null)
-              <a href="/teacher/assignments/submissions/{{ submission.id }}/grade" class="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-blue-700">
-                Noter
+    <!-- Tableau des soumissions -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Matricule
+              </th>
+              <th class="px-4 py-3 text-left">
+                Élève
+              </th>
+              <th class="px-4 py-3 text-center">
+                Statut
+              </th>
+              <th class="px-4 py-3 text-center">
+                Date soumission
+              </th>
+              <th class="px-4 py-3 text-center">
+                Note
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody id="submissionsTableBody">
+            @each(submission in submissions)
+              <tr
+                class="border-b dark:border-gray-700 submission-row"
+                data-status="{{ submission.status }}"
+                data-graded="{{ submission.isGraded }}"
+                data-name="{{ submission.studentName }}"
+                data-matricule="{{ submission.registrationNumber }}"
+              >
+                <td class="px-4 py-3 font-mono text-xs">
+                  {{ submission.registrationNumber }}
+                </td>
+                <td class="px-4 py-3 font-medium">
+                  {{ submission.studentName }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  @if(submission.status === 'submitted')
+                    <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Soumis</span>
+                  @else
+                    <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">Non soumis</span>
+                  @endif
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ submission.submittedAt ? formatDateTime(submission.submittedAt) : '-' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  @if(submission.grade !== null)
+                    <span class="font-bold text-green-600">{{ submission.grade }}/{{ assignment.maxPoints }}</span>
+                  @else
+                    <span class="text-gray-400">-</span>
+                  @endif
+                </td>
+                <td class="px-4 py-3 text-center">
+                  @if(submission.status === 'submitted')
+                    @if(submission.grade === null)
+                      <a
+                        href="/teacher/assignments/submissions/{{ submission.id }}/grade"
+                        class="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-blue-700"
+                      >
+                        Noter
               </a>
+                    @else
+                      <a
+                        href="/teacher/assignments/submissions/{{ submission.id }}/grade"
+                        class="text-primary text-xs hover:underline"
+                      >
+                        Modifier
+              </a>
+                    @endif
+                    <a
+                      href="{{ submission.attachmentUrl }}"
+                      target="_blank"
+                      class="text-blue-600 text-xs ml-2"
+                      title="Voir fichier"
+                    >
+                      <i class="fas fa-file-alt"></i>
+                    </a>
+                  @else
+                    <span class="text-gray-400 text-xs">-</span>
+                  @endif
+                </td>
+              </tr>
               @else
-              <a href="/teacher/assignments/submissions/{{ submission.id }}/grade" class="text-primary text-xs hover:underline">
-                Modifier
-              </a>
-              @endif
-              <a href="{{ submission.attachmentUrl }}" target="_blank" class="text-blue-600 text-xs ml-2" title="Voir fichier">
-                <i class="fas fa-file-alt"></i>
-              </a>
-            @else
-            <span class="text-gray-400 text-xs">-</span>
-            @endif
-          </td>
-        </tr>
-        @eachelse
-        <tr><td colspan="6" class="text-center py-12">Aucune soumission</td></tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-</div>
+              <tr>
+                <td colspan="6" class="text-center py-12">
+                  Aucune soumission
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<script>
-  function filterSubmissions() {
-    const status = document.getElementById('filterStatus').value
-    const search = document.getElementById('searchInput').value.toLowerCase()
-    const rows = document.querySelectorAll('#submissionsTableBody tr')
-    
-    rows.forEach(row => {
-      let show = true
-      const rowStatus = row.dataset.status
-      const rowGraded = row.dataset.graded === 'true'
-      const name = row.dataset.name?.toLowerCase() || ''
-      const matricule = row.dataset.matricule?.toLowerCase() || ''
-      
-      if (status !== 'all') {
-        if (status === 'submitted' && rowStatus !== 'submitted') show = false
-        if (status === 'not_submitted' && rowStatus === 'submitted') show = false
-        if (status === 'graded' && !rowGraded) show = false
-        if (status === 'ungraded' && rowGraded) show = false
+    <script>
+      function filterSubmissions() {
+        const status = document.getElementById("filterStatus").value;
+        const search = document.getElementById("searchInput").value.toLowerCase();
+        const rows = document.querySelectorAll("#submissionsTableBody tr");
+        rows.forEach(row => {
+          let show = true;
+          const rowStatus = row.dataset.status;
+          const rowGraded = row.dataset.graded === "true";
+          const name = row.dataset.name?.toLowerCase() || "";
+          const matricule = row.dataset.matricule?.toLowerCase() || "";
+          if (status !== "all") {
+            if (status === "submitted" && rowStatus !== "submitted") show = false;
+            if (status === "not_submitted" && rowStatus === "submitted") show = false;
+            if (status === "graded" && !rowGraded) show = false;
+            if (status === "ungraded" && rowGraded) show = false;
+          }
+          if (search && !name.includes(search) && !matricule.includes(search)) show = false;
+          row.style.display = show ? "" : "none";
+        });
       }
-      if (search && !name.includes(search) && !matricule.includes(search)) show = false
-      
-      row.style.display = show ? '' : 'none'
-    })
-  }
-  
-  function sortSubmissions() {
-    const sortBy = document.getElementById('sortBy').value
-    const tbody = document.getElementById('submissionsTableBody')
-    const rows = Array.from(tbody.querySelectorAll('tr'))
-    
-    rows.sort((a, b) => {
-      if (sortBy === 'name') {
-        return a.dataset.name.localeCompare(b.dataset.name)
-      }
-      return 0
-    })
-    
-    rows.forEach(row => tbody.appendChild(row))
-  }
-  
-  document.getElementById('applyFilters')?.addEventListener('click', filterSubmissions)
-  document.getElementById('resetFilters')?.addEventListener('click', () => {
-    document.getElementById('filterStatus').value = 'all'
-    document.getElementById('searchInput').value = ''
-    document.getElementById('sortBy').value = 'name'
-    filterSubmissions()
-  })
-  document.getElementById('sortBy')?.addEventListener('change', sortSubmissions)
-  
-  function exportSubmissions() {
-    window.location.href = `/api/teacher/assignments/{{ assignment.id }}/submissions/export`
-  }
-</script>
-{{# /section }}
 
-{{# /layout }}
+      function sortSubmissions() {
+        const sortBy = document.getElementById("sortBy").value;
+        const tbody = document.getElementById("submissionsTableBody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        rows.sort((a, b) => {
+          if (sortBy === "name") {
+            return a.dataset.name.localeCompare(b.dataset.name);
+          }
+          return 0;
+        });
+        rows.forEach(row => tbody.appendChild(row));
+      }
+
+      document.getElementById("applyFilters")?.addEventListener("click", filterSubmissions);
+
+      document.getElementById("resetFilters")?.addEventListener("click", () => {
+        document.getElementById("filterStatus").value = "all";
+        document.getElementById("searchInput").value = "";
+        document.getElementById("sortBy").value = "name";
+        filterSubmissions();
+      });
+
+      document.getElementById("sortBy")?.addEventListener("change", sortSubmissions);
+
+      function exportSubmissions() {
+        window.location.href = `/api/teacher/assignments/{{ assignment.id }}/submissions/export`;
+      }
+    </script>
+  @endsection
+  

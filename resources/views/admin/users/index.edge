@@ -1,228 +1,333 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Gestion des utilisateurs - Administration{{# /section }}
-
-{{# section('dashboardTitle') }}Utilisateurs{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez tous les utilisateurs de la plateforme{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/admin/users/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Nouvel utilisateur
+  @section('title')
+    Gestion des utilisateurs - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Utilisateurs
+  @endsection
+  @section('dashboardSubtitle')
+    Gérez tous les utilisateurs de la plateforme
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/admin/users/create"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Nouvel utilisateur
   </a>
-  <button onclick="exportUsers()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportUsers()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total utilisateurs</p>
-    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Actifs</p>
-    <p class="text-3xl font-bold">{{ stats.active || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Enseignants</p>
-    <p class="text-3xl font-bold">{{ stats.teachers || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Élèves</p>
-    <p class="text-3xl font-bold">{{ stats.students || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Rôle</label>
-      <select id="filterRole" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="inspection">Inspection</option>
-        <option value="director">Directeur</option>
-        <option value="finance_director">Directeur financier</option>
-        <option value="teacher">Enseignant</option>
-        <option value="parent">Parent</option>
-        <option value="student">Élève</option>
-        <option value="discipline_director">Discipline</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="active">Actif</option>
-        <option value="inactive">Inactif</option>
-        <option value="suspended">Suspendu</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">École</label>
-      <select id="filterSchool" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        @each(school in schools)
-        <option value="{{ school.id }}">{{ school.name }}</option>
-        @end
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" placeholder="Nom, email..."
-               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total utilisateurs
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Actifs
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.active || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Enseignants
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.teachers || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Élèves
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.students || 0 }}
+        </p>
       </div>
     </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Rôle</label>
+          <select id="filterRole" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="inspection">
+              Inspection
+            </option>
+            <option value="director">
+              Directeur
+            </option>
+            <option value="finance_director">
+              Directeur financier
+            </option>
+            <option value="teacher">
+              Enseignant
+            </option>
+            <option value="parent">
+              Parent
+            </option>
+            <option value="student">
+              Élève
+            </option>
+            <option value="discipline_director">
+              Discipline
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="active">
+              Actif
+            </option>
+            <option value="inactive">
+              Inactif
+            </option>
+            <option value="suspended">
+              Suspendu
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">École</label>
+          <select id="filterSchool" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            @each(school in schools)
+              <option value="{{ school.id }}">
+                {{ school.name }}
+              </option>
+            @end
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Nom, email..."
+              class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Tableau des utilisateurs -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Utilisateur</th>
-          <th class="px-4 py-3 text-left">Email</th>
-          <th class="px-4 py-3 text-left">Rôle</th>
-          <th class="px-4 py-3 text-left">École</th>
-          <th class="px-4 py-3 text-center">Statut</th>
-          <th class="px-4 py-3 text-center">Dernière connexion</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(user in users)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-3">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
-              </div>
-              <div>
-                <p class="font-medium">{{ user.firstName }} {{ user.lastName }}</p>
-                <p class="text-xs text-gray-500">{{ user.phone || '-' }}</p>
-              </div>
-            </div>
-          </td>
-          <td class="px-4 py-3">{{ user.email }}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-1 rounded-full text-xs
+    <!-- Tableau des utilisateurs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Utilisateur
+              </th>
+              <th class="px-4 py-3 text-left">
+                Email
+              </th>
+              <th class="px-4 py-3 text-left">
+                Rôle
+              </th>
+              <th class="px-4 py-3 text-left">
+                École
+              </th>
+              <th class="px-4 py-3 text-center">
+                Statut
+              </th>
+              <th class="px-4 py-3 text-center">
+                Dernière connexion
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(user in users)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold"
+                    >
+                      {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="font-medium">
+                        {{ user.firstName }} {{ user.lastName }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        {{ user.phone || '-' }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  {{ user.email }}
+                </td>
+                <td class="px-4 py-3">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ user.role === 'inspection' ? 'bg-red-100 text-red-800' : 
                  (user.role === 'director' ? 'bg-blue-100 text-blue-800' : 
                  (user.role === 'teacher' ? 'bg-green-100 text-green-800' : 
                  (user.role === 'student' ? 'bg-purple-100 text-purple-800' : 
-                 (user.role === 'parent' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')))) }}">
-              {{ user.role === 'inspection' ? 'Inspection' : 
+                 (user.role === 'parent' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')))) }}"
+                  >
+                    {{ user.role === 'inspection' ? 'Inspection' : 
                  (user.role === 'director' ? 'Directeur' : 
                  (user.role === 'finance_director' ? 'Dir. Financier' : 
                  (user.role === 'teacher' ? 'Enseignant' : 
                  (user.role === 'student' ? 'Élève' : 
                  (user.role === 'parent' ? 'Parent' : 'Discipline'))))) }}
             </span>
-          </td>
-          <td class="px-4 py-3">{{ user.schoolName || 'N/A' }}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="px-2 py-1 rounded-full text-xs
+                </td>
+                <td class="px-4 py-3">
+                  {{ user.schoolName || 'N/A' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ user.status === 'active' ? 'bg-green-100 text-green-800' : 
-                 (user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800') }}">
-              {{ user.status === 'active' ? 'Actif' : (user.status === 'inactive' ? 'Inactif' : 'Suspendu') }}
+                 (user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800') }}"
+                  >
+                    {{ user.status === 'active' ? 'Actif' : (user.status === 'inactive' ? 'Inactif' : 'Suspendu') }}
             </span>
-          </td>
-          <td class="px-4 py-3 text-center">{{ user.lastLogin || 'Jamais' }}</td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex justify-center gap-2">
-              <a href="/admin/users/{{ user.id }}/show" class="text-primary hover:underline" title="Voir">
-                <i class="fas fa-eye"></i>
-              </a>
-              <a href="/admin/users/{{ user.id }}/edit" class="text-blue-600 hover:text-blue-800" title="Modifier">
-                <i class="fas fa-edit"></i>
-              </a>
-              <button onclick="toggleUserStatus('{{ user.id }}', '{{ user.status }}')" class="text-yellow-600 hover:text-yellow-800" title="{{ user.status === 'active' ? 'Suspendre' : 'Activer' }}">
-                <i class="fas {{ user.status === 'active' ? 'fa-pause-circle' : 'fa-play-circle' }}"></i>
-              </button>
-              <button onclick="deleteUser('{{ user.id }}', '{{ user.firstName }} {{ user.lastName }}')" class="text-red-500 hover:text-red-700" title="Supprimer">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/admin/users' })
-</div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ user.lastLogin || 'Jamais' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex justify-center gap-2">
+                    <a href="/admin/users/{{ user.id }}/show" class="text-primary hover:underline" title="Voir">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a
+                      href="/admin/users/{{ user.id }}/edit"
+                      class="text-blue-600 hover:text-blue-800"
+                      title="Modifier"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button
+                      onclick="toggleUserStatus('{{ user.id }}', '{{ user.status }}')"
+                      class="text-yellow-600 hover:text-yellow-800"
+                      title="{{ user.status === 'active' ? 'Suspendre' : 'Activer' }}"
+                    >
+                      <i class="fas {{ user.status === 'active' ? 'fa-pause-circle' : 'fa-play-circle' }}"></i>
+                    </button>
+                    <button
+                      onclick="deleteUser('{{ user.id }}', '{{ user.firstName }} {{ user.lastName }}')"
+                      class="text-red-500 hover:text-red-700"
+                      title="Supprimer"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
 
-<script>
-  const filterRole = document.getElementById('filterRole')
-  const filterStatus = document.getElementById('filterStatus')
-  const filterSchool = document.getElementById('filterSchool')
-  const searchInput = document.getElementById('searchInput')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterRole.value) params.set('role', filterRole.value)
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    if (filterSchool.value) params.set('school_id', filterSchool.value)
-    if (searchInput.value) params.set('search', searchInput.value)
-    window.location.href = `/admin/users?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/admin/users'
-  })
-  
-  async function toggleUserStatus(userId, currentStatus) {
-    const newStatus = currentStatus === 'active' ? 'suspended' : 'active'
-    if (confirm(`${newStatus === 'active' ? 'Activer' : 'Suspendre'} cet utilisateur ?`)) {
-      const res = await fetch(`/admin/users/${userId}/toggle-status`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) location.reload()
-      else alert('Erreur: ' + data.message)
-    }
-  }
-  
-  async function deleteUser(userId, userName) {
-    if (confirm(`Supprimer définitivement l'utilisateur "${userName}" ? Cette action est irréversible.`)) {
-      const res = await fetch(`/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) location.reload()
-      else alert('Erreur: ' + data.message)
-    }
-  }
-  
-  function exportUsers() {
-    const params = new URLSearchParams()
-    if (filterRole.value) params.set('role', filterRole.value)
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    window.location.href = `/api/admin/users/export?${params.toString()}`
-  }
-</script>
-{{# /section }}
+      @include('partials/pagination', { pagination: pagination, url: '/admin/users' })
+    </div>
 
-{{# /layout }}
+    <script>
+      const filterRole = document.getElementById("filterRole");
+
+      const filterStatus = document.getElementById("filterStatus");
+
+      const filterSchool = document.getElementById("filterSchool");
+
+      const searchInput = document.getElementById("searchInput");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterRole.value) params.set("role", filterRole.value);
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (filterSchool.value) params.set("school_id", filterSchool.value);
+        if (searchInput.value) params.set("search", searchInput.value);
+        window.location.href = `/admin/users?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/admin/users";
+      });
+
+      async function toggleUserStatus(userId, currentStatus) {
+        const newStatus = currentStatus === "active" ? "suspended" : "active";
+        if (confirm(`${newStatus === "active" ? "Activer" : "Suspendre"} cet utilisateur ?`)) {
+          const res = await fetch(`/admin/users/${userId}/toggle-status`, {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) location.reload(); else alert("Erreur: " + data.message);
+        }
+      }
+
+      async function deleteUser(userId, userName) {
+        if (confirm(`Supprimer définitivement l'utilisateur "${userName}" ? Cette action est irréversible.`)) {
+          const res = await fetch(`/admin/users/${userId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) location.reload(); else alert("Erreur: " + data.message);
+        }
+      }
+
+      function exportUsers() {
+        const params = new URLSearchParams();
+        if (filterRole.value) params.set("role", filterRole.value);
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        window.location.href = `/api/admin/users/export?${params.toString()}`;
+      }
+    </script>
+  @endsection
+  

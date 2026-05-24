@@ -1,278 +1,363 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Gestion des matières - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Matières enseignées{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez les matières de l'établissement{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/schools/subjects/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Nouvelle matière
+  @section('title')
+    Gestion des matières - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Matières enseignées
+  @endsection
+  @section('dashboardSubtitle')
+    Gérez les matières de l'établissement
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/schools/subjects/create"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Nouvelle matière
   </a>
-  <a href="/schools/subjects/assign" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-link mr-2"></i> Assigner aux classes
+      <a
+        href="/schools/subjects/assign"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-link mr-2"></i>Assigner aux classes
   </a>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Total matières</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.assigned || 0 }}</p>
-    <p class="text-sm text-gray-500">Matières assignées</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.averageCoefficient || 0 }}</p>
-    <p class="text-sm text-gray-500">Coefficient moyen</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.classesWithSubjects || 0 }}</p>
-    <p class="text-sm text-gray-500">Classes équipées</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres et recherche -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" placeholder="Nom, code, description..." 
-               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+    </div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total matières
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.assigned || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Matières assignées
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.averageCoefficient || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Coefficient moyen
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.classesWithSubjects || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Classes équipées
+        </p>
       </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Coefficient</label>
-      <select id="filterCoefficient" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="1">Coefficient 1</option>
-        <option value="2">Coefficient 2</option>
-        <option value="3">Coefficient 3</option>
-        <option value="4">Coefficient 4</option>
-        <option value="5">Coefficient 5</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres et recherche -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Nom, code, description..."
+              class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Coefficient</label>
+          <select id="filterCoefficient" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="1">
+              Coefficient 1
+            </option>
+            <option value="2">
+              Coefficient 2
+            </option>
+            <option value="3">
+              Coefficient 3
+            </option>
+            <option value="4">
+              Coefficient 4
+            </option>
+            <option value="5">
+              Coefficient 5
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Tableau des matières -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm" id="subjectsTable">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Code</th>
-          <th class="px-4 py-3 text-left">Matière</th>
-          <th class="px-4 py-3 text-center">Coefficient</th>
-          <th class="px-4 py-3 text-left">Description</th>
-          <th class="px-4 py-3 text-center">Classes assignées</th>
-          <th class="px-4 py-3 text-center">Enseignants</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(subject in subjects)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 subject-row"
-            data-coefficient="{{ subject.coefficient }}"
-            data-name="{{ subject.name.toLowerCase() }}"
-            data-code="{{ subject.code.toLowerCase() }}">
-          <td class="px-4 py-3 font-mono text-xs font-bold">{{ subject.code }}</td>
-          <td class="px-4 py-3 font-medium">{{ subject.name }}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 font-bold">
-              {{ subject.coefficient }}
+    <!-- Tableau des matières -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm" id="subjectsTable">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Code
+              </th>
+              <th class="px-4 py-3 text-left">
+                Matière
+              </th>
+              <th class="px-4 py-3 text-center">
+                Coefficient
+              </th>
+              <th class="px-4 py-3 text-left">
+                Description
+              </th>
+              <th class="px-4 py-3 text-center">
+                Classes assignées
+              </th>
+              <th class="px-4 py-3 text-center">
+                Enseignants
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(subject in subjects)
+              <tr
+                class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 subject-row"
+                data-coefficient="{{ subject.coefficient }}"
+                data-name="{{ subject.name.toLowerCase() }}"
+                data-code="{{ subject.code.toLowerCase() }}"
+              >
+                <td class="px-4 py-3 font-mono text-xs font-bold">
+                  {{ subject.code }}
+                </td>
+                <td class="px-4 py-3 font-medium">
+                  {{ subject.name }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 font-bold"
+                  >
+                    {{ subject.coefficient }}
             </span>
-          </td>
-          <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-xs truncate">
-            {{ subject.description || '-' }}
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="text-primary font-medium">{{ subject.classesCount || 0 }}</span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="text-green-600 font-medium">{{ subject.teachersCount || 0 }}</span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex justify-center gap-2">
-              <a href="/schools/subjects/{{ subject.id }}/edit" class="text-primary hover:underline" title="Modifier">
-                <i class="fas fa-edit"></i>
-              </a>
-              <button onclick="viewClasses('{{ subject.id }}', '{{ subject.name }}')" class="text-blue-600 hover:text-blue-800" title="Classes">
-                <i class="fas fa-chalkboard"></i>
-              </button>
-              <button onclick="deleteSubject('{{ subject.id }}', '{{ subject.name }}')" class="text-red-500 hover:text-red-700" title="Supprimer">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="7" class="text-center py-12 text-gray-500">
-            <i class="fas fa-book text-4xl mb-3 block"></i>
-            Aucune matière trouvée
-            <div class="mt-3">
-              <a href="/schools/subjects/create" class="text-primary hover:underline">
-                Créer votre première matière
-              </a>
-            </div>
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/schools/subjects' })
-</div>
-
-<!-- Modal Classes assignées -->
-<div id="classesModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
-    <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-      <h3 class="font-bold text-lg" id="modalTitle">Classes</h3>
-      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="p-4 overflow-y-auto" id="modalContent">
-      <!-- Contenu chargé dynamiquement -->
-    </div>
-  </div>
-</div>
-
-<script>
-  const searchInput = document.getElementById('searchInput')
-  const filterCoefficient = document.getElementById('filterCoefficient')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  function filterSubjects() {
-    const search = searchInput.value.toLowerCase()
-    const coefficient = filterCoefficient.value
-    const rows = document.querySelectorAll('.subject-row')
-    let visibleCount = 0
-    
-    rows.forEach(row => {
-      let show = true
-      if (coefficient && row.dataset.coefficient !== coefficient) show = false
-      if (search && !row.dataset.name.includes(search) && !row.dataset.code.includes(search)) show = false
-      row.style.display = show ? '' : 'none'
-      if (show) visibleCount++
-    })
-    
-    // Afficher message si aucun résultat
-    let noResultMsg = document.querySelector('.no-result-message')
-    if (visibleCount === 0 && rows.length > 0) {
-      if (!noResultMsg) {
-        const tbody = document.querySelector('#subjectsTable tbody')
-        noResultMsg = document.createElement('tr')
-        noResultMsg.className = 'no-result-message'
-        noResultMsg.innerHTML = '<td colspan="7" class="text-center py-8 text-gray-500">Aucune matière ne correspond aux critères</td>'
-        tbody.appendChild(noResultMsg)
-      }
-    } else if (noResultMsg) {
-      noResultMsg.remove()
-    }
-  }
-  
-  applyBtn.addEventListener('click', filterSubjects)
-  resetBtn.addEventListener('click', () => {
-    searchInput.value = ''
-    filterCoefficient.value = ''
-    filterSubjects()
-  })
-  searchInput.addEventListener('keyup', filterSubjects)
-  filterCoefficient.addEventListener('change', filterSubjects)
-  
-  function viewClasses(subjectId, subjectName) {
-    const modal = document.getElementById('classesModal')
-    const modalTitle = document.getElementById('modalTitle')
-    const modalContent = document.getElementById('modalContent')
-    
-    modalTitle.textContent = `Classes avec ${subjectName}`
-    modalContent.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>'
-    modal.classList.remove('hidden')
-    modal.classList.add('flex')
-    
-    fetch(`/api/subjects/${subjectId}/classes`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.classes && data.classes.length > 0) {
-          modalContent.innerHTML = `
-            <div class="space-y-2">
-              ${data.classes.map(c => `
-                <div class="flex justify-between items-center p-3 border rounded-lg">
-                  <div>
-                    <p class="font-medium">${c.name}</p>
-                    <p class="text-xs text-gray-500">Enseignant: ${c.teacherName || 'Non assigné'}</p>
-                    <p class="text-xs text-gray-400">${c.hoursPerWeek}h/semaine</p>
+                </td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-xs truncate">
+                  {{ subject.description || '-' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="text-primary font-medium">{{ subject.classesCount || 0 }}</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="text-green-600 font-medium">{{ subject.teachersCount || 0 }}</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex justify-center gap-2">
+                    <a
+                      href="/schools/subjects/{{ subject.id }}/edit"
+                      class="text-primary hover:underline"
+                      title="Modifier"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button
+                      onclick="viewClasses('{{ subject.id }}', '{{ subject.name }}')"
+                      class="text-blue-600 hover:text-blue-800"
+                      title="Classes"
+                    >
+                      <i class="fas fa-chalkboard"></i>
+                    </button>
+                    <button
+                      onclick="deleteSubject('{{ subject.id }}', '{{ subject.name }}')"
+                      class="text-red-500 hover:text-red-700"
+                      title="Supprimer"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
                   </div>
-                  <button onclick="removeFromClass('${subjectId}', '${c.id}')" class="text-red-500 hover:text-red-700">
-                    <i class="fas fa-times-circle"></i>
-                  </button>
-                </div>
-              `).join('')}
-            </div>
-          `
-        } else {
-          modalContent.innerHTML = '<p class="text-center text-gray-500 py-6">Cette matière n\'est assignée à aucune classe</p>'
-        }
-      })
-  }
-  
-  function removeFromClass(subjectId, classId) {
-    if (confirm('Retirer cette matière de la classe ?')) {
-      fetch(`/api/subjects/${subjectId}/class/${classId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) {
-          viewClasses(subjectId, document.getElementById('modalTitle').textContent.replace('Classes avec ', ''))
-        } else {
-          alert('Erreur: ' + data.message)
-        }
-      })
-    }
-  }
-  
-  function deleteSubject(subjectId, subjectName) {
-    if (confirm(`Supprimer définitivement la matière "${subjectName}" ? Cette action est irréversible.`)) {
-      fetch(`/api/subjects/${subjectId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) {
-          location.reload()
-        } else {
-          alert('Erreur: ' + data.message)
-        }
-      })
-    }
-  }
-  
-  function closeModal() {
-    const modal = document.getElementById('classesModal')
-    modal.classList.add('hidden')
-    modal.classList.remove('flex')
-  }
-</script>
-{{# /section }}
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="7" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-book text-4xl mb-3 block"></i>
+                  Aucune matière trouvée
+                  <div class="mt-3">
+                    <a href="/schools/subjects/create" class="text-primary hover:underline">
+                      Créer votre première matière
+              </a>
+                  </div>
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
 
-{{# /layout }}
+      @include('partials/pagination', { pagination: pagination, url: '/schools/subjects' })
+    </div>
+
+    <!-- Modal Classes assignées -->
+    <div id="classesModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden"
+      >
+        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 class="font-bold text-lg" id="modalTitle">
+            Classes
+          </h3>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="p-4 overflow-y-auto" id="modalContent">
+          <!-- Contenu chargé dynamiquement -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const searchInput = document.getElementById("searchInput");
+
+      const filterCoefficient = document.getElementById("filterCoefficient");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      function filterSubjects() {
+        const search = searchInput.value.toLowerCase();
+        const coefficient = filterCoefficient.value;
+        const rows = document.querySelectorAll(".subject-row");
+        let visibleCount = 0;
+        rows.forEach(row => {
+          let show = true;
+          if (coefficient && row.dataset.coefficient !== coefficient) show = false;
+          if (search && !row.dataset.name.includes(search) && !row.dataset.code.includes(search)) show = false;
+          row.style.display = show ? "" : "none";
+          if (show) visibleCount++;
+        });
+        // Afficher message si aucun résultat
+        let noResultMsg = document.querySelector(".no-result-message");
+        if (visibleCount === 0 && rows.length > 0) {
+          if (!noResultMsg) {
+            const tbody = document.querySelector("#subjectsTable tbody");
+            noResultMsg = document.createElement("tr");
+            noResultMsg.className = "no-result-message";
+            noResultMsg.innerHTML = '<td colspan="7" class="text-center py-8 text-gray-500">Aucune matière ne correspond aux critères</td>';
+            tbody.appendChild(noResultMsg);
+          }
+        } else if (noResultMsg) {
+          noResultMsg.remove();
+        }
+      }
+
+      applyBtn.addEventListener("click", filterSubjects);
+
+      resetBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        filterCoefficient.value = "";
+        filterSubjects();
+      });
+
+      searchInput.addEventListener("keyup", filterSubjects);
+
+      filterCoefficient.addEventListener("change", filterSubjects);
+
+      function viewClasses(subjectId, subjectName) {
+        const modal = document.getElementById("classesModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalContent = document.getElementById("modalContent");
+        modalTitle.textContent = `Classes avec ${subjectName}`;
+        modalContent.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        fetch(`/api/subjects/${subjectId}/classes`).then(res => res.json()).then(data => {
+          if (data.classes && data.classes.length > 0) {
+            modalContent.innerHTML = `
+                      <div class="space-y-2">
+                        ${data.classes.map(c => `
+                          <div class="flex justify-between items-center p-3 border rounded-lg">
+                            <div>
+                              <p class="font-medium">${c.name}</p>
+                              <p class="text-xs text-gray-500">Enseignant: ${c.teacherName || "Non assigné"}</p>
+                              <p class="text-xs text-gray-400">${c.hoursPerWeek}h/semaine</p>
+                            </div>
+                            <button onclick="removeFromClass('${subjectId}', '${c.id}')" class="text-red-500 hover:text-red-700">
+                              <i class="fas fa-times-circle"></i>
+                            </button>
+                          </div>
+                        `).join("")}
+                      </div>
+                    `;
+          } else {
+            modalContent.innerHTML = '<p class="text-center text-gray-500 py-6">Cette matière n\'est assignée à aucune classe</p>';
+          }
+        });
+      }
+
+      function removeFromClass(subjectId, classId) {
+        if (confirm("Retirer cette matière de la classe ?")) {
+          fetch(`/api/subjects/${subjectId}/class/${classId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) {
+              viewClasses(subjectId, document.getElementById("modalTitle").textContent.replace("Classes avec ", ""));
+            } else {
+              alert("Erreur: " + data.message);
+            }
+          });
+        }
+      }
+
+      function deleteSubject(subjectId, subjectName) {
+        if (confirm(`Supprimer définitivement la matière "${subjectName}" ? Cette action est irréversible.`)) {
+          fetch(`/api/subjects/${subjectId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) {
+              location.reload();
+            } else {
+              alert("Erreur: " + data.message);
+            }
+          });
+        }
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("classesModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    </script>
+  @endsection
+  

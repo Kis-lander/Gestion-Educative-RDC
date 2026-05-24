@@ -1,106 +1,147 @@
-{{# layout('layouts/app') }}
+@layout('layouts/app')
 
-{{# section('title') }}Conditions d'utilisation - Gestion Éducative RDC{{# /section }}
-
-{{# section('content') }}
-<div class="max-w-4xl mx-auto px-4 py-12">
-  <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">Conditions générales d'utilisation</h1>
-  <p class="text-center text-gray-500 mb-8">Dernière mise à jour : {{ formatDate(new Date()) }}</p>
+  @section('title')
+    Conditions d'utilisation - Gestion Éducative RDC
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6">
-    <div>
-      <h2 class="text-xl font-semibold mb-3">1. Acceptation des conditions</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        En accédant et en utilisant la plateforme Gestion Éducative RDC, vous acceptez d'être lié par les présentes conditions générales d'utilisation. 
+  @section('content')
+    <div class="max-w-4xl mx-auto px-4 py-12">
+      <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">
+        Conditions générales d'utilisation
+      </h1>
+      <p class="text-center text-gray-500 mb-8">
+        Dernière mise à jour : {{ formatDate(new Date()) }}
+      </p>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            1. Acceptation des conditions
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            En accédant et en utilisant la plateforme Gestion Éducative RDC, vous acceptez d'être lié par les présentes conditions générales d'utilisation. 
         Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser la plateforme.
-      </p>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">2. Description du service</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        La plateforme Gestion Éducative RDC est un service en ligne destiné à faciliter la gestion des établissements scolaires et l'inspection pédagogique 
-        en République Démocratique du Congo. Elle offre des fonctionnalités de gestion académique, financière, disciplinaire et de communication.
-      </p>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">3. Comptes utilisateurs</h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-2">
-        Pour utiliser certains services, vous devez créer un compte. Vous êtes responsable de :
-      </p>
-      <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 ml-4 space-y-1">
-        <li>La confidentialité de votre mot de passe</li>
-        <li>Toutes les activités effectuées sous votre compte</li>
-        <li>L'exactitude des informations fournies</li>
-      </ul>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">4. Données personnelles</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        Nous collectons et traitons vos données personnelles conformément à notre politique de confidentialité. 
-        Vous disposez d'un droit d'accès, de rectification et de suppression de vos données.
-      </p>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">5. Utilisation acceptable</h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-2">
-        Vous vous engagez à utiliser la plateforme de manière légale et conforme. Il est interdit de :
-      </p>
-      <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 ml-4 space-y-1">
-        <li>Perturber le fonctionnement du service</li>
-        <li>Tenter d'accéder à des comptes non autorisés</li>
-        <li>Publier du contenu illégal ou nuisible</li>
-        <li>Utiliser la plateforme pour des activités frauduleuses</li>
-      </ul>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">6. Propriété intellectuelle</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        Tous les contenus de la plateforme (textes, images, logos, code) sont protégés par les droits d'auteur. 
-        Vous ne pouvez pas reproduire, distribuer ou modifier ces contenus sans autorisation.
-      </p>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">7. Limitation de responsabilité</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        La plateforme est fournie "en l'état". Nous ne garantissons pas que le service sera ininterrompu ou sans erreur. 
-        Notre responsabilité ne pourra être engagée en cas de perte de données ou de dommages indirects.
-      </p>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">8. Suspension et résiliation</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        Nous nous réservons le droit de suspendre ou résilier votre accès à la plateforme en cas de violation des présentes conditions.
-      </p>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">9. Modifications des conditions</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        Nous pouvons modifier ces conditions à tout moment. Les modifications seront notifiées via la plateforme. 
-        Votre utilisation continue du service constitue votre acceptation des conditions modifiées.
-      </p>
-    </div>
-    
-    <div>
-      <h2 class="text-xl font-semibold mb-3">10. Contact</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        Pour toute question relative à ces conditions, vous pouvez nous contacter à l'adresse : 
-        <a href="mailto:legal@education.gouv.cd" class="text-primary hover:underline">legal@education.gouv.cd</a>
-      </p>
-    </div>
-  </div>
-  
-  <div class="mt-6 text-center">
-    <a href="/" class="text-primary hover:underline">← Retour à l'accueil</a>
-  </div>
-</div>
-{{# /section }}
+          </p>
+        </div>
 
-{{# /layout }}
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            2. Description du service
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            La plateforme Gestion Éducative RDC est un service en ligne destiné à faciliter la gestion des établissements scolaires et l'inspection pédagogique 
+        en République Démocratique du Congo. Elle offre des fonctionnalités de gestion académique, financière, disciplinaire et de communication.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            3. Comptes utilisateurs
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300 mb-2">
+            Pour utiliser certains services, vous devez créer un compte. Vous êtes responsable de :
+          </p>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 ml-4 space-y-1">
+            <li>
+              La confidentialité de votre mot de passe
+            </li>
+            <li>
+              Toutes les activités effectuées sous votre compte
+            </li>
+            <li>
+              L'exactitude des informations fournies
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            4. Données personnelles
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            Nous collectons et traitons vos données personnelles conformément à notre politique de confidentialité. 
+        Vous disposez d'un droit d'accès, de rectification et de suppression de vos données.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            5. Utilisation acceptable
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300 mb-2">
+            Vous vous engagez à utiliser la plateforme de manière légale et conforme. Il est interdit de :
+          </p>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 ml-4 space-y-1">
+            <li>
+              Perturber le fonctionnement du service
+            </li>
+            <li>
+              Tenter d'accéder à des comptes non autorisés
+            </li>
+            <li>
+              Publier du contenu illégal ou nuisible
+            </li>
+            <li>
+              Utiliser la plateforme pour des activités frauduleuses
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            6. Propriété intellectuelle
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            Tous les contenus de la plateforme (textes, images, logos, code) sont protégés par les droits d'auteur. 
+        Vous ne pouvez pas reproduire, distribuer ou modifier ces contenus sans autorisation.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            7. Limitation de responsabilité
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            La plateforme est fournie "en l'état". Nous ne garantissons pas que le service sera ininterrompu ou sans erreur. 
+        Notre responsabilité ne pourra être engagée en cas de perte de données ou de dommages indirects.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            8. Suspension et résiliation
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            Nous nous réservons le droit de suspendre ou résilier votre accès à la plateforme en cas de violation des présentes conditions.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            9. Modifications des conditions
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            Nous pouvons modifier ces conditions à tout moment. Les modifications seront notifiées via la plateforme. 
+        Votre utilisation continue du service constitue votre acceptation des conditions modifiées.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-3">
+            10. Contact
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            Pour toute question relative à ces conditions, vous pouvez nous contacter à l'adresse : 
+        <a href="mailto:legal@education.gouv.cd" class="text-primary hover:underline">legal
+              @education.gouv.cd
+            </a>
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 text-center">
+        <a href="/" class="text-primary hover:underline">← Retour à l'accueil</a>
+      </div>
+    </div>
+  @endsection
+  

@@ -1,244 +1,364 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Gestion des frais - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Frais scolaires{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez les frais et tarifs de l'établissement{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/financial/fees/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Nouveau frais
+  @section('title')
+    Gestion des frais - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Frais scolaires
+  @endsection
+  @section('dashboardSubtitle')
+    GÃ©rez les frais et tarifs de l'Ã©tablissement
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/financial/fees/create"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Nouveau frais
   </a>
-  <button onclick="exportFees()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportFees()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Types de frais</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.active || 0 }}</p>
-    <p class="text-sm text-gray-500">Frais actifs</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.totalAmount || 0 }} $</p>
-    <p class="text-sm text-gray-500">Montant total attendu</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.collected || 0 }}%</p>
-    <p class="text-sm text-gray-500">Taux recouvrement</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type de frais</label>
-      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="Inscription">Inscription</option>
-        <option value="Minerval">Minerval</option>
-        <option value="Assurance">Assurance</option>
-        <option value="Transport">Transport</option>
-        <option value="Cantine">Cantine</option>
-        <option value="Uniforme">Uniforme</option>
-        <option value="Activités">Activités</option>
-        <option value="Autre">Autre</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
-      <select id="filterTerm" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="T1">Trimestre 1</option>
-        <option value="T2">Trimestre 2</option>
-        <option value="T3">Trimestre 3</option>
-        <option value="Annuel">Annuel</option>
-      </select>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Types de frais
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.active || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Frais actifs
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.totalAmount || 0 }} $
+        </p>
+        <p class="text-sm text-gray-500">
+          Montant total attendu
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.collected || 0 }}%
+        </p>
+        <p class="text-sm text-gray-500">
+          Taux recouvrement
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année académique</label>
-      <select id="filterYear" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        <option value="{{ currentYear }}">{{ currentYear }}</option>
-        <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="active">Actif</option>
-        <option value="inactive">Inactif</option>
-        <option value="archived">Archivé</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-search mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type de frais</label>
+          <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="Inscription">
+              Inscription
+            </option>
+            <option value="Minerval">
+              Minerval
+            </option>
+            <option value="Assurance">
+              Assurance
+            </option>
+            <option value="Transport">
+              Transport
+            </option>
+            <option value="Cantine">
+              Cantine
+            </option>
+            <option value="Uniforme">
+              Uniforme
+            </option>
+            <option value="ActivitÃ©s">
+              ActivitÃ©s
+            </option>
+            <option value="Autre">
+              Autre
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+          <select id="filterTerm" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="T1">
+              Trimestre 1
+            </option>
+            <option value="T2">
+              Trimestre 2
+            </option>
+            <option value="T3">
+              Trimestre 3
+            </option>
+            <option value="Annuel">
+              Annuel
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année scolaire</label>
+          <select id="filterYear" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            <option value="{{ currentYear }}">
+              {{ currentYear }}
+            </option>
+            <option value="{{ currentYear - 1 }}">
+              {{ currentYear - 1 }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="active">
+              Actif
+            </option>
+            <option value="inactive">
+              Inactif
+            </option>
+            <option value="archived">
+              ArchivÃ©
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-search mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Tableau des frais -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Type</th>
-          <th class="px-4 py-3 text-left">Description</th>
-          <th class="px-4 py-3 text-right">Montant</th>
-          <th class="px-4 py-3 text-center">Trimestre</th>
-          <th class="px-4 py-3 text-center">Échéance</th>
-          <th class="px-4 py-3 text-center">Statut</th>
-          <th class="px-4 py-3 text-center">Recouvrement</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(fee in fees)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-3">
-            <span class="px-2 py-1 rounded-full text-xs {{ fee.type === 'Inscription' ? 'bg-blue-100 text-blue-800' : (fee.type === 'Minerval' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}">
-              {{ fee.type }}
+    <!-- Tableau des frais -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Type
+              </th>
+              <th class="px-4 py-3 text-left">
+                Description
+              </th>
+              <th class="px-4 py-3 text-right">
+                Montant
+              </th>
+              <th class="px-4 py-3 text-center">
+                Trimestre
+              </th>
+              <th class="px-4 py-3 text-center">
+                Ã‰chÃ©ance
+              </th>
+              <th class="px-4 py-3 text-center">
+                Statut
+              </th>
+              <th class="px-4 py-3 text-center">
+                Recouvrement
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(fee in fees)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-3">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs {{ fee.type === 'Inscription' ? 'bg-blue-100 text-blue-800' : (fee.type === 'Minerval' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') }}"
+                  >
+                    {{ fee.type }}
             </span>
-          </td>
-          <td class="px-4 py-3">
-            <div class="font-medium">{{ fee.description || fee.type }}</div>
-            <div class="text-xs text-gray-500">{{ fee.isMandatory ? 'Obligatoire' : 'Optionnel' }}</div>
-          </td>
-          <td class="px-4 py-3 text-right font-bold">{{ formatCurrency(fee.amount, fee.currency) }}</td>
-          <td class="px-4 py-3 text-center">{{ fee.term || 'Annuel' }}</td>
-          <td class="px-4 py-3 text-center">{{ fee.dueDate ? formatDate(fee.dueDate) : '-' }}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="px-2 py-1 rounded-full text-xs {{ fee.status === 'active' ? 'bg-green-100 text-green-800' : (fee.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
-              {{ fee.status === 'active' ? 'Actif' : (fee.status === 'inactive' ? 'Inactif' : 'Archivé') }}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="font-medium">
+                    {{ fee.description || fee.type }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ fee.isMandatory ? 'Obligatoire' : 'Optionnel' }}
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right font-bold">
+                  {{ formatCurrency(fee.amount, fee.currency) }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ fee.term || 'Annuel' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ fee.dueDate ? formatDate(fee.dueDate) : '-' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs {{ fee.status === 'active' ? 'bg-green-100 text-green-800' : (fee.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}"
+                  >
+                    {{ fee.status === 'active' ? 'Actif' : (fee.status === 'inactive' ? 'Inactif' : 'ArchivÃ©') }}
             </span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex items-center justify-center gap-1">
-              <div class="w-16 bg-gray-200 rounded-full h-1.5">
-                <div class="bg-green-500 rounded-full h-1.5" style="width: {{ fee.collectionRate || 0 }}%"></div>
-              </div>
-              <span class="text-xs">{{ fee.collectionRate || 0 }}%</span>
-            </div>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex justify-center gap-2">
-              <a href="/financial/fees/{{ fee.id }}/edit" class="text-primary hover:text-blue-700" title="Modifier">
-                <i class="fas fa-edit"></i>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                      <div class="bg-green-500 rounded-full h-1.5" style="width: {{ fee.collectionRate || 0 }}%">
+                      </div>
+                    </div>
+                    <span class="text-xs">{{ fee.collectionRate || 0 }}%</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex justify-center gap-2">
+                    <a
+                      href="/financial/fees/{{ fee.id }}/edit"
+                      class="text-primary hover:text-blue-700"
+                      title="Modifier"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button
+                      onclick="toggleStatus('{{ fee.id }}', '{{ fee.status }}')"
+                      class="text-yellow-600 hover:text-yellow-800"
+                      title="{{ fee.status === 'active' ? 'DÃ©sactiver' : 'Activer' }}"
+                    >
+                      <i class="fas {{ fee.status === 'active' ? 'fa-pause' : 'fa-play' }}"></i>
+                    </button>
+                    <button onclick="deleteFee('{{ fee.id }}')" class="text-red-500 hover:text-red-700" title="Supprimer">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="8" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-coins text-4xl mb-3 block"></i>
+                  Aucun frais dÃ©fini
+                  <div class="mt-3">
+                    <a href="/financial/fees/create" class="text-primary hover:underline">
+                      DÃ©finir les premiers frais
               </a>
-              <button onclick="toggleStatus('{{ fee.id }}', '{{ fee.status }}')" class="text-yellow-600 hover:text-yellow-800" title="{{ fee.status === 'active' ? 'Désactiver' : 'Activer' }}">
-                <i class="fas {{ fee.status === 'active' ? 'fa-pause' : 'fa-play' }}"></i>
-              </button>
-              <button onclick="deleteFee('{{ fee.id }}')" class="text-red-500 hover:text-red-700" title="Supprimer">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="8" class="text-center py-12 text-gray-500">
-            <i class="fas fa-coins text-4xl mb-3 block"></i>
-            Aucun frais défini
-            <div class="mt-3">
-              <a href="/financial/fees/create" class="text-primary hover:underline">
-                Définir les premiers frais
-              </a>
-            </div>
-          </td>
-        </tr>
+                  </div>
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+
+      @include('partials/pagination', { pagination: pagination, url: '/financial/fees' })
+    </div>
+
+    <!-- RÃ©capitulatif par type -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-3">
+        RÃ©capitulatif par type de frais
+      </h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        @each(summary in typeSummary)
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="font-medium">
+              {{ summary.type }}
+            </p>
+            <p class="text-2xl font-bold text-primary">
+              {{ formatCurrency(summary.total, 'USD') }}
+            </p>
+            <p class="text-xs text-gray-500">
+              {{ summary.count }} type(s)
+            </p>
+          </div>
         @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/financial/fees' })
-</div>
-
-<!-- Récapitulatif par type -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-  <h3 class="font-semibold mb-3">Récapitulatif par type de frais</h3>
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    @each(summary in typeSummary)
-    <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-      <p class="font-medium">{{ summary.type }}</p>
-      <p class="text-2xl font-bold text-primary">{{ formatCurrency(summary.total, 'USD') }}</p>
-      <p class="text-xs text-gray-500">{{ summary.count }} type(s)</p>
+      </div>
     </div>
-    @end
-  </div>
-</div>
 
-<script>
-  const filterType = document.getElementById('filterType')
-  const filterTerm = document.getElementById('filterTerm')
-  const filterYear = document.getElementById('filterYear')
-  const filterStatus = document.getElementById('filterStatus')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterType.value) params.set('type', filterType.value)
-    if (filterTerm.value) params.set('term', filterTerm.value)
-    if (filterYear.value) params.set('year', filterYear.value)
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    window.location.href = `/financial/fees?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/financial/fees'
-  })
-  
-  function toggleStatus(feeId, currentStatus) {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
-    if (confirm(`${newStatus === 'active' ? 'Activer' : 'Désactiver'} ce frais ?`)) {
-      fetch(`/financial/fees/${feeId}/toggle-status`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  function deleteFee(feeId) {
-    if (confirm('Supprimer définitivement ce frais ? Cette action est irréversible.')) {
-      fetch(`/financial/fees/${feeId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  function exportFees() {
-    const params = new URLSearchParams()
-    if (filterType.value) params.set('type', filterType.value)
-    if (filterTerm.value) params.set('term', filterTerm.value)
-    if (filterYear.value) params.set('year', filterYear.value)
-    window.location.href = `/api/fees/export?${params.toString()}`
-  }
-</script>
-{{# /section }}
+    <script>
+      const filterType = document.getElementById("filterType");
 
-{{# /layout }}
+      const filterTerm = document.getElementById("filterTerm");
+
+      const filterYear = document.getElementById("filterYear");
+
+      const filterStatus = document.getElementById("filterStatus");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterType.value) params.set("type", filterType.value);
+        if (filterTerm.value) params.set("term", filterTerm.value);
+        if (filterYear.value) params.set("year", filterYear.value);
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        window.location.href = `/financial/fees?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/financial/fees";
+      });
+
+      function toggleStatus(feeId, currentStatus) {
+        const newStatus = currentStatus === "active" ? "inactive" : "active";
+        if (confirm(`${newStatus === "active" ? "Activer" : "DÃ©sactiver"} ce frais ?`)) {
+          fetch(`/financial/fees/${feeId}/toggle-status`, {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      function deleteFee(feeId) {
+        if (confirm("Supprimer dÃ©finitivement ce frais ? Cette action est irrÃ©versible.")) {
+          fetch(`/financial/fees/${feeId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      function exportFees() {
+        const params = new URLSearchParams();
+        if (filterType.value) params.set("type", filterType.value);
+        if (filterTerm.value) params.set("term", filterTerm.value);
+        if (filterYear.value) params.set("year", filterYear.value);
+        window.location.href = `/api/fees/export?${params.toString()}`;
+      }
+    </script>
+  @endsection
+  

@@ -1,62 +1,77 @@
-{{# layout('layouts/app') }}
+@layout('layouts/app')
 
-{{# section('title') }}500 - Erreur serveur - Gestion Éducative RDC{{# /section }}
+  @section('title')
+    500 - Erreur serveur - Gestion Éducative RDC
+  @endsection
+  
+  @section('content')
+    <div class="min-h-[70vh] flex items-center justify-center">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
+        <div class="mb-6">
+          <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-exclamation-triangle text-red-500 text-4xl"></i>
+          </div>
+          <h1 class="text-6xl font-bold text-red-500 mb-2">
+            500
+          </h1>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+            Erreur interne du serveur
+          </h2>
+          <p class="text-gray-500 dark:text-gray-400">
+            Une erreur s'est produite. Nos équipes ont été notifiées.
+          </p>
+        </div>
 
-{{# section('content') }}
-<div class="min-h-[70vh] flex items-center justify-center">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
-    <div class="mb-6">
-      <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-exclamation-triangle text-red-500 text-4xl"></i>
-      </div>
-      <h1 class="text-6xl font-bold text-red-500 mb-2">500</h1>
-      <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Erreur interne du serveur</h2>
-      <p class="text-gray-500 dark:text-gray-400">
-        Une erreur s'est produite. Nos équipes ont été notifiées.
-      </p>
-    </div>
-    
-    <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg p-4 mb-6 text-left">
-      <p class="text-sm text-gray-700 dark:text-gray-300">
-        <i class="fas fa-bug text-red-600 mr-2"></i>
-        Code d'erreur : <span class="font-mono">{{ errorCode || 'ERR-500' }}</span>
-      </p>
-      @if(showDetails && errorMessage)
-      <p class="text-xs text-gray-500 mt-2 font-mono break-all">{{ errorMessage }}</p>
-      @endif
-    </div>
-    
-    <div class="space-y-3">
-      <button onclick="location.reload()" class="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition w-full">
-        <i class="fas fa-sync-alt mr-2"></i>
-        Réessayer
+        <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg p-4 mb-6 text-left">
+          <p class="text-sm text-gray-700 dark:text-gray-300">
+            <i class="fas fa-bug text-red-600 mr-2"></i>
+            Code d'erreur : <span class="font-mono">{{ errorCode || 'ERR-500' }}</span>
+          </p>
+          @if(showDetails && errorMessage)
+            <p class="text-xs text-gray-500 mt-2 font-mono break-all">
+              {{ errorMessage }}
+            </p>
+          @endif
+        </div>
+
+        <div class="space-y-3">
+          <button
+            onclick="location.reload()"
+            class="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition w-full"
+          >
+            <i class="fas fa-sync-alt mr-2"></i>
+            Réessayer
       </button>
-      <a href="/dashboard" class="inline-flex items-center justify-center px-6 py-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full">
-        <i class="fas fa-home mr-2"></i>
-        Retour à l'accueil
+          <a
+            href="/dashboard"
+            class="inline-flex items-center justify-center px-6 py-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition w-full"
+          >
+            <i class="fas fa-home mr-2"></i>
+            Retour à l'accueil
       </a>
-    </div>
-    
-    <div class="mt-6 pt-4 border-t dark:border-gray-700">
-      <p class="text-xs text-gray-400">
-        Si le problème persiste, veuillez contacter le support technique.
-      </p>
-    </div>
-  </div>
-</div>
+        </div>
 
-<script>
-  // Optionnel: envoyer l'erreur au support automatiquement
-  fetch('/api/report-error', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString()
-    })
-  }).catch(() => {})
-</script>
-{{# /section }}
+        <div class="mt-6 pt-4 border-t dark:border-gray-700">
+          <p class="text-xs text-gray-400">
+            Si le problème persiste, veuillez contacter le support technique.
+          </p>
+        </div>
+      </div>
+    </div>
 
-{{# /layout }}
+    <script>
+      // Optionnel: envoyer l'erreur au support automatiquement
+      fetch("/api/report-error", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          url: window.location.href,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {});
+    </script>
+  @endsection
+  

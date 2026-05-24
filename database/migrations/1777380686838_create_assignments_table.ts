@@ -19,7 +19,7 @@ export default class AssignmentsSchema extends BaseSchema {
       table.enum('status', ['draft', 'published', 'closed']).defaultTo('draft')
       table.timestamp('published_at')
       table.timestamps(true)
-      
+
       table.index(['class_id', 'subject_id'])
       table.index(['due_date'])
     })

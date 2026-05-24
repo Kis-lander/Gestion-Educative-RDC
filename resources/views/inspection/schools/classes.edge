@@ -1,0 +1,88 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Classes - {{ school.name }}
+  @endsection
+
+  @section('dashboardTitle')
+    Classes de l'établissement
+  @endsection
+  @section('dashboardSubtitle')
+    {{ school.name }}
+  @endsection
+
+  @section('actions')
+    <a href="/inspection/schools/{{ school.id }}" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+      <i class="fas fa-arrow-left mr-2"></i>Retour à l'école
+    </a>
+  @endsection
+
+  @section('stats')
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Classes</p>
+        <p class="text-2xl font-bold">{{ stats.total || 0 }}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Élèves inscrits</p>
+        <p class="text-2xl font-bold text-primary">{{ stats.students || 0 }}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Capacité totale</p>
+        <p class="text-2xl font-bold text-green-600">{{ stats.capacity || 0 }}</p>
+      </div>
+    </div>
+  @endsection
+
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700 flex items-center justify-between">
+        <h3 class="font-semibold">
+          Liste des classes
+        </h3>
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+          {{ pagination.total || 0 }} résultat(s)
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">Classe</th>
+              <th class="px-4 py-3 text-center">Niveau</th>
+              <th class="px-4 py-3 text-center">Année scolaire</th>
+              <th class="px-4 py-3 text-center">Période</th>
+              <th class="px-4 py-3 text-center">Effectif</th>
+              <th class="px-4 py-3 text-left">Titulaire</th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(classObj in classes)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-3 font-medium">{{ classObj.name }}</td>
+                <td class="px-4 py-3 text-center">{{ classObj.level }} - {{ classObj.gradeLevel }}</td>
+                <td class="px-4 py-3 text-center">{{ classObj.academicYear }}</td>
+                <td class="px-4 py-3 text-center">
+                  {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'Après-midi' : 'Soir') }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ classObj.currentEnrollment || 0 }}/{{ classObj.maxCapacity || 0 }}
+                </td>
+                <td class="px-4 py-3">{{ classObj.teacherName || 'Non assigné' }}</td>
+              </tr>
+            @else
+              <tr>
+                <td colspan="6" class="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <i class="fas fa-chalkboard text-4xl mb-3 block"></i>
+                  Aucune classe enregistrée pour cet établissement.
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    @include('partials/pagination')
+  @endsection

@@ -1,179 +1,263 @@
-{{# layout('layouts/print') }}
+@layout('layouts/print')
 
-{{# section('title') }}Emploi du temps - {{ student.name }} - {{ school.name }}{{# /section }}
+  @section('title')
+    Emploi du temps - {{ student.name }} - {{ school.name }}
+  @endsection
+  <div class="timetable-print">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold">
+        {{ school.name }}
+      </h1>
+      <h2 class="text-xl">
+        EMPLOI DU TEMPS
+      </h2>
+      <p class="text-md">
+        Classe: {{ student.className }}
+      </p>
+      <p class="text-md">
+        Ã‰lÃ¨ve: {{ student.name }}
+      </p>
+      <p class="text-sm">
+        Année scolaire {{ academicYear }} - {{ shiftLabel }}
+      </p>
+      <p class="text-sm">
+        Semaine du {{ weekStart }} au {{ weekEnd }}
+      </p>
+    </div>
 
-<div class="timetable-print">
-  <div class="text-center mb-6">
-    <h1 class="text-2xl font-bold">{{ school.name }}</h1>
-    <h2 class="text-xl">EMPLOI DU TEMPS</h2>
-    <p class="text-md">Classe: {{ student.className }}</p>
-    <p class="text-md">Élève: {{ student.name }}</p>
-    <p class="text-sm">Année académique {{ academicYear }} - {{ shiftLabel }}</p>
-    <p class="text-sm">Semaine du {{ weekStart }} au {{ weekEnd }}</p>
-  </div>
-  
-  <div class="table-responsive">
-    <table class="w-full">
-      <thead class="bg-gray-100">
-        <tr>
-          <th class="px-3 py-2 text-center">Horaire</th>
-          <th class="px-3 py-2 text-center">Lundi</th>
-          <th class="px-3 py-2 text-center">Mardi</th>
-          <th class="px-3 py-2 text-center">Mercredi</th>
-          <th class="px-3 py-2 text-center">Jeudi</th>
-          <th class="px-3 py-2 text-center">Vendredi</th>
-          <th class="px-3 py-2 text-center">Samedi</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(slot in timetable)
-        <tr class="border-b">
-          <td class="px-3 py-2 text-center font-medium bg-gray-50">{{ slot.time }}</td>
-          <td class="px-2 py-2">
-            @if(slot.monday.content)
-            <div class="text-center">
-              <strong>{{ slot.monday.content.subject }}</strong><br>
-              <span class="text-xs">{{ slot.monday.content.teacher }}</span><br>
-              <span class="text-xs">Salle {{ slot.monday.content.room }}</span>
-            </div>
-            @else
-            <div class="text-center text-gray-400">-</div>
-            @endif
-          </td>
-          <td class="px-2 py-2">
-            @if(slot.tuesday.content)
-            <div class="text-center">
-              <strong>{{ slot.tuesday.content.subject }}</strong><br>
-              <span class="text-xs">{{ slot.tuesday.content.teacher }}</span><br>
-              <span class="text-xs">Salle {{ slot.tuesday.content.room }}</span>
-            </div>
-            @else
-            <div class="text-center text-gray-400">-</div>
-            @endif
-          </td>
-          <td class="px-2 py-2">
-            @if(slot.wednesday.content)
-            <div class="text-center">
-              <strong>{{ slot.wednesday.content.subject }}</strong><br>
-              <span class="text-xs">{{ slot.wednesday.content.teacher }}</span><br>
-              <span class="text-xs">Salle {{ slot.wednesday.content.room }}</span>
-            </div>
-            @else
-            <div class="text-center text-gray-400">-</div>
-            @endif
-          </td>
-          <td class="px-2 py-2">
-            @if(slot.thursday.content)
-            <div class="text-center">
-              <strong>{{ slot.thursday.content.subject }}</strong><br>
-              <span class="text-xs">{{ slot.thursday.content.teacher }}</span><br>
-              <span class="text-xs">Salle {{ slot.thursday.content.room }}</span>
-            </div>
-            @else
-            <div class="text-center text-gray-400">-</div>
-            @endif
-          </td>
-          <td class="px-2 py-2">
-            @if(slot.friday.content)
-            <div class="text-center">
-              <strong>{{ slot.friday.content.subject }}</strong><br>
-              <span class="text-xs">{{ slot.friday.content.teacher }}</span><br>
-              <span class="text-xs">Salle {{ slot.friday.content.room }}</span>
-            </div>
-            @else
-            <div class="text-center text-gray-400">-</div>
-            @endif
-          </td>
-          <td class="px-2 py-2">
-            @if(slot.saturday.content)
-            <div class="text-center">
-              <strong>{{ slot.saturday.content.subject }}</strong><br>
-              <span class="text-xs">{{ slot.saturday.content.teacher }}</span><br>
-              <span class="text-xs">Salle {{ slot.saturday.content.room }}</span>
-            </div>
-            @else
-            <div class="text-center text-gray-400">-</div>
-            @endif
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  <!-- Récapitulatif -->
-  <div class="mt-6 grid grid-cols-2 gap-4">
-    <div class="border rounded p-3">
-      <h3 class="font-bold">Récapitulatif des heures</h3>
-      <div class="text-sm mt-2">
-        <div class="flex justify-between"><span>Total heures de cours:</span><span class="font-bold">{{ totalHours }}h</span></div>
-        <div class="flex justify-between mt-1"><span>Nombre de matières:</span><span>{{ subjectsCount }}</span></div>
-        <div class="flex justify-between mt-1"><span>Enseignants:</span><span>{{ teachersCount }}</span></div>
+    <div class="table-responsive">
+      <table class="w-full">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-3 py-2 text-center">
+              Horaire
+            </th>
+            <th class="px-3 py-2 text-center">
+              Lundi
+            </th>
+            <th class="px-3 py-2 text-center">
+              Mardi
+            </th>
+            <th class="px-3 py-2 text-center">
+              Mercredi
+            </th>
+            <th class="px-3 py-2 text-center">
+              Jeudi
+            </th>
+            <th class="px-3 py-2 text-center">
+              Vendredi
+            </th>
+            <th class="px-3 py-2 text-center">
+              Samedi
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(slot in timetable)
+            <tr class="border-b">
+              <td class="px-3 py-2 text-center font-medium bg-gray-50">
+                {{ slot.time }}
+              </td>
+              <td class="px-2 py-2">
+                @if(slot.monday.content)
+                  <div class="text-center">
+                    <strong>{{ slot.monday.content.subject }}</strong>                    <br />
+                    <span class="text-xs">{{ slot.monday.content.teacher }}</span>                    <br />
+                    <span class="text-xs">Salle {{ slot.monday.content.room }}</span>
+                  </div>
+                @else
+                  <div class="text-center text-gray-400">
+                    -
+                  </div>
+                @endif
+              </td>
+              <td class="px-2 py-2">
+                @if(slot.tuesday.content)
+                  <div class="text-center">
+                    <strong>{{ slot.tuesday.content.subject }}</strong>                    <br />
+                    <span class="text-xs">{{ slot.tuesday.content.teacher }}</span>                    <br />
+                    <span class="text-xs">Salle {{ slot.tuesday.content.room }}</span>
+                  </div>
+                @else
+                  <div class="text-center text-gray-400">
+                    -
+                  </div>
+                @endif
+              </td>
+              <td class="px-2 py-2">
+                @if(slot.wednesday.content)
+                  <div class="text-center">
+                    <strong>{{ slot.wednesday.content.subject }}</strong>                    <br />
+                    <span class="text-xs">{{ slot.wednesday.content.teacher }}</span>                    <br />
+                    <span class="text-xs">Salle {{ slot.wednesday.content.room }}</span>
+                  </div>
+                @else
+                  <div class="text-center text-gray-400">
+                    -
+                  </div>
+                @endif
+              </td>
+              <td class="px-2 py-2">
+                @if(slot.thursday.content)
+                  <div class="text-center">
+                    <strong>{{ slot.thursday.content.subject }}</strong>                    <br />
+                    <span class="text-xs">{{ slot.thursday.content.teacher }}</span>                    <br />
+                    <span class="text-xs">Salle {{ slot.thursday.content.room }}</span>
+                  </div>
+                @else
+                  <div class="text-center text-gray-400">
+                    -
+                  </div>
+                @endif
+              </td>
+              <td class="px-2 py-2">
+                @if(slot.friday.content)
+                  <div class="text-center">
+                    <strong>{{ slot.friday.content.subject }}</strong>                    <br />
+                    <span class="text-xs">{{ slot.friday.content.teacher }}</span>                    <br />
+                    <span class="text-xs">Salle {{ slot.friday.content.room }}</span>
+                  </div>
+                @else
+                  <div class="text-center text-gray-400">
+                    -
+                  </div>
+                @endif
+              </td>
+              <td class="px-2 py-2">
+                @if(slot.saturday.content)
+                  <div class="text-center">
+                    <strong>{{ slot.saturday.content.subject }}</strong>                    <br />
+                    <span class="text-xs">{{ slot.saturday.content.teacher }}</span>                    <br />
+                    <span class="text-xs">Salle {{ slot.saturday.content.room }}</span>
+                  </div>
+                @else
+                  <div class="text-center text-gray-400">
+                    -
+                  </div>
+                @endif
+              </td>
+            </tr>
+          @end
+        </tbody>
+      </table>
+    </div>
+
+    <!-- RÃ©capitulatif -->
+    <div class="mt-6 grid grid-cols-2 gap-4">
+      <div class="border rounded p-3">
+        <h3 class="font-bold">
+          RÃ©capitulatif des heures
+        </h3>
+        <div class="text-sm mt-2">
+          <div class="flex justify-between">
+            <span>Total heures de cours:</span>            <span class="font-bold">{{ totalHours }}h</span>
+          </div>
+          <div class="flex justify-between mt-1">
+            <span>Nombre de matiÃ¨res:</span>            <span>{{ subjectsCount }}</span>
+          </div>
+          <div class="flex justify-between mt-1">
+            <span>Enseignants:</span>            <span>{{ teachersCount }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="border rounded p-3">
+        <h3 class="font-bold">
+          Cours par jour
+        </h3>
+        <div class="text-sm mt-2">
+          <div class="flex justify-between">
+            <span>Lundi:</span>            <span>{{ mondayHours }}h</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Mardi:</span>            <span>{{ tuesdayHours }}h</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Mercredi:</span>            <span>{{ wednesdayHours }}h</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Jeudi:</span>            <span>{{ thursdayHours }}h</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Vendredi:</span>            <span>{{ fridayHours }}h</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Samedi:</span>            <span>{{ saturdayHours }}h</span>
+          </div>
+        </div>
       </div>
     </div>
-    
-    <div class="border rounded p-3">
-      <h3 class="font-bold">Cours par jour</h3>
-      <div class="text-sm mt-2">
-        <div class="flex justify-between"><span>Lundi:</span><span>{{ mondayHours }}h</span></div>
-        <div class="flex justify-between"><span>Mardi:</span><span>{{ tuesdayHours }}h</span></div>
-        <div class="flex justify-between"><span>Mercredi:</span><span>{{ wednesdayHours }}h</span></div>
-        <div class="flex justify-between"><span>Jeudi:</span><span>{{ thursdayHours }}h</span></div>
-        <div class="flex justify-between"><span>Vendredi:</span><span>{{ fridayHours }}h</span></div>
-        <div class="flex justify-between"><span>Samedi:</span><span>{{ saturdayHours }}h</span></div>
+
+    <!-- Observations -->
+    <div class="mt-6 border-t pt-4">
+      <p>
+        <strong>Observations:</strong>
+      </p>
+      <p class="text-sm mt-1">
+        _________________________________________
+      </p>
+      <p class="text-sm mt-1">
+        _________________________________________
+      </p>
+    </div>
+
+    <!-- Signatures -->
+    <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
+      <div class="text-center">
+        <p>
+          L'Ã‰lÃ¨ve
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+      <div class="text-center">
+        <p>
+          Le Chef d'Ã‰tablissement
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
       </div>
     </div>
-  </div>
-  
-  <!-- Observations -->
-  <div class="mt-6 border-t pt-4">
-    <p><strong>Observations:</strong></p>
-    <p class="text-sm mt-1">_________________________________________</p>
-    <p class="text-sm mt-1">_________________________________________</p>
-  </div>
-  
-  <!-- Signatures -->
-  <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
-    <div class="text-center">
-      <p>L'Élève</p>
-      <div class="mt-12">_______________</div>
-    </div>
-    <div class="text-center">
-      <p>Le Chef d'Établissement</p>
-      <div class="mt-12">_______________</div>
-    </div>
-  </div>
-  
-  <div class="text-center text-xs text-gray-400 mt-6 pt-4 border-t">
-    <p>Généré le {{ generationDate }} - Gestion Éducative RDC</p>
-  </div>
-</div>
 
-<style>
-  .timetable-print {
-    font-family: 'Times New Roman', 'Arial', sans-serif;
-    padding: 20px;
-  }
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    vertical-align: middle;
-  }
-  th {
-    background-color: #f3f4f6;
-  }
-  @media print {
-    body {
-      padding: 0;
-      margin: 0;
-    }
+    <div class="text-center text-xs text-gray-400 mt-6 pt-4 border-t">
+      <p>
+        GÃ©nÃ©rÃ© le {{ generationDate }} - Gestion Ã‰ducative RDC
+      </p>
+    </div>
+  </div>
+
+  <style>
     .timetable-print {
-      padding: 0;
+      font-family: 'Times New Roman', 'Arial', sans-serif;
+      padding: 20px;
     }
-  }
-</style>
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    th,
+    td {
+      border: 1px solid #ddd;
+      vertical-align: middle;
+    }
+    
+    th {
+      background-color: #f3f4f6;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+    
+      .timetable-print {
+        padding: 0;
+      }
+    }
+  </style>
 
-{{# /layout }}

@@ -8,7 +8,7 @@ import ForumTopic from '#models/forum_topic'
 import User from '#models/user'
 
 export default class ForumPost extends ForumPostSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
@@ -23,7 +23,7 @@ export default class ForumPost extends ForumPostSchema {
   declare content: string
 
   /**
-   * ID du message auquel on répond. 
+   * ID du message auquel on répond.
    * Est null s'il s'agit d'une réponse directe au sujet (topic).
    */
   @column()

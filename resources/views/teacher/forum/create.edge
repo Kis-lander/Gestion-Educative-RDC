@@ -1,129 +1,170 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Créer un sujet - Forum pédagogique{{# /section }}
-
-{{# section('dashboardTitle') }}Nouveau sujet{{# /section }}
-{{# section('dashboardSubtitle') }}Créez une nouvelle discussion{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/teacher/forum/create" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
-            <select name="classId" required class="w-full px-3 py-2 border rounded-lg" id="classSelect">
-              <option value="">Sélectionner</option>
-              @each(classObj in classes)
-              <option value="{{ classObj.id }}">{{ classObj.name }}</option>
-              @end
-            </select>
-          </div>
-          <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière *</label>
-            <select name="subjectId" required class="w-full px-3 py-2 border rounded-lg" id="subjectSelect" disabled>
-              <option value="">Sélectionnez d'abord une classe</option>
-            </select>
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
-          <input type="text" name="title" required 
-                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                 placeholder="Titre de votre sujet">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu *</label>
-          <textarea name="content" required rows="8" 
-                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                    placeholder="Décrivez votre question ou votre sujet..."></textarea>
-        </div>
-        
-        <div class="flex items-center gap-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="pin" class="w-4 h-4">
-            <span>Épingler ce sujet</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="lock" class="w-4 h-4">
-            <span>Verrouiller immédiatement</span>
-          </label>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Publier le sujet
-        </button>
-        <a href="/teacher/forum" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
-        </a>
-      </div>
-    </form>
-  </div>
+  @section('title')
+    Créer un sujet - Forum pédagogique
+  @endsection
   
-  <!-- Conseils -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Conseils</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Soyez clair dans votre titre</li>
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Décrivez précisément votre question</li>
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Utilisez des exemples si nécessaire</li>
-        <li class="flex gap-2"><i class="fas fa-check-circle text-green-500"></i> Encouragez les élèves à participer</li>
-      </ul>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Exemple de sujet</h3>
-      <div class="text-sm">
-        <p><strong>Titre:</strong> Comment résoudre une équation du second degré ?</p>
-        <p><strong>Contenu:</strong> Bonjour à tous, j'aimerais avoir des explications sur la méthode de résolution des équations du second degré... Merci d'avance.</p>
+  @section('dashboardTitle')
+    Nouveau sujet
+  @endsection
+  @section('dashboardSubtitle')
+    Créez une nouvelle discussion
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/teacher/forum/create"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
+                <select name="classId" required class="w-full px-3 py-2 border rounded-lg" id="classSelect">
+                  <option value="">
+                    Sélectionner
+                  </option>
+                  @each(classObj in classes)
+                    <option value="{{ classObj.id }}">
+                      {{ classObj.name }}
+                    </option>
+                  @end
+                </select>
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière *</label>
+                <select name="subjectId" required class="w-full px-3 py-2 border rounded-lg" id="subjectSelect" disabled>
+                  <option value="">
+                    Sélectionnez d'abord une classe
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
+              <input
+                type="text"
+                name="title"
+                required
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Titre de votre sujet"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu *</label>
+              <textarea
+                name="content"
+                required
+                rows="8"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Décrivez votre question ou votre sujet..."
+              ></textarea>
+            </div>
+
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="pin" class="w-4 h-4" />
+                <span>Épingler ce sujet</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="lock" class="w-4 h-4" />
+                <span>Verrouiller immédiatement</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Publier le sujet
+        </button>
+            <a href="/teacher/forum" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
+        </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Conseils -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Conseils
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Soyez clair dans votre titre
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Décrivez précisément votre question
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Utilisez des exemples si nécessaire
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500"></i>Encouragez les élèves à participer
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Exemple de sujet
+          </h3>
+          <div class="text-sm">
+            <p>
+              <strong>Titre:</strong>Comment résoudre une équation du second degré ?
+            </p>
+            <p>
+              <strong>Contenu:</strong>Bonjour à tous, j'aimerais avoir des explications sur la méthode de résolution des équations du second degré... Merci d'avance.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-users text-green-600"></i>
+            <span>Les élèves de votre classe pourront voir et répondre à votre sujet.</span>
+          </p>
+        </div>
       </div>
     </div>
-    
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-users text-green-600"></i>
-        <span>Les élèves de votre classe pourront voir et répondre à votre sujet.</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  document.getElementById('classSelect')?.addEventListener('change', async function() {
-    const classId = this.value
-    const subjectSelect = document.getElementById('subjectSelect')
-    if (!classId) {
-      subjectSelect.innerHTML = '<option value="">Sélectionnez d\'abord une classe</option>'
-      subjectSelect.disabled = true
-      return
-    }
-    
-    const res = await fetch(`/api/teacher/classes/${classId}/my-subjects`)
-    const data = await res.json()
-    
-    subjectSelect.innerHTML = '<option value="">Sélectionner une matière</option>'
-    if (data.subjects && data.subjects.length > 0) {
-      data.subjects.forEach(subject => {
-        subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`
-      })
-      subjectSelect.disabled = false
-    } else {
-      subjectSelect.innerHTML = '<option value="">Aucune matière assignée</option>'
-      subjectSelect.disabled = true
-    }
-  })
-</script>
-{{# /section }}
-
-{{# /layout }}
+    <script>
+      document.getElementById("classSelect")?.addEventListener("change", async function() {
+        const classId = this.value;
+        const subjectSelect = document.getElementById("subjectSelect");
+        if (!classId) {
+          subjectSelect.innerHTML = '<option value="">Sélectionnez d\'abord une classe</option>';
+          subjectSelect.disabled = true;
+          return;
+        }
+        const res = await fetch(`/api/teacher/classes/${classId}/my-subjects`);
+        const data = await res.json();
+        subjectSelect.innerHTML = '<option value="">Sélectionner une matière</option>';
+        if (data.subjects && data.subjects.length > 0) {
+          data.subjects.forEach(subject => {
+            subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
+          });
+          subjectSelect.disabled = false;
+        } else {
+          subjectSelect.innerHTML = '<option value="">Aucune matière assignée</option>';
+          subjectSelect.disabled = true;
+        }
+      });
+    </script>
+  @endsection
+  

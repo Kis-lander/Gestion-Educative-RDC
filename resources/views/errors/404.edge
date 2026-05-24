@@ -1,63 +1,76 @@
-{{# layout('layouts/app') }}
+@layout('layouts/app')
 
-{{# section('title') }}404 - Page non trouvée - Gestion Éducative RDC{{# /section }}
+  @section('title')
+    404 - Page non trouvée - Gestion Éducative RDC
+  @endsection
+  
+  @section('content')
+    <div class="min-h-[70vh] flex items-center justify-center">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
+        <div class="mb-6">
+          <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-search text-blue-500 text-4xl"></i>
+          </div>
+          <h1 class="text-6xl font-bold text-primary mb-2">
+            404
+          </h1>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+            Page non trouvée
+          </h2>
+          <p class="text-gray-500 dark:text-gray-400">
+            La page que vous recherchez n'existe pas ou a été déplacée.
+          </p>
+        </div>
 
-{{# section('content') }}
-<div class="min-h-[70vh] flex items-center justify-center">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
-    <div class="mb-6">
-      <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-search text-blue-500 text-4xl"></i>
-      </div>
-      <h1 class="text-6xl font-bold text-primary mb-2">404</h1>
-      <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Page non trouvée</h2>
-      <p class="text-gray-500 dark:text-gray-400">
-        La page que vous recherchez n'existe pas ou a été déplacée.
-      </p>
-    </div>
-    
-    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
-      <p class="text-sm text-gray-600 dark:text-gray-400 font-mono break-all">
-        {{ url || request.url() }}
-      </p>
-    </div>
-    
-    <div class="grid grid-cols-2 gap-3 mb-6">
-      <button onclick="window.history.back()" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-        <i class="fas fa-arrow-left mr-1"></i> Retour
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+          <p class="text-sm text-gray-600 dark:text-gray-400 font-mono break-all">
+            {{ url || request.url() }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <button
+            onclick="window.history.back()"
+            class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            <i class="fas fa-arrow-left mr-1"></i>Retour
       </button>
-      <a href="/dashboard" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
-        <i class="fas fa-home mr-1"></i> Accueil
+          <a
+            href="/dashboard"
+            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            <i class="fas fa-home mr-1"></i>Accueil
       </a>
-    </div>
-    
-    <div class="text-left">
-      <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vous pourriez chercher :</p>
-      <ul class="space-y-1 text-sm">
-        <li>
-          <a href="/dashboard" class="text-primary hover:underline">
-            <i class="fas fa-tachometer-alt w-5 inline"></i> Tableau de bord
-          </a>
-        </li>
-        <li>
-          <a href="/academic/classes" class="text-primary hover:underline">
-            <i class="fas fa-chalkboard w-5 inline"></i> Mes classes
-          </a>
-        </li>
-        <li>
-          <a href="/communication/messages" class="text-primary hover:underline">
-            <i class="fas fa-envelope w-5 inline"></i> Messages
-          </a>
-        </li>
-        <li>
-          <a href="/profile" class="text-primary hover:underline">
-            <i class="fas fa-user w-5 inline"></i> Mon profil
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-{{# /section }}
+        </div>
 
-{{# /layout }}
+        <div class="text-left">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Vous pourriez chercher :
+          </p>
+          <ul class="space-y-1 text-sm">
+            <li>
+              <a href="/dashboard" class="text-primary hover:underline">
+                <i class="fas fa-tachometer-alt w-5 inline"></i>Tableau de bord
+          </a>
+            </li>
+            <li>
+              <a href="/academic/classes" class="text-primary hover:underline">
+                <i class="fas fa-chalkboard w-5 inline"></i>Mes classes
+          </a>
+            </li>
+            <li>
+              <a href="/communication/messages" class="text-primary hover:underline">
+                <i class="fas fa-envelope w-5 inline"></i>Messages
+          </a>
+            </li>
+            <li>
+              <a href="/profile" class="text-primary hover:underline">
+                <i class="fas fa-user w-5 inline"></i>Mon profil
+          </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  @endsection
+  

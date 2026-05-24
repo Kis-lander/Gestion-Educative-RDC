@@ -1,222 +1,484 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Permissions - Administration{{# /section }}
-
-{{# section('dashboardTitle') }}Permissions système{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez les accès par rôle{{# /section }}
-
-{{# section('actions') }}
-<button onclick="saveAllPermissions()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-  <i class="fas fa-save mr-2"></i> Enregistrer tout
+  @section('title')
+    Permissions - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Permissions système
+  @endsection
+  @section('dashboardSubtitle')
+    Gérez les accès par rôle
+  @endsection
+  
+  @section('actions')
+    <button
+      onclick="saveAllPermissions()"
+      class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+    >
+      <i class="fas fa-save mr-2"></i>Enregistrer tout
 </button>
-{{# /section }}
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left" style="min-width: 200px">
+                Permission
+              </th>
+              <th class="px-4 py-3 text-center">
+                Inspection
+              </th>
+              <th class="px-4 py-3 text-center">
+                Directeur
+              </th>
+              <th class="px-4 py-3 text-center">
+                Dir. Financier
+              </th>
+              <th class="px-4 py-3 text-center">
+                Enseignant
+              </th>
+              <th class="px-4 py-3 text-center">
+                Parent
+              </th>
+              <th class="px-4 py-3 text-center">
+                Élève
+              </th>
+              <th class="px-4 py-3 text-center">
+                Discipline
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b dark:border-gray-700 bg-gray-50">
+              <td colspan="8" class="px-4 py-2 font-bold">
+                Utilisateurs
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Voir la liste des utilisateurs
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Créer un utilisateur
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Modifier un utilisateur
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
 
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left" style="min-width: 200px">Permission</th>
-          <th class="px-4 py-3 text-center">Inspection</th>
-          <th class="px-4 py-3 text-center">Directeur</th>
-          <th class="px-4 py-3 text-center">Dir. Financier</th>
-          <th class="px-4 py-3 text-center">Enseignant</th>
-          <th class="px-4 py-3 text-center">Parent</th>
-          <th class="px-4 py-3 text-center">Élève</th>
-          <th class="px-4 py-3 text-center">Discipline</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="border-b dark:border-gray-700 bg-gray-50">
-          <td colspan="8" class="px-4 py-2 font-bold">Utilisateurs</td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Voir la liste des utilisateurs</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Créer un utilisateur</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Modifier un utilisateur</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        
-        <tr class="border-b dark:border-gray-700 bg-gray-50">
-          <td colspan="8" class="px-4 py-2 font-bold">Écoles</td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Voir les écoles</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Approuver une école</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        
-        <tr class="border-b dark:border-gray-700 bg-gray-50">
-          <td colspan="8" class="px-4 py-2 font-bold">Académique</td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Gérer les classes</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Gérer les matières</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Saisir des notes</td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        
-        <tr class="border-b dark:border-gray-700 bg-gray-50">
-          <td colspan="8" class="px-4 py-2 font-bold">Finances</td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Voir les transactions</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Enregistrer un paiement</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-        
-        <tr class="border-b dark:border-gray-700 bg-gray-50">
-          <td colspan="8" class="px-4 py-2 font-bold">Discipline</td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Signaler un incident</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Appliquer une sanction</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-        </tr>
-        
-        <tr class="border-b dark:border-gray-700 bg-gray-50">
-          <td colspan="8" class="px-4 py-2 font-bold">Communications</td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Envoyer des messages</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-        </tr>
-        <tr>
-          <td class="px-4 py-2">Communication globale</td>
-          <td class="text-center"><i class="fas fa-check-circle text-green-500"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-          <td class="text-center"><i class="fas fa-minus-circle text-gray-300"></i></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+            <tr class="border-b dark:border-gray-700 bg-gray-50">
+              <td colspan="8" class="px-4 py-2 font-bold">
+                Écoles
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Voir les écoles
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Approuver une école
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
 
-<script>
-  async function saveAllPermissions() {
-    // Récupérer toutes les modifications des checkboxes
-    const permissions = {}
-    // Logique de sauvegarde des permissions
-    const res = await fetch('/api/admin/permissions/save', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrfToken }}'
-      },
-      body: JSON.stringify({ permissions })
-    })
-    const data = await res.json()
-    if (data.success) {
-      alert('Permissions sauvegardées avec succès')
-    } else {
-      alert('Erreur: ' + data.message)
-    }
-  }
-</script>
-{{# /section }}
+            <tr class="border-b dark:border-gray-700 bg-gray-50">
+              <td colspan="8" class="px-4 py-2 font-bold">
+                Académique
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Gérer les classes
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Gérer les matières
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Saisir des notes
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
 
-{{# /layout }}
+            <tr class="border-b dark:border-gray-700 bg-gray-50">
+              <td colspan="8" class="px-4 py-2 font-bold">
+                Finances
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Voir les transactions
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Enregistrer un paiement
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+
+            <tr class="border-b dark:border-gray-700 bg-gray-50">
+              <td colspan="8" class="px-4 py-2 font-bold">
+                Discipline
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Signaler un incident
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Appliquer une sanction
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+            </tr>
+
+            <tr class="border-b dark:border-gray-700 bg-gray-50">
+              <td colspan="8" class="px-4 py-2 font-bold">
+                Communications
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Envoyer des messages
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">
+                Communication globale
+              </td>
+              <td class="text-center">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+              <td class="text-center">
+                <i class="fas fa-minus-circle text-gray-300"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      async function saveAllPermissions() {
+        // Récupérer toutes les modifications des checkboxes
+        const permissions = {};
+        // Logique de sauvegarde des permissions
+        const res = await fetch("/api/admin/permissions/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({
+            permissions: permissions
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("Permissions sauvegardées avec succès");
+        } else {
+          alert("Erreur: " + data.message);
+        }
+      }
+    </script>
+  @endsection
+  

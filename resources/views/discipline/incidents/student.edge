@@ -1,150 +1,217 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Incidents par élève - {{ student.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Incidents de l'élève{{# /section }}
-{{# section('dashboardSubtitle') }}{{ student.name }} - {{ student.className }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/discipline/incidents/report?student_id={{ student.id }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Signaler un incident
+  @section('title')
+    Incidents par élève - {{ student.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Incidents de l'élève
+  @endsection
+  @section('dashboardSubtitle')
+    {{ student.name }} - {{ student.className }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/discipline/incidents/report?student_id={{ student.id }}"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Signaler un incident
   </a>
-  <button onclick="exportStudentIncidents()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportStudentIncidents()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
+    </div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total incidents
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Cette année
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.thisYear || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Ce trimestre
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.thisTerm || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Dernier incident
+        </p>
+        <p class="text-lg font-bold">
+          {{ stats.lastIncidentDate || '-' }}
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <!-- Graphique d'évolution -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <h3 class="font-semibold mb-3">
+        Évolution des incidents
+      </h3>
+      <canvas id="studentIncidentsChart" height="150">
+      </canvas>
+    </div>
 
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total incidents</p>
-    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Cette année</p>
-    <p class="text-3xl font-bold">{{ stats.thisYear || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Ce trimestre</p>
-    <p class="text-3xl font-bold">{{ stats.thisTerm || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Dernier incident</p>
-    <p class="text-lg font-bold">{{ stats.lastIncidentDate || '-' }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Graphique d'évolution -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <h3 class="font-semibold mb-3">Évolution des incidents</h3>
-  <canvas id="studentIncidentsChart" height="150"></canvas>
-</div>
-
-<!-- Liste des incidents -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Type</th>
-          <th class="px-4 py-2">Gravité</th>
-          <th class="px-4 py-2">Description</th>
-          <th class="px-4 py-2">Sanction</th>
-          <th class="px-4 py-2">Statut</th>
-          <th class="px-4 py-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(incident in incidents)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-2">{{ formatDate(incident.date) }}</td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+    <!-- Liste des incidents -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date
+              </th>
+              <th class="px-4 py-2">
+                Type
+              </th>
+              <th class="px-4 py-2">
+                Gravité
+              </th>
+              <th class="px-4 py-2">
+                Description
+              </th>
+              <th class="px-4 py-2">
+                Sanction
+              </th>
+              <th class="px-4 py-2">
+                Statut
+              </th>
+              <th class="px-4 py-2 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(incident in incidents)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-2">
+                  {{ formatDate(incident.date) }}
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ incident.type === 'absence' ? 'bg-blue-100 text-blue-800' : 
                  (incident.type === 'late' ? 'bg-yellow-100 text-yellow-800' : 
                  (incident.type === 'misconduct' ? 'bg-purple-100 text-purple-800' : 
-                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}">
-              {{ incident.typeLabel }}
+                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}"
+                  >
+                    {{ incident.typeLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ incident.severity === 'minor' ? 'bg-green-100 text-green-800' : 
                  (incident.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
-                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
-              {{ incident.severityLabel }}
+                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}"
+                  >
+                    {{ incident.severityLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2 max-w-md">{{ incident.description }}</td>
-          <td class="px-4 py-2">{{ incident.sanction || '-' }}</td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+                </td>
+                <td class="px-4 py-2 max-w-md">
+                  {{ incident.description }}
+                </td>
+                <td class="px-4 py-2">
+                  {{ incident.sanction || '-' }}
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ incident.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                 (incident.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800') }}">
-              {{ incident.status === 'pending' ? 'En attente' : (incident.status === 'resolved' ? 'Résolu' : 'En appel') }}
+                 (incident.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800') }}"
+                  >
+                    {{ incident.status === 'pending' ? 'En attente' : (incident.status === 'resolved' ? 'Résolu' : 'En appel') }}
             </span>
-          </td>
-          <td class="px-4 py-2 text-center">
-            <div class="flex justify-center gap-2">
-              <a href="/discipline/incidents/{{ incident.id }}/show" class="text-primary hover:underline" title="Détails">
-                <i class="fas fa-eye"></i>
-              </a>
-              <a href="/discipline/incidents/{{ incident.id }}/edit" class="text-blue-600 hover:text-blue-800" title="Modifier">
-                <i class="fas fa-edit"></i>
-              </a>
-            </div>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="7" class="text-center py-12 text-gray-500">
-            <i class="fas fa-check-circle text-4xl mb-2 block text-green-500"></i>
-            Aucun incident enregistré pour cet élève
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/discipline/incidents/student/' + student.id })
-</div>
+                </td>
+                <td class="px-4 py-2 text-center">
+                  <div class="flex justify-center gap-2">
+                    <a
+                      href="/discipline/incidents/{{ incident.id }}/show"
+                      class="text-primary hover:underline"
+                      title="Détails"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a
+                      href="/discipline/incidents/{{ incident.id }}/edit"
+                      class="text-blue-600 hover:text-blue-800"
+                      title="Modifier"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="7" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-check-circle text-4xl mb-2 block text-green-500"></i>
+                  Aucun incident enregistré pour cet élève
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
 
-<script>
-  let studentChart
-  
-  function renderChart() {
-    const ctx = document.getElementById('studentIncidentsChart').getContext('2d')
-    studentChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: {{ chartLabels|json_encode|raw }},
-        datasets: [{
-          label: "Nombre d'incidents",
-          data: {{ chartValues|json_encode|raw }},
-          backgroundColor: '#f59e0b',
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: { y: { beginAtZero: true, stepSize: 1, precision: 0 } }
+      @include('partials/pagination', { pagination: pagination, url: '/discipline/incidents/student/' + student.id })
+    </div>
+
+    <script>
+      let studentChart;
+
+      function renderChart() {
+        const ctx = document.getElementById("studentIncidentsChart").getContext("2d");
+        studentChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: {{ chartLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Nombre d'incidents",
+              data: {{ chartValues|json_encode|raw }},
+              backgroundColor: "#f59e0b",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                stepSize: 1,
+                precision: 0
+              }
+            }
+          }
+        });
       }
-    })
-  }
-  
-  function exportStudentIncidents() {
-    window.location.href = `/api/discipline/students/{{ student.id }}/incidents/export`
-  }
-  
-  renderChart()
-</script>
-{{# /section }}
 
-{{# /layout }}
+      function exportStudentIncidents() {
+        window.location.href = `/api/discipline/students/{{ student.id }}/incidents/export`;
+      }
+
+      renderChart();
+    </script>
+  @endsection
+  

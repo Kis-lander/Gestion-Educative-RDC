@@ -1,178 +1,209 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Rechercher un élève - Discipline{{# /section }}
-
-{{# section('dashboardTitle') }}Recherche d'élève{{# /section }}
-{{# section('dashboardSubtitle') }}Recherche rapide par nom, matricule ou classe{{# /section }}
-
-{{# section('content') }}
-<!-- Barre de recherche -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
-  <div class="flex gap-3">
-    <div class="flex-1">
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input type="text" id="searchQuery" placeholder="Rechercher par nom, prénom ou matricule..."
-               class="w-full pl-10 pr-4 py-3 border rounded-lg text-lg focus:ring-2 focus:ring-primary">
+  @section('title')
+    Rechercher un élève - Discipline
+  @endsection
+  
+  @section('dashboardTitle')
+    Recherche d'élève
+  @endsection
+  @section('dashboardSubtitle')
+    Recherche rapide par nom, matricule ou classe
+  @endsection
+  
+  @section('content')
+    <!-- Barre de recherche -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input
+              type="text"
+              id="searchQuery"
+              placeholder="Rechercher par nom, prénom ou matricule..."
+              class="w-full pl-10 pr-4 py-3 border rounded-lg text-lg focus:ring-2 focus:ring-primary"
+            />
+          </div>
+        </div>
+        <select id="searchClass" class="px-4 py-3 border rounded-lg">
+          <option value="">
+            Toutes les classes
+          </option>
+          @each(classObj in classes)
+            <option value="{{ classObj.id }}">
+              {{ classObj.name }}
+            </option>
+          @end
+        </select>
+        <button id="searchBtn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i class="fas fa-search mr-2"></i>Rechercher
+    </button>
       </div>
     </div>
-    <select id="searchClass" class="px-4 py-3 border rounded-lg">
-      <option value="">Toutes les classes</option>
-      @each(classObj in classes)
-      <option value="{{ classObj.id }}">{{ classObj.name }}</option>
-      @end
-    </select>
-    <button id="searchBtn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700">
-      <i class="fas fa-search mr-2"></i> Rechercher
+
+    <!-- Filtres avancés -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="flex flex-wrap gap-3 items-center">
+        <label class="font-medium">Filtres :</label>
+        <select id="filterStatus" class="px-3 py-1 border rounded-lg text-sm">
+          <option value="">
+            Statut disciplinaire
+          </option>
+          <option value="exemplary">
+            Exemplaire
+          </option>
+          <option value="warning">
+            Averti
+          </option>
+          <option value="sanctioned">
+            Sanctionné
+          </option>
+          <option value="suspended">
+            Suspendu
+          </option>
+        </select>
+        <select id="filterGender" class="px-3 py-1 border rounded-lg text-sm">
+          <option value="">
+            Genre
+          </option>
+          <option value="male">
+            Masculin
+          </option>
+          <option value="female">
+            Féminin
+          </option>
+        </select>
+        <button id="resetFilters" class="px-3 py-1 border rounded-lg text-sm hover:bg-gray-50">
+          <i class="fas fa-undo mr-1"></i>Réinitialiser
     </button>
-  </div>
-</div>
+      </div>
+    </div>
 
-<!-- Filtres avancés -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="flex flex-wrap gap-3 items-center">
-    <label class="font-medium">Filtres :</label>
-    <select id="filterStatus" class="px-3 py-1 border rounded-lg text-sm">
-      <option value="">Statut disciplinaire</option>
-      <option value="exemplary">Exemplaire</option>
-      <option value="warning">Averti</option>
-      <option value="sanctioned">Sanctionné</option>
-      <option value="suspended">Suspendu</option>
-    </select>
-    <select id="filterGender" class="px-3 py-1 border rounded-lg text-sm">
-      <option value="">Genre</option>
-      <option value="male">Masculin</option>
-      <option value="female">Féminin</option>
-    </select>
-    <button id="resetFilters" class="px-3 py-1 border rounded-lg text-sm hover:bg-gray-50">
-      <i class="fas fa-undo mr-1"></i> Réinitialiser
-    </button>
-  </div>
-</div>
+    <!-- Résultats -->
+    <div id="resultsContainer" class="space-y-3">
+      <div class="text-center text-gray-500 py-12">
+        <i class="fas fa-search text-4xl mb-3 block"></i>
+        <p>
+          Saisissez un nom ou un matricule pour rechercher un élève
+        </p>
+      </div>
+    </div>
 
-<!-- Résultats -->
-<div id="resultsContainer" class="space-y-3">
-  <div class="text-center text-gray-500 py-12">
-    <i class="fas fa-search text-4xl mb-3 block"></i>
-    <p>Saisissez un nom ou un matricule pour rechercher un élève</p>
-  </div>
-</div>
+    <script>
+      let searchTimeout;
 
-<script>
-  let searchTimeout
-  
-  async function performSearch() {
-    const query = document.getElementById('searchQuery').value
-    const classId = document.getElementById('searchClass').value
-    const status = document.getElementById('filterStatus').value
-    const gender = document.getElementById('filterGender').value
-    
-    if (!query && !classId && !status) {
-      document.getElementById('resultsContainer').innerHTML = `
-        <div class="text-center text-gray-500 py-12">
-          <i class="fas fa-search text-4xl mb-3 block"></i>
-          <p>Saisissez un nom ou un matricule pour rechercher un élève</p>
-        </div>
-      `
-      return
-    }
-    
-    const params = new URLSearchParams()
-    if (query) params.append('q', query)
-    if (classId) params.append('class_id', classId)
-    if (status) params.append('status', status)
-    if (gender) params.append('gender', gender)
-    
-    const res = await fetch(`/api/discipline/students/search?${params.toString()}`)
-    const data = await res.json()
-    
-    const container = document.getElementById('resultsContainer')
-    
-    if (data.students && data.students.length > 0) {
-      container.innerHTML = `
-        <div class="text-sm text-gray-500 mb-2">${data.total} résultat(s) trouvé(s)</div>
-        <div class="space-y-3">
-          ${data.students.map(student => `
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
-                 onclick="window.location.href='/discipline/students/${student.id}'">
-              <div class="p-4">
-                <div class="flex justify-between items-start">
-                  <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                      ${student.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 class="font-bold">${student.name}</h3>
-                      <p class="text-sm text-gray-500">${student.className} - ${student.registrationNumber}</p>
-                    </div>
+      async function performSearch() {
+        const query = document.getElementById("searchQuery").value;
+        const classId = document.getElementById("searchClass").value;
+        const status = document.getElementById("filterStatus").value;
+        const gender = document.getElementById("filterGender").value;
+        if (!query && !classId && !status) {
+          document.getElementById("resultsContainer").innerHTML = `
+                  <div class="text-center text-gray-500 py-12">
+                    <i class="fas fa-search text-4xl mb-3 block"></i>
+                    <p>Saisissez un nom ou un matricule pour rechercher un élève</p>
                   </div>
-                  <div class="text-right">
-                    <span class="px-2 py-1 rounded-full text-xs
-                      ${student.disciplineStatus === 'exemplary' ? 'bg-green-100 text-green-800' : 
-                         (student.disciplineStatus === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
-                         (student.disciplineStatus === 'sanctioned' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'))}">
-                      ${student.disciplineStatus === 'exemplary' ? 'Exemplaire' : 
-                         (student.disciplineStatus === 'warning' ? 'Averti' : 
-                         (student.disciplineStatus === 'sanctioned' ? 'Sanctionné' : 'Suspendu'))}
-                    </span>
+                `;
+          return;
+        }
+        const params = new URLSearchParams();
+        if (query) params.append("q", query);
+        if (classId) params.append("class_id", classId);
+        if (status) params.append("status", status);
+        if (gender) params.append("gender", gender);
+        const res = await fetch(`/api/discipline/students/search?${params.toString()}`);
+        const data = await res.json();
+        const container = document.getElementById("resultsContainer");
+        if (data.students && data.students.length > 0) {
+          container.innerHTML = `
+                  <div class="text-sm text-gray-500 mb-2">${data.total} résultat(s) trouvé(s)</div>
+                  <div class="space-y-3">
+                    ${data.students.map(student => `
+                      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition"
+                           onclick="window.location.href='/discipline/students/${student.id}'">
+                        <div class="p-4">
+                          <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                              <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                                ${student.name.charAt(0)}
+                              </div>
+                              <div>
+                                <h3 class="font-bold">${student.name}</h3>
+                                <p class="text-sm text-gray-500">${student.className} - ${student.registrationNumber}</p>
+                              </div>
+                            </div>
+                            <div class="text-right">
+                              <span class="px-2 py-1 rounded-full text-xs
+                                ${student.disciplineStatus === "exemplary" ? "bg-green-100 text-green-800" : student.disciplineStatus === "warning" ? "bg-yellow-100 text-yellow-800" : student.disciplineStatus === "sanctioned" ? "bg-orange-100 text-orange-800" : "bg-red-100 text-red-800"}">
+                                ${student.disciplineStatus === "exemplary" ? "Exemplaire" : student.disciplineStatus === "warning" ? "Averti" : student.disciplineStatus === "sanctioned" ? "Sanctionné" : "Suspendu"}
+                              </span>
+                            </div>
+                          </div>
+                          <div class="mt-3 flex flex-wrap gap-4 text-sm">
+                            <div class="flex items-center gap-1">
+                              <i class="fas fa-exclamation-triangle ${student.incidentCount > 0 ? "text-red-500" : "text-green-500"}"></i>
+                              <span>${student.incidentCount} incident(s)</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                              <i class="fas fa-gavel text-gray-400"></i>
+                              <span>${student.sanctionsCount} sanction(s)</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                              <i class="fas fa-calendar text-gray-400"></i>
+                              <span>Dernier: ${student.lastIncidentDate || "-"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    `).join("")}
                   </div>
-                </div>
-                <div class="mt-3 flex flex-wrap gap-4 text-sm">
-                  <div class="flex items-center gap-1">
-                    <i class="fas fa-exclamation-triangle ${student.incidentCount > 0 ? 'text-red-500' : 'text-green-500'}"></i>
-                    <span>${student.incidentCount} incident(s)</span>
+                `;
+        } else {
+          container.innerHTML = `
+                  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+                    <i class="fas fa-user-slash text-5xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-500">Aucun élève trouvé</p>
+                    <p class="text-sm text-gray-400 mt-1">Vérifiez votre recherche et réessayez</p>
                   </div>
-                  <div class="flex items-center gap-1">
-                    <i class="fas fa-gavel text-gray-400"></i>
-                    <span>${student.sanctionsCount} sanction(s)</span>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <i class="fas fa-calendar text-gray-400"></i>
-                    <span>Dernier: ${student.lastIncidentDate || '-'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `
-    } else {
-      container.innerHTML = `
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-          <i class="fas fa-user-slash text-5xl text-gray-400 mb-3"></i>
-          <p class="text-gray-500">Aucun élève trouvé</p>
-          <p class="text-sm text-gray-400 mt-1">Vérifiez votre recherche et réessayez</p>
-        </div>
-      `
-    }
-  }
-  
-  const searchInput = document.getElementById('searchQuery')
-  const searchBtn = document.getElementById('searchBtn')
-  const searchClass = document.getElementById('searchClass')
-  const filterStatus = document.getElementById('filterStatus')
-  const filterGender = document.getElementById('filterGender')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  function triggerSearch() {
-    clearTimeout(searchTimeout)
-    searchTimeout = setTimeout(performSearch, 300)
-  }
-  
-  searchInput.addEventListener('input', triggerSearch)
-  searchClass.addEventListener('change', performSearch)
-  filterStatus.addEventListener('change', performSearch)
-  filterGender.addEventListener('change', performSearch)
-  searchBtn.addEventListener('click', performSearch)
-  
-  resetBtn.addEventListener('click', () => {
-    searchInput.value = ''
-    searchClass.value = ''
-    filterStatus.value = ''
-    filterGender.value = ''
-    performSearch()
-  })
-</script>
-{{# /section }}
+                `;
+        }
+      }
 
-{{# /layout }}
+      const searchInput = document.getElementById("searchQuery");
+
+      const searchBtn = document.getElementById("searchBtn");
+
+      const searchClass = document.getElementById("searchClass");
+
+      const filterStatus = document.getElementById("filterStatus");
+
+      const filterGender = document.getElementById("filterGender");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      function triggerSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 300);
+      }
+
+      searchInput.addEventListener("input", triggerSearch);
+
+      searchClass.addEventListener("change", performSearch);
+
+      filterStatus.addEventListener("change", performSearch);
+
+      filterGender.addEventListener("change", performSearch);
+
+      searchBtn.addEventListener("click", performSearch);
+
+      resetBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        searchClass.value = "";
+        filterStatus.value = "";
+        filterGender.value = "";
+        performSearch();
+      });
+    </script>
+  @endsection
+  

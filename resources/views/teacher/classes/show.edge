@@ -1,194 +1,288 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Détails classe - {{ classObj.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}{{ classObj.name }}{{# /section }}
-{{# section('dashboardSubtitle') }}{{ classObj.level }} - {{ classObj.academicYear }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/teacher/attendance/mark?class_id={{ classObj.id }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-calendar-check mr-2"></i> Présences
-  </a>
-  <a href="/academic/grades/add?class_id={{ classObj.id }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-star mr-2"></i> Notes
-  </a>
-  <a href="/teacher/assignments/create?class_id={{ classObj.id }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-    <i class="fas fa-tasks mr-2"></i> Devoir
-  </a>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.studentsCount || 0 }}/{{ classObj.maxCapacity }}</p>
-    <p class="text-sm text-gray-500">Élèves</p>
-    <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
-      <div class="bg-primary rounded-full h-1" style="width: {{ (stats.studentsCount / classObj.maxCapacity) * 100 }}%"></div>
-    </div>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.averageGrade || '-' }}/20</p>
-    <p class="text-sm text-gray-500">Moyenne classe</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.attendanceRate || 0 }}%</p>
-    <p class="text-sm text-gray-500">Taux présence</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.assignmentsCount || 0 }}</p>
-    <p class="text-sm text-gray-500">Devoirs</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Informations générales -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-3">Informations</h3>
-    <div class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-gray-500">Niveau</span>
-        <span>{{ classObj.level }} ({{ classObj.gradeLevel }}ème)</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Période</span>
-        <span>{{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'Après-midi' : 'Soir') }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Année académique</span>
-        <span>{{ classObj.academicYear }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Capacité</span>
-        <span>{{ stats.studentsCount }}/{{ classObj.maxCapacity }}</span>
-      </div>
-    </div>
-  </div>
+  @section('title')
+    DÃ©tails classe - {{ classObj.name }}
+  @endsection
   
-  <!-- Matières enseignées -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-3">Matières enseignées</h3>
-    <div class="space-y-2">
-      @each(subject in subjects)
-      <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
-        <div>
-          <p class="font-medium">{{ subject.name }}</p>
-          <p class="text-xs text-gray-500">Coefficient {{ subject.coefficient }}</p>
-        </div>
-        <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ subject.hoursPerWeek }}h/sem</span>
-      </div>
-      @eachelse
-      <p class="text-gray-500 text-center py-4">Aucune matière assignée</p>
-      @end
-    </div>
-  </div>
+  @section('dashboardTitle')
+    {{ classObj.name }}
+  @endsection
+  @section('dashboardSubtitle')
+    {{ classObj.level }} - {{ classObj.academicYear }}
+  @endsection
   
-  <!-- Emploi du temps rapide -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-3">Cours aujourd'hui</h3>
-    <div class="space-y-2">
-      @each(todayCourse in todaySchedule)
-      <div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <div>
-          <p class="font-medium">{{ todayCourse.subject }}</p>
-          <p class="text-xs text-gray-500">{{ todayCourse.time }} - Salle {{ todayCourse.room }}</p>
-        </div>
-        <a href="/teacher/attendance/mark?class_id={{ classObj.id }}&subject_id={{ todayCourse.subjectId }}" class="text-primary text-sm">
-          <i class="fas fa-check-circle"></i>
-        </a>
-      </div>
-      @eachelse
-      <p class="text-gray-500 text-center py-4">Aucun cours programmé aujourd'hui</p>
-      @end
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/teacher/attendance/mark?class_id={{ classObj.id }}"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-calendar-check mr-2"></i>PrÃ©sences
+  </a>
+      <a
+        href="/academic/grades/add?class_id={{ classObj.id }}"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-star mr-2"></i>Notes
+  </a>
+      <a
+        href="/teacher/assignments/create?class_id={{ classObj.id }}"
+        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+      >
+        <i class="fas fa-tasks mr-2"></i>Devoir
+  </a>
     </div>
-    <div class="mt-3 pt-2 border-t">
-      <a href="/teacher/timetable?class_id={{ classObj.id }}" class="text-primary text-sm hover:underline">
-        <i class="fas fa-calendar-alt mr-1"></i> Emploi du temps complet
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- Liste rapide des élèves -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Derniers élèves inscrits</h3>
-    <a href="/teacher/classes/{{ classObj.id }}/students" class="text-primary text-sm hover:underline">
-      Voir tous ({{ stats.studentsCount }})
-    </a>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Matricule</th>
-          <th class="px-4 py-2">Nom complet</th>
-          <th class="px-4 py-2 text-center">Moyenne</th>
-          <th class="px-4 py-2 text-center">Présences</th>
-          <th class="px-4 py-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(student in recentStudents)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-2 font-mono text-xs">{{ student.registrationNumber }}</td>
-          <td class="px-4 py-2 font-medium">{{ student.name }}</td>
-          <td class="px-4 py-2 text-center">
-            <span :class="{
-              'text-green-600': {{ student.averageGrade }} >= 15,
-              'text-yellow-600': {{ student.averageGrade }} >= 10 && {{ student.averageGrade }} < 15,
-              'text-red-600': {{ student.averageGrade }} < 10
-            }">{{ student.averageGrade || '-' }}/20</span>
-          </td>
-          <td class="px-4 py-2 text-center">{{ student.attendanceRate || 0 }}%</td>
-          <td class="px-4 py-2 text-center">
-            <a href="/teacher/students/{{ student.id }}/grades" class="text-primary hover:underline" title="Notes">
-              <i class="fas fa-star"></i>
-            </a>
-          </td>
-        </tr>
-        @eachelse
-        <tr><td colspan="5" class="text-center py-6">Aucun élève inscrit</td></tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Devoirs récents -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Devoirs récents</h3>
-    <a href="/teacher/assignments/create?class_id={{ classObj.id }}" class="text-primary text-sm hover:underline">
-      <i class="fas fa-plus mr-1"></i> Nouveau devoir
-    </a>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(assignment in recentAssignments)
-    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-      <div class="flex justify-between items-start">
-        <div>
-          <p class="font-medium">{{ assignment.title }}</p>
-          <p class="text-xs text-gray-500">Matière: {{ assignment.subjectName }}</p>
-        </div>
-        <div class="text-right">
-          <span class="text-xs {{ assignment.isOverdue ? 'text-red-600' : 'text-green-600' }}">
-            Rendu: {{ assignment.dueDate }}
-          </span>
-          <div class="text-xs mt-1">
-            {{ assignment.submittedCount }}/{{ stats.studentsCount }} rendus
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.studentsCount || 0 }}/{{ classObj.maxCapacity }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Ã‰lÃ¨ves
+        </p>
+        <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+          <div
+            class="bg-primary rounded-full h-1"
+            style="width: {{ (stats.studentsCount / classObj.maxCapacity) * 100 }}%"
+          >
           </div>
         </div>
       </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.averageGrade || '-' }}/20
+        </p>
+        <p class="text-sm text-gray-500">
+          Moyenne classe
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.attendanceRate || 0 }}%
+        </p>
+        <p class="text-sm text-gray-500">
+          Taux prÃ©sence
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.assignmentsCount || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Devoirs
+        </p>
+      </div>
     </div>
-    @eachelse
-    <div class="p-6 text-center text-gray-500">Aucun devoir publié</div>
-    @end
-  </div>
-</div>
-{{# /section }}
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Informations gÃ©nÃ©rales -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+          Informations
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Niveau</span>
+            <span>{{ classObj.level }} ({{ classObj.gradeLevel }}Ã¨me)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">PÃ©riode</span>
+            <span>{{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'AprÃ¨s-midi' : 'Soir') }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Année scolaire</span>
+            <span>{{ classObj.academicYear }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">CapacitÃ©</span>
+            <span>{{ stats.studentsCount }}/{{ classObj.maxCapacity }}</span>
+          </div>
+        </div>
+      </div>
 
-{{# /layout }}
+      <!-- MatiÃ¨res enseignÃ©es -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+          MatiÃ¨res enseignÃ©es
+        </h3>
+        <div class="space-y-2">
+          @each(subject in subjects)
+            <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
+              <div>
+                <p class="font-medium">
+                  {{ subject.name }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  Coefficient {{ subject.coefficient }}
+                </p>
+              </div>
+              <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ subject.hoursPerWeek }}h/sem</span>
+            </div>
+            @else
+            <p class="text-gray-500 text-center py-4">
+              Aucune matiÃ¨re assignÃ©e
+            </p>
+          @end
+        </div>
+      </div>
+
+      <!-- Emploi du temps rapide -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+          Cours aujourd'hui
+        </h3>
+        <div class="space-y-2">
+          @each(todayCourse in todaySchedule)
+            <div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div>
+                <p class="font-medium">
+                  {{ todayCourse.subject }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ todayCourse.time }} - Salle {{ todayCourse.room }}
+                </p>
+              </div>
+              <a
+                href="/teacher/attendance/mark?class_id={{ classObj.id }}&subject_id={{ todayCourse.subjectId }}"
+                class="text-primary text-sm"
+              >
+                <i class="fas fa-check-circle"></i>
+              </a>
+            </div>
+            @else
+            <p class="text-gray-500 text-center py-4">
+              Aucun cours programmÃ© aujourd'hui
+            </p>
+          @end
+        </div>
+        <div class="mt-3 pt-2 border-t">
+          <a
+            href="/teacher/timetable?class_id={{ classObj.id }}"
+            class="text-primary text-sm hover:underline"
+          >
+            <i class="fas fa-calendar-alt mr-1"></i>Emploi du temps complet
+      </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste rapide des Ã©lÃ¨ves -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Derniers Ã©lÃ¨ves inscrits
+        </h3>
+        <a href="/teacher/classes/{{ classObj.id }}/students" class="text-primary text-sm hover:underline">
+          Voir tous ({{ stats.studentsCount }})
+    </a>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Matricule
+              </th>
+              <th class="px-4 py-2">
+                Nom complet
+              </th>
+              <th class="px-4 py-2 text-center">
+                Moyenne
+              </th>
+              <th class="px-4 py-2 text-center">
+                PrÃ©sences
+              </th>
+              <th class="px-4 py-2 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(student in recentStudents)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-2 font-mono text-xs">
+                  {{ student.registrationNumber }}
+                </td>
+                <td class="px-4 py-2 font-medium">
+                  {{ student.name }}
+                </td>
+                <td class="px-4 py-2 text-center">
+                  <span :class='text-green-600' : {{ student.averageGrade }}>= 15,
+              'text-yellow-600': {{ student.averageGrade }} >= 10 && {{ student.averageGrade }}
+                    <text-red-600 : {{ student.averageGrade }}>
+                      {{ student.averageGrade || '-' }}/20</span>
+                  </td>
+                  <td class="px-4 py-2 text-center">
+                    {{ student.attendanceRate || 0 }}%
+                  </td>
+                  <td class="px-4 py-2 text-center">
+                    <a
+                      href="/teacher/students/{{ student.id }}/grades"
+                      class="text-primary hover:underline"
+                      title="Notes"
+                    >
+                      <i class="fas fa-star"></i>
+                    </a>
+                  </td>
+                </tr>
+                @else
+                <tr>
+                  <td colspan="5" class="text-center py-6">
+                    Aucun Ã©lÃ¨ve inscrit
+                  </td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Devoirs rÃ©cents -->
+      <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+          <h3 class="font-semibold">
+            Devoirs rÃ©cents
+          </h3>
+          <a
+            href="/teacher/assignments/create?class_id={{ classObj.id }}"
+            class="text-primary text-sm hover:underline"
+          >
+            <i class="fas fa-plus mr-1"></i>Nouveau devoir
+    </a>
+        </div>
+        <div class="divide-y dark:divide-gray-700">
+          @each(assignment in recentAssignments)
+            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-medium">
+                    {{ assignment.title }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    MatiÃ¨re: {{ assignment.subjectName }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs {{ assignment.isOverdue ? 'text-red-600' : 'text-green-600' }}">
+                    Rendu: {{ assignment.dueDate }}
+          </span>
+                  <div class="text-xs mt-1">
+                    {{ assignment.submittedCount }}/{{ stats.studentsCount }} rendus
+                  </div>
+                </div>
+              </div>
+            </div>
+            @else
+            <div class="p-6 text-center text-gray-500">
+              Aucun devoir publiÃ©
+            </div>
+          @end
+        </div>
+      </div>
+    @endsection
+    

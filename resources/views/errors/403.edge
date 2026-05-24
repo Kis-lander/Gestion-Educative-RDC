@@ -1,47 +1,60 @@
-{{# layout('layouts/app') }}
+@layout('layouts/app')
 
-{{# section('title') }}403 - Accès interdit - Gestion Éducative RDC{{# /section }}
+  @section('title')
+    403 - Accès interdit - Gestion Éducative RDC
+  @endsection
+  
+  @section('content')
+    <div class="min-h-[70vh] flex items-center justify-center">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
+        <div class="mb-6">
+          <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-ban text-red-500 text-4xl"></i>
+          </div>
+          <h1 class="text-6xl font-bold text-red-500 mb-2">
+            403
+          </h1>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+            Accès interdit
+          </h2>
+          <p class="text-gray-500 dark:text-gray-400">
+            Vous n'avez pas les droits nécessaires pour accéder à cette page.
+          </p>
+        </div>
 
-{{# section('content') }}
-<div class="min-h-[70vh] flex items-center justify-center">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full text-center">
-    <div class="mb-6">
-      <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-ban text-red-500 text-4xl"></i>
-      </div>
-      <h1 class="text-6xl font-bold text-red-500 mb-2">403</h1>
-      <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Accès interdit</h2>
-      <p class="text-gray-500 dark:text-gray-400">
-        Vous n'avez pas les droits nécessaires pour accéder à cette page.
-      </p>
-    </div>
-    
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg p-4 mb-6 text-left">
-      <p class="text-sm text-gray-700 dark:text-gray-300">
-        <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
-        Cette section est réservée aux utilisateurs ayant le rôle approprié.
-      </p>
-    </div>
-    
-    <div class="space-y-3">
-      <button onclick="window.history.back()" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition w-full">
-        <i class="fas fa-arrow-left mr-2"></i>
-        Retour à la page précédente
+        <div
+          class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg p-4 mb-6 text-left"
+        >
+          <p class="text-sm text-gray-700 dark:text-gray-300">
+            <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+            Cette section est réservée aux utilisateurs ayant le rôle approprié.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <button
+            onclick="window.history.back()"
+            class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition w-full"
+          >
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour à la page précédente
       </button>
-      <a href="/dashboard" class="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition w-full">
-        <i class="fas fa-tachometer-alt mr-2"></i>
-        Aller au tableau de bord
+          <a
+            href="/dashboard"
+            class="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition w-full"
+          >
+            <i class="fas fa-tachometer-alt mr-2"></i>
+            Aller au tableau de bord
       </a>
-    </div>
-    
-    <div class="mt-6 pt-4 border-t dark:border-gray-700">
-      <p class="text-xs text-gray-400">
-        Rôle requis : {{ requiredRole || 'spécifique' }}<br>
-        Votre rôle : {{ auth.user?.role || 'non connecté' }}
-      </p>
-    </div>
-  </div>
-</div>
-{{# /section }}
+        </div>
 
-{{# /layout }}
+        <div class="mt-6 pt-4 border-t dark:border-gray-700">
+          <p class="text-xs text-gray-400">
+            Rôle requis : {{ requiredRole || 'spécifique' }}<br />
+            Votre rôle : {{ auth.user?.role || 'non connecté' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  @endsection
+  

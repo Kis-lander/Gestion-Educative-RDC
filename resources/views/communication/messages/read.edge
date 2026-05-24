@@ -1,141 +1,173 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Lire message - {{ message.subject }}{{# /section }}
-
-{{# section('dashboardTitle') }}{{ message.subject }}{{# /section }}
-{{# section('dashboardSubtitle') }}Message de {{ message.senderName }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/communication/messages/compose?reply_to={{ message.id }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-reply mr-2"></i> Répondre
+  @section('title')
+    Lire message - {{ message.subject }}
+  @endsection
+  
+  @section('dashboardTitle')
+    {{ message.subject }}
+  @endsection
+  @section('dashboardSubtitle')
+    Message de {{ message.senderName }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/communication/messages/compose?reply_to={{ message.id }}"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-reply mr-2"></i>Répondre
   </a>
-  <button onclick="deleteMessage()" class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
-    <i class="fas fa-trash mr-2"></i> Supprimer
+      <button
+        onclick="deleteMessage()"
+        class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
+      >
+        <i class="fas fa-trash mr-2"></i>Supprimer
   </button>
-  <a href="/communication/messages/inbox" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-arrow-left mr-2"></i> Retour
+      <a href="/communication/messages/inbox" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-arrow-left mr-2"></i>Retour
   </a>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Contenu message -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="p-5">
-      <!-- En-tête message -->
-      <div class="flex justify-between items-start mb-4 pb-3 border-b">
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h3 class="text-xl font-bold">{{ message.subject }}</h3>
-            @if(message.urgent)
-            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">Urgent</span>
-            @endif
-            <span class="px-2 py-1 rounded-full text-xs
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Contenu message -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="p-5">
+          <!-- En-tête message -->
+          <div class="flex justify-between items-start mb-4 pb-3 border-b">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-xl font-bold">
+                  {{ message.subject }}
+                </h3>
+                @if(message.urgent)
+                  <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">Urgent</span>
+                @endif
+                <span
+                  class="px-2 py-1 rounded-full text-xs
               {{ message.type === 'official' ? 'bg-red-100 text-red-800' : 
                  (message.type === 'parent_teacher' ? 'bg-green-100 text-green-800' : 
-                 (message.type === 'general' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
-              {{ message.type === 'official' ? 'Officiel' : 
+                 (message.type === 'general' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}"
+                >
+                  {{ message.type === 'official' ? 'Officiel' : 
                  (message.type === 'parent_teacher' ? 'Parent-Enseignant' : 
                  (message.type === 'general' ? 'Général' : 'Système')) }}
             </span>
+              </div>
+              <div class="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                <i class="fas fa-user"></i>
+                <span>{{ message.senderName }} ({{ message.senderRole }})</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <i class="fas fa-calendar"></i>
+                <span>{{ message.date }} à {{ message.time }}</span>
+              </div>
+              @if(message.receiverName)
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                  <i class="fas fa-envelope"></i>
+                  <span>Pour: {{ message.receiverName }} ({{ message.receiverRole }})</span>
+                </div>
+              @endif
+            </div>
+            @if(message.ccList)
+              <div class="text-xs text-gray-400">
+                <span>CC: {{ message.ccList }}</span>
+              </div>
+            @endif
           </div>
-          <div class="flex items-center gap-2 mt-2 text-sm text-gray-500">
-            <i class="fas fa-user"></i>
-            <span>{{ message.senderName }} ({{ message.senderRole }})</span>
+
+          <!-- Contenu -->
+          <div class="prose max-w-none mb-4">
+            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {{ message.content }}
+            </p>
           </div>
-          <div class="flex items-center gap-2 text-sm text-gray-500">
-            <i class="fas fa-calendar"></i>
-            <span>{{ message.date }} à {{ message.time }}</span>
-          </div>
-          @if(message.receiverName)
-          <div class="flex items-center gap-2 text-sm text-gray-500">
-            <i class="fas fa-envelope"></i>
-            <span>Pour: {{ message.receiverName }} ({{ message.receiverRole }})</span>
-          </div>
+
+          <!-- Pièces jointes -->
+          @if(message.attachments && message.attachments.length > 0)
+            <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="font-medium mb-2">
+                <i class="fas fa-paperclip mr-2"></i>Pièces jointes ({{ message.attachments.length }})
+              </p>
+              <div class="flex flex-wrap gap-2">
+                @each(attachment in message.attachments)
+                  <a
+                    href="{{ attachment.url }}"
+                    target="_blank"
+                    class="flex items-center gap-2 p-2 bg-white dark:bg-gray-600 rounded-lg hover:bg-gray-100"
+                  >
+                    <i class="fas fa-file-alt text-blue-500"></i>
+                    <span class="text-sm">{{ attachment.filename }}</span>
+                    <span class="text-xs text-gray-400">({{ attachment.size }})</span>
+                  </a>
+                @end
+              </div>
+            </div>
           @endif
         </div>
-        @if(message.ccList)
-        <div class="text-xs text-gray-400">
-          <span>CC: {{ message.ccList }}</span>
-        </div>
-        @endif
       </div>
-      
-      <!-- Contenu -->
-      <div class="prose max-w-none mb-4">
-        <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ message.content }}</p>
-      </div>
-      
-      <!-- Pièces jointes -->
-      @if(message.attachments && message.attachments.length > 0)
-      <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p class="font-medium mb-2"><i class="fas fa-paperclip mr-2"></i> Pièces jointes ({{ message.attachments.length }})</p>
-        <div class="flex flex-wrap gap-2">
-          @each(attachment in message.attachments)
-          <a href="{{ attachment.url }}" target="_blank" class="flex items-center gap-2 p-2 bg-white dark:bg-gray-600 rounded-lg hover:bg-gray-100">
-            <i class="fas fa-file-alt text-blue-500"></i>
-            <span class="text-sm">{{ attachment.filename }}</span>
-            <span class="text-xs text-gray-400">({{ attachment.size }})</span>
-          </a>
-          @end
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+          <h3 class="font-semibold border-b pb-2 mb-3">
+            Statut
+          </h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Statut de lecture</span>
+              <span class="text-green-600">                <i class="fas fa-check-circle"></i>Lu</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Date de lecture</span>
+              <span>{{ message.readAt }}</span>
+            </div>
+          </div>
         </div>
-      </div>
-      @endif
-    </div>
-  </div>
-  
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-      <h3 class="font-semibold border-b pb-2 mb-3">Statut</h3>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Statut de lecture</span>
-          <span class="text-green-600"><i class="fas fa-check-circle"></i> Lu</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Date de lecture</span>
-          <span>{{ message.readAt }}</span>
-        </div>
-      </div>
-    </div>
-    
-    @if(message.parentMessageId)
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <p class="text-sm">Ceci est une réponse à un message précédent.</p>
-      <a href="/communication/messages/read/{{ message.parentMessageId }}" class="text-primary text-sm hover:underline mt-1 inline-block">
-        <i class="fas fa-arrow-left mr-1"></i> Voir le message original
+
+        @if(message.parentMessageId)
+          <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+            <p class="text-sm">
+              Ceci est une réponse à un message précédent.
+            </p>
+            <a
+              href="/communication/messages/read/{{ message.parentMessageId }}"
+              class="text-primary text-sm hover:underline mt-1 inline-block"
+            >
+              <i class="fas fa-arrow-left mr-1"></i>Voir le message original
       </a>
+          </div>
+        @endif
+        
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-reply-all text-green-600"></i>
+            <span>Vous pouvez répondre à ce message en cliquant sur "Répondre".</span>
+          </p>
+        </div>
+      </div>
     </div>
-    @endif
-    
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-reply-all text-green-600"></i>
-        <span>Vous pouvez répondre à ce message en cliquant sur "Répondre".</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  async function deleteMessage() {
-    if (confirm('Supprimer ce message ?')) {
-      const res = await fetch('/communication/messages/{{ message.id }}/delete', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) {
-        window.location.href = '/communication/messages/inbox'
-      } else {
-        alert('Erreur: ' + data.message)
+    <script>
+      async function deleteMessage() {
+        if (confirm("Supprimer ce message ?")) {
+          const res = await fetch("/communication/messages/{{ message.id }}/delete", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.location.href = "/communication/messages/inbox";
+          } else {
+            alert("Erreur: " + data.message);
+          }
+        }
       }
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+    </script>
+  @endsection
+  

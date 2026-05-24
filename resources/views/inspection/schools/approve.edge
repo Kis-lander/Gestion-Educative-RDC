@@ -1,143 +1,185 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Approuver - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Approbation de l'établissement{{# /section }}
-{{# section('dashboardSubtitle') }}Validez l'inscription de {{ school.name }}{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Récapitulatif école -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Informations de l'école</h3>
-    <div class="space-y-3">
-      <div class="flex justify-between">
-        <span class="text-gray-500">Nom</span>
-        <span class="font-medium">{{ school.name }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Code</span>
-        <span class="font-mono">{{ school.code }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Province</span>
-        <span>{{ school.province }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Territoire</span>
-        <span>{{ school.territory }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Adresse</span>
-        <span>{{ school.address }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Téléphone</span>
-        <span>{{ school.phone }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Email</span>
-        <span>{{ school.email }}</span>
-      </div>
-    </div>
-  </div>
+  @section('title')
+    Approuver - {{ school.name }}
+  @endsection
   
-  <!-- Identifiants de connexion -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Identifiants de connexion</h3>
-    <form method="POST" action="/inspection/schools/{{ school.id }}/generate-credentials" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 mb-4">
-        <p class="text-sm text-yellow-800 dark:text-yellow-300">
-          <i class="fas fa-info-circle mr-2"></i>
-          Des identifiants uniques seront générés pour le directeur de l'école.
+  @section('dashboardTitle')
+    Approbation de l'établissement
+  @endsection
+  @section('dashboardSubtitle')
+    Validez l'inscription de {{ school.name }}
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Récapitulatif école -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+          Informations de l'école
+        </h3>
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Nom</span>
+            <span class="font-medium">{{ school.name }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Code</span>
+            <span class="font-mono">{{ school.code }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Province</span>
+            <span>{{ school.province }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Territoire</span>
+            <span>{{ school.territory }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Adresse</span>
+            <span>{{ school.address }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Téléphone</span>
+            <span>{{ school.phone }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Email</span>
+            <span>{{ school.email }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Identifiants de connexion -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+          Identifiants de connexion
+        </h3>
+        <form
+          method="POST"
+          action="/inspection/schools/{{ school.id }}/generate-credentials"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 mb-4">
+            <p class="text-sm text-yellow-800 dark:text-yellow-300">
+              <i class="fas fa-info-circle mr-2"></i>
+              Des identifiants uniques seront générés pour le directeur de l'école.
           Ils seront envoyés par email après validation.
-        </p>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Email du directeur</label>
-        <input type="email" name="directorEmail" value="{{ school.directorEmail || school.email }}" required
-               class="w-full px-3 py-2 border rounded-lg">
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Message d'accompagnement (optionnel)</label>
-        <textarea name="message" rows="3" class="w-full px-3 py-2 border rounded-lg"
-                  placeholder="Message personnalisé pour le directeur..."></textarea>
-      </div>
-      
-      <div class="flex gap-3">
-        <button type="submit" :disabled="loading"
-                class="flex-1 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          <span>Approuver et générer les identifiants</span>
-        </button>
-        <a href="/inspection/schools/{{ school.id }}/reject" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-          Rejeter
+            </p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Email du directeur</label>
+            <input
+              type="email"
+              name="directorEmail"
+              value="{{ school.directorEmail || school.email }}"
+              required
+              class="w-full px-3 py-2 border rounded-lg"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Message d'accompagnement (optionnel)</label>
+            <textarea
+              name="message"
+              rows="3"
+              class="w-full px-3 py-2 border rounded-lg"
+              placeholder="Message personnalisé pour le directeur..."
+            ></textarea>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="flex-1 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              <span>Approuver et générer les identifiants</span>
+            </button>
+            <a
+              href="/inspection/schools/{{ school.id }}/reject"
+              class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Rejeter
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- Aperçu des identifiants qui seront générés -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Aperçu des identifiants</h3>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-      <p class="text-gray-500 text-sm">Login</p>
-      <p class="font-mono">{{ school.code }}_directeur@gestion-educative.cd</p>
     </div>
-    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-      <p class="text-gray-500 text-sm">Mot de passe temporaire</p>
-      <p class="font-mono text-red-600">•••••••• (généré automatiquement)</p>
-    </div>
-  </div>
-  <p class="text-xs text-gray-400 mt-3">
-    <i class="fas fa-shield-alt mr-1"></i>
-    Le mot de passe sera envoyé par email et devra être changé lors de la première connexion.
-  </p>
-</div>
 
-<!-- Vérifications supplémentaires -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Vérifications avant approbation</h3>
-  <div class="space-y-3">
-    <label class="flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" id="checkDocuments" class="w-4 h-4">
-      <span class="text-sm">Les documents d'enregistrement sont conformes</span>
-    </label>
-    <label class="flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" id="checkIdentity" class="w-4 h-4">
-      <span class="text-sm">L'identité du directeur a été vérifiée</span>
-    </label>
-    <label class="flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" id="checkInfrastructure" class="w-4 h-4">
-      <span class="text-sm">L'infrastructure répond aux normes minimales</span>
-    </label>
-  </div>
-  <div class="mt-4 pt-3 border-t">
-    <button onclick="validateChecks()" class="text-primary text-sm hover:underline">
-      <i class="fas fa-clipboard-list mr-1"></i> Télécharger checklist d'approbation
+    <!-- Aperçu des identifiants qui seront générés -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+        Aperçu des identifiants
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+          <p class="text-gray-500 text-sm">
+            Login
+          </p>
+          <p class="font-mono">
+            {{ school.code }}_directeur
+            @gestion
+            -educative.cd
+          </p>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+          <p class="text-gray-500 text-sm">
+            Mot de passe temporaire
+          </p>
+          <p class="font-mono text-red-600">
+            •••••••• (généré automatiquement)
+          </p>
+        </div>
+      </div>
+      <p class="text-xs text-gray-400 mt-3">
+        <i class="fas fa-shield-alt mr-1"></i>
+        Le mot de passe sera envoyé par email et devra être changé lors de la première connexion.
+      </p>
+    </div>
+
+    <!-- Vérifications supplémentaires -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+        Vérifications avant approbation
+      </h3>
+      <div class="space-y-3">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" id="checkDocuments" class="w-4 h-4" />
+          <span class="text-sm">Les documents d'enregistrement sont conformes</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" id="checkIdentity" class="w-4 h-4" />
+          <span class="text-sm">L'identité du directeur a été vérifiée</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" id="checkInfrastructure" class="w-4 h-4" />
+          <span class="text-sm">L'infrastructure répond aux normes minimales</span>
+        </label>
+      </div>
+      <div class="mt-4 pt-3 border-t">
+        <button onclick="validateChecks()" class="text-primary text-sm hover:underline">
+          <i class="fas fa-clipboard-list mr-1"></i>Télécharger checklist d'approbation
     </button>
-  </div>
-</div>
+      </div>
+    </div>
 
-<script>
-  function validateChecks() {
-    const docChecked = document.getElementById('checkDocuments').checked
-    const identityChecked = document.getElementById('checkIdentity').checked
-    const infraChecked = document.getElementById('checkInfrastructure').checked
-    
-    if (!docChecked || !identityChecked || !infraChecked) {
-      alert('Veuillez confirmer toutes les vérifications avant approbation')
-    } else {
-      document.querySelector('form').submit()
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+    <script>
+      function validateChecks() {
+        const docChecked = document.getElementById("checkDocuments").checked;
+        const identityChecked = document.getElementById("checkIdentity").checked;
+        const infraChecked = document.getElementById("checkInfrastructure").checked;
+        if (!docChecked || !identityChecked || !infraChecked) {
+          alert("Veuillez confirmer toutes les vérifications avant approbation");
+        } else {
+          document.querySelector("form").submit();
+        }
+      }
+    </script>
+  @endsection
+  

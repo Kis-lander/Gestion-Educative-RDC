@@ -1,166 +1,249 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Situation financière - {{ student.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Situation financière{{# /section }}
-{{# section('dashboardSubtitle') }}{{ student.name }} - {{ student.className }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="printReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
+  @section('title')
+    Situation financière - {{ student.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Situation financière
+  @endsection
+  @section('dashboardSubtitle')
+    {{ student.name }} - {{ student.className }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="printReport()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
   </button>
-  <a href="/financial/payments/record?student_id={{ student.id }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-plus mr-2"></i> Enregistrer paiement
+      <a
+        href="/financial/payments/record?student_id={{ student.id }}"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Enregistrer paiement
   </a>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ formatCurrency(totalDue, 'USD') }}</p>
-    <p class="text-sm text-gray-500">Total dû</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ formatCurrency(totalPaid, 'USD') }}</p>
-    <p class="text-sm text-gray-500">Total payé</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold {{ balance > 0 ? 'text-red-600' : 'text-green-600' }}">
-      {{ formatCurrency(balance, 'USD') }}
-    </p>
-    <p class="text-sm text-gray-500">Solde</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ paymentCount }}</p>
-    <p class="text-sm text-gray-500">Transactions</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Détail par type de frais -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <h3 class="font-semibold border-b pb-2 mb-3">Détail par type de frais</h3>
-    <div class="space-y-3">
-      @each(fee in feeDetails)
-      <div>
-        <div class="flex justify-between text-sm">
-          <span>{{ fee.type }} {{ fee.term ? '(' + fee.term + ')' : '' }}</span>
-          <span class="font-bold">{{ formatCurrency(fee.amount, 'USD') }}</span>
-        </div>
-        <div class="flex justify-between text-xs mt-1">
-          <span class="text-green-600">Payé: {{ formatCurrency(fee.paid, 'USD') }}</span>
-          <span class="text-red-600">Reste: {{ formatCurrency(fee.balance, 'USD') }}</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
-          <div class="bg-green-500 rounded-full h-1" style="width: {{ fee.percentage }}%"></div>
+    </div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ formatCurrency(totalDue, 'USD') }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total dû
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ formatCurrency(totalPaid, 'USD') }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total payé
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold {{ balance > 0 ? 'text-red-600' : 'text-green-600' }}">
+          {{ formatCurrency(balance, 'USD') }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Solde
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ paymentCount }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Transactions
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Détail par type de frais -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Détail par type de frais
+        </h3>
+        <div class="space-y-3">
+          @each(fee in feeDetails)
+            <div>
+              <div class="flex justify-between text-sm">
+                <span>{{ fee.type }} {{ fee.term ? '(' + fee.term + ')' : '' }}</span>
+                <span class="font-bold">{{ formatCurrency(fee.amount, 'USD') }}</span>
+              </div>
+              <div class="flex justify-between text-xs mt-1">
+                <span class="text-green-600">Payé: {{ formatCurrency(fee.paid, 'USD') }}</span>
+                <span class="text-red-600">Reste: {{ formatCurrency(fee.balance, 'USD') }}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                <div class="bg-green-500 rounded-full h-1" style="width: {{ fee.percentage }}%">
+                </div>
+              </div>
+            </div>
+          @end
         </div>
       </div>
-      @end
-    </div>
-  </div>
-  
-  <!-- Bourses actives -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <h3 class="font-semibold border-b pb-2 mb-3">Bourses et réductions</h3>
-    @if(scholarships.length > 0)
-    <div class="space-y-3">
-      @each(scholarship in scholarships)
-      <div class="border rounded-lg p-2">
-        <div class="flex justify-between">
-          <span class="font-medium">{{ scholarship.typeLabel }}</span>
-          <span class="text-green-600 font-bold">-{{ scholarship.percentage }}%</span>
-        </div>
-        <p class="text-xs text-gray-500 mt-1">{{ scholarship.reason }}</p>
-        <p class="text-xs text-gray-400">Valable du {{ scholarship.startDate }} au {{ scholarship.endDate }}</p>
+
+      <!-- Bourses actives -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Bourses et réductions
+        </h3>
+        @if(scholarships.length > 0)
+          <div class="space-y-3">
+            @each(scholarship in scholarships)
+              <div class="border rounded-lg p-2">
+                <div class="flex justify-between">
+                  <span class="font-medium">{{ scholarship.typeLabel }}</span>
+                  <span class="text-green-600 font-bold">-{{ scholarship.percentage }}%</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">
+                  {{ scholarship.reason }}
+                </p>
+                <p class="text-xs text-gray-400">
+                  Valable du {{ scholarship.startDate }} au {{ scholarship.endDate }}
+                </p>
+              </div>
+            @end
+          </div>
+        @else
+          <p class="text-gray-500 text-center py-4">
+            Aucune bourse active
+          </p>
+        @endif
       </div>
-      @end
     </div>
-    @else
-    <p class="text-gray-500 text-center py-4">Aucune bourse active</p>
-    @endif
-  </div>
-</div>
 
-<!-- Historique paiements -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Historique des paiements</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Reçu n°</th>
-          <th class="px-4 py-2">Type frais</th>
-          <th class="px-4 py-2 text-right">Montant</th>
-          <th class="px-4 py-2">Mode</th>
-          <th class="px-4 py-2">Enregistré par</th>
-          <th class="px-4 py-2 text-center">Reçu</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(payment in payments)
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-4 py-2">{{ formatDate(payment.paymentDate) }}</td>
-          <td class="px-4 py-2 font-mono text-xs">{{ payment.receiptNumber }}</td>
-          <td class="px-4 py-2">{{ payment.feeType }}</td>
-          <td class="px-4 py-2 text-right font-bold text-green-600">{{ formatCurrency(payment.amount, 'USD') }}</td>
-          <td class="px-4 py-2">{{ payment.methodLabel }}</td>
-          <td class="px-4 py-2">{{ payment.recordedBy }}</td>
-          <td class="px-4 py-2 text-center">
-            <button onclick="printReceipt('{{ payment.id }}')" class="text-primary hover:underline">Imprimer</button>
-          </td>
-        </tr>
-        @eachelse
-        <tr><td colspan="7" class="text-center py-8">Aucun paiement enregistré</td></tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-</div>
+    <!-- Historique paiements -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Historique des paiements
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date
+              </th>
+              <th class="px-4 py-2">
+                Reçu n°
+              </th>
+              <th class="px-4 py-2">
+                Type frais
+              </th>
+              <th class="px-4 py-2 text-right">
+                Montant
+              </th>
+              <th class="px-4 py-2">
+                Mode
+              </th>
+              <th class="px-4 py-2">
+                Enregistré par
+              </th>
+              <th class="px-4 py-2 text-center">
+                Reçu
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(payment in payments)
+              <tr class="border-b dark:border-gray-700">
+                <td class="px-4 py-2">
+                  {{ formatDate(payment.paymentDate) }}
+                </td>
+                <td class="px-4 py-2 font-mono text-xs">
+                  {{ payment.receiptNumber }}
+                </td>
+                <td class="px-4 py-2">
+                  {{ payment.feeType }}
+                </td>
+                <td class="px-4 py-2 text-right font-bold text-green-600">
+                  {{ formatCurrency(payment.amount, 'USD') }}
+                </td>
+                <td class="px-4 py-2">
+                  {{ payment.methodLabel }}
+                </td>
+                <td class="px-4 py-2">
+                  {{ payment.recordedBy }}
+                </td>
+                <td class="px-4 py-2 text-center">
+                  <button onclick="printReceipt('{{ payment.id }}')" class="text-primary hover:underline">Imprimer</button>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="7" class="text-center py-8">
+                  Aucun paiement enregistré
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<!-- Graphique -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-  <h3 class="font-semibold mb-3">Évolution des paiements</h3>
-  <canvas id="paymentHistoryChart" height="150"></canvas>
-</div>
+    <!-- Graphique -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <h3 class="font-semibold mb-3">
+        Évolution des paiements
+      </h3>
+      <canvas id="paymentHistoryChart" height="150">
+      </canvas>
+    </div>
 
-<!-- Message de situation -->
-<div class="mt-4 p-3 rounded-lg text-center {{ balance === 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-  <i class="fas {{ balance === 0 ? 'fa-check-circle' : 'fa-exclamation-triangle' }} mr-2"></i>
-  {{ balance === 0 ? 'Situation financière TOTALEMENT SOLDÉE' : 'Solde restant à payer : ' + formatCurrency(balance, 'USD') }}
-</div>
+    <!-- Message de situation -->
+    <div
+      class="mt-4 p-3 rounded-lg text-center {{ balance === 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}"
+    >
+      <i class="fas {{ balance === 0 ? 'fa-check-circle' : 'fa-exclamation-triangle' }} mr-2"></i>
+      {{ balance === 0 ? 'Situation financière TOTALEMENT SOLDÉE' : 'Solde restant à payer : ' + formatCurrency(balance, 'USD') }}
+    </div>
 
-<script>
-  let paymentChart
+    <script>
+      let paymentChart;
+
+      function renderChart() {
+        const ctx = document.getElementById("paymentHistoryChart").getContext("2d");
+        paymentChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: {{ chartLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Montant ($)",
+              data: {{ chartValues|json_encode|raw }},
+              backgroundColor: "#2563eb",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+
+      function printReceipt(paymentId) {
+        window.open(`/financial/payments/print-receipt/${paymentId}`, "_blank");
+      }
+
+      function printReport() {
+        window.print();
+      }
+
+      renderChart();
+    </script>
+  @endsection
   
-  function renderChart() {
-    const ctx = document.getElementById('paymentHistoryChart').getContext('2d')
-    paymentChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: {{ chartLabels|json_encode|raw }},
-        datasets: [{ label: 'Montant ($)', data: {{ chartValues|json_encode|raw }}, backgroundColor: '#2563eb', borderRadius: 8 }]
-      },
-      options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
-    })
-  }
-  
-  function printReceipt(paymentId) {
-    window.open(`/financial/payments/print-receipt/${paymentId}`, '_blank')
-  }
-  
-  function printReport() {
-    window.print()
-  }
-  
-  renderChart()
-</script>
-{{# /section }}
-
-{{# /layout }}

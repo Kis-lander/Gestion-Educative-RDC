@@ -1,140 +1,195 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Inspection Pédagogique - Gestion Éducative RDC{{# /section }}
-
-{{# section('dashboardTitle') }}Inspection Pédagogique{{# /section }}
-{{# section('dashboardSubtitle') }}Supervision des établissements scolaires en République Démocratique du Congo{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Écoles totales</p>
-        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.schools.total || 0 }}</p>
-      </div>
-      <i class="fas fa-building text-2xl text-blue-500"></i>
-    </div>
-  </div>
+  @section('title')
+    Inspection Pédagogique - Gestion Éducative RDC
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Écoles actives</p>
-        <p class="text-2xl font-bold text-green-600">{{ stats.schools.active || 0 }}</p>
-      </div>
-      <i class="fas fa-check-circle text-2xl text-green-500"></i>
-    </div>
-  </div>
+  @section('dashboardTitle')
+    Inspection Pédagogique
+  @endsection
+  @section('dashboardSubtitle')
+    Supervision des établissements scolaires en République Démocratique du Congo
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">En attente</p>
-        <p class="text-2xl font-bold text-yellow-600">{{ stats.schools.pending || 0 }}</p>
-      </div>
-      <i class="fas fa-clock text-2xl text-yellow-500"></i>
-    </div>
-  </div>
-  
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
-    <div class="flex justify-between items-start">
-      <div>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">Taux couverture</p>
-        <p class="text-2xl font-bold">{{ stats.coverageRate || 0 }}%</p>
-      </div>
-      <i class="fas fa-chart-line text-2xl text-purple-500"></i>
-    </div>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Écoles par province -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-semibold text-gray-800 dark:text-white">Répartition par province</h3>
-      <a href="/inspection/reports/schools" class="text-primary text-sm hover:underline">Voir détail</a>
-    </div>
-    <div class="space-y-3">
-      @each(province in stats.schoolsByProvince)
-      <div>
-        <div class="flex justify-between text-sm mb-1">
-          <span class="text-gray-600 dark:text-gray-400">{{ province.name }}</span>
-          <span class="text-gray-800 dark:text-white font-medium">{{ province.count }}</span>
-        </div>
-        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <div class="bg-primary rounded-full h-2" style="width: {{ province.percentage }}%"></div>
+  @section('stats')
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Écoles totales
+            </p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">
+              {{ stats.schools.total || 0 }}
+            </p>
+          </div>
+          <i class="fas fa-building text-2xl text-blue-500"></i>
         </div>
       </div>
-      @eachelse
-      <p class="text-gray-500 dark:text-gray-400 text-center py-4">Aucune donnée</p>
-      @end
-    </div>
-  </div>
-  
-  <!-- Demandes récentes -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-semibold text-gray-800 dark:text-white">Demandes d'inscription récentes</h3>
-      <a href="/inspection/schools/pending" class="text-primary text-sm hover:underline">Toutes</a>
-    </div>
-    <div class="space-y-3 max-h-80 overflow-y-auto">
-      @each(school in pendingSchools)
-      <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <div class="flex-1">
-          <p class="font-medium text-gray-800 dark:text-white">{{ school.name }}</p>
-          <p class="text-xs text-gray-500">{{ school.province }} - {{ school.createdAt }}</p>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Écoles actives
+            </p>
+            <p class="text-2xl font-bold text-green-600">
+              {{ stats.schools.active || 0 }}
+            </p>
+          </div>
+          <i class="fas fa-check-circle text-2xl text-green-500"></i>
         </div>
-        <a href="/inspection/schools/{{ school.id }}" 
-           class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700">
-          Examiner
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              En attente
+            </p>
+            <p class="text-2xl font-bold text-yellow-600">
+              {{ stats.schools.pending || 0 }}
+            </p>
+          </div>
+          <i class="fas fa-clock text-2xl text-yellow-500"></i>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">
+              Taux couverture
+            </p>
+            <p class="text-2xl font-bold">
+              {{ stats.coverageRate || 0 }}%
+            </p>
+          </div>
+          <i class="fas fa-chart-line text-2xl text-purple-500"></i>
+        </div>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Écoles par province -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold text-gray-800 dark:text-white">
+            Répartition par province
+          </h3>
+          <a href="/inspection/reports/schools" class="text-primary text-sm hover:underline">Voir détail</a>
+        </div>
+        <div class="space-y-3">
+          @each(province in stats.schoolsByProvince)
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600 dark:text-gray-400">{{ province.name }}</span>
+                <span class="text-gray-800 dark:text-white font-medium">{{ province.count }}</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="bg-primary rounded-full h-2" style="width: {{ province.percentage }}%">
+                </div>
+              </div>
+            </div>
+            @else
+            <p class="text-gray-500 dark:text-gray-400 text-center py-4">
+              Aucune donnée
+            </p>
+          @end
+        </div>
+      </div>
+
+      <!-- Demandes récentes -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold text-gray-800 dark:text-white">
+            Demandes d'inscription récentes
+          </h3>
+          <a href="/inspection/schools/pending" class="text-primary text-sm hover:underline">Toutes</a>
+        </div>
+        <div class="space-y-3 max-h-80 overflow-y-auto">
+          @each(school in pendingSchools)
+            <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div class="flex-1">
+                <p class="font-medium text-gray-800 dark:text-white">
+                  {{ school.name }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ school.province }} - {{ school.createdAt }}
+                </p>
+              </div>
+              <a
+                href="/inspection/schools/{{ school.id }}"
+                class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700"
+              >
+                Examiner
         </a>
+            </div>
+            @else
+            <p class="text-gray-500 dark:text-gray-400 text-center py-8">
+              Aucune demande en attente
+            </p>
+          @end
+        </div>
       </div>
-      @eachelse
-      <p class="text-gray-500 dark:text-gray-400 text-center py-8">Aucune demande en attente</p>
-      @end
     </div>
-  </div>
-</div>
 
-<!-- Alertes système -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
-  <h3 class="font-semibold text-gray-800 dark:text-white mb-3">Alertes du système</h3>
-  <div class="space-y-2">
-    @each(alert in systemAlerts)
-    <div class="flex items-center gap-3 p-3 rounded-lg border-l-4" :class="{
+    <!-- Alertes système -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+      <h3 class="font-semibold text-gray-800 dark:text-white mb-3">
+        Alertes du système
+      </h3>
+      <div class="space-y-2">
+        @each(alert in systemAlerts)
+          <div
+            class="flex items-center gap-3 p-3 rounded-lg border-l-4"
+            :class="{
       'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20': '{{ alert.type }}' === 'warning',
       'border-red-500 bg-red-50 dark:bg-red-900/20': '{{ alert.type }}' === 'danger',
       'border-blue-500 bg-blue-50 dark:bg-blue-900/20': '{{ alert.type }}' === 'info'
-    }">
-      <i class="fas" :class="{
+    }"
+          >
+            <i
+              class="fas"
+              :class="{
         'fa-exclamation-triangle text-yellow-500': '{{ alert.type }}' === 'warning',
         'fa-times-circle text-red-500': '{{ alert.type }}' === 'danger',
         'fa-info-circle text-blue-500': '{{ alert.type }}' === 'info'
-      }"></i>
-      <span class="text-sm text-gray-700 dark:text-gray-300 flex-1">{{ alert.message }}</span>
-      <span class="text-xs text-gray-400">{{ alert.time }}</span>
+      }"
+            ></i>
+            <span class="text-sm text-gray-700 dark:text-gray-300 flex-1">{{ alert.message }}</span>
+            <span class="text-xs text-gray-400">{{ alert.time }}</span>
+          </div>
+          @else
+          <p class="text-gray-500 dark:text-gray-400 text-center py-4">
+            Aucune alerte système
+          </p>
+        @end
+      </div>
     </div>
-    @eachelse
-    <p class="text-gray-500 dark:text-gray-400 text-center py-4">Aucune alerte système</p>
-    @end
-  </div>
-</div>
 
-<!-- Actions rapides inspection -->
-<div class="mt-6 flex flex-wrap gap-3">
-  <a href="/inspection/communications/global" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-bullhorn mr-2"></i> Communication globale
+    <!-- Actions rapides inspection -->
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a
+        href="/inspection/communications/global"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-bullhorn mr-2"></i>Communication globale
   </a>
-  <a href="/inspection/reports/schools" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-file-alt mr-2"></i> Rapport des écoles
+      <a
+        href="/inspection/reports/schools"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-file-alt mr-2"></i>Rapport des écoles
   </a>
-  <a href="/inspection/reports/performance" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-    <i class="fas fa-chart-line mr-2"></i> Rapport performance
+      <a
+        href="/inspection/reports/performance"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-chart-line mr-2"></i>Rapport performance
   </a>
-</div>
-{{# /section }}
-
-{{# /layout }}
+    </div>
+  @endsection
+  

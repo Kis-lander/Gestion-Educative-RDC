@@ -1,247 +1,328 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Logs utilisateurs - Administration{{# /section }}
-
-{{# section('dashboardTitle') }}Logs utilisateurs{{# /section }}
-{{# section('dashboardSubtitle') }}Historique des actions des utilisateurs{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportUserLogs()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+  @section('title')
+    Logs utilisateurs - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Logs utilisateurs
+  @endsection
+  @section('dashboardSubtitle')
+    Historique des actions des utilisateurs
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="exportUserLogs()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Actions totales</p>
-    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Utilisateurs actifs</p>
-    <p class="text-3xl font-bold">{{ stats.activeUsers || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Connexions</p>
-    <p class="text-3xl font-bold">{{ stats.logins || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Aujourd'hui</p>
-    <p class="text-3xl font-bold">{{ stats.today || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Utilisateur</label>
-      <select id="filterUser" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        @each(user in users)
-        <option value="{{ user.id }}">{{ user.firstName }} {{ user.lastName }} ({{ user.role }})</option>
-        @end
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Action</label>
-      <select id="filterAction" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        <option value="login">Connexion</option>
-        <option value="logout">Déconnexion</option>
-        <option value="create">Création</option>
-        <option value="update">Modification</option>
-        <option value="delete">Suppression</option>
-        <option value="export">Export</option>
-      </select>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Actions totales
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Utilisateurs actifs
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.activeUsers || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Connexions
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.logins || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Aujourd'hui
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.today || 0 }}
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Utilisateur</label>
+          <select id="filterUser" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            @each(user in users)
+              <option value="{{ user.id }}">
+                {{ user.firstName }} {{ user.lastName }} ({{ user.role }})
+              </option>
+            @end
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Action</label>
+          <select id="filterAction" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            <option value="login">
+              Connexion
+            </option>
+            <option value="logout">
+              Déconnexion
+            </option>
+            <option value="create">
+              Création
+            </option>
+            <option value="update">
+              Modification
+            </option>
+            <option value="delete">
+              Suppression
+            </option>
+            <option value="export">
+              Export
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Graphique activité -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <h3 class="font-semibold mb-3">Activité des 7 derniers jours</h3>
-  <canvas id="activityChart" height="150"></canvas>
-</div>
+    <!-- Graphique activité -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <h3 class="font-semibold mb-3">
+        Activité des 7 derniers jours
+      </h3>
+      <canvas id="activityChart" height="150">
+      </canvas>
+    </div>
 
-<!-- Tableau des logs utilisateurs -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date/Heure</th>
-          <th class="px-4 py-2">Utilisateur</th>
-          <th class="px-4 py-2">Rôle</th>
-          <th class="px-4 py-2">Action</th>
-          <th class="px-4 py-2">Cible</th>
-          <th class="px-4 py-2">IP</th>
-          <th class="px-4 py-2">Détails</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(log in logs)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-2">{{ formatDateTime(log.createdAt) }}</td>
-          <td class="px-4 py-2">
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                {{ log.userFirstName?.charAt(0) }}{{ log.userLastName?.charAt(0) }}
-              </div>
-              <span>{{ log.userFirstName }} {{ log.userLastName }}</span>
-            </div>
-          </td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+    <!-- Tableau des logs utilisateurs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date/Heure
+              </th>
+              <th class="px-4 py-2">
+                Utilisateur
+              </th>
+              <th class="px-4 py-2">
+                Rôle
+              </th>
+              <th class="px-4 py-2">
+                Action
+              </th>
+              <th class="px-4 py-2">
+                Cible
+              </th>
+              <th class="px-4 py-2">
+                IP
+              </th>
+              <th class="px-4 py-2">
+                Détails
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(log in logs)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-2">
+                  {{ formatDateTime(log.createdAt) }}
+                </td>
+                <td class="px-4 py-2">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold"
+                    >
+                      {{ log.userFirstName?.charAt(0) }}{{ log.userLastName?.charAt(0) }}
+                    </div>
+                    <span>{{ log.userFirstName }} {{ log.userLastName }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ log.role === 'inspection' ? 'bg-red-100 text-red-800' : 
                  (log.role === 'director' ? 'bg-blue-100 text-blue-800' : 
                  (log.role === 'teacher' ? 'bg-green-100 text-green-800' : 
-                 (log.role === 'student' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800')))) }}">
-              {{ log.roleLabel }}
+                 (log.role === 'student' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800')))) }}"
+                  >
+                    {{ log.roleLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ log.action === 'login' ? 'bg-green-100 text-green-800' : 
                  (log.action === 'delete' ? 'bg-red-100 text-red-800' : 
                  (log.action === 'create' ? 'bg-blue-100 text-blue-800' : 
-                 (log.action === 'update' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'))) }}">
-              {{ log.action === 'login' ? 'Connexion' : 
+                 (log.action === 'update' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'))) }}"
+                  >
+                    {{ log.action === 'login' ? 'Connexion' : 
                  (log.action === 'logout' ? 'Déconnexion' : 
                  (log.action === 'create' ? 'Création' : 
                  (log.action === 'update' ? 'Modification' : 
                  (log.action === 'delete' ? 'Suppression' : 
                  (log.action === 'export' ? 'Export' : log.action))))) }}
             </span>
-          </td>
-          <td class="px-4 py-2">{{ log.target || '-' }}</td>
-          <td class="px-4 py-2 font-mono text-xs">{{ log.ip || '-' }}</td>
-          <td class="px-4 py-2">
-            <button onclick="showUserDetails('{{ log.id }}', '{{ escape(log.details) }}')" class="text-primary text-sm hover:underline">
-              <i class="fas fa-info-circle"></i>
-            </button>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="7" class="text-center py-12 text-gray-500">
-            <i class="fas fa-history text-4xl mb-3 block"></i>
-            Aucun log utilisateur trouvé
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/admin/logs/users' })
-</div>
-
-<!-- Modal détails -->
-<div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-lg">Détails de l'action</h3>
-      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div id="modalContent">
-      <!-- Contenu dynamique -->
-    </div>
-  </div>
-</div>
-
-<script>
-  let activityChart
-  
-  function renderChart() {
-    const ctx = document.getElementById('activityChart').getContext('2d')
-    activityChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: {{ chartLabels|json_encode|raw }},
-        datasets: [{
-          label: "Nombre d'actions",
-          data: {{ chartValues|json_encode|raw }},
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true }
-    })
-  }
-  
-  function showUserDetails(id, details) {
-    const modal = document.getElementById('detailsModal')
-    const content = document.getElementById('modalContent')
-    content.innerHTML = `
-      <div class="space-y-2">
-        <p class="text-sm text-gray-600"><strong>Détails complets:</strong></p>
-        <pre class="text-xs bg-gray-50 p-3 rounded font-mono whitespace-pre-wrap">${details || 'Aucun détail disponible'}</pre>
+                </td>
+                <td class="px-4 py-2">
+                  {{ log.target || '-' }}
+                </td>
+                <td class="px-4 py-2 font-mono text-xs">
+                  {{ log.ip || '-' }}
+                </td>
+                <td class="px-4 py-2">
+                  <button
+                    onclick="showUserDetails('{{ log.id }}', '{{ escape(log.details) }}')"
+                    class="text-primary text-sm hover:underline"
+                  >
+                    <i class="fas fa-info-circle"></i>
+                  </button>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="7" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-history text-4xl mb-3 block"></i>
+                  Aucun log utilisateur trouvé
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
       </div>
-    `
-    modal.classList.remove('hidden')
-    modal.classList.add('flex')
-  }
-  
-  function closeModal() {
-    const modal = document.getElementById('detailsModal')
-    modal.classList.add('hidden')
-    modal.classList.remove('flex')
-  }
-  
-  const filterUser = document.getElementById('filterUser')
-  const filterAction = document.getElementById('filterAction')
-  const startDate = document.getElementById('startDate')
-  const endDate = document.getElementById('endDate')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterUser.value) params.set('user_id', filterUser.value)
-    if (filterAction.value) params.set('action', filterAction.value)
-    if (startDate.value) params.set('start_date', startDate.value)
-    if (endDate.value) params.set('end_date', endDate.value)
-    window.location.href = `/admin/logs/users?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/admin/logs/users'
-  })
-  
-  function exportUserLogs() {
-    const params = new URLSearchParams()
-    if (filterUser.value) params.set('user_id', filterUser.value)
-    if (filterAction.value) params.set('action', filterAction.value)
-    window.location.href = `/api/admin/logs/users/export?${params.toString()}`
-  }
-  
-  renderChart()
-</script>
-{{# /section }}
 
-{{# /layout }}
+      @include('partials/pagination', { pagination: pagination, url: '/admin/logs/users' })
+    </div>
+
+    <!-- Modal détails -->
+    <div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">
+            Détails de l'action
+          </h3>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div id="modalContent">
+          <!-- Contenu dynamique -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let activityChart;
+
+      function renderChart() {
+        const ctx = document.getElementById("activityChart").getContext("2d");
+        activityChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: {{ chartLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Nombre d'actions",
+              data: {{ chartValues|json_encode|raw }},
+              borderColor: "#2563eb",
+              backgroundColor: "rgba(37, 99, 235, 0.1)",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+      }
+
+      function showUserDetails(id, details) {
+        const modal = document.getElementById("detailsModal");
+        const content = document.getElementById("modalContent");
+        content.innerHTML = `
+                <div class="space-y-2">
+                  <p class="text-sm text-gray-600"><strong>Détails complets:</strong></p>
+                  <pre class="text-xs bg-gray-50 p-3 rounded font-mono whitespace-pre-wrap">${details || "Aucun détail disponible"}</pre>
+                </div>
+              `;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("detailsModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      const filterUser = document.getElementById("filterUser");
+
+      const filterAction = document.getElementById("filterAction");
+
+      const startDate = document.getElementById("startDate");
+
+      const endDate = document.getElementById("endDate");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterUser.value) params.set("user_id", filterUser.value);
+        if (filterAction.value) params.set("action", filterAction.value);
+        if (startDate.value) params.set("start_date", startDate.value);
+        if (endDate.value) params.set("end_date", endDate.value);
+        window.location.href = `/admin/logs/users?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/admin/logs/users";
+      });
+
+      function exportUserLogs() {
+        const params = new URLSearchParams();
+        if (filterUser.value) params.set("user_id", filterUser.value);
+        if (filterAction.value) params.set("action", filterAction.value);
+        window.location.href = `/api/admin/logs/users/export?${params.toString()}`;
+      }
+
+      renderChart();
+    </script>
+  @endsection
+  

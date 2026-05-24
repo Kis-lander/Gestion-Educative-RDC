@@ -1,89 +1,133 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Mes soumissions - {{ student.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Mes soumissions{{# /section }}
-{{# section('dashboardSubtitle') }}Historique de vos travaux rendus{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total soumis</p>
-    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Notés</p>
-    <p class="text-3xl font-bold">{{ stats.graded || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">En attente</p>
-    <p class="text-3xl font-bold">{{ stats.pending || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Moyenne</p>
-    <p class="text-3xl font-bold">{{ stats.averageGrade || '-' }}/20</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Devoir</th>
-          <th class="px-4 py-3 text-left">Matière</th>
-          <th class="px-4 py-3 text-center">Date soumission</th>
-          <th class="px-4 py-3 text-center">Note</th>
-          <th class="px-4 py-3 text-left">Feedback</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(submission in submissions)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-3 font-medium">{{ submission.assignmentTitle }}</td>
-          <td class="px-4 py-3">{{ submission.subjectName }}</td>
-          <td class="px-4 py-3 text-center">{{ formatDateTime(submission.submittedAt) }}</td>
-          <td class="px-4 py-3 text-center">
-            @if(submission.grade !== null)
-            <span class="font-bold {{ submission.grade >= 15 ? 'text-green-600' : (submission.grade >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-              {{ submission.grade }}/{{ submission.maxPoints }}
-            </span>
-            @else
-            <span class="text-gray-400">En attente</span>
-            @endif
-          </td>
-          <td class="px-4 py-3 max-w-xs">
-            <span class="text-gray-600">{{ submission.feedback || '-' }}</span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <button onclick="viewSubmission('{{ submission.id }}', '{{ submission.assignmentId }}')" class="text-primary hover:underline text-sm">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="6" class="text-center py-12 text-gray-500">
-            <i class="fas fa-folder-open text-4xl mb-2 block"></i>
-            Aucune soumission
-           </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
+  @section('title')
+    Mes soumissions - {{ student.name }}
+  @endsection
   
-  @include('partials/pagination', { pagination: pagination, url: '/student/assignments/submissions' })
-</div>
+  @section('dashboardTitle')
+    Mes soumissions
+  @endsection
+  @section('dashboardSubtitle')
+    Historique de vos travaux rendus
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total soumis
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Notés
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.graded || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          En attente
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.pending || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Moyenne
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.averageGrade || '-' }}/20
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Devoir
+              </th>
+              <th class="px-4 py-3 text-left">
+                Matière
+              </th>
+              <th class="px-4 py-3 text-center">
+                Date soumission
+              </th>
+              <th class="px-4 py-3 text-center">
+                Note
+              </th>
+              <th class="px-4 py-3 text-left">
+                Feedback
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(submission in submissions)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-3 font-medium">
+                  {{ submission.assignmentTitle }}
+                </td>
+                <td class="px-4 py-3">
+                  {{ submission.subjectName }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ formatDateTime(submission.submittedAt) }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  @if(submission.grade !== null)
+                    <span
+                      class="font-bold {{ submission.grade >= 15 ? 'text-green-600' : (submission.grade >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                    >
+                      {{ submission.grade }}/{{ submission.maxPoints }}
+            </span>
+                  @else
+                    <span class="text-gray-400">En attente</span>
+                  @endif
+                </td>
+                <td class="px-4 py-3 max-w-xs">
+                  <span class="text-gray-600">{{ submission.feedback || '-' }}</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <button
+                    onclick="viewSubmission('{{ submission.id }}', '{{ submission.assignmentId }}')"
+                    class="text-primary hover:underline text-sm"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="6" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-folder-open text-4xl mb-2 block"></i>
+                  Aucune soumission
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
 
-<script>
-  function viewSubmission(submissionId, assignmentId) {
-    window.location.href = `/student/assignments/${assignmentId}?submission=${submissionId}`
-  }
-</script>
-{{# /section }}
+      @include('partials/pagination', { pagination: pagination, url: '/student/assignments/submissions' })
+    </div>
 
-{{# /layout }}
+    <script>
+      function viewSubmission(submissionId, assignmentId) {
+        window.location.href = `/student/assignments/${assignmentId}?submission=${submissionId}`;
+      }
+    </script>
+  @endsection
+  

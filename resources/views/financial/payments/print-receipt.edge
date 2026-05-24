@@ -1,125 +1,192 @@
-{{# layout('layouts/print') }}
+@layout('layouts/print')
 
-{{# section('title') }}Impression reçu - {{ payment.receiptNumber }}{{# /section }}
-
-<div class="print-receipt">
-  <div class="text-center">
-    <h1 class="text-3xl font-bold">{{ school.name }}</h1>
-    <p class="text-sm">{{ school.address }} | Tél: {{ school.phone }}</p>
-    <div class="flex justify-center gap-8 text-xs mt-2">
-      <span>Email: {{ school.email }}</span>
-      <span>NIF: {{ school.taxId || '-' }}</span>
-    </div>
-    <div class="border-b-2 border-primary w-32 mx-auto my-3"></div>
-    <h2 class="text-2xl font-bold">REÇU OFFICIEL</h2>
-    <p class="text-lg font-mono mt-1">N° {{ payment.receiptNumber }}</p>
-  </div>
-  
-  <div class="flex justify-between mt-6 p-3 bg-gray-100 rounded">
-    <div><strong>Date:</strong> {{ formatDate(payment.paymentDate) }}</div>
-    <div><strong>Heure:</strong> {{ payment.paymentTime }}</div>
-    <div><strong>Opérateur:</strong> {{ payment.recordedByName }}</div>
-  </div>
-  
-  <div class="mt-6">
-    <table class="w-full border-collapse">
-      <tr>
-        <td class="py-3 border-b" style="width: 35%"><strong>Élève:</strong></td>
-        <td class="py-3 border-b">{{ payment.studentName }}</td>
-      </tr>
-      <tr>
-        <td class="py-3 border-b"><strong>Matricule:</strong></td>
-        <td class="py-3 border-b">{{ payment.studentRegistrationNumber }}</td>
-      </tr>
-      <tr>
-        <td class="py-3 border-b"><strong>Classe:</strong></td>
-        <td class="py-3 border-b">{{ payment.studentClassName }}</td>
-      </tr>
-      <tr>
-        <td class="py-3 border-b"><strong>Montant payé:</strong></td>
-        <td class="py-3 border-b text-2xl font-bold text-green-700">{{ formatCurrency(payment.amountPaid, payment.currency) }}</td>
-      </tr>
-      <tr>
-        <td class="py-3 border-b"><strong>Libellé:</strong></td>
-        <td class="py-3 border-b">{{ payment.feeType }} - {{ payment.term || 'Annuel' }} {{ payment.academicYear }}</td>
-      </tr>
-      <tr>
-        <td class="py-3 border-b"><strong>Mode:</strong></td>
-        <td class="py-3 border-b">{{ payment.paymentMethodLabel }}</td>
-      </tr>
-      @if(payment.referenceNumber)
-      <tr>
-        <td class="py-3 border-b"><strong>Réf. transaction:</strong></td>
-        <td class="py-3 border-b font-mono">{{ payment.referenceNumber }}</td>
-      </tr>
-      @endif
-    </table>
-  </div>
-  
-  @if(payment.balanceAfter > 0)
-  <div class="mt-4 p-3 bg-yellow-100 text-center">
-    <strong>⚠️ Solde restant: {{ formatCurrency(payment.balanceAfter, payment.currency) }}</strong>
-  </div>
-  @else
-  <div class="mt-4 p-3 bg-green-100 text-center">
-    <strong>✓ SITUATION TOTALEMENT SOLDÉE</strong>
-  </div>
-  @endif
-  
-  <div class="grid grid-cols-2 gap-8 mt-12 pt-4 border-t">
+  @section('title')
+    Impression reçu - {{ payment.receiptNumber }}
+  @endsection
+  <div class="print-receipt">
     <div class="text-center">
-      <p>Signature de l'élève</p>
-      <div class="mt-12">_______________</div>
+      <h1 class="text-3xl font-bold">
+        {{ school.name }}
+      </h1>
+      <p class="text-sm">
+        {{ school.address }} | Tél: {{ school.phone }}
+      </p>
+      <div class="flex justify-center gap-8 text-xs mt-2">
+        <span>Email: {{ school.email }}</span>
+        <span>NIF: {{ school.taxId || '-' }}</span>
+      </div>
+      <div class="border-b-2 border-primary w-32 mx-auto my-3">
+      </div>
+      <h2 class="text-2xl font-bold">
+        REÇU OFFICIEL
+      </h2>
+      <p class="text-lg font-mono mt-1">
+        N° {{ payment.receiptNumber }}
+      </p>
     </div>
-    <div class="text-center">
-      <p>Signature du caissier / direction</p>
-      <div class="mt-12">_______________</div>
-      <p class="text-sm mt-2">{{ payment.recordedByName }}</p>
-      <div class="mt-2">[Cachet de l'établissement]</div>
-    </div>
-  </div>
-  
-  <div class="text-center text-xs text-gray-400 mt-10 pt-4 border-t">
-    <p>Ce document est un justificatif valable. Merci de le conserver.</p>
-    <p>Généré le {{ generationDate }} par {{ payment.recordedByName }}</p>
-    <p class="mt-1">Gestion Éducative RDC - Plateforme de gestion scolaire</p>
-  </div>
-</div>
 
-<style>
-  .print-receipt {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: 'Inter', 'Arial', sans-serif;
-  }
-  table {
-    border-collapse: collapse;
-  }
-  @media print {
-    body {
-      padding: 0;
-      margin: 0;
-    }
+    <div class="flex justify-between mt-6 p-3 bg-gray-100 rounded">
+      <div>
+        <strong>Date:</strong>{{ formatDate(payment.paymentDate) }}
+      </div>
+      <div>
+        <strong>Heure:</strong>{{ payment.paymentTime }}
+      </div>
+      <div>
+        <strong>Opérateur:</strong>{{ payment.recordedByName }}
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <table class="w-full border-collapse">
+        <tr>
+          <td class="py-3 border-b" style="width: 35%">
+            <strong>Élève:</strong>
+          </td>
+          <td class="py-3 border-b">
+            {{ payment.studentName }}
+          </td>
+        </tr>
+        <tr>
+          <td class="py-3 border-b">
+            <strong>Matricule:</strong>
+          </td>
+          <td class="py-3 border-b">
+            {{ payment.studentRegistrationNumber }}
+          </td>
+        </tr>
+        <tr>
+          <td class="py-3 border-b">
+            <strong>Classe:</strong>
+          </td>
+          <td class="py-3 border-b">
+            {{ payment.studentClassName }}
+          </td>
+        </tr>
+        <tr>
+          <td class="py-3 border-b">
+            <strong>Montant payé:</strong>
+          </td>
+          <td class="py-3 border-b text-2xl font-bold text-green-700">
+            {{ formatCurrency(payment.amountPaid, payment.currency) }}
+          </td>
+        </tr>
+        <tr>
+          <td class="py-3 border-b">
+            <strong>Libellé:</strong>
+          </td>
+          <td class="py-3 border-b">
+            {{ payment.feeType }} - {{ payment.term || 'Annuel' }} {{ payment.academicYear }}
+          </td>
+        </tr>
+        <tr>
+          <td class="py-3 border-b">
+            <strong>Mode:</strong>
+          </td>
+          <td class="py-3 border-b">
+            {{ payment.paymentMethodLabel }}
+          </td>
+        </tr>
+        @if(payment.referenceNumber)
+          <tr>
+            <td class="py-3 border-b">
+              <strong>Réf. transaction:</strong>
+            </td>
+            <td class="py-3 border-b font-mono">
+              {{ payment.referenceNumber }}
+            </td>
+          </tr>
+        @endif
+      </table>
+    </div>
+
+    @if(payment.balanceAfter > 0)
+      <div class="mt-4 p-3 bg-yellow-100 text-center">
+        <strong>⚠️ Solde restant: {{ formatCurrency(payment.balanceAfter, payment.currency) }}</strong>
+      </div>
+    @else
+      <div class="mt-4 p-3 bg-green-100 text-center">
+        <strong>✓ SITUATION TOTALEMENT SOLDÉE</strong>
+      </div>
+    @endif
+    
+    <div class="grid grid-cols-2 gap-8 mt-12 pt-4 border-t">
+      <div class="text-center">
+        <p>
+          Signature de l'élève
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+      <div class="text-center">
+        <p>
+          Signature du caissier / direction
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+        <p class="text-sm mt-2">
+          {{ payment.recordedByName }}
+        </p>
+        <div class="mt-2">
+          [Cachet de l'établissement]
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center text-xs text-gray-400 mt-10 pt-4 border-t">
+      <p>
+        Ce document est un justificatif valable. Merci de le conserver.
+      </p>
+      <p>
+        Généré le {{ generationDate }} par {{ payment.recordedByName }}
+      </p>
+      <p class="mt-1">
+        Gestion Éducative RDC - Plateforme de gestion scolaire
+      </p>
+    </div>
+  </div>
+
+  <style>
     .print-receipt {
-      padding: 0;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: 'Inter', 'Arial', sans-serif;
     }
-    .bg-gray-100 {
-      background-color: #f3f4f6 !important;
+    
+    table {
+      border-collapse: collapse;
     }
-    .bg-yellow-100 {
-      background-color: #fef3c7 !important;
+    
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+    
+      .print-receipt {
+        padding: 0;
+      }
+    
+      .bg-gray-100 {
+        background-color: #f3f4f6 !important;
+      }
+    
+      .bg-yellow-100 {
+        background-color: #fef3c7 !important;
+      }
+    
+      .bg-green-100 {
+        background-color: #d1fae5 !important;
+      }
     }
-    .bg-green-100 {
-      background-color: #d1fae5 !important;
-    }
-  }
-</style>
+  </style>
 
-<script>
-  window.onload = function() {
-    window.print()
-  }
-</script>
+  <script>
+    window.onload = function() {
+      window.print();
+    };
+  </script>
 
-{{# /layout }}

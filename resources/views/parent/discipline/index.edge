@@ -1,217 +1,309 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Discipline - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Suivi disciplinaire{{# /section }}
-{{# section('dashboardSubtitle') }}Consultez le comportement de vos enfants{{# /section }}
-
-{{# section('content') }}
-<!-- Sélection enfant -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="flex flex-wrap gap-4 items-center">
-    <label class="font-medium text-gray-700 dark:text-gray-300">Enfant:</label>
-    <select id="childSelect" class="px-4 py-2 border rounded-lg">
-      @each(child in children)
-      <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>{{ child.name }} - {{ child.className }}</option>
-      @end
-    </select>
-    <label class="font-medium text-gray-700 dark:text-gray-300 ml-4">Période:</label>
-    <select id="periodSelect" class="px-4 py-2 border rounded-lg">
-      <option value="all" {{ selectedPeriod == 'all' ? 'selected' : '' }}>Toute l'année</option>
-      <option value="T1" {{ selectedPeriod == 'T1' ? 'selected' : '' }}>Trimestre 1</option>
-      <option value="T2" {{ selectedPeriod == 'T2' ? 'selected' : '' }}>Trimestre 2</option>
-      <option value="T3" {{ selectedPeriod == 'T3' ? 'selected' : '' }}>Trimestre 3</option>
-      <option value="month" {{ selectedPeriod == 'month' ? 'selected' : '' }}>Dernier mois</option>
-    </select>
-    <button id="applyFilters" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-      <i class="fas fa-search mr-2"></i> Voir
+  @section('title')
+    Discipline - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Suivi disciplinaire
+  @endsection
+  @section('dashboardSubtitle')
+    Consultez le comportement de vos enfants
+  @endsection
+  
+  @section('content')
+    <!-- Sélection enfant -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="flex flex-wrap gap-4 items-center">
+        <label class="font-medium text-gray-700 dark:text-gray-300">Enfant:</label>
+        <select id="childSelect" class="px-4 py-2 border rounded-lg">
+          @each(child in children)
+            <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>
+              {{ child.name }} - {{ child.className }}
+            </option>
+          @end
+        </select>
+        <label class="font-medium text-gray-700 dark:text-gray-300 ml-4">Période:</label>
+        <select id="periodSelect" class="px-4 py-2 border rounded-lg">
+          <option value="all" {{ selectedPeriod == 'all' ? 'selected' : '' }}>
+            Toute l'année
+          </option>
+          <option value="T1" {{ selectedPeriod == 'T1' ? 'selected' : '' }}>
+            Trimestre 1
+          </option>
+          <option value="T2" {{ selectedPeriod == 'T2' ? 'selected' : '' }}>
+            Trimestre 2
+          </option>
+          <option value="T3" {{ selectedPeriod == 'T3' ? 'selected' : '' }}>
+            Trimestre 3
+          </option>
+          <option value="month" {{ selectedPeriod == 'month' ? 'selected' : '' }}>
+            Dernier mois
+          </option>
+        </select>
+        <button id="applyFilters" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i class="fas fa-search mr-2"></i>Voir
     </button>
-  </div>
-</div>
-
-@if(selectedChild)
-<!-- Carte récapitulative -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-primary to-blue-700 rounded-xl p-4 text-white">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-        <i class="fas fa-user-graduate"></i>
-      </div>
-      <div>
-        <p class="text-sm opacity-90">Élève</p>
-        <p class="font-bold">{{ selectedChild.name }}</p>
       </div>
     </div>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-gray-500 text-sm">Total incidents</p>
-    <p class="text-2xl font-bold {{ stats.total > 0 ? 'text-red-600' : 'text-green-600' }}">
-      {{ stats.total || 0 }}
-    </p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-gray-500 text-sm">Dernier incident</p>
-    <p class="text-lg font-bold">{{ stats.lastIncidentDate || 'Aucun' }}</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-gray-500 text-sm">Appréciation</p>
-    <p class="text-lg font-bold {{ stats.total === 0 ? 'text-green-600' : (stats.total <= 2 ? 'text-yellow-600' : 'text-red-600') }}">
-      {{ stats.total === 0 ? 'Excellent' : (stats.total <= 2 ? 'Satisfaisant' : 'À surveiller') }}
-    </p>
-  </div>
-</div>
 
-<!-- Graphique d'évolution -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <h3 class="font-semibold mb-3">Évolution des incidents</h3>
-  <canvas id="incidentsChart" height="150"></canvas>
-</div>
+    @if(selectedChild)
+      <!-- Carte récapitulative -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-primary to-blue-700 rounded-xl p-4 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+            <div>
+              <p class="text-sm opacity-90">
+                Élève
+              </p>
+              <p class="font-bold">
+                {{ selectedChild.name }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+          <p class="text-gray-500 text-sm">
+            Total incidents
+          </p>
+          <p class="text-2xl font-bold {{ stats.total > 0 ? 'text-red-600' : 'text-green-600' }}">
+            {{ stats.total || 0 }}
+          </p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+          <p class="text-gray-500 text-sm">
+            Dernier incident
+          </p>
+          <p class="text-lg font-bold">
+            {{ stats.lastIncidentDate || 'Aucun' }}
+          </p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+          <p class="text-gray-500 text-sm">
+            Appréciation
+          </p>
+          <p
+            class=text-lg
+            font-bold
+            {{ stats.total === 0 ? 'text-green-600' : (stats.total <= 2 ? 'text-yellow-600' : 'text-red-600') }}
+          >
+            {{ stats.total === 0 ? 'Excellent' : (stats.total <= 2 ? 'Satisfaisant' : 'À surveiller') }}
+          </p>
+        </div>
+      </div>
 
-<!-- Tableau des incidents -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Liste des incidents</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Type</th>
-          <th class="px-4 py-2">Gravité</th>
-          <th class="px-4 py-2">Description</th>
-          <th class="px-4 py-2">Sanction</th>
-          <th class="px-4 py-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(incident in incidents)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-2">{{ formatDate(incident.date) }}</td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs 
+      <!-- Graphique d'évolution -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+        <h3 class="font-semibold mb-3">
+          Évolution des incidents
+        </h3>
+        <canvas id="incidentsChart" height="150">
+        </canvas>
+      </div>
+
+      <!-- Tableau des incidents -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-4 py-3 border-b dark:border-gray-700">
+          <h3 class="font-semibold">
+            Liste des incidents
+          </h3>
+        </div>
+        <div class="table-responsive">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="px-4 py-2">
+                  Date
+                </th>
+                <th class="px-4 py-2">
+                  Type
+                </th>
+                <th class="px-4 py-2">
+                  Gravité
+                </th>
+                <th class="px-4 py-2">
+                  Description
+                </th>
+                <th class="px-4 py-2">
+                  Sanction
+                </th>
+                <th class="px-4 py-2 text-center">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @each(incident in incidents)
+                <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td class="px-4 py-2">
+                    {{ formatDate(incident.date) }}
+                  </td>
+                  <td class="px-4 py-2">
+                    <span
+                      class="px-2 py-1 rounded-full text-xs 
               {{ incident.type === 'absence' ? 'bg-blue-100 text-blue-800' : 
                  (incident.type === 'late' ? 'bg-yellow-100 text-yellow-800' : 
                  (incident.type === 'misconduct' ? 'bg-purple-100 text-purple-800' : 
-                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}">
-              {{ incident.typeLabel }}
+                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}"
+                    >
+                      {{ incident.typeLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+                  </td>
+                  <td class="px-4 py-2">
+                    <span
+                      class="px-2 py-1 rounded-full text-xs
               {{ incident.severity === 'minor' ? 'bg-green-100 text-green-800' : 
                  (incident.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
-                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
-              {{ incident.severityLabel }}
+                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}"
+                    >
+                      {{ incident.severityLabel }}
             </span>
-          </td>
-          <td class="px-4 py-2 max-w-xs truncate">{{ incident.description }}</td>
-          <td class="px-4 py-2">{{ incident.sanction || 'Aucune' }}</td>
-          <td class="px-4 py-2 text-center">
-            <button onclick="viewDetails('{{ incident.id }}')" class="text-primary hover:underline text-sm">
-              <i class="fas fa-eye"></i>
-            </button>
-          <tr>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="6" class="text-center py-8 text-gray-500">
-            <i class="fas fa-check-circle text-4xl mb-2 block text-green-500"></i>
-            Aucun incident disciplinaire à signaler
-            <p class="text-sm mt-1">Félicitations ! Votre enfant a un comportement exemplaire.</p>
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  @include('partials/pagination', { pagination: pagination, url: '/parent/discipline' })
-</div>
+                  </td>
+                  <td class="px-4 py-2 max-w-xs truncate">
+                    {{ incident.description }}
+                  </td>
+                  <td class="px-4 py-2">
+                    {{ incident.sanction || 'Aucune' }}
+                  </td>
+                  <td class="px-4 py-2 text-center">
+                    <button onclick="viewDetails('{{ incident.id }}')" class="text-primary hover:underline text-sm">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <tr>
+                    </tr>
+                    @else
+                    <tr>
+                      <td colspan="6" class="text-center py-8 text-gray-500">
+                        <i class="fas fa-check-circle text-4xl mb-2 block text-green-500"></i>
+                        Aucun incident disciplinaire à signaler
+                        <p class="text-sm mt-1">
+                          Félicitations ! Votre enfant a un comportement exemplaire.
+                        </p>
+                      </td>
+                    </tr>
+                  @end
+                </tbody>
+              </table>
+            </div>
+            @include('partials/pagination', { pagination: pagination, url: '/parent/discipline' })
+          </div>
 
-<!-- Résumé par type -->
-<div class="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3">
-  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-blue-600">{{ stats.byType?.absence || 0 }}</p>
-    <p class="text-xs">Absences</p>
-  </div>
-  <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-yellow-600">{{ stats.byType?.late || 0 }}</p>
-    <p class="text-xs">Retards</p>
-  </div>
-  <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-purple-600">{{ stats.byType?.misconduct || 0 }}</p>
-    <p class="text-xs">Inconduite</p>
-  </div>
-  <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-red-600">{{ stats.byType?.violence || 0 }}</p>
-    <p class="text-xs">Violence</p>
-  </div>
-  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
-    <p class="text-xl font-bold text-gray-600">{{ stats.byType?.other || 0 }}</p>
-    <p class="text-xs">Autres</p>
-  </div>
-</div>
+          <!-- Résumé par type -->
+          <div class="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-center">
+              <p class="text-xl font-bold text-blue-600">
+                {{ stats.byType?.absence || 0 }}
+              </p>
+              <p class="text-xs">
+                Absences
+              </p>
+            </div>
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2 text-center">
+              <p class="text-xl font-bold text-yellow-600">
+                {{ stats.byType?.late || 0 }}
+              </p>
+              <p class="text-xs">
+                Retards
+              </p>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 text-center">
+              <p class="text-xl font-bold text-purple-600">
+                {{ stats.byType?.misconduct || 0 }}
+              </p>
+              <p class="text-xs">
+                Inconduite
+              </p>
+            </div>
+            <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-2 text-center">
+              <p class="text-xl font-bold text-red-600">
+                {{ stats.byType?.violence || 0 }}
+              </p>
+              <p class="text-xs">
+                Violence
+              </p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
+              <p class="text-xl font-bold text-gray-600">
+                {{ stats.byType?.other || 0 }}
+              </p>
+              <p class="text-xs">
+                Autres
+              </p>
+            </div>
+          </div>
 
-<!-- Message de suivi -->
-<div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-  <div class="flex gap-3">
-    <i class="fas fa-info-circle text-blue-500 text-xl"></i>
-    <div>
-      <h4 class="font-semibold">Suivi disciplinaire</h4>
-      <p class="text-sm text-gray-700 dark:text-gray-300">
-        Ces informations reflètent le comportement de votre enfant à l'école.
+          <!-- Message de suivi -->
+          <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+            <div class="flex gap-3">
+              <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+              <div>
+                <h4 class="font-semibold">
+                  Suivi disciplinaire
+                </h4>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  Ces informations reflètent le comportement de votre enfant à l'école.
         N'hésitez pas à contacter la direction pour toute question.
-      </p>
-    </div>
-  </div>
-</div>
+                </p>
+              </div>
+            </div>
+          </div>
 
-@else
-<div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-  <i class="fas fa-gavel text-5xl text-gray-400 mb-3"></i>
-  <p class="text-gray-500">Sélectionnez un enfant pour voir son suivi disciplinaire</p>
-</div>
-@endif
+        @else
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+            <i class="fas fa-gavel text-5xl text-gray-400 mb-3"></i>
+            <p class="text-gray-500">
+              Sélectionnez un enfant pour voir son suivi disciplinaire
+            </p>
+          </div>
+        @endif
+        
+        <script>
+          let incidentsChart;
 
-<script>
-  let incidentsChart
-  
-  function renderChart() {
-    const ctx = document.getElementById('incidentsChart').getContext('2d')
-    if (incidentsChart) incidentsChart.destroy()
-    incidentsChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: {{ chartLabels|json_encode|raw }},
-        datasets: [{
-          label: "Nombre d'incidents",
-          data: {{ chartValues|json_encode|raw }},
-          borderColor: '#dc2626',
-          backgroundColor: 'rgba(220, 38, 38, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: { y: { beginAtZero: true, stepSize: 1, precision: 0 } }
-      }
-    })
-  }
-  
-  document.getElementById('applyFilters')?.addEventListener('click', () => {
-    const childId = document.getElementById('childSelect').value
-    const period = document.getElementById('periodSelect').value
-    window.location.href = `/parent/discipline?child_id=${childId}&period=${period}`
-  })
-  
-  function viewDetails(incidentId) {
-    window.location.href = `/parent/discipline/details/${incidentId}`
-  }
-  
-  renderChart()
-</script>
-{{# /section }}
+          function renderChart() {
+            const ctx = document.getElementById("incidentsChart").getContext("2d");
+            if (incidentsChart) incidentsChart.destroy();
+            incidentsChart = new Chart(ctx, {
+              type: "line",
+              data: {
+                labels: {{ chartLabels|json_encode|raw }},
+                datasets: [ {
+                  label: "Nombre d'incidents",
+                  data: {{ chartValues|json_encode|raw }},
+                  borderColor: "#dc2626",
+                  backgroundColor: "rgba(220, 38, 38, 0.1)",
+                  fill: true,
+                  tension: .4
+                } ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    stepSize: 1,
+                    precision: 0
+                  }
+                }
+              }
+            });
+          }
 
-{{# /layout }}
+          document.getElementById("applyFilters")?.addEventListener("click", () => {
+            const childId = document.getElementById("childSelect").value;
+            const period = document.getElementById("periodSelect").value;
+            window.location.href = `/parent/discipline?child_id=${childId}&period=${period}`;
+          });
+
+          function viewDetails(incidentId) {
+            window.location.href = `/parent/discipline/details/${incidentId}`;
+          }
+
+          renderChart();
+        </script>
+      @endsection
+      

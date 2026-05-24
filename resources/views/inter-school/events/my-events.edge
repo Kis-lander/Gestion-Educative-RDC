@@ -1,197 +1,261 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Mes événements - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Mes événements{{# /section }}
-{{# section('dashboardSubtitle') }}Événements auxquels je participe ou que j'organise{{# /section }}
-
-{{# section('actions') }}
-<a href="/inter-school/events/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-  <i class="fas fa-plus mr-2"></i> Créer un événement
-</a>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Mes événements</p>
-    <p class="text-3xl font-bold">{{ stats.myEvents || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Participations</p>
-    <p class="text-3xl font-bold">{{ stats.myParticipations || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">À venir</p>
-    <p class="text-3xl font-bold">{{ stats.upcoming || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Participants totaux</p>
-    <p class="text-3xl font-bold">{{ stats.totalParticipants || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="space-y-6">
-  <!-- Onglets -->
-  <div class="border-b dark:border-gray-700">
-    <nav class="flex gap-4">
-      <button onclick="showMyEventsTab('organized')" id="tab-organized" class="px-4 py-2 font-medium border-b-2 border-primary text-primary">
-        Événements que j'organise
-      </button>
-      <button onclick="showMyEventsTab('participating')" id="tab-participating" class="px-4 py-2 font-medium text-gray-500 hover:text-gray-700">
-        Événements auxquels je participe
-      </button>
-    </nav>
-  </div>
+  @section('title')
+    Mes événements - {{ school.name }}
+  @endsection
   
-  <!-- Événements organisés -->
-  <div id="panel-organized" class="tab-panel space-y-4">
-    @each(event in organizedEvents)
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <div class="flex flex-wrap">
-        <div class="w-full md:w-48 bg-gradient-to-br 
+  @section('dashboardTitle')
+    Mes événements
+  @endsection
+  @section('dashboardSubtitle')
+    Événements auxquels je participe ou que j'organise
+  @endsection
+  
+  @section('actions')
+    <a
+      href="/inter-school/events/create"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+    >
+      <i class="fas fa-plus mr-2"></i>Créer un événement
+</a>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Mes événements
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.myEvents || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Participations
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.myParticipations || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          À venir
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.upcoming || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Participants totaux
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.totalParticipants || 0 }}
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="space-y-6">
+      <!-- Onglets -->
+      <div class="border-b dark:border-gray-700">
+        <nav class="flex gap-4">
+          <button
+            onclick="showMyEventsTab('organized')"
+            id="tab-organized"
+            class="px-4 py-2 font-medium border-b-2 border-primary text-primary"
+          >
+            Événements que j'organise
+      </button>
+          <button
+            onclick="showMyEventsTab('participating')"
+            id="tab-participating"
+            class="px-4 py-2 font-medium text-gray-500 hover:text-gray-700"
+          >
+            Événements auxquels je participe
+      </button>
+        </nav>
+      </div>
+
+      <!-- Événements organisés -->
+      <div id="panel-organized" class="tab-panel space-y-4">
+        @each(event in organizedEvents)
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <div class="flex flex-wrap">
+              <div
+                class="w-full md:w-48 bg-gradient-to-br 
           {{ event.type === 'seminar' ? 'from-blue-500 to-blue-700' : 
              (event.type === 'workshop' ? 'from-green-500 to-green-700' : 
              (event.type === 'competition' ? 'from-purple-500 to-purple-700' : 
              (event.type === 'sports' ? 'from-orange-500 to-orange-700' : 'from-yellow-500 to-yellow-700'))) }} 
-          p-4 text-white">
-          <div class="text-center">
-            <div class="text-3xl font-bold">{{ event.day }}</div>
-            <div class="text-sm">{{ event.month }}</div>
-          </div>
-        </div>
-        <div class="flex-1 p-4">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-bold text-lg">{{ event.title }}</h3>
-              <div class="flex gap-2 mt-1">
-                <span class="px-2 py-0.5 rounded-full text-xs
+          p-4 text-white"
+              >
+                <div class="text-center">
+                  <div class="text-3xl font-bold">
+                    {{ event.day }}
+                  </div>
+                  <div class="text-sm">
+                    {{ event.month }}
+                  </div>
+                </div>
+              </div>
+              <div class="flex-1 p-4">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-bold text-lg">
+                      {{ event.title }}
+                    </h3>
+                    <div class="flex gap-2 mt-1">
+                      <span
+                        class="px-2 py-0.5 rounded-full text-xs
                   {{ event.type === 'seminar' ? 'bg-blue-100 text-blue-800' : 
                      (event.type === 'workshop' ? 'bg-green-100 text-green-800' : 
                      (event.type === 'competition' ? 'bg-purple-100 text-purple-800' : 
-                     (event.type === 'sports' ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'))) }}">
-                  {{ event.typeLabel }}
+                     (event.type === 'sports' ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'))) }}"
+                      >
+                        {{ event.typeLabel }}
                 </span>
-                <span class="px-2 py-0.5 rounded-full text-xs
+                      <span
+                        class="px-2 py-0.5 rounded-full text-xs
                   {{ event.status === 'upcoming' ? 'bg-blue-100 text-blue-800' : 
                      (event.status === 'ongoing' ? 'bg-green-100 text-green-800' : 
-                     (event.status === 'completed' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800')) }}">
-                  {{ event.status === 'upcoming' ? 'À venir' : 
+                     (event.status === 'completed' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800')) }}"
+                      >
+                        {{ event.status === 'upcoming' ? 'À venir' : 
                      (event.status === 'ongoing' ? 'En cours' : 
                      (event.status === 'completed' ? 'Terminé' : 'Annulé')) }}
                 </span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <a href="/inter-school/events/{{ event.id }}/show" class="text-primary text-sm hover:underline">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    @if(event.status === 'upcoming')
+                      <a href="/inter-school/events/{{ event.id }}/edit" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                    @endif
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">
+                  {{ event.description | truncate(100) }}
+                </p>
+                <div class="flex gap-3 mt-2 text-xs text-gray-400">
+                  <span>                    <i class="fas fa-calendar"></i>{{ formatDate(event.startDate) }}</span>
+                  <span>                    <i class="fas fa-map-marker-alt"></i>{{ event.location }}</span>
+                  <span>                    <i class="fas fa-users"></i>{{ event.participantsCount || 0 }} participants</span>
+                </div>
               </div>
             </div>
-            <div class="flex gap-2">
-              <a href="/inter-school/events/{{ event.id }}/show" class="text-primary text-sm hover:underline">
-                <i class="fas fa-eye"></i>
-              </a>
-              @if(event.status === 'upcoming')
-              <a href="/inter-school/events/{{ event.id }}/edit" class="text-blue-600 text-sm hover:underline">
-                <i class="fas fa-edit"></i>
-              </a>
-              @endif
-            </div>
           </div>
-          <p class="text-sm text-gray-600 mt-2">{{ event.description | truncate(100) }}</p>
-          <div class="flex gap-3 mt-2 text-xs text-gray-400">
-            <span><i class="fas fa-calendar"></i> {{ formatDate(event.startDate) }}</span>
-            <span><i class="fas fa-map-marker-alt"></i> {{ event.location }}</span>
-            <span><i class="fas fa-users"></i> {{ event.participantsCount || 0 }} participants</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    @eachelse
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center">
-      <i class="fas fa-calendar-plus text-4xl text-gray-400 mb-2"></i>
-      <p class="text-gray-500">Vous n'avez pas encore créé d'événement</p>
-      <a href="/inter-school/events/create" class="mt-2 inline-block text-primary hover:underline">
-        Créer mon premier événement
+          @else
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center">
+            <i class="fas fa-calendar-plus text-4xl text-gray-400 mb-2"></i>
+            <p class="text-gray-500">
+              Vous n'avez pas encore créé d'événement
+            </p>
+            <a href="/inter-school/events/create" class="mt-2 inline-block text-primary hover:underline">
+              Créer mon premier événement
       </a>
-    </div>
-    @end
-  </div>
-  
-  <!-- Événements auxquels je participe -->
-  <div id="panel-participating" class="tab-panel hidden space-y-4">
-    @each(participation in participatingEvents)
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <div class="flex flex-wrap">
-        <div class="w-full md:w-48 bg-gradient-to-br from-gray-500 to-gray-700 p-4 text-white">
-          <div class="text-center">
-            <div class="text-3xl font-bold">{{ participation.day }}</div>
-            <div class="text-sm">{{ participation.month }}</div>
           </div>
-        </div>
-        <div class="flex-1 p-4">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-bold text-lg">{{ participation.title }}</h3>
-              <p class="text-sm text-gray-500">Organisé par {{ participation.organizerSchoolName }}</p>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-0.5 rounded-full text-xs
-                {{ participation.registrationStatus === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                {{ participation.registrationStatus === 'confirmed' ? 'Confirmé' : 'En attente' }}
+        @end
+      </div>
+
+      <!-- Événements auxquels je participe -->
+      <div id="panel-participating" class="tab-panel hidden space-y-4">
+        @each(participation in participatingEvents)
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <div class="flex flex-wrap">
+              <div class="w-full md:w-48 bg-gradient-to-br from-gray-500 to-gray-700 p-4 text-white">
+                <div class="text-center">
+                  <div class="text-3xl font-bold">
+                    {{ participation.day }}
+                  </div>
+                  <div class="text-sm">
+                    {{ participation.month }}
+                  </div>
+                </div>
+              </div>
+              <div class="flex-1 p-4">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-bold text-lg">
+                      {{ participation.title }}
+                    </h3>
+                    <p class="text-sm text-gray-500">
+                      Organisé par {{ participation.organizerSchoolName }}
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <span
+                      class="px-2 py-0.5 rounded-full text-xs
+                {{ participation.registrationStatus === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}"
+                    >
+                      {{ participation.registrationStatus === 'confirmed' ? 'Confirmé' : 'En attente' }}
               </span>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">
+                  {{ participation.description | truncate(100) }}
+                </p>
+                <div class="flex gap-3 mt-2 text-xs text-gray-400">
+                  <span>                    <i class="fas fa-calendar"></i>{{ formatDate(participation.startDate) }}</span>
+                  <span>                    <i class="fas fa-map-marker-alt"></i>{{ participation.location }}</span>
+                  <span>                    <i class="fas fa-user-friends"></i>{{ participation.myParticipantsCount || 1 }} participant(s)</span>
+                </div>
+                <div class="mt-2">
+                  <button
+                    onclick="cancelRegistration('{{ participation.registrationId }}')"
+                    class="text-red-500 text-xs hover:underline"
+                  >
+                    <i class="fas fa-times-circle mr-1"></i>Annuler inscription
+            </button>
+                </div>
+              </div>
             </div>
           </div>
-          <p class="text-sm text-gray-600 mt-2">{{ participation.description | truncate(100) }}</p>
-          <div class="flex gap-3 mt-2 text-xs text-gray-400">
-            <span><i class="fas fa-calendar"></i> {{ formatDate(participation.startDate) }}</span>
-            <span><i class="fas fa-map-marker-alt"></i> {{ participation.location }}</span>
-            <span><i class="fas fa-user-friends"></i> {{ participation.myParticipantsCount || 1 }} participant(s)</span>
+          @else
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center">
+            <i class="fas fa-calendar-check text-4xl text-gray-400 mb-2"></i>
+            <p class="text-gray-500">
+              Vous ne participez à aucun événement
+            </p>
+            <a href="/inter-school/events" class="mt-2 inline-block text-primary hover:underline">
+              Découvrir les événements
+      </a>
           </div>
-          <div class="mt-2">
-            <button onclick="cancelRegistration('{{ participation.registrationId }}')" class="text-red-500 text-xs hover:underline">
-              <i class="fas fa-times-circle mr-1"></i> Annuler inscription
-            </button>
-          </div>
-        </div>
+        @end
       </div>
     </div>
-    @eachelse
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center">
-      <i class="fas fa-calendar-check text-4xl text-gray-400 mb-2"></i>
-      <p class="text-gray-500">Vous ne participez à aucun événement</p>
-      <a href="/inter-school/events" class="mt-2 inline-block text-primary hover:underline">
-        Découvrir les événements
-      </a>
-    </div>
-    @end
-  </div>
-</div>
 
-<script>
-  function showMyEventsTab(tab) {
-    document.getElementById('panel-organized').classList.add('hidden')
-    document.getElementById('panel-participating').classList.add('hidden')
-    document.getElementById(`panel-${tab}`).classList.remove('hidden')
-    
-    document.getElementById('tab-organized').classList.remove('border-primary', 'text-primary')
-    document.getElementById('tab-organized').classList.add('text-gray-500')
-    document.getElementById('tab-participating').classList.remove('border-primary', 'text-primary')
-    document.getElementById('tab-participating').classList.add('text-gray-500')
-    
-    document.getElementById(`tab-${tab}`).classList.add('border-primary', 'text-primary')
-    document.getElementById(`tab-${tab}`).classList.remove('text-gray-500')
-  }
+    <script>
+      function showMyEventsTab(tab) {
+        document.getElementById("panel-organized").classList.add("hidden");
+        document.getElementById("panel-participating").classList.add("hidden");
+        document.getElementById(`panel-${tab}`).classList.remove("hidden");
+        document.getElementById("tab-organized").classList.remove("border-primary", "text-primary");
+        document.getElementById("tab-organized").classList.add("text-gray-500");
+        document.getElementById("tab-participating").classList.remove("border-primary", "text-primary");
+        document.getElementById("tab-participating").classList.add("text-gray-500");
+        document.getElementById(`tab-${tab}`).classList.add("border-primary", "text-primary");
+        document.getElementById(`tab-${tab}`).classList.remove("text-gray-500");
+      }
+
+      async function cancelRegistration(registrationId) {
+        if (confirm("Annuler votre participation à cet événement ?")) {
+          const res = await fetch(`/api/inter-school/events/registrations/${registrationId}/cancel`, {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) location.reload(); else alert("Erreur: " + data.message);
+        }
+      }
+    </script>
+  @endsection
   
-  async function cancelRegistration(registrationId) {
-    if (confirm('Annuler votre participation à cet événement ?')) {
-      const res = await fetch(`/api/inter-school/events/registrations/${registrationId}/cancel`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) location.reload()
-      else alert('Erreur: ' + data.message)
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}

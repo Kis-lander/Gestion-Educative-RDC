@@ -5,18 +5,72 @@ type ParamValue = string | number | bigint | boolean
 export type ScannedRoutes = {
   ALL: {
     'welcome.index': { paramsTuple?: []; params?: {} }
+    'home': { paramsTuple?: []; params?: {} }
     'about': { paramsTuple?: []; params?: {} }
     'welcome.landing': { paramsTuple?: []; params?: {} }
     'welcome.about': { paramsTuple?: []; params?: {} }
     'welcome.features': { paramsTuple?: []; params?: {} }
     'welcome.contact': { paramsTuple?: []; params?: {} }
     'welcome.terms': { paramsTuple?: []; params?: {} }
+    'schools.register.create': { paramsTuple?: []; params?: {} }
+    'schools.register': { paramsTuple?: []; params?: {} }
     'help.index': { paramsTuple?: []; params?: {} }
     'help.faq': { paramsTuple?: []; params?: {} }
     'help.guides': { paramsTuple?: []; params?: {} }
     'help.tutorial': { paramsTuple?: []; params?: {} }
     'help.contact': { paramsTuple?: []; params?: {} }
     'help.documentation': { paramsTuple?: []; params?: {} }
+    'session.create': { paramsTuple?: []; params?: {} }
+    'session.store': { paramsTuple?: []; params?: {} }
+    'new_account.create': { paramsTuple?: []; params?: {} }
+    'new_account.store': { paramsTuple?: []; params?: {} }
+    'session.destroy': { paramsTuple?: []; params?: {} }
+    'inspection.dashboard': { paramsTuple?: []; params?: {} }
+    'inspections.schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.pending_schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.school_classes_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.inspect_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.store_school_inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.school_details_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.approve_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.approve_and_generate_credentials': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reject_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.toggle_suspend_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.communications_global_page': { paramsTuple?: []; params?: {} }
+    'inspection.communications.global.store': { paramsTuple?: []; params?: {} }
+    'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
+    'messages.send_school_communication': { paramsTuple?: []; params?: {} }
+    'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
+    'inspections.communication_details': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reports_schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_performance_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_statistics_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_transfers_page': { paramsTuple?: []; params?: {} }
+    'inspections.school_report_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.settings_page': { paramsTuple?: []; params?: {} }
+    'inspection.settings.general.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.inspection.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.notifications.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.backup.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.security.store': { paramsTuple?: []; params?: {} }
+    'inspections.export_schools': { paramsTuple?: []; params?: {} }
+    'inspections.schools_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.performance_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.statistics_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.transfers_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.logs': { paramsTuple?: []; params?: {} }
+    'inspections.export_logs': { paramsTuple?: []; params?: {} }
+    'dashboard': { paramsTuple?: []; params?: {} }
+    'settings': { paramsTuple?: []; params?: {} }
+    'inspection.teachers': { paramsTuple?: []; params?: {} }
+    'inspection.messages': { paramsTuple?: []; params?: {} }
+    'inspection.users.stats': { paramsTuple?: []; params?: {} }
+    'profile': { paramsTuple?: []; params?: {} }
+    'profile.edit': { paramsTuple?: []; params?: {} }
+    'profile.security': { paramsTuple?: []; params?: {} }
+    'profile.preferences': { paramsTuple?: []; params?: {} }
+    'profile.activity': { paramsTuple?: []; params?: {} }
+    'profile.avatar.update': { paramsTuple?: []; params?: {} }
     'schools.register_school': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.forgot_password': { paramsTuple?: []; params?: {} }
@@ -137,18 +191,56 @@ export type ScannedRoutes = {
   }
   GET: {
     'welcome.index': { paramsTuple?: []; params?: {} }
+    'home': { paramsTuple?: []; params?: {} }
     'about': { paramsTuple?: []; params?: {} }
     'welcome.landing': { paramsTuple?: []; params?: {} }
     'welcome.about': { paramsTuple?: []; params?: {} }
     'welcome.features': { paramsTuple?: []; params?: {} }
     'welcome.contact': { paramsTuple?: []; params?: {} }
     'welcome.terms': { paramsTuple?: []; params?: {} }
+    'schools.register.create': { paramsTuple?: []; params?: {} }
     'help.index': { paramsTuple?: []; params?: {} }
     'help.faq': { paramsTuple?: []; params?: {} }
     'help.guides': { paramsTuple?: []; params?: {} }
     'help.tutorial': { paramsTuple?: []; params?: {} }
     'help.contact': { paramsTuple?: []; params?: {} }
     'help.documentation': { paramsTuple?: []; params?: {} }
+    'session.create': { paramsTuple?: []; params?: {} }
+    'new_account.create': { paramsTuple?: []; params?: {} }
+    'inspection.dashboard': { paramsTuple?: []; params?: {} }
+    'inspections.schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.pending_schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.school_classes_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.inspect_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.school_details_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.approve_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.communications_global_page': { paramsTuple?: []; params?: {} }
+    'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
+    'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
+    'inspections.communication_details': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reports_schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_performance_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_statistics_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_transfers_page': { paramsTuple?: []; params?: {} }
+    'inspections.school_report_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.settings_page': { paramsTuple?: []; params?: {} }
+    'inspections.export_schools': { paramsTuple?: []; params?: {} }
+    'inspections.schools_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.performance_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.statistics_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.transfers_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.logs': { paramsTuple?: []; params?: {} }
+    'inspections.export_logs': { paramsTuple?: []; params?: {} }
+    'dashboard': { paramsTuple?: []; params?: {} }
+    'settings': { paramsTuple?: []; params?: {} }
+    'inspection.teachers': { paramsTuple?: []; params?: {} }
+    'inspection.messages': { paramsTuple?: []; params?: {} }
+    'inspection.users.stats': { paramsTuple?: []; params?: {} }
+    'profile': { paramsTuple?: []; params?: {} }
+    'profile.edit': { paramsTuple?: []; params?: {} }
+    'profile.security': { paramsTuple?: []; params?: {} }
+    'profile.preferences': { paramsTuple?: []; params?: {} }
+    'profile.activity': { paramsTuple?: []; params?: {} }
     'auth.get_profile': { paramsTuple?: []; params?: {} }
     'inspections.get_all_schools': { paramsTuple?: []; params?: {} }
     'inspections.get_school_by_id': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -198,18 +290,56 @@ export type ScannedRoutes = {
   }
   HEAD: {
     'welcome.index': { paramsTuple?: []; params?: {} }
+    'home': { paramsTuple?: []; params?: {} }
     'about': { paramsTuple?: []; params?: {} }
     'welcome.landing': { paramsTuple?: []; params?: {} }
     'welcome.about': { paramsTuple?: []; params?: {} }
     'welcome.features': { paramsTuple?: []; params?: {} }
     'welcome.contact': { paramsTuple?: []; params?: {} }
     'welcome.terms': { paramsTuple?: []; params?: {} }
+    'schools.register.create': { paramsTuple?: []; params?: {} }
     'help.index': { paramsTuple?: []; params?: {} }
     'help.faq': { paramsTuple?: []; params?: {} }
     'help.guides': { paramsTuple?: []; params?: {} }
     'help.tutorial': { paramsTuple?: []; params?: {} }
     'help.contact': { paramsTuple?: []; params?: {} }
     'help.documentation': { paramsTuple?: []; params?: {} }
+    'session.create': { paramsTuple?: []; params?: {} }
+    'new_account.create': { paramsTuple?: []; params?: {} }
+    'inspection.dashboard': { paramsTuple?: []; params?: {} }
+    'inspections.schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.pending_schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.school_classes_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.inspect_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.school_details_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.approve_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.communications_global_page': { paramsTuple?: []; params?: {} }
+    'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
+    'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
+    'inspections.communication_details': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reports_schools_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_performance_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_statistics_page': { paramsTuple?: []; params?: {} }
+    'inspections.reports_transfers_page': { paramsTuple?: []; params?: {} }
+    'inspections.school_report_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.settings_page': { paramsTuple?: []; params?: {} }
+    'inspections.export_schools': { paramsTuple?: []; params?: {} }
+    'inspections.schools_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.performance_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.statistics_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.transfers_report_data': { paramsTuple?: []; params?: {} }
+    'inspections.logs': { paramsTuple?: []; params?: {} }
+    'inspections.export_logs': { paramsTuple?: []; params?: {} }
+    'dashboard': { paramsTuple?: []; params?: {} }
+    'settings': { paramsTuple?: []; params?: {} }
+    'inspection.teachers': { paramsTuple?: []; params?: {} }
+    'inspection.messages': { paramsTuple?: []; params?: {} }
+    'inspection.users.stats': { paramsTuple?: []; params?: {} }
+    'profile': { paramsTuple?: []; params?: {} }
+    'profile.edit': { paramsTuple?: []; params?: {} }
+    'profile.security': { paramsTuple?: []; params?: {} }
+    'profile.preferences': { paramsTuple?: []; params?: {} }
+    'profile.activity': { paramsTuple?: []; params?: {} }
     'auth.get_profile': { paramsTuple?: []; params?: {} }
     'inspections.get_all_schools': { paramsTuple?: []; params?: {} }
     'inspections.get_school_by_id': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -258,6 +388,22 @@ export type ScannedRoutes = {
     'admin.get_user_activity_logs': { paramsTuple?: []; params?: {} }
   }
   POST: {
+    'schools.register': { paramsTuple?: []; params?: {} }
+    'session.store': { paramsTuple?: []; params?: {} }
+    'new_account.store': { paramsTuple?: []; params?: {} }
+    'session.destroy': { paramsTuple?: []; params?: {} }
+    'inspections.store_school_inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.approve_and_generate_credentials': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reject_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.toggle_suspend_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspection.communications.global.store': { paramsTuple?: []; params?: {} }
+    'messages.send_school_communication': { paramsTuple?: []; params?: {} }
+    'inspection.settings.general.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.inspection.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.notifications.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.backup.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.security.store': { paramsTuple?: []; params?: {} }
+    'profile.avatar.update': { paramsTuple?: []; params?: {} }
     'schools.register_school': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.forgot_password': { paramsTuple?: []; params?: {} }

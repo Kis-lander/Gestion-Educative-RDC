@@ -1,171 +1,218 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Profil - {{ child.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Profil de l'élève{{# /section }}
-{{# section('dashboardSubtitle') }}{{ child.name }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="printProfile()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
+  @section('title')
+    Profil - {{ child.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Profil de l'Ã©lÃ¨ve
+  @endsection
+  @section('dashboardSubtitle')
+    {{ child.name }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="printProfile()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
   </button>
-  <a href="/parent/report-card/child/{{ child.id }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-file-pdf mr-2"></i> Télécharger bulletin
+      <a
+        href="/parent/report-card/child/{{ child.id }}"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>TÃ©lÃ©charger bulletin
   </a>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <!-- En-tête avec photo -->
-  <div class="bg-gradient-to-r from-primary to-blue-700 px-6 py-4">
-    <div class="flex items-center gap-4">
-      <div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
-        <span class="text-white text-3xl font-bold">{{ child.name.charAt(0) }}</span>
-      </div>
-      <div class="text-white">
-        <h2 class="text-2xl font-bold">{{ child.name }}</h2>
-        <p class="opacity-90">{{ child.className }} - {{ child.registrationNumber }}</p>
-      </div>
     </div>
-  </div>
+  @endsection
   
-  <div class="p-6">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Informations personnelles -->
-      <div>
-        <h3 class="font-semibold text-lg border-b pb-2 mb-3">Informations personnelles</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-gray-500">Nom complet</span>
-            <span class="font-medium">{{ child.name }}</span>
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <!-- En-tÃªte avec photo -->
+      <div class="bg-gradient-to-r from-primary to-blue-700 px-6 py-4">
+        <div class="flex items-center gap-4">
+          <div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
+            <span class="text-white text-3xl font-bold">{{ child.name.charAt(0) }}</span>
           </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Matricule</span>
-            <span class="font-mono">{{ child.registrationNumber }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Date de naissance</span>
-            <span>{{ child.birthDate || '-' }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Lieu de naissance</span>
-            <span>{{ child.birthPlace || '-' }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Nationalité</span>
-            <span>{{ child.nationality || 'Congolaise' }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Genre</span>
-            <span>{{ child.gender === 'male' ? 'Masculin' : 'Féminin' }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Adresse</span>
-            <span>{{ child.address || '-' }}</span>
+          <div class="text-white">
+            <h2 class="text-2xl font-bold">
+              {{ child.name }}
+            </h2>
+            <p class="opacity-90">
+              {{ child.className }} - {{ child.registrationNumber }}
+            </p>
           </div>
         </div>
       </div>
-      
-      <!-- Informations scolaires -->
-      <div>
-        <h3 class="font-semibold text-lg border-b pb-2 mb-3">Informations scolaires</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-gray-500">Établissement</span>
-            <span>{{ school.name }}</span>
+
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Informations personnelles -->
+          <div>
+            <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+              Informations personnelles
+            </h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Nom complet</span>
+                <span class="font-medium">{{ child.name }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Matricule</span>
+                <span class="font-mono">{{ child.registrationNumber }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Date de naissance</span>
+                <span>{{ child.birthDate || '-' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Lieu de naissance</span>
+                <span>{{ child.birthPlace || '-' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">NationalitÃ©</span>
+                <span>{{ child.nationality || 'Congolaise' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Genre</span>
+                <span>{{ child.gender === 'male' ? 'Masculin' : 'FÃ©minin' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Adresse</span>
+                <span>{{ child.address || '-' }}</span>
+              </div>
+            </div>
           </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Classe</span>
-            <span>{{ child.className }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Année académique</span>
-            <span>{{ currentYear }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Date d'inscription</span>
-            <span>{{ child.enrollmentDate || '-' }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Statut académique</span>
-            <span class="px-2 py-0.5 rounded-full text-xs {{ child.academicStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-              {{ child.academicStatus === 'active' ? 'Actif' : 'Inactif' }}
+
+          <!-- Informations scolaires -->
+          <div>
+            <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+              Informations scolaires
+            </h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Ã‰tablissement</span>
+                <span>{{ school.name }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Classe</span>
+                <span>{{ child.className }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Année scolaire</span>
+                <span>{{ currentYear }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Date d'inscription</span>
+                <span>{{ child.enrollmentDate || '-' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Statut acadÃ©mique</span>
+                <span
+                  class="px-2 py-0.5 rounded-full text-xs {{ child.academicStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}"
+                >
+                  {{ child.academicStatus === 'active' ? 'Actif' : 'Inactif' }}
             </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-    
-    <!-- Informations médicales -->
-    @if(child.medicalInfo)
-    <div class="mt-6">
-      <h3 class="font-semibold text-lg border-b pb-2 mb-3">Informations médicales</h3>
-      <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <p class="text-sm">{{ child.medicalInfo }}</p>
-      </div>
-    </div>
-    @endif
-    
-    <!-- Contact d'urgence -->
-    <div class="mt-6">
-      <h3 class="font-semibold text-lg border-b pb-2 mb-3">Contact d'urgence</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p class="font-medium">Parent/Tuteur</p>
-          <p class="text-sm">{{ parent.name || '-' }}</p>
-          <p class="text-sm">Tél: {{ parent.phone || '-' }}</p>
-          <p class="text-sm">Email: {{ parent.email || '-' }}</p>
+
+        <!-- Informations mÃ©dicales -->
+        @if(child.medicalInfo)
+          <div class="mt-6">
+            <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+              Informations mÃ©dicales
+            </h3>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="text-sm">
+                {{ child.medicalInfo }}
+              </p>
+            </div>
+          </div>
+        @endif
+        
+        <!-- Contact d'urgence -->
+        <div class="mt-6">
+          <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+            Contact d'urgence
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="font-medium">
+                Parent/Tuteur
+              </p>
+              <p class="text-sm">
+                {{ parent.name || '-' }}
+              </p>
+              <p class="text-sm">
+                TÃ©l: {{ parent.phone || '-' }}
+              </p>
+              <p class="text-sm">
+                Email: {{ parent.email || '-' }}
+              </p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="font-medium">
+                Contact secondaire
+              </p>
+              <p class="text-sm">
+                {{ child.parentPhone || '-' }}
+              </p>
+              <p class="text-sm">
+                Relation: Parent
+              </p>
+            </div>
+          </div>
         </div>
-        <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p class="font-medium">Contact secondaire</p>
-          <p class="text-sm">{{ child.parentPhone || '-' }}</p>
-          <p class="text-sm">Relation: Parent</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Boutons d'action -->
-    <div class="mt-6 pt-4 border-t flex flex-wrap gap-3">
-      <a href="/parent/messages/send?teacher_id={{ child.mainTeacherId }}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-envelope mr-2"></i> Contacter l'enseignant
+
+        <!-- Boutons d'action -->
+        <div class="mt-6 pt-4 border-t flex flex-wrap gap-3">
+          <a
+            href="/parent/messages/send?teacher_id={{ child.mainTeacherId }}"
+            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            <i class="fas fa-envelope mr-2"></i>Contacter l'enseignant
       </a>
-      <button onclick="requestAppointment()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-calendar-plus mr-2"></i> Demander rendez-vous
+          <button onclick="requestAppointment()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-calendar-plus mr-2"></i>Demander rendez-vous
       </button>
-      <button onclick="reportIssue()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-flag mr-2"></i> Signaler un problème
+          <button onclick="reportIssue()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-flag mr-2"></i>Signaler un problÃ¨me
       </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<script>
-  function printProfile() {
-    window.print()
-  }
+    <script>
+      function printProfile() {
+        window.print();
+      }
+
+      function requestAppointment() {
+        window.location.href = `/parent/appointments/request?student_id={{ child.id }}`;
+      }
+
+      function reportIssue() {
+        window.location.href = `/parent/messages/send?subject=Signalement&student_id={{ child.id }}`;
+      }
+    </script>
+
+    <style>
+      @media print {
+        .actions,
+        .sidebar,
+        header,
+        footer,
+        button,
+        a {
+          display: none !important;
+        }
+      
+        body {
+          padding: 0;
+          margin: 0;
+        }
+      }
+    </style>
+  @endsection
   
-  function requestAppointment() {
-    window.location.href = `/parent/appointments/request?student_id={{ child.id }}`
-  }
-  
-  function reportIssue() {
-    window.location.href = `/parent/messages/send?subject=Signalement&student_id={{ child.id }}`
-  }
-</script>
-
-<style>
-  @media print {
-    .actions, .sidebar, header, footer, button, a {
-      display: none !important;
-    }
-    body {
-      padding: 0;
-      margin: 0;
-    }
-  }
-</style>
-{{# /section }}
-
-{{# /layout }}

@@ -1,38 +1,110 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="csrf-token" content="{{ csrfToken }}">
-  <title>{{ title || 'Connexion - Gestion Éducative RDC' }}</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <style>
-    * { font-family: 'Inter', sans-serif; }
-    body { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
-    .spinner {
-      border: 3px solid #f3f4f6;
-      border-top: 3px solid #2563eb;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-  <div class="min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      {{ await $slots.main() }}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrfToken }}" />
+    <title>
+      @section('title')
+        Connexion - Gestion Educative RDC
+      @endsection
+    </title>
+
+    <script src="https://cdn.tailwindcss.com">
+
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        font-family: 'Inter', sans-serif;
+      }
+      
+      body {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(30, 64, 175, 0.98)),
+                                              url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png')
+                                          center / min(calc(520px + 25rem), 94vw) no-repeat fixed;
+      }
+      
+      body::before {
+        position: fixed;
+        inset: 0;
+        content: '';
+        background: url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png')
+                                        center / min(calc(520px + 25rem), 94vw) no-repeat;
+        opacity: 0.08;
+        pointer-events: none;
+      }
+      
+      .back-link {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border: 1px solid rgba(255, 255, 255, 0.38);
+        border-radius: 9999px;
+        background: rgba(15, 23, 42, 0.34);
+        color: #ffffff;
+        text-decoration: none;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
+        backdrop-filter: blur(10px);
+        transition: background-color 0.18s ease,
+                transform 0.18s ease;
+      }
+      
+      .back-link:hover {
+        background: rgba(15, 23, 42, 0.48);
+        transform: translateX(-2px);
+      }
+      
+      .spinner {
+        border: 3px solid #f3f4f6;
+        border-top: 3px solid #2563eb;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+      
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a
+      href="/"
+      class="back-link"
+      aria-label="Retour"
+      onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
+    >
+      <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+      <div class="w-full max-w-lg">
+        @section('content')
+        @endsection
+      </div>
     </div>
-  </div>
-  @!include('partials/scripts')
-</body>
+    @!include('partials/scripts')
+  </body>
 </html>

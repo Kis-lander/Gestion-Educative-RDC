@@ -1,243 +1,339 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Détails - {{ classObj.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}{{ classObj.name }}{{# /section }}
-{{# section('dashboardSubtitle') }}Classe de {{ classObj.level }} - {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'Après-midi' : 'Soir') }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/schools/classes/{{ classObj.id }}/edit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-    <i class="fas fa-edit mr-2"></i> Modifier
+  @section('title')
+    DÃ©tails - {{ classObj.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    {{ classObj.name }}
+  @endsection
+  @section('dashboardSubtitle')
+    Classe de {{ classObj.level }} - {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'AprÃ¨s-midi' : 'Soir') }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/schools/classes/{{ classObj.id }}/edit"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-edit mr-2"></i>Modifier
   </a>
-  <button onclick="printClassInfo()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
+      <button onclick="printClassInfo()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.studentsCount || 0 }}/{{ classObj.maxCapacity }}</p>
-    <p class="text-sm text-gray-500">Élèves</p>
-    <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
-      <div class="bg-primary rounded-full h-1" style="width: {{ (stats.studentsCount / classObj.maxCapacity) * 100 }}%"></div>
     </div>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.averageGrade || '-' }}/20</p>
-    <p class="text-sm text-gray-500">Moyenne classe</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.attendanceRate || 0 }}%</p>
-    <p class="text-sm text-gray-500">Taux présence</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ subjects.length || 0 }}</p>
-    <p class="text-sm text-gray-500">Matières</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Informations générales -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-3">Informations</h3>
-    <div class="space-y-3 text-sm">
-      <div class="flex justify-between">
-        <span class="text-gray-500">Nom complet</span>
-        <span class="font-medium">{{ classObj.name }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Niveau</span>
-        <span>{{ classObj.level }} ({{ classObj.gradeLevel }}ème)</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Période</span>
-        <span>{{ classObj.shift === 'morning' ? 'Matin (8h-12h)' : (classObj.shift === 'afternoon' ? 'Après-midi (13h-17h)' : 'Soir (17h-21h)') }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Année académique</span>
-        <span>{{ classObj.academicYear }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Enseignant principal</span>
-        <span>{{ classObj.teacher?.user?.firstName }} {{ classObj.teacher?.user?.lastName || 'Non assigné' }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500">Date création</span>
-        <span>{{ formatDate(classObj.createdAt) }}</span>
-      </div>
-    </div>
-  </div>
+  @endsection
   
-  <!-- Matières enseignées -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="font-semibold text-lg">Matières</h3>
-      <button onclick="addSubject()" class="text-primary text-sm hover:underline">
-        <i class="fas fa-plus mr-1"></i> Ajouter
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.studentsCount || 0 }}/{{ classObj.maxCapacity }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Ã‰lÃ¨ves
+        </p>
+        <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
+          <div
+            class="bg-primary rounded-full h-1"
+            style="width: {{ (stats.studentsCount / classObj.maxCapacity) * 100 }}%"
+          >
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.averageGrade || '-' }}/20
+        </p>
+        <p class="text-sm text-gray-500">
+          Moyenne classe
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.attendanceRate || 0 }}%
+        </p>
+        <p class="text-sm text-gray-500">
+          Taux prÃ©sence
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ subjects.length || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          MatiÃ¨res
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Informations gÃ©nÃ©rales -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+          Informations
+        </h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Nom complet</span>
+            <span class="font-medium">{{ classObj.name }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Niveau</span>
+            <span>{{ classObj.level }} ({{ classObj.gradeLevel }}Ã¨me)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">PÃ©riode</span>
+            <span>{{ classObj.shift === 'morning' ? 'Matin (8h-12h)' : (classObj.shift === 'afternoon' ? 'AprÃ¨s-midi (13h-17h)' : 'Soir (17h-21h)') }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Année scolaire</span>
+            <span>{{ classObj.academicYear }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Enseignant principal</span>
+            <span>{{ classObj.teacher?.user?.firstName }} {{ classObj.teacher?.user?.lastName || 'Non assignÃ©' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Date crÃ©ation</span>
+            <span>{{ formatDate(classObj.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MatiÃ¨res enseignÃ©es -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-semibold text-lg">
+            MatiÃ¨res
+          </h3>
+          <button onclick="addSubject()" class="text-primary text-sm hover:underline">
+            <i class="fas fa-plus mr-1"></i>Ajouter
       </button>
-    </div>
-    <div class="space-y-2 max-h-80 overflow-y-auto">
-      @each(subject in subjects)
-      <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
-        <div>
-          <p class="font-medium">{{ subject.subject_name }}</p>
-          <p class="text-xs text-gray-500">Enseignant: {{ subject.teacher_first_name }} {{ subject.teacher_last_name }}</p>
-          <p class="text-xs text-gray-400">{{ subject.hours_per_week }}h/semaine</p>
         </div>
-        <button onclick="removeSubject('{{ subject.id }}')" class="text-red-500 hover:text-red-700">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
-      @eachelse
-      <p class="text-gray-500 text-center py-6">Aucune matière assignée</p>
-      @end
-    </div>
-  </div>
-  
-  <!-- Actions rapides -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-3">Actions rapides</h3>
-    <div class="space-y-2">
-      <a href="/students/create?class_id={{ classObj.id }}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        <i class="fas fa-user-plus text-green-600 w-5"></i>
-        <span>Ajouter un élève</span>
-      </a>
-      <a href="/academic/grades/add?class_id={{ classObj.id }}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        <i class="fas fa-star text-yellow-600 w-5"></i>
-        <span>Saisir des notes</span>
-      </a>
-      <a href="/teacher/attendance/mark?class_id={{ classObj.id }}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        <i class="fas fa-calendar-check text-blue-600 w-5"></i>
-        <span>Marquer les présences</span>
-      </a>
-      <a href="/academic/timetable/create?class_id={{ classObj.id }}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        <i class="fas fa-clock text-purple-600 w-5"></i>
-        <span>Créer emploi du temps</span>
-      </a>
-      <a href="/schools/classes/{{ classObj.id }}/students" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        <i class="fas fa-users w-5 text-gray-500"></i>
-        <span>Liste des élèves</span>
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- Emploi du temps simplifié -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-  <div class="flex justify-between items-center mb-4">
-    <h3 class="font-semibold">Emploi du temps</h3>
-    <a href="/academic/timetable/class/{{ classObj.id }}" class="text-primary text-sm hover:underline">
-      Voir détail
-    </a>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-2 py-2">Horaire</th>
-          <th class="px-2 py-2">Lundi</th>
-          <th class="px-2 py-2">Mardi</th>
-          <th class="px-2 py-2">Mercredi</th>
-          <th class="px-2 py-2">Jeudi</th>
-          <th class="px-2 py-2">Vendredi</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(slot in timetable)
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-2 py-2 font-medium">{{ slot.time }}</td>
-          <td class="px-2 py-2">{{ slot.monday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.tuesday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.wednesday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.thursday || '-' }}</td>
-          <td class="px-2 py-2">{{ slot.friday || '-' }}</td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="6" class="text-center py-6 text-gray-500">
-            Aucun emploi du temps défini
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<script>
-  function addSubject() {
-    const modalHtml = `
-      <div id="subjectModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
-          <h3 class="font-bold text-lg mb-4">Ajouter une matière</h3>
-          <form id="addSubjectForm" onsubmit="event.preventDefault(); submitAddSubject()">
-            <select name="subjectId" class="w-full px-3 py-2 border rounded-lg mb-3" required>
-              <option value="">Sélectionner une matière</option>
-              @each(matiere in availableSubjects)
-              <option value="{{ matiere.id }}">{{ matiere.name }}</option>
-              @end
-            </select>
-            <select name="teacherId" class="w-full px-3 py-2 border rounded-lg mb-3" required>
-              <option value="">Sélectionner un enseignant</option>
-              @each(enseignant in teachers)
-              <option value="{{ enseignant.id }}">{{ enseignant.user.firstName }} {{ enseignant.user.lastName }}</option>
-              @end
-            </select>
-            <input type="number" name="hoursPerWeek" placeholder="Heures par semaine" required
-                   class="w-full px-3 py-2 border rounded-lg mb-4">
-            <div class="flex gap-3">
-              <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 border rounded-lg">Annuler</button>
-              <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg">Ajouter</button>
+        <div class="space-y-2 max-h-80 overflow-y-auto">
+          @each(subject in subjects)
+            <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
+              <div>
+                <p class="font-medium">
+                  {{ subject.subject_name }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  Enseignant: {{ subject.teacher_first_name }} {{ subject.teacher_last_name }}
+                </p>
+                <p class="text-xs text-gray-400">
+                  {{ subject.hours_per_week }}h/semaine
+                </p>
+              </div>
+              <button onclick="removeSubject('{{ subject.id }}')" class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
-          </form>
+            @else
+            <p class="text-gray-500 text-center py-6">
+              Aucune matiÃ¨re assignÃ©e
+            </p>
+          @end
         </div>
       </div>
-    `
-    document.body.insertAdjacentHTML('beforeend', modalHtml)
-  }
-  
-  function closeModal() {
-    document.getElementById('subjectModal')?.remove()
-  }
-  
-  function submitAddSubject() {
-    const form = document.getElementById('addSubjectForm')
-    const formData = new FormData(form)
-    formData.append('classId', '{{ classObj.id }}')
-    
-    fetch('/api/classes/add-subject', {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
-      body: formData
-    }).then(res => res.json()).then(data => {
-      if (data.success) {
-        location.reload()
-      } else {
-        alert('Erreur: ' + data.message)
-      }
-    })
-  }
-  
-  function removeSubject(subjectId) {
-    if (confirm('Retirer cette matière de la classe ?')) {
-      fetch(`/api/classes/{{ classObj.id }}/subject/${subjectId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-      })
-    }
-  }
-  
-  function printClassInfo() {
-    window.print()
-  }
-</script>
-{{# /section }}
 
-{{# /layout }}
+      <!-- Actions rapides -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+          Actions rapides
+        </h3>
+        <div class="space-y-2">
+          <a
+            href="/students/create?class_id={{ classObj.id }}"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-user-plus text-green-600 w-5"></i>
+            <span>Ajouter un Ã©lÃ¨ve</span>
+          </a>
+          <a
+            href="/academic/grades/add?class_id={{ classObj.id }}"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-star text-yellow-600 w-5"></i>
+            <span>Saisir des notes</span>
+          </a>
+          <a
+            href="/teacher/attendance/mark?class_id={{ classObj.id }}"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-calendar-check text-blue-600 w-5"></i>
+            <span>Marquer les prÃ©sences</span>
+          </a>
+          <a
+            href="/academic/timetable/create?class_id={{ classObj.id }}"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-clock text-purple-600 w-5"></i>
+            <span>CrÃ©er emploi du temps</span>
+          </a>
+          <a
+            href="/schools/classes/{{ classObj.id }}/students"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-users w-5 text-gray-500"></i>
+            <span>Liste des Ã©lÃ¨ves</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emploi du temps simplifiÃ© -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold">
+          Emploi du temps
+        </h3>
+        <a href="/academic/timetable/class/{{ classObj.id }}" class="text-primary text-sm hover:underline">
+          Voir dÃ©tail
+    </a>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-2 py-2">
+                Horaire
+              </th>
+              <th class="px-2 py-2">
+                Lundi
+              </th>
+              <th class="px-2 py-2">
+                Mardi
+              </th>
+              <th class="px-2 py-2">
+                Mercredi
+              </th>
+              <th class="px-2 py-2">
+                Jeudi
+              </th>
+              <th class="px-2 py-2">
+                Vendredi
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(slot in timetable)
+              <tr class="border-b dark:border-gray-700">
+                <td class="px-2 py-2 font-medium">
+                  {{ slot.time }}
+                </td>
+                <td class="px-2 py-2">
+                  {{ slot.monday || '-' }}
+                </td>
+                <td class="px-2 py-2">
+                  {{ slot.tuesday || '-' }}
+                </td>
+                <td class="px-2 py-2">
+                  {{ slot.wednesday || '-' }}
+                </td>
+                <td class="px-2 py-2">
+                  {{ slot.thursday || '-' }}
+                </td>
+                <td class="px-2 py-2">
+                  {{ slot.friday || '-' }}
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="6" class="text-center py-6 text-gray-500">
+                  Aucun emploi du temps dÃ©fini
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      function addSubject() {
+        const modalHtml = `
+                <div id="subjectModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+                    <h3 class="font-bold text-lg mb-4">Ajouter une matiÃ¨re</h3>
+                    <form id="addSubjectForm" onsubmit="event.preventDefault(); submitAddSubject()">
+                      <select name="subjectId" class="w-full px-3 py-2 border rounded-lg mb-3" required>
+                        <option value="">SÃ©lectionner une matiÃ¨re</option>
+                        @each(matiere in availableSubjects)
+        <option value="{{ matiere.id }}">
+          {{ matiere.name }}
+        </option>
+      @end
+
+
+
+                      </select>
+                      <select name="teacherId" class="w-full px-3 py-2 border rounded-lg mb-3" required>
+                        <option value="">SÃ©lectionner un enseignant</option>
+                        @each(enseignant in teachers)
+        <option value="{{ enseignant.id }}">
+          {{ enseignant.user.firstName }} {{ enseignant.user.lastName }}
+        </option>
+      @end
+
+
+
+                      </select>
+                      <input type="number" name="hoursPerWeek" placeholder="Heures par semaine" required
+                             class="w-full px-3 py-2 border rounded-lg mb-4">
+                      <div class="flex gap-3">
+                        <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 border rounded-lg">Annuler</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg">Ajouter</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              `;
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+      }
+
+      function closeModal() {
+        document.getElementById("subjectModal")?.remove();
+      }
+
+      function submitAddSubject() {
+        const form = document.getElementById("addSubjectForm");
+        const formData = new FormData(form);
+        formData.append("classId", "{{ classObj.id }}");
+        fetch("/api/classes/add-subject", {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: formData
+        }).then(res => res.json()).then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Erreur: " + data.message);
+          }
+        });
+      }
+
+      function removeSubject(subjectId) {
+        if (confirm("Retirer cette matiÃ¨re de la classe ?")) {
+          fetch(`/api/classes/{{ classObj.id }}/subject/${subjectId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload();
+          });
+        }
+      }
+
+      function printClassInfo() {
+        window.print();
+      }
+    </script>
+  @endsection
+  

@@ -8,6 +8,9 @@
   --gray-8: oklch(37.1% 0 0);
   --gray-10: oklch(26.9% 0 0);
   --gray-12: oklch(14.5% 0 0);
+  --brand-blue: #2563eb;
+  --brand-blue-dark: #1e40af;
+  --auth-emblem-url: url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png');
 }
 
 * {
@@ -25,6 +28,10 @@ body {
   color: var(--gray-10);
   font-size: 16px;
   line-height: 1.5;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 a {
@@ -50,6 +57,11 @@ header {
   max-width: 1440px;
   margin: auto;
   padding: 0 30px;
+  background: #fff;
+}
+header.auth-header {
+  max-width: none;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.12);
 }
 header > div {
   display: flex;
@@ -70,6 +82,54 @@ header nav a:hover,
 header nav a.current {
   color: var(--gray-12);
 }
+header nav a.nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+header nav a.nav-button:hover {
+  transform: translateY(-1px);
+}
+header nav a.nav-button-outline {
+  border: 1px solid #111827;
+  background: transparent;
+  color: #111827;
+}
+header nav a.nav-button-outline:hover {
+  border-color: #1f2937;
+  background: rgba(17, 24, 39, 0.06);
+  color: #111827;
+}
+header nav a.nav-button-primary {
+  border: 1px solid #1d4ed8;
+  background: #1d4ed8;
+  color: #fff;
+}
+header nav a.nav-button-primary:hover {
+  border-color: #1e40af;
+  background: #1e40af;
+  color: #fff;
+}
+.brand-logo {
+  display: block;
+  width: calc(154px + 3rem);
+  max-width: 42vw;
+  height: auto;
+  padding: 6px 8px;
+  background: #fff;
+  border-radius: 4px;
+  object-fit: contain;
+}
 
 /* Main */
 main {
@@ -81,6 +141,31 @@ main {
   min-height: calc(100vh - 65px);
   background: #fff;
   border: 1px solid var(--gray-3);
+}
+main.auth-page {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  max-width: none;
+  margin: 0;
+  min-height: calc(100vh - 64px);
+  overflow: hidden;
+  border: none;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(30, 64, 175, 0.98)),
+    var(--auth-emblem-url) center / min(calc(520px + 25rem), 94vw) no-repeat;
+}
+main.auth-page::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: var(--auth-emblem-url) center / min(calc(520px + 25rem), 94vw) no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+}
+main.auth-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero {
@@ -138,15 +223,45 @@ main {
   max-width: 400px;
   margin: auto;
 }
+.auth-panel {
+  width: min(100% - 32px, calc(430px + 3rem));
+  max-width: calc(430px + 3rem);
+  margin: 40px auto;
+  padding: 34px 30px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  background: #1f2937;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.32);
+  color: #e5e7eb;
+}
+.auth-panel-header {
+  text-align: center;
+}
+.auth-emblem {
+  width: 4.75rem;
+  height: 4.75rem;
+  margin: 0 auto 16px;
+  object-fit: contain;
+}
 .form-container h1 {
   font-size: 32px;
   letter-spacing: -0.5px;
   margin-bottom: 5px;
 }
+.auth-panel h1 {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 800;
+}
 .form-container p {
   font-size: 18px;
   margin-bottom: 48px;
   color: var(--gray-6);
+}
+.auth-panel p {
+  margin-bottom: 30px;
+  color: #bfdbfe;
+  font-size: 16px;
 }
 form {
   display: flex;
@@ -159,24 +274,46 @@ label {
   font-size: 14px;
   font-weight: 500;
 }
+.auth-panel label {
+  color: #e5e7eb;
+}
 input,
 textarea,
+select,
 button {
   width: 100%;
   border-radius: 4px;
   font: inherit;
 }
-input {
+input,
+select {
   height: 40px;
   border: 1px solid var(--gray-4);
   padding: 0 16px;
+  background: #fff;
+}
+.auth-panel input,
+.auth-panel select {
+  height: 44px;
+  border-color: #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+}
+.auth-panel input:focus,
+.auth-panel select:focus {
+  border-color: var(--brand-blue);
+  outline: 2px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 0;
 }
 input[data-invalid='true'],
-textarea[data-invalid='true'] {
+textarea[data-invalid='true'],
+select[data-invalid='true'] {
   border-color: #fb2c36;
 }
 input[data-invalid='true'] + div,
-textarea[data-invalid='true'] + div {
+textarea[data-invalid='true'] + div,
+select[data-invalid='true'] + div {
   color: #fb2c36;
   font-size: 14px;
   font-weight: 500;
@@ -189,6 +326,19 @@ button {
   border: none;
   padding: 10px;
   font-weight: 500;
+}
+.auth-panel button {
+  border-radius: 8px;
+  background: var(--brand-blue);
+  padding: 12px 16px;
+  font-weight: 700;
+}
+.auth-panel button:hover {
+  background: #1d4ed8;
+}
+.auth-panel button:disabled {
+  cursor: wait;
+  opacity: 0.72;
 }
 button:hover {
   background: var(--gray-10);
@@ -233,4 +383,55 @@ button:hover {
   to {
     transform: scale(1);
   }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(44px) scale(0.98);
+    transition:
+      opacity 1.12s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 1.12s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.scroll-top-button {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 9999px;
+  background: rgba(29, 78, 216, 0.94);
+  color: #fff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(14px);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    background-color 0.18s ease;
+}
+
+.scroll-top-button.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-top-button:hover {
+  background: #1e40af;
 }

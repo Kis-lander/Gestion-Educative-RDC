@@ -1,130 +1,205 @@
-{{# layout('layouts/app') }}
+@layout('layouts/app')
 
-{{# section('title') }}Fonctionnalités - Gestion Éducative RDC{{# /section }}
+  @section('title')
+    Fonctionnalités - Gestion Éducative RDC
+  @endsection
+  
+  @section('content')
+    <div class="max-w-6xl mx-auto px-4 py-12">
+      <h1 class="text-3xl md:text-4xl font-bold text-center mb-4">
+        Fonctionnalités
+      </h1>
+      <p class="text-center text-gray-600 dark:text-gray-400 mb-12">
+        Découvrez tout ce que la plateforme peut faire pour vous
+      </p>
 
-{{# section('content') }}
-<div class="max-w-6xl mx-auto px-4 py-12">
-  <h1 class="text-3xl md:text-4xl font-bold text-center mb-4">Fonctionnalités</h1>
-  <p class="text-center text-gray-600 dark:text-gray-400 mb-12">Découvrez tout ce que la plateforme peut faire pour vous</p>
-  
-  <!-- Fonctionnalité 1 -->
-  <div class="flex flex-col md:flex-row gap-8 mb-16 items-center">
-    <div class="flex-1">
-      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-        <i class="fas fa-chalkboard-user text-blue-600 text-2xl"></i>
+      <!-- Fonctionnalité 1 -->
+      <div class="flex flex-col md:flex-row gap-8 mb-16 items-center">
+        <div class="flex-1">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+            <i class="fas fa-chalkboard-user text-blue-600 text-2xl"></i>
+          </div>
+          <h2 class="text-2xl font-semibold mb-3">
+            Gestion pédagogique complète
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Gérez toutes les activités pédagogiques de votre établissement :
+          </p>
+          <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
+            <li>
+              Création et gestion des classes
+            </li>
+            <li>
+              Gestion des matières et coefficients
+            </li>
+            <li>
+              Saisie et publication des notes
+            </li>
+            <li>
+              Génération automatique des bulletins
+            </li>
+            <li>
+              Emplois du temps en ligne
+            </li>
+            <li>
+              Gestion des examens
+            </li>
+          </ul>
+        </div>
+        <div class="flex-1">
+          <img src="/images/features-academic.svg" alt="Gestion académique" class="w-full max-w-md mx-auto" />
+        </div>
       </div>
-      <h2 class="text-2xl font-semibold mb-3">Gestion pédagogique complète</h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-3">
-        Gérez toutes les activités pédagogiques de votre établissement :
-      </p>
-      <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
-        <li>Création et gestion des classes</li>
-        <li>Gestion des matières et coefficients</li>
-        <li>Saisie et publication des notes</li>
-        <li>Génération automatique des bulletins</li>
-        <li>Emplois du temps en ligne</li>
-        <li>Gestion des examens</li>
-      </ul>
-    </div>
-    <div class="flex-1">
-      <img src="/images/features-academic.svg" alt="Gestion académique" class="w-full max-w-md mx-auto">
-    </div>
-  </div>
-  
-  <!-- Fonctionnalité 2 -->
-  <div class="flex flex-col md:flex-row-reverse gap-8 mb-16 items-center">
-    <div class="flex-1">
-      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-        <i class="fas fa-coins text-green-600 text-2xl"></i>
-      </div>
-      <h2 class="text-2xl font-semibold mb-3">Gestion financière intégrée</h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-3">
-        Simplifiez la gestion des finances de votre école :
-      </p>
-      <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
-        <li>Définition des frais scolaires</li>
-        <li>Enregistrement des paiements</li>
-        <li>Génération automatique des reçus</li>
-        <li>Gestion des bourses et réductions</li>
-        <li>Plans de paiement échelonnés</li>
-        <li>Rapports financiers détaillés</li>
-      </ul>
-    </div>
-    <div class="flex-1">
-      <img src="/images/features-finance.svg" alt="Gestion financière" class="w-full max-w-md mx-auto">
-    </div>
-  </div>
-  
-  <!-- Fonctionnalité 3 -->
-  <div class="flex flex-col md:flex-row gap-8 mb-16 items-center">
-    <div class="flex-1">
-      <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-        <i class="fas fa-comments text-purple-600 text-2xl"></i>
-      </div>
-      <h2 class="text-2xl font-semibold mb-3">Communication avancée</h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-3">
-        Restez connecté avec tous les acteurs :
-      </p>
-      <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
-        <li>Messagerie interne sécurisée</li>
-        <li>Notifications en temps réel</li>
-        <li>Forum pédagogique</li>
-        <li>Groupes de discussion</li>
-        <li>Communication globale (inspection)</li>
-        <li>Échanges inter-écoles</li>
-      </ul>
-    </div>
-    <div class="flex-1">
-      <img src="/images/features-communication.svg" alt="Communication" class="w-full max-w-md mx-auto">
-    </div>
-  </div>
-  
-  <!-- Fonctionnalité 4 -->
-  <div class="flex flex-col md:flex-row-reverse gap-8 mb-16 items-center">
-    <div class="flex-1">
-      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-        <i class="fas fa-chart-line text-red-600 text-2xl"></i>
-      </div>
-      <h2 class="text-2xl font-semibold mb-3">Rapports et analyses</h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-3">
-        Suivez les performances avec des rapports détaillés :
-      </p>
-      <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
-        <li>Tableaux de bord personnalisés</li>
-        <li>Rapports académiques</li>
-        <li>Statistiques financières</li>
-        <li>Analyses disciplinaires</li>
-        <li>Exportation multi-formats</li>
-        <li>Historique des données</li>
-      </ul>
-    </div>
-    <div class="flex-1">
-      <img src="/images/features-reports.svg" alt="Rapports" class="w-full max-w-md mx-auto">
-    </div>
-  </div>
-  
-  <!-- Caractéristiques techniques -->
-  <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 mt-8">
-    <h2 class="text-2xl font-semibold text-center mb-6">Caractéristiques techniques</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="text-center">
-        <i class="fas fa-mobile-alt text-3xl text-primary mb-2 block"></i>
-        <h3 class="font-semibold">Responsive</h3>
-        <p class="text-sm text-gray-600">Accessible sur tous les appareils</p>
-      </div>
-      <div class="text-center">
-        <i class="fas fa-shield-alt text-3xl text-primary mb-2 block"></i>
-        <h3 class="font-semibold">Sécurisé</h3>
-        <p class="text-sm text-gray-600">Données cryptées et protégées</p>
-      </div>
-      <div class="text-center">
-        <i class="fas fa-cloud-upload-alt text-3xl text-primary mb-2 block"></i>
-        <h3 class="font-semibold">Cloud</h3>
-        <p class="text-sm text-gray-600">Accès depuis n'importe où</p>
-      </div>
-    </div>
-  </div>
-</div>
-{{# /section }}
 
-{{# /layout }}
+      <!-- Fonctionnalité 2 -->
+      <div class="flex flex-col md:flex-row-reverse gap-8 mb-16 items-center">
+        <div class="flex-1">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <i class="fas fa-coins text-green-600 text-2xl"></i>
+          </div>
+          <h2 class="text-2xl font-semibold mb-3">
+            Gestion financière intégrée
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Simplifiez la gestion des finances de votre école :
+          </p>
+          <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
+            <li>
+              Définition des frais scolaires
+            </li>
+            <li>
+              Enregistrement des paiements
+            </li>
+            <li>
+              Génération automatique des reçus
+            </li>
+            <li>
+              Gestion des bourses et réductions
+            </li>
+            <li>
+              Plans de paiement échelonnés
+            </li>
+            <li>
+              Rapports financiers détaillés
+            </li>
+          </ul>
+        </div>
+        <div class="flex-1">
+          <img src="/images/features-finance.svg" alt="Gestion financière" class="w-full max-w-md mx-auto" />
+        </div>
+      </div>
+
+      <!-- Fonctionnalité 3 -->
+      <div class="flex flex-col md:flex-row gap-8 mb-16 items-center">
+        <div class="flex-1">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+            <i class="fas fa-comments text-purple-600 text-2xl"></i>
+          </div>
+          <h2 class="text-2xl font-semibold mb-3">
+            Communication avancée
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Restez connecté avec tous les acteurs :
+          </p>
+          <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
+            <li>
+              Messagerie interne sécurisée
+            </li>
+            <li>
+              Notifications en temps réel
+            </li>
+            <li>
+              Forum pédagogique
+            </li>
+            <li>
+              Groupes de discussion
+            </li>
+            <li>
+              Communication globale (inspection)
+            </li>
+            <li>
+              Échanges inter-écoles
+            </li>
+          </ul>
+        </div>
+        <div class="flex-1">
+          <img src="/images/features-communication.svg" alt="Communication" class="w-full max-w-md mx-auto" />
+        </div>
+      </div>
+
+      <!-- Fonctionnalité 4 -->
+      <div class="flex flex-col md:flex-row-reverse gap-8 mb-16 items-center">
+        <div class="flex-1">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <i class="fas fa-chart-line text-red-600 text-2xl"></i>
+          </div>
+          <h2 class="text-2xl font-semibold mb-3">
+            Rapports et analyses
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Suivez les performances avec des rapports détaillés :
+          </p>
+          <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
+            <li>
+              Tableaux de bord personnalisés
+            </li>
+            <li>
+              Rapports académiques
+            </li>
+            <li>
+              Statistiques financières
+            </li>
+            <li>
+              Analyses disciplinaires
+            </li>
+            <li>
+              Exportation multi-formats
+            </li>
+            <li>
+              Historique des données
+            </li>
+          </ul>
+        </div>
+        <div class="flex-1">
+          <img src="/images/features-reports.svg" alt="Rapports" class="w-full max-w-md mx-auto" />
+        </div>
+      </div>
+
+      <!-- Caractéristiques techniques -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 mt-8">
+        <h2 class="text-2xl font-semibold text-center mb-6">
+          Caractéristiques techniques
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="text-center">
+            <i class="fas fa-mobile-alt text-3xl text-primary mb-2 block"></i>
+            <h3 class="font-semibold">
+              Responsive
+            </h3>
+            <p class="text-sm text-gray-600">
+              Accessible sur tous les appareils
+            </p>
+          </div>
+          <div class="text-center">
+            <i class="fas fa-shield-alt text-3xl text-primary mb-2 block"></i>
+            <h3 class="font-semibold">
+              Sécurisé
+            </h3>
+            <p class="text-sm text-gray-600">
+              Données cryptées et protégées
+            </p>
+          </div>
+          <div class="text-center">
+            <i class="fas fa-cloud-upload-alt text-3xl text-primary mb-2 block"></i>
+            <h3 class="font-semibold">
+              Cloud
+            </h3>
+            <p class="text-sm text-gray-600">
+              Accès depuis n'importe où
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endsection
+  

@@ -10,7 +10,7 @@ import User from '#models/user'
 import ForumPost from '#models/forum_post'
 
 export default class ForumTopic extends ForumTopicSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

@@ -11,7 +11,7 @@ export default class ClassSubjectSchema extends BaseSchema {
       table.uuid('teacher_id').references('id').inTable('teachers').onDelete('SET NULL')
       table.integer('hours_per_week')
       table.timestamps(true)
-      
+
       table.unique(['class_id', 'subject_id'])
     })
   }

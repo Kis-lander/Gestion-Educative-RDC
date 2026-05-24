@@ -1,212 +1,284 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Notifications - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Notifications{{# /section }}
-{{# section('dashboardSubtitle') }}Centre de notifications{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="markAllAsRead()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-check-double mr-2"></i> Tout marquer comme lu
+  @section('title')
+    Notifications - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Notifications
+  @endsection
+  @section('dashboardSubtitle')
+    Centre de notifications
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="markAllAsRead()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-check-double mr-2"></i>Tout marquer comme lu
   </button>
-  <button onclick="deleteAllNotifications()" class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
-    <i class="fas fa-trash mr-2"></i> Tout supprimer
+      <button
+        onclick="deleteAllNotifications()"
+        class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
+      >
+        <i class="fas fa-trash mr-2"></i>Tout supprimer
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Total notifications</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-blue-600">{{ stats.unread || 0 }}</p>
-    <p class="text-sm text-gray-500">Non lues</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.read || 0 }}</p>
-    <p class="text-sm text-gray-500">Lues</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.thisWeek || 0 }}</p>
-    <p class="text-sm text-gray-500">Cette semaine</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
-      <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="message">Messages</option>
-        <option value="grade">Notes</option>
-        <option value="discipline">Discipline</option>
-        <option value="payment">Paiements</option>
-        <option value="event">Événements</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="unread">Non lues</option>
-        <option value="read">Lues</option>
-      </select>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total notifications
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-blue-600">
+          {{ stats.unread || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Non lues
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.read || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Lues
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.thisWeek || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Cette semaine
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <input type="text" id="searchInput" placeholder="Rechercher..."
-             class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
+          <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="message">
+              Messages
+            </option>
+            <option value="grade">
+              Notes
+            </option>
+            <option value="discipline">
+              Discipline
+            </option>
+            <option value="payment">
+              Paiements
+            </option>
+            <option value="event">
+              Événements
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="unread">
+              Non lues
+            </option>
+            <option value="read">
+              Lues
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Rechercher..."
+            class="w-full px-3 py-2 border rounded-lg text-sm"
+          />
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Liste des notifications -->
-<div class="space-y-2" id="notificationsList">
-  @each(notification in notifications)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden notification-item {{ !notification.isRead ? 'border-l-4 border-blue-500' : '' }}"
-       data-type="{{ notification.type }}"
-       data-read="{{ notification.isRead }}"
-       data-title="{{ notification.title.toLowerCase() }}">
-    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="viewNotification('{{ notification.id }}', '{{ notification.link }}')">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-full 
+    <!-- Liste des notifications -->
+    <div class="space-y-2" id="notificationsList">
+      @each(notification in notifications)
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden notification-item {{ !notification.isRead ? 'border-l-4 border-blue-500' : '' }}"
+          data-type="{{ notification.type }}"
+          data-read="{{ notification.isRead }}"
+          data-title="{{ notification.title.toLowerCase() }}"
+        >
+          <div
+            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+            onclick="viewNotification('{{ notification.id }}', '{{ notification.link }}')"
+          >
+            <div class="flex items-start gap-3">
+              <div
+                class="w-10 h-10 rounded-full 
           {{ notification.type === 'message' ? 'bg-blue-100 text-blue-600' : 
              (notification.type === 'grade' ? 'bg-green-100 text-green-600' : 
              (notification.type === 'discipline' ? 'bg-red-100 text-red-600' : 
              (notification.type === 'payment' ? 'bg-yellow-100 text-yellow-600' : 'bg-purple-100 text-purple-600'))) }} 
-          flex items-center justify-center">
-          <i class="fas {{ notification.type === 'message' ? 'fa-envelope' : 
+          flex items-center justify-center"
+              >
+                <i
+                  class="fas {{ notification.type === 'message' ? 'fa-envelope' : 
                          (notification.type === 'grade' ? 'fa-star' : 
                          (notification.type === 'discipline' ? 'fa-gavel' : 
-                         (notification.type === 'payment' ? 'fa-coins' : 'fa-calendar'))) }}"></i>
-        </div>
-        <div class="flex-1">
-          <div class="flex justify-between items-start">
-            <div>
-              <h4 class="font-semibold {{ !notification.isRead ? 'text-blue-600' : 'text-gray-800 dark:text-white' }}">
-                {{ notification.title }}
-              </h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ notification.message }}</p>
-            </div>
-            <span class="text-xs text-gray-400 whitespace-nowrap ml-3">{{ notification.time }}</span>
-          </div>
-          @if(!notification.isRead)
-          <div class="mt-2 flex gap-2">
-            <button onclick="event.stopPropagation();markAsRead('{{ notification.id }}')" class="text-primary text-xs hover:underline">
-              Marquer comme lu
+                         (notification.type === 'payment' ? 'fa-coins' : 'fa-calendar'))) }}"
+                ></i>
+              </div>
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h4
+                      class="font-semibold {{ !notification.isRead ? 'text-blue-600' : 'text-gray-800 dark:text-white' }}"
+                    >
+                      {{ notification.title }}
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {{ notification.message }}
+                    </p>
+                  </div>
+                  <span class="text-xs text-gray-400 whitespace-nowrap ml-3">{{ notification.time }}</span>
+                </div>
+                @if(!notification.isRead)
+                  <div class="mt-2 flex gap-2">
+                    <button
+                      onclick="event.stopPropagation();markAsRead('{{ notification.id }}')"
+                      class="text-primary text-xs hover:underline"
+                    >
+                      Marquer comme lu
             </button>
+                  </div>
+                @endif
+              </div>
+            </div>
           </div>
-          @endif
         </div>
-      </div>
+        @else
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+          <i class="fas fa-bell-slash text-5xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500">
+            Aucune notification
+          </p>
+        </div>
+      @end
     </div>
-  </div>
-  @eachelse
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-    <i class="fas fa-bell-slash text-5xl text-gray-400 mb-3"></i>
-    <p class="text-gray-500">Aucune notification</p>
-  </div>
-  @end
-</div>
 
-@include('partials/pagination', { pagination: pagination, url: '/parent/messages/notifications' })
+    @include('partials/pagination', { pagination: pagination, url: '/parent/messages/notifications' })
 
-<script>
-  function markAsRead(notificationId) {
-    fetch(`/api/parent/notifications/${notificationId}/read`, {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-    }).then(() => location.reload())
-  }
-  
-  function markAllAsRead() {
-    fetch('/api/parent/notifications/mark-all-read', {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-    }).then(() => location.reload())
-  }
-  
-  function deleteAllNotifications() {
-    if (confirm('Supprimer toutes les notifications ? Cette action est irréversible.')) {
-      fetch('/api/parent/notifications/delete-all', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(() => location.reload())
-    }
-  }
-  
-  function viewNotification(notificationId, link) {
-    if (link) {
-      window.location.href = link
-    } else {
-      markAsRead(notificationId)
-    }
-  }
-  
-  // Filtres
-  const filterType = document.getElementById('filterType')
-  const filterStatus = document.getElementById('filterStatus')
-  const searchInput = document.getElementById('searchInput')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  function filterNotifications() {
-    const type = filterType.value
-    const status = filterStatus.value
-    const search = searchInput.value.toLowerCase()
-    
-    const items = document.querySelectorAll('.notification-item')
-    let visibleCount = 0
-    
-    items.forEach(item => {
-      let show = true
-      if (type && item.dataset.type !== type) show = false
-      if (status === 'unread' && item.dataset.read === 'true') show = false
-      if (status === 'read' && item.dataset.read === 'false') show = false
-      if (search && !item.dataset.title.includes(search)) show = false
-      
-      item.style.display = show ? '' : 'none'
-      if (show) visibleCount++
-    })
-    
-    let noResultMsg = document.querySelector('.no-result-message')
-    if (visibleCount === 0 && items.length > 0) {
-      if (!noResultMsg) {
-        noResultMsg = document.createElement('div')
-        noResultMsg.className = 'bg-white dark:bg-gray-800 rounded-xl p-12 text-center no-result-message'
-        noResultMsg.innerHTML = '<i class="fas fa-search text-4xl text-gray-400 mb-3"></i><p class="text-gray-500">Aucune notification trouvée</p>'
-        document.getElementById('notificationsList').appendChild(noResultMsg)
+    <script>
+      function markAsRead(notificationId) {
+        fetch(`/api/parent/notifications/${notificationId}/read`, {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        }).then(() => location.reload());
       }
-    } else if (noResultMsg) {
-      noResultMsg.remove()
-    }
-  }
-  
-  applyBtn.addEventListener('click', filterNotifications)
-  resetBtn.addEventListener('click', () => {
-    filterType.value = ''
-    filterStatus.value = ''
-    searchInput.value = ''
-    filterNotifications()
-  })
-  searchInput.addEventListener('keyup', filterNotifications)
-</script>
-{{# /section }}
 
-{{# /layout }}
+      function markAllAsRead() {
+        fetch("/api/parent/notifications/mark-all-read", {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        }).then(() => location.reload());
+      }
+
+      function deleteAllNotifications() {
+        if (confirm("Supprimer toutes les notifications ? Cette action est irréversible.")) {
+          fetch("/api/parent/notifications/delete-all", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(() => location.reload());
+        }
+      }
+
+      function viewNotification(notificationId, link) {
+        if (link) {
+          window.location.href = link;
+        } else {
+          markAsRead(notificationId);
+        }
+      }
+      // Filtres
+
+      const filterType = document.getElementById("filterType");
+
+      const filterStatus = document.getElementById("filterStatus");
+
+      const searchInput = document.getElementById("searchInput");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      function filterNotifications() {
+        const type = filterType.value;
+        const status = filterStatus.value;
+        const search = searchInput.value.toLowerCase();
+        const items = document.querySelectorAll(".notification-item");
+        let visibleCount = 0;
+        items.forEach(item => {
+          let show = true;
+          if (type && item.dataset.type !== type) show = false;
+          if (status === "unread" && item.dataset.read === "true") show = false;
+          if (status === "read" && item.dataset.read === "false") show = false;
+          if (search && !item.dataset.title.includes(search)) show = false;
+          item.style.display = show ? "" : "none";
+          if (show) visibleCount++;
+        });
+        let noResultMsg = document.querySelector(".no-result-message");
+        if (visibleCount === 0 && items.length > 0) {
+          if (!noResultMsg) {
+            noResultMsg = document.createElement("div");
+            noResultMsg.className = "bg-white dark:bg-gray-800 rounded-xl p-12 text-center no-result-message";
+            noResultMsg.innerHTML = '<i class="fas fa-search text-4xl text-gray-400 mb-3"></i><p class="text-gray-500">Aucune notification trouvée</p>';
+            document.getElementById("notificationsList").appendChild(noResultMsg);
+          }
+        } else if (noResultMsg) {
+          noResultMsg.remove();
+        }
+      }
+
+      applyBtn.addEventListener("click", filterNotifications);
+
+      resetBtn.addEventListener("click", () => {
+        filterType.value = "";
+        filterStatus.value = "";
+        searchInput.value = "";
+        filterNotifications();
+      });
+
+      searchInput.addEventListener("keyup", filterNotifications);
+    </script>
+  @endsection
+  

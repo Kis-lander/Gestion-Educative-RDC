@@ -8,7 +8,7 @@ import Student from '#models/student'
 import User from '#models/user'
 
 export default class Discipline extends DisciplineSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
@@ -23,13 +23,13 @@ export default class Discipline extends DisciplineSchema {
   declare reportedBy: string
 
   @column()
-  declare incidentType: 
-    | 'absence' 
-    | 'late' 
-    | 'misconduct' 
-    | 'violence' 
-    | 'fraud' 
-    | 'uniform_violation' 
+  declare incidentType:
+    | 'absence'
+    | 'late'
+    | 'misconduct'
+    | 'violence'
+    | 'fraud'
+    | 'uniform_violation'
     | 'other'
 
   @column()

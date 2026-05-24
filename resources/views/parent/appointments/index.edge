@@ -1,196 +1,262 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Rendez-vous - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Rendez-vous{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez vos rendez-vous avec les enseignants{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/parent/appointments/request" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Demander rendez-vous
+  @section('title')
+    Rendez-vous - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Rendez-vous
+  @endsection
+  @section('dashboardSubtitle')
+    Gérez vos rendez-vous avec les enseignants
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/parent/appointments/request"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Demander rendez-vous
   </a>
-  <button onclick="exportAppointments()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportAppointments()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Total RDV</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.pending || 0 }}</p>
-    <p class="text-sm text-gray-500">En attente</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.confirmed || 0 }}</p>
-    <p class="text-sm text-gray-500">Confirmés</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.completed || 0 }}</p>
-    <p class="text-sm text-gray-500">Effectués</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="pending">En attente</option>
-        <option value="confirmed">Confirmés</option>
-        <option value="completed">Effectués</option>
-        <option value="cancelled">Annulés</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Enfant</label>
-      <select id="filterChild" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        @each(child in children)
-        <option value="{{ child.id }}">{{ child.name }}</option>
-        @end
-      </select>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total RDV
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.pending || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          En attente
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.confirmed || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Confirmés
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.completed || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Effectués
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-search mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="pending">
+              En attente
+            </option>
+            <option value="confirmed">
+              Confirmés
+            </option>
+            <option value="completed">
+              Effectués
+            </option>
+            <option value="cancelled">
+              Annulés
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Enfant</label>
+          <select id="filterChild" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            @each(child in children)
+              <option value="{{ child.id }}">
+                {{ child.name }}
+              </option>
+            @end
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-search mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Liste des rendez-vous -->
-<div class="space-y-3">
-  @each(appointment in appointments)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="border-l-4 
-      {{ appointment.status === 'confirmed' ? 'border-green-500' : 
-         (appointment.status === 'pending' ? 'border-yellow-500' : 
-         (appointment.status === 'completed' ? 'border-blue-500' : 'border-gray-400')) }}">
-      <div class="p-4">
-        <div class="flex flex-wrap justify-between items-start gap-3">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 flex-wrap">
-              <h3 class="font-bold text-gray-800 dark:text-white">{{ appointment.teacherName }}</h3>
-              <span class="text-xs text-gray-500">{{ appointment.subject }} - Enseignant</span>
-              <span class="px-2 py-1 rounded-full text-xs 
-                {{ appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                   (appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                   (appointment.status === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
-                {{ appointment.status === 'confirmed' ? 'Confirmé' : 
-                   (appointment.status === 'pending' ? 'En attente' : 
-                   (appointment.status === 'completed' ? 'Effectué' : 'Annulé')) }}
-              </span>
-            </div>
-            <div class="flex gap-4 mt-2 text-sm text-gray-600">
-              <span><i class="fas fa-user-graduate mr-1"></i> {{ appointment.childName }}</span>
-              <span><i class="fas fa-calendar mr-1"></i> {{ formatDate(appointment.date) }}</span>
-              <span><i class="fas fa-clock mr-1"></i> {{ appointment.time }}</span>
-            </div>
-            <div class="mt-2 text-sm">
-              <p class="text-gray-600"><strong>Motif:</strong> {{ appointment.reason }}</p>
-            </div>
-            @if(appointment.teacherComment)
-            <div class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm">
-              <p class="text-gray-500 font-medium">Message de l'enseignant:</p>
-              <p class="text-gray-600">{{ appointment.teacherComment }}</p>
-            </div>
-            @endif
-          </div>
-          <div class="flex gap-2">
-            @if(appointment.status === 'pending')
-            <button onclick="cancelAppointment('{{ appointment.id }}')" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
-              <i class="fas fa-times mr-1"></i> Annuler
-            </button>
-            @endif
-            @if(appointment.status === 'confirmed')
-            <button onclick="rescheduleAppointment('{{ appointment.id }}')" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">
-              <i class="fas fa-calendar-alt mr-1"></i> Reporter
-            </button>
-            @endif
-            <button onclick="viewAppointmentDetails('{{ appointment.id }}')" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">
-              <i class="fas fa-eye mr-1"></i> Détails
-            </button>
-          </div>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
         </div>
       </div>
     </div>
-  </div>
-  @eachelse
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
-    <i class="fas fa-calendar-alt text-5xl text-gray-400 mb-3"></i>
-    <p class="text-gray-500">Aucun rendez-vous trouvé</p>
-    <a href="/parent/appointments/request" class="mt-3 inline-block text-primary hover:underline">
-      Demander un rendez-vous
+
+    <!-- Liste des rendez-vous -->
+    <div class="space-y-3">
+      @each(appointment in appointments)
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          <div
+            class="border-l-4 
+      {{ appointment.status === 'confirmed' ? 'border-green-500' : 
+         (appointment.status === 'pending' ? 'border-yellow-500' : 
+         (appointment.status === 'completed' ? 'border-blue-500' : 'border-gray-400')) }}"
+          >
+            <div class="p-4">
+              <div class="flex flex-wrap justify-between items-start gap-3">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 flex-wrap">
+                    <h3 class="font-bold text-gray-800 dark:text-white">
+                      {{ appointment.teacherName }}
+                    </h3>
+                    <span class="text-xs text-gray-500">{{ appointment.subject }} - Enseignant</span>
+                    <span
+                      class="px-2 py-1 rounded-full text-xs 
+                {{ appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                   (appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                   (appointment.status === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}"
+                    >
+                      {{ appointment.status === 'confirmed' ? 'Confirmé' : 
+                   (appointment.status === 'pending' ? 'En attente' : 
+                   (appointment.status === 'completed' ? 'Effectué' : 'Annulé')) }}
+              </span>
+                  </div>
+                  <div class="flex gap-4 mt-2 text-sm text-gray-600">
+                    <span>                      <i class="fas fa-user-graduate mr-1"></i>{{ appointment.childName }}</span>
+                    <span>                      <i class="fas fa-calendar mr-1"></i>{{ formatDate(appointment.date) }}</span>
+                    <span>                      <i class="fas fa-clock mr-1"></i>{{ appointment.time }}</span>
+                  </div>
+                  <div class="mt-2 text-sm">
+                    <p class="text-gray-600">
+                      <strong>Motif:</strong>{{ appointment.reason }}
+                    </p>
+                  </div>
+                  @if(appointment.teacherComment)
+                    <div class="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+                      <p class="text-gray-500 font-medium">
+                        Message de l'enseignant:
+                      </p>
+                      <p class="text-gray-600">
+                        {{ appointment.teacherComment }}
+                      </p>
+                    </div>
+                  @endif
+                </div>
+                <div class="flex gap-2">
+                  @if(appointment.status === 'pending')
+                    <button
+                      onclick="cancelAppointment('{{ appointment.id }}')"
+                      class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                    >
+                      <i class="fas fa-times mr-1"></i>Annuler
+            </button>
+                  @endif
+                  @if(appointment.status === 'confirmed')
+                    <button
+                      onclick="rescheduleAppointment('{{ appointment.id }}')"
+                      class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+                    >
+                      <i class="fas fa-calendar-alt mr-1"></i>Reporter
+            </button>
+                  @endif
+                  <button
+                    onclick="viewAppointmentDetails('{{ appointment.id }}')"
+                    class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+                  >
+                    <i class="fas fa-eye mr-1"></i>Détails
+            </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @else
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+          <i class="fas fa-calendar-alt text-5xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500">
+            Aucun rendez-vous trouvé
+          </p>
+          <a href="/parent/appointments/request" class="mt-3 inline-block text-primary hover:underline">
+            Demander un rendez-vous
     </a>
-  </div>
-  @end
-</div>
+        </div>
+      @end
+    </div>
 
-@include('partials/pagination', { pagination: pagination, url: '/parent/appointments' })
+    @include('partials/pagination', { pagination: pagination, url: '/parent/appointments' })
 
-<script>
-  const filterStatus = document.getElementById('filterStatus')
-  const filterChild = document.getElementById('filterChild')
-  const startDate = document.getElementById('startDate')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    if (filterChild.value) params.set('child_id', filterChild.value)
-    if (startDate.value) params.set('start_date', startDate.value)
-    window.location.href = `/parent/appointments?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/parent/appointments'
-  })
-  
-  function cancelAppointment(appointmentId) {
-    if (confirm('Annuler ce rendez-vous ?')) {
-      fetch(`/api/parent/appointments/${appointmentId}/cancel`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  function rescheduleAppointment(appointmentId) {
-    window.location.href = `/parent/appointments/reschedule?appointment_id=${appointmentId}`
-  }
-  
-  function viewAppointmentDetails(appointmentId) {
-    window.location.href = `/parent/appointments/${appointmentId}`
-  }
-  
-  function exportAppointments() {
-    const params = new URLSearchParams()
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    if (filterChild.value) params.set('child_id', filterChild.value)
-    window.location.href = `/api/parent/appointments/export?${params.toString()}`
-  }
-</script>
-{{# /section }}
+    <script>
+      const filterStatus = document.getElementById("filterStatus");
 
-{{# /layout }}
+      const filterChild = document.getElementById("filterChild");
+
+      const startDate = document.getElementById("startDate");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (filterChild.value) params.set("child_id", filterChild.value);
+        if (startDate.value) params.set("start_date", startDate.value);
+        window.location.href = `/parent/appointments?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/parent/appointments";
+      });
+
+      function cancelAppointment(appointmentId) {
+        if (confirm("Annuler ce rendez-vous ?")) {
+          fetch(`/api/parent/appointments/${appointmentId}/cancel`, {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      function rescheduleAppointment(appointmentId) {
+        window.location.href = `/parent/appointments/reschedule?appointment_id=${appointmentId}`;
+      }
+
+      function viewAppointmentDetails(appointmentId) {
+        window.location.href = `/parent/appointments/${appointmentId}`;
+      }
+
+      function exportAppointments() {
+        const params = new URLSearchParams();
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (filterChild.value) params.set("child_id", filterChild.value);
+        window.location.href = `/api/parent/appointments/export?${params.toString()}`;
+      }
+    </script>
+  @endsection
+  

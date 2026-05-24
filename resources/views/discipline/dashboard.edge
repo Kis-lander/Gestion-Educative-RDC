@@ -1,221 +1,303 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Tableau de bord Discipline - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Direction de la Discipline{{# /section }}
-{{# section('dashboardSubtitle') }}Gestion et suivi du comportement des élèves{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/discipline/incidents/report" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Signaler un incident
+  @section('title')
+    Tableau de bord Discipline - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Direction de la Discipline
+  @endsection
+  @section('dashboardSubtitle')
+    Gestion et suivi du comportement des élèves
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/discipline/incidents/report"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Signaler un incident
   </a>
-  <button onclick="exportDashboard()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter rapport
+      <button onclick="exportDashboard()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter rapport
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total incidents</p>
-    <p class="text-3xl font-bold">{{ stats.totalIncidents || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Critiques / Majeurs</p>
-    <p class="text-3xl font-bold">{{ stats.majorIncidents || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Élèves concernés</p>
-    <p class="text-3xl font-bold">{{ stats.affectedStudents || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Sanctions actives</p>
-    <p class="text-3xl font-bold">{{ stats.activeSanctions || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <!-- Graphique évolution -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution des incidents</h3>
-    <canvas id="incidentsTrendChart" height="200"></canvas>
-  </div>
+    </div>
+  @endsection
   
-  <!-- Répartition par type -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par type d'incident</h3>
-    <canvas id="incidentsTypeChart" height="200"></canvas>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <!-- Répartition par gravité -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par gravité</h3>
-    <canvas id="severityChart" height="200"></canvas>
-  </div>
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total incidents
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.totalIncidents || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Critiques / Majeurs
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.majorIncidents || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Élèves concernés
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.affectedStudents || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Sanctions actives
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.activeSanctions || 0 }}
+        </p>
+      </div>
+    </div>
+  @endsection
   
-  <!-- Top élèves avec incidents -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Top 5 élèves avec incidents</h3>
-    <div class="space-y-3" id="topStudentsList">
-      @each(student in topStudents)
-      <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
-        <div>
-          <p class="font-medium">{{ student.name }}</p>
-          <p class="text-xs text-gray-500">{{ student.className }}</p>
-        </div>
-        <div class="text-right">
-          <span class="text-sm font-bold text-red-600">{{ student.incidentCount }} incidents</span>
-          <div class="w-24 bg-gray-200 rounded-full h-1 mt-1">
-            <div class="bg-red-500 rounded-full h-1" style="width: {{ student.percentage }}%"></div>
-          </div>
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Graphique évolution -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Évolution des incidents
+        </h3>
+        <canvas id="incidentsTrendChart" height="200">
+        </canvas>
+      </div>
+
+      <!-- Répartition par type -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Répartition par type d'incident
+        </h3>
+        <canvas id="incidentsTypeChart" height="200">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Répartition par gravité -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Répartition par gravité
+        </h3>
+        <canvas id="severityChart" height="200">
+        </canvas>
+      </div>
+
+      <!-- Top élèves avec incidents -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Top 5 élèves avec incidents
+        </h3>
+        <div class="space-y-3" id="topStudentsList">
+          @each(student in topStudents)
+            <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
+              <div>
+                <p class="font-medium">
+                  {{ student.name }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ student.className }}
+                </p>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-bold text-red-600">{{ student.incidentCount }} incidents</span>
+                <div class="w-24 bg-gray-200 rounded-full h-1 mt-1">
+                  <div class="bg-red-500 rounded-full h-1" style="width: {{ student.percentage }}%">
+                  </div>
+                </div>
+              </div>
+            </div>
+            @else
+            <p class="text-gray-500 text-center py-4">
+              Aucun incident enregistré
+            </p>
+          @end
         </div>
       </div>
-      @eachelse
-      <p class="text-gray-500 text-center py-4">Aucun incident enregistré</p>
-      @end
     </div>
-  </div>
-</div>
 
-<!-- Derniers incidents signalés -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-    <h3 class="font-semibold">Derniers incidents signalés</h3>
-    <a href="/discipline/incidents" class="text-primary text-sm hover:underline">Voir tout</a>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(incident in recentIncidents)
-    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-      <div class="flex justify-between items-start">
-        <div class="flex-1">
-          <div class="flex items-center gap-2 flex-wrap">
-            <p class="font-medium">{{ incident.studentName }}</p>
-            <span class="px-2 py-1 rounded-full text-xs 
+    <!-- Derniers incidents signalés -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="font-semibold">
+          Derniers incidents signalés
+        </h3>
+        <a href="/discipline/incidents" class="text-primary text-sm hover:underline">Voir tout</a>
+      </div>
+      <div class="divide-y dark:divide-gray-700">
+        @each(incident in recentIncidents)
+          <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="font-medium">
+                    {{ incident.studentName }}
+                  </p>
+                  <span
+                    class="px-2 py-1 rounded-full text-xs 
               {{ incident.type === 'absence' ? 'bg-blue-100 text-blue-800' : 
                  (incident.type === 'late' ? 'bg-yellow-100 text-yellow-800' : 
                  (incident.type === 'misconduct' ? 'bg-purple-100 text-purple-800' : 
-                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}">
-              {{ incident.typeLabel }}
+                 (incident.type === 'violence' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}"
+                  >
+                    {{ incident.typeLabel }}
             </span>
-            <span class="px-2 py-1 rounded-full text-xs
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ incident.severity === 'minor' ? 'bg-green-100 text-green-800' : 
                  (incident.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
-                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
-              {{ incident.severityLabel }}
+                 (incident.severity === 'major' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}"
+                  >
+                    {{ incident.severityLabel }}
             </span>
+                </div>
+                <p class="text-sm text-gray-600 mt-1">
+                  {{ incident.description }}
+                </p>
+                <div class="flex gap-3 mt-2 text-xs text-gray-400">
+                  <span>                    <i class="fas fa-calendar mr-1"></i>{{ formatDate(incident.date) }}</span>
+                  <span>                    <i class="fas fa-user mr-1"></i>Signalé par {{ incident.reporterName }}</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <a href="/discipline/incidents/{{ incident.id }}/edit" class="text-primary hover:underline text-sm">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a
+                  href="/discipline/students/{{ incident.studentId }}"
+                  class="text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  <i class="fas fa-user-graduate"></i>
+                </a>
+              </div>
+            </div>
           </div>
-          <p class="text-sm text-gray-600 mt-1">{{ incident.description }}</p>
-          <div class="flex gap-3 mt-2 text-xs text-gray-400">
-            <span><i class="fas fa-calendar mr-1"></i> {{ formatDate(incident.date) }}</span>
-            <span><i class="fas fa-user mr-1"></i> Signalé par {{ incident.reporterName }}</span>
+          @else
+          <div class="p-8 text-center text-gray-500">
+            <i class="fas fa-check-circle text-green-500 text-3xl mb-2 block"></i>
+            Aucun incident récent
           </div>
+        @end
+      </div>
+    </div>
+
+    <!-- Alertes -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 flex items-center gap-3">
+        <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+        <div>
+          <p class="font-semibold text-sm">
+            Suspensions actives
+          </p>
+          <p class="text-2xl font-bold text-red-600">
+            {{ stats.activeSuspensions || 0 }}
+          </p>
         </div>
-        <div class="flex gap-2">
-          <a href="/discipline/incidents/{{ incident.id }}/edit" class="text-primary hover:underline text-sm">
-            <i class="fas fa-edit"></i>
-          </a>
-          <a href="/discipline/students/{{ incident.studentId }}" class="text-blue-600 hover:text-blue-800 text-sm">
-            <i class="fas fa-user-graduate"></i>
-          </a>
+      </div>
+      <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 flex items-center gap-3">
+        <i class="fas fa-clock text-orange-500 text-xl"></i>
+        <div>
+          <p class="font-semibold text-sm">
+            En attente de traitement
+          </p>
+          <p class="text-2xl font-bold text-orange-600">
+            {{ stats.pendingIncidents || 0 }}
+          </p>
+        </div>
+      </div>
+      <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 flex items-center gap-3">
+        <i class="fas fa-chart-line text-green-500 text-xl"></i>
+        <div>
+          <p class="font-semibold text-sm">
+            Taux résolution
+          </p>
+          <p class="text-2xl font-bold text-green-600">
+            {{ stats.resolutionRate || 0 }}%
+          </p>
         </div>
       </div>
     </div>
-    @eachelse
-    <div class="p-8 text-center text-gray-500">
-      <i class="fas fa-check-circle text-green-500 text-3xl mb-2 block"></i>
-      Aucun incident récent
-    </div>
-    @end
-  </div>
-</div>
 
-<!-- Alertes -->
-<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-  <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 flex items-center gap-3">
-    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
-    <div>
-      <p class="font-semibold text-sm">Suspensions actives</p>
-      <p class="text-2xl font-bold text-red-600">{{ stats.activeSuspensions || 0 }}</p>
-    </div>
-  </div>
-  <div class="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 flex items-center gap-3">
-    <i class="fas fa-clock text-orange-500 text-xl"></i>
-    <div>
-      <p class="font-semibold text-sm">En attente de traitement</p>
-      <p class="text-2xl font-bold text-orange-600">{{ stats.pendingIncidents || 0 }}</p>
-    </div>
-  </div>
-  <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 flex items-center gap-3">
-    <i class="fas fa-chart-line text-green-500 text-xl"></i>
-    <div>
-      <p class="font-semibold text-sm">Taux résolution</p>
-      <p class="text-2xl font-bold text-green-600">{{ stats.resolutionRate || 0 }}%</p>
-    </div>
-  </div>
-</div>
+    <script>
+      let trendChart, typeChart, severityChart;
 
-<script>
-  let trendChart, typeChart, severityChart
-  
-  function renderCharts() {
-    // Graphique tendance
-    const trendCtx = document.getElementById('incidentsTrendChart').getContext('2d')
-    trendChart = new Chart(trendCtx, {
-      type: 'line',
-      data: {
-        labels: {{ trendLabels|json_encode|raw }},
-        datasets: [{
-          label: "Nombre d'incidents",
-          data: {{ trendValues|json_encode|raw }},
-          borderColor: '#dc2626',
-          backgroundColor: 'rgba(220, 38, 38, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true }
-    })
-    
-    // Graphique par type
-    const typeCtx = document.getElementById('incidentsTypeChart').getContext('2d')
-    typeChart = new Chart(typeCtx, {
-      type: 'doughnut',
-      data: {
-        labels: {{ typeLabels|json_encode|raw }},
-        datasets: [{ data: {{ typeValues|json_encode|raw }}, backgroundColor: ['#2563eb', '#f59e0b', '#8b5cf6', '#dc2626', '#6b7280'] }]
-      },
-      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
-    })
-    
-    // Graphique par gravité
-    const severityCtx = document.getElementById('severityChart').getContext('2d')
-    severityChart = new Chart(severityCtx, {
-      type: 'bar',
-      data: {
-        labels: {{ severityLabels|json_encode|raw }},
-        datasets: [{
-          label: "Nombre d'incidents",
-          data: {{ severityValues|json_encode|raw }},
-          backgroundColor: '#16a34a',
-          borderRadius: 8
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true }
-    })
-  }
-  
-  function exportDashboard() {
-    window.location.href = '/api/discipline/dashboard/export'
-  }
-  
-  renderCharts()
-</script>
-{{# /section }}
+      function renderCharts() {
+        // Graphique tendance
+        const trendCtx = document.getElementById("incidentsTrendChart").getContext("2d");
+        trendChart = new Chart(trendCtx, {
+          type: "line",
+          data: {
+            labels: {{ trendLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Nombre d'incidents",
+              data: {{ trendValues|json_encode|raw }},
+              borderColor: "#dc2626",
+              backgroundColor: "rgba(220, 38, 38, 0.1)",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+        // Graphique par type
+        const typeCtx = document.getElementById("incidentsTypeChart").getContext("2d");
+        typeChart = new Chart(typeCtx, {
+          type: "doughnut",
+          data: {
+            labels: {{ typeLabels|json_encode|raw }},
+            datasets: [ {
+              data: {{ typeValues|json_encode|raw }},
+              backgroundColor: [ "#2563eb", "#f59e0b", "#8b5cf6", "#dc2626", "#6b7280" ]
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                position: "bottom"
+              }
+            }
+          }
+        });
+        // Graphique par gravité
+        const severityCtx = document.getElementById("severityChart").getContext("2d");
+        severityChart = new Chart(severityCtx, {
+          type: "bar",
+          data: {
+            labels: {{ severityLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Nombre d'incidents",
+              data: {{ severityValues|json_encode|raw }},
+              backgroundColor: "#16a34a",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+      }
 
-{{# /layout }}
+      function exportDashboard() {
+        window.location.href = "/api/discipline/dashboard/export";
+      }
+
+      renderCharts();
+    </script>
+  @endsection
+  

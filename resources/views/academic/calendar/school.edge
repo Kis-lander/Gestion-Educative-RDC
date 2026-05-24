@@ -1,198 +1,230 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Calendrier - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Calendrier de l'école{{# /section }}
-{{# section('dashboardSubtitle') }}{{ school.name }}{{# /section }}
-
-{{# section('actions') }}
-<a href="/academic/calendar/create" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-  <i class="fas fa-plus mr-2"></i> Ajouter événement
+  @section('title')
+    Calendrier - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Calendrier de l'école
+  @endsection
+  @section('dashboardSubtitle')
+    {{ school.name }}
+  @endsection
+  
+  @section('actions')
+    <a
+      href="/academic/calendar/create"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+    >
+      <i class="fas fa-plus mr-2"></i>Ajouter événement
 </a>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Calendrier school-specific -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="p-4 border-b dark:border-gray-700">
-    <div class="flex flex-wrap justify-between items-center gap-3">
-      <h3 class="font-semibold">Calendrier scolaire {{ academicYear }}</h3>
-      <div class="flex gap-2">
-        <button onclick="previousMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <span id="schoolCurrentMonth" class="font-medium px-3 py-1"></span>
-        <button onclick="nextMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="p-4">
-    <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium mb-2">
-      <div class="text-red-500">Dim</div>
-      <div>Lun</div>
-      <div>Mar</div>
-      <div>Mer</div>
-      <div>Jeu</div>
-      <div>Ven</div>
-      <div>Sam</div>
-    </div>
-    <div id="schoolCalendarGrid" class="grid grid-cols-7 gap-1">
-      <!-- Généré par JS -->
-    </div>
-  </div>
-</div>
-
-<!-- Événements importants -->
-<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold border-b pb-2 mb-3">Vacances scolaires</h3>
-    <div class="space-y-2" id="holidaysList">
-      <!-- Chargé dynamiquement -->
-    </div>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold border-b pb-2 mb-3">Prochains examens</h3>
-    <div class="space-y-2" id="examsList">
-      <!-- Chargé dynamiquement -->
-    </div>
-  </div>
-</div>
-
-<!-- Événements récents -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Tous les événements</h3>
-  </div>
-  <div class="divide-y dark:divide-gray-700" id="allEventsList">
-    <!-- Chargé dynamiquement -->
-  </div>
-</div>
-
-<script>
-  let currentSchoolDate = new Date()
-  let schoolEvents = []
+  @endsection
   
-  async function loadSchoolEvents() {
-    const year = currentSchoolDate.getFullYear()
-    const month = currentSchoolDate.getMonth() + 1
-    const academicYear = document.querySelector('[name=academicYear]')?.value || '{{ currentYear }}'
-    
-    const res = await fetch(`/api/calendar/school/events?year=${year}&month=${month}&academic_year=${academicYear}`)
-    const data = await res.json()
-    schoolEvents = data.events || []
-    renderSchoolCalendar()
-    renderEventLists()
-  }
-  
-  function renderSchoolCalendar() {
-    const year = currentSchoolDate.getFullYear()
-    const month = currentSchoolDate.getMonth()
-    
-    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
-    document.getElementById('schoolCurrentMonth').textContent = `${monthNames[month]} ${year}`
-    
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
-    const startDayOfWeek = firstDay.getDay()
-    const daysInMonth = lastDay.getDate()
-    
-    const calendarGrid = document.getElementById('schoolCalendarGrid')
-    calendarGrid.innerHTML = ''
-    
-    for (let i = 0; i < startDayOfWeek; i++) {
-      const emptyDiv = document.createElement('div')
-      emptyDiv.className = 'p-2 bg-gray-50 dark:bg-gray-700 rounded min-h-[80px]'
-      calendarGrid.appendChild(emptyDiv)
-    }
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-      const dayEvents = schoolEvents.filter(e => e.start_date === dateStr)
-      const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
-      
-      const dayDiv = document.createElement('div')
-      dayDiv.className = `p-2 border rounded min-h-[80px] ${dayEvents.length > 0 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300' : 'hover:bg-gray-50'} ${isToday ? 'ring-2 ring-primary' : ''}`
-      dayDiv.innerHTML = `
-        <div class="font-bold text-sm ${isToday ? 'text-primary' : ''}">${day}</div>
-        <div class="space-y-1 mt-1">
-          ${dayEvents.slice(0, 2).map(event => `
-            <div class="text-xs p-0.5 rounded ${getSchoolEventColor(event.type)} truncate" title="${event.title}">
-              ${event.title.length > 15 ? event.title.substring(0, 15) + '...' : event.title}
-            </div>
-          `).join('')}
-          ${dayEvents.length > 2 ? `<div class="text-xs text-gray-500">+${dayEvents.length - 2}</div>` : ''}
-        </div>
-      `
-      calendarGrid.appendChild(dayDiv)
-    }
-  }
-  
-  function renderEventLists() {
-    const holidays = schoolEvents.filter(e => e.type === 'holiday')
-    const exams = schoolEvents.filter(e => e.type === 'exam')
-    const allEvents = [...schoolEvents].sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
-    
-    document.getElementById('holidaysList').innerHTML = holidays.length > 0
-      ? holidays.map(h => `
-        <div class="flex justify-between items-center p-2 border-b">
-          <div><i class="fas fa-umbrella-beach text-green-500 mr-2"></i>${h.title}</div>
-          <div class="text-sm">${formatDate(h.start_date)}${h.end_date !== h.start_date ? ` - ${formatDate(h.end_date)}` : ''}</div>
-        </div>
-      `).join('')
-      : '<div class="text-center text-gray-500 py-4">Aucune vacance planifiée</div>'
-    
-    document.getElementById('examsList').innerHTML = exams.length > 0
-      ? exams.map(e => `
-        <div class="flex justify-between items-center p-2 border-b">
-          <div><i class="fas fa-pen-to-square text-red-500 mr-2"></i>${e.title}</div>
-          <div class="text-sm">${formatDate(e.start_date)}</div>
-        </div>
-      `).join('')
-      : '<div class="text-center text-gray-500 py-4">Aucun examen planifié</div>'
-    
-    document.getElementById('allEventsList').innerHTML = allEvents.slice(0, 20).map(e => `
-      <div class="p-3 hover:bg-gray-50 flex justify-between items-center">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full ${getSchoolEventDotColor(e.type)}"></span>
-            <span class="font-medium">${e.title}</span>
+  @section('content')
+    <!-- Calendrier school-specific -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="p-4 border-b dark:border-gray-700">
+        <div class="flex flex-wrap justify-between items-center gap-3">
+          <h3 class="font-semibold">
+            Calendrier scolaire {{ academicYear }}
+          </h3>
+          <div class="flex gap-2">
+            <button onclick="previousMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span id="schoolCurrentMonth" class="font-medium px-3 py-1"></span>
+            <button onclick="nextMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
-          <div class="text-sm text-gray-500 mt-1">${formatDate(e.start_date)}${e.end_date !== e.start_date ? ` au ${formatDate(e.end_date)}` : ''} ${e.location ? `- ${e.location}` : ''}</div>
         </div>
-        <a href="/academic/calendar/${e.id}/edit" class="text-primary text-sm hover:underline">Modifier</a>
       </div>
-    `).join('')
-  }
-  
-  function getSchoolEventColor(type) {
-    const colors = { holiday: 'bg-green-100 text-green-800', exam: 'bg-red-100 text-red-800', meeting: 'bg-blue-100 text-blue-800', event: 'bg-purple-100 text-purple-800', deadline: 'bg-yellow-100 text-yellow-800' }
-    return colors[type] || 'bg-gray-100'
-  }
-  
-  function getSchoolEventDotColor(type) {
-    const colors = { holiday: 'bg-green-500', exam: 'bg-red-500', meeting: 'bg-blue-500', event: 'bg-purple-500', deadline: 'bg-yellow-500' }
-    return colors[type] || 'bg-gray-500'
-  }
-  
-  function previousMonth() {
-    currentSchoolDate.setMonth(currentSchoolDate.getMonth() - 1)
-    loadSchoolEvents()
-  }
-  
-  function nextMonth() {
-    currentSchoolDate.setMonth(currentSchoolDate.getMonth() + 1)
-    loadSchoolEvents()
-  }
-  
-  function formatDate(dateStr) {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
-  }
-  
-  loadSchoolEvents()
-</script>
-{{# /section }}
+      <div class="p-4">
+        <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium mb-2">
+          <div class="text-red-500">
+            Dim
+          </div>
+          <div>
+            Lun
+          </div>
+          <div>
+            Mar
+          </div>
+          <div>
+            Mer
+          </div>
+          <div>
+            Jeu
+          </div>
+          <div>
+            Ven
+          </div>
+          <div>
+            Sam
+          </div>
+        </div>
+        <div id="schoolCalendarGrid" class="grid grid-cols-7 gap-1">
+          <!-- Généré par JS -->
+        </div>
+      </div>
+    </div>
 
-{{# /layout }}
+    <!-- Événements importants -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Vacances scolaires
+        </h3>
+        <div class="space-y-2" id="holidaysList">
+          <!-- Chargé dynamiquement -->
+        </div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold border-b pb-2 mb-3">
+          Prochains examens
+        </h3>
+        <div class="space-y-2" id="examsList">
+          <!-- Chargé dynamiquement -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Événements récents -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Tous les événements
+        </h3>
+      </div>
+      <div class="divide-y dark:divide-gray-700" id="allEventsList">
+        <!-- Chargé dynamiquement -->
+      </div>
+    </div>
+
+    <script>
+      let currentSchoolDate = new Date();
+
+      let schoolEvents = [];
+
+      async function loadSchoolEvents() {
+        const year = currentSchoolDate.getFullYear();
+        const month = currentSchoolDate.getMonth() + 1;
+        const academicYear = document.querySelector("[name=academicYear]")?.value || "{{ currentYear }}";
+        const res = await fetch(`/api/calendar/school/events?year=${year}&month=${month}&academic_year=${academicYear}`);
+        const data = await res.json();
+        schoolEvents = data.events || [];
+        renderSchoolCalendar();
+        renderEventLists();
+      }
+
+      function renderSchoolCalendar() {
+        const year = currentSchoolDate.getFullYear();
+        const month = currentSchoolDate.getMonth();
+        const monthNames = [ "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" ];
+        document.getElementById("schoolCurrentMonth").textContent = `${monthNames[month]} ${year}`;
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDayOfWeek = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+        const calendarGrid = document.getElementById("schoolCalendarGrid");
+        calendarGrid.innerHTML = "";
+        for (let i = 0; i < startDayOfWeek; i++) {
+          const emptyDiv = document.createElement("div");
+          emptyDiv.className = "p-2 bg-gray-50 dark:bg-gray-700 rounded min-h-[80px]";
+          calendarGrid.appendChild(emptyDiv);
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const dayEvents = schoolEvents.filter(e => e.start_date === dateStr);
+          const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+          const dayDiv = document.createElement("div");
+          dayDiv.className = `p-2 border rounded min-h-[80px] ${dayEvents.length > 0 ? "bg-blue-50 dark:bg-blue-900/20 border-blue-300" : "hover:bg-gray-50"} ${isToday ? "ring-2 ring-primary" : ""}`;
+          dayDiv.innerHTML = `
+                  <div class="font-bold text-sm ${isToday ? "text-primary" : ""}">${day}</div>
+                  <div class="space-y-1 mt-1">
+                    ${dayEvents.slice(0, 2).map(event => `
+                      <div class="text-xs p-0.5 rounded ${getSchoolEventColor(event.type)} truncate" title="${event.title}">
+                        ${event.title.length > 15 ? event.title.substring(0, 15) + "..." : event.title}
+                      </div>
+                    `).join("")}
+                    ${dayEvents.length > 2 ? `<div class="text-xs text-gray-500">+${dayEvents.length - 2}</div>` : ""}
+                  </div>
+                `;
+          calendarGrid.appendChild(dayDiv);
+        }
+      }
+
+      function renderEventLists() {
+        const holidays = schoolEvents.filter(e => e.type === "holiday");
+        const exams = schoolEvents.filter(e => e.type === "exam");
+        const allEvents = [ ...schoolEvents ].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+        document.getElementById("holidaysList").innerHTML = holidays.length > 0 ? holidays.map(h => `
+                  <div class="flex justify-between items-center p-2 border-b">
+                    <div><i class="fas fa-umbrella-beach text-green-500 mr-2"></i>${h.title}</div>
+                    <div class="text-sm">${formatDate(h.start_date)}${h.end_date !== h.start_date ? ` - ${formatDate(h.end_date)}` : ""}</div>
+                  </div>
+                `).join("") : '<div class="text-center text-gray-500 py-4">Aucune vacance planifiée</div>';
+        document.getElementById("examsList").innerHTML = exams.length > 0 ? exams.map(e => `
+                  <div class="flex justify-between items-center p-2 border-b">
+                    <div><i class="fas fa-pen-to-square text-red-500 mr-2"></i>${e.title}</div>
+                    <div class="text-sm">${formatDate(e.start_date)}</div>
+                  </div>
+                `).join("") : '<div class="text-center text-gray-500 py-4">Aucun examen planifié</div>';
+        document.getElementById("allEventsList").innerHTML = allEvents.slice(0, 20).map(e => `
+                <div class="p-3 hover:bg-gray-50 flex justify-between items-center">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full ${getSchoolEventDotColor(e.type)}"></span>
+                      <span class="font-medium">${e.title}</span>
+                    </div>
+                    <div class="text-sm text-gray-500 mt-1">${formatDate(e.start_date)}${e.end_date !== e.start_date ? ` au ${formatDate(e.end_date)}` : ""} ${e.location ? `- ${e.location}` : ""}</div>
+                  </div>
+                  <a href="/academic/calendar/${e.id}/edit" class="text-primary text-sm hover:underline">Modifier</a>
+                </div>
+              `).join("");
+      }
+
+      function getSchoolEventColor(type) {
+        const colors = {
+          holiday: "bg-green-100 text-green-800",
+          exam: "bg-red-100 text-red-800",
+          meeting: "bg-blue-100 text-blue-800",
+          event: "bg-purple-100 text-purple-800",
+          deadline: "bg-yellow-100 text-yellow-800"
+        };
+        return colors[type] || "bg-gray-100";
+      }
+
+      function getSchoolEventDotColor(type) {
+        const colors = {
+          holiday: "bg-green-500",
+          exam: "bg-red-500",
+          meeting: "bg-blue-500",
+          event: "bg-purple-500",
+          deadline: "bg-yellow-500"
+        };
+        return colors[type] || "bg-gray-500";
+      }
+
+      function previousMonth() {
+        currentSchoolDate.setMonth(currentSchoolDate.getMonth() - 1);
+        loadSchoolEvents();
+      }
+
+      function nextMonth() {
+        currentSchoolDate.setMonth(currentSchoolDate.getMonth() + 1);
+        loadSchoolEvents();
+      }
+
+      function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit"
+        });
+      }
+
+      loadSchoolEvents();
+    </script>
+  @endsection
+  

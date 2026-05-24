@@ -1,169 +1,266 @@
-{{# layout('layouts/print') }}
+@layout('layouts/print')
 
-{{# section('title') }}Rapport de présence - {{ student.name }} - {{ school.name }}{{# /section }}
+  @section('title')
+    Rapport de prÃ©sence - {{ student.name }} - {{ school.name }}
+  @endsection
+  <div class="attendance-report">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold">
+        {{ school.name }}
+      </h1>
+      <h2 class="text-xl">
+        RAPPORT DE PRÃ‰SENCE
+      </h2>
+      <p class="text-md">
+        Ã‰lÃ¨ve: {{ student.name }}
+      </p>
+      <p class="text-md">
+        Classe: {{ student.className }}
+      </p>
+      <p class="text-sm">
+        Matricule: {{ student.registrationNumber }}
+      </p>
+      <p class="text-sm">
+        Année scolaire {{ academicYear }} - PÃ©riode: {{ periodLabel }}
+      </p>
+      <p class="text-sm">
+        GÃ©nÃ©rÃ© le {{ generationDate }}
+      </p>
+    </div>
 
-<div class="attendance-report">
-  <div class="text-center mb-6">
-    <h1 class="text-2xl font-bold">{{ school.name }}</h1>
-    <h2 class="text-xl">RAPPORT DE PRÉSENCE</h2>
-    <p class="text-md">Élève: {{ student.name }}</p>
-    <p class="text-md">Classe: {{ student.className }}</p>
-    <p class="text-sm">Matricule: {{ student.registrationNumber }}</p>
-    <p class="text-sm">Année académique {{ academicYear }} - Période: {{ periodLabel }}</p>
-    <p class="text-sm">Généré le {{ generationDate }}</p>
-  </div>
-  
-  <!-- Résumé global -->
-  <div class="summary-box mb-6 p-3 bg-gray-50 border">
-    <h3 class="font-bold mb-2">Résumé global</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-      <div><strong>Total jours:</strong> {{ totalDays }}</div>
-      <div><strong>Présences:</strong> {{ presentCount }} ({{ presentRate }}%)</div>
-      <div><strong>Absences:</strong> {{ absentCount }} ({{ absentRate }}%)</div>
-      <div><strong>Retards:</strong> {{ lateCount }} ({{ lateRate }}%)</div>
-      <div><strong>Absences justifiées:</strong> {{ excusedCount }}</div>
-      <div><strong>Absences non justifiées:</strong> {{ unjustifiedCount }}</div>
+    <!-- RÃ©sumÃ© global -->
+    <div class="summary-box mb-6 p-3 bg-gray-50 border">
+      <h3 class="font-bold mb-2">
+        RÃ©sumÃ© global
+      </h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <div>
+          <strong>Total jours:</strong>{{ totalDays }}
+        </div>
+        <div>
+          <strong>PrÃ©sences:</strong>{{ presentCount }} ({{ presentRate }}%)
+        </div>
+        <div>
+          <strong>Absences:</strong>{{ absentCount }} ({{ absentRate }}%)
+        </div>
+        <div>
+          <strong>Retards:</strong>{{ lateCount }} ({{ lateRate }}%)
+        </div>
+        <div>
+          <strong>Absences justifiÃ©es:</strong>{{ excusedCount }}
+        </div>
+        <div>
+          <strong>Absences non justifiÃ©es:</strong>{{ unjustifiedCount }}
+        </div>
+      </div>
     </div>
-  </div>
-  
-  <!-- Graphique -->
-  <div class="text-center mb-6">
-    <div class="inline-block w-32 text-center p-2 m-2 bg-green-100 rounded">
-      <div class="text-3xl font-bold text-green-600">{{ presentRate }}%</div>
-      <div class="text-xs">Présents</div>
-    </div>
-    <div class="inline-block w-32 text-center p-2 m-2 bg-red-100 rounded">
-      <div class="text-3xl font-bold text-red-600">{{ absentRate }}%</div>
-      <div class="text-xs">Absents</div>
-    </div>
-    <div class="inline-block w-32 text-center p-2 m-2 bg-yellow-100 rounded">
-      <div class="text-3xl font-bold text-yellow-600">{{ lateRate }}%</div>
-      <div class="text-xs">Retards</div>
-    </div>
-  </div>
-  
-  <!-- Tableau des absences -->
-  <div class="mb-6">
-    <h3 class="font-bold mb-2">Détail des absences et retards</h3>
-    <div class="table-responsive">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="px-3 py-2 text-left">Date</th>
-            <th class="px-3 py-2 text-left">Période</th>
-            <th class="px-3 py-2 text-left">Statut</th>
-            <th class="px-3 py-2 text-left">Justification</th>
-          </tr>
-        </thead>
-        <tbody>
-          @each(record in absenceRecords)
-          <tr class="border-b">
-            <td class="px-3 py-2">{{ record.date }}</td>
-            <td class="px-3 py-2">{{ record.periodLabel || 'Journée' }}</td>
-            <td class="px-3 py-2">
-              {{ record.status === 'absent' ? 'Absence' : (record.status === 'late' ? 'Retard' : 'Excusé') }}
-            </td>
-            <td class="px-3 py-2">{{ record.reason || '-' }}</td>
-          </tr>
-          @eachelse
-          <tr><td colspan="4" class="text-center py-6">Aucune absence ou retard enregistré</td></tr>
-          @end
-        </tbody>
-      </table>
-    </div>
-  </div>
-  
-  <!-- Évolution mensuelle -->
-  <div class="mb-6">
-    <h3 class="font-bold mb-2">Évolution mensuelle</h3>
-    <div class="table-responsive">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="px-3 py-2">Mois</th>
-            <th class="px-3 py-2 text-center">Présences</th>
-            <th class="px-3 py-2 text-center">Absences</th>
-            <th class="px-3 py-2 text-center">Retards</th>
-            <th class="px-3 py-2 text-center">Taux présence</th>
-          </tr>
-        </thead>
-        <tbody>
-          @each(month in monthlyData)
-          <tr class="border-b">
-            <td class="px-3 py-2">{{ month.name }}</td>
-            <td class="px-3 py-2 text-center">{{ month.present }}</td>
-            <td class="px-3 py-2 text-center">{{ month.absent }}</td>
-            <td class="px-3 py-2 text-center">{{ month.late }}</td>
-            <td class="px-3 py-2 text-center">
-              <div class="flex items-center justify-center gap-1">
-                <div class="w-16 bg-gray-200 rounded-full h-1.5">
-                  <div class="bg-green-500 rounded-full h-1.5" style="width: {{ month.rate }}%"></div>
-                </div>
-                <span>{{ month.rate }}%</span>
-              </div>
-            </td>
-          </tr>
-          @end
-        </tbody>
-      </table>
-    </div>
-  </div>
-  
-  <!-- Appréciation -->
-  <div class="mt-6 p-3 border-l-4 border-primary bg-gray-50">
-    <p class="font-bold">APPRÉCIATION DE L'ASSIDUITÉ</p>
-    <p class="mt-1">
-      @if(presentRate >= 90)
-      Félicitations ! Votre assiduité est exemplaire. Continuez ainsi.
-      @elseif(presentRate >= 75)
-      Bonne assiduité. Quelques efforts supplémentaires vous permettront d'atteindre l'excellence.
-      @elseif(presentRate >= 60)
-      Assiduité à améliorer. Votre présence régulière est importante pour votre réussite.
-      @else
-      Votre taux de présence est préoccupant. Une meilleure assiduité est nécessaire pour votre scolarité.
-      @endif
-    </p>
-  </div>
-  
-  <!-- Signatures -->
-  <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
-    <div class="text-center">
-      <p>L'Élève</p>
-      <div class="mt-12">_______________</div>
-    </div>
-    <div class="text-center">
-      <p>Le Chef d'Établissement</p>
-      <div class="mt-12">_______________</div>
-    </div>
-  </div>
-</div>
 
-<style>
-  .attendance-report {
-    font-family: 'Times New Roman', 'Arial', sans-serif;
-    padding: 20px;
-  }
-  table {
-    border-collapse: collapse;
-  }
-  .border {
-    border: 1px solid #ddd;
-  }
-  .border-b {
-    border-bottom: 1px solid #ddd;
-  }
-  .bg-gray-100 {
-    background-color: #f3f4f6;
-  }
-  @media print {
-    body {
-      padding: 0;
-      margin: 0;
-    }
+    <!-- Graphique -->
+    <div class="text-center mb-6">
+      <div class="inline-block w-32 text-center p-2 m-2 bg-green-100 rounded">
+        <div class="text-3xl font-bold text-green-600">
+          {{ presentRate }}%
+        </div>
+        <div class="text-xs">
+          PrÃ©sents
+        </div>
+      </div>
+      <div class="inline-block w-32 text-center p-2 m-2 bg-red-100 rounded">
+        <div class="text-3xl font-bold text-red-600">
+          {{ absentRate }}%
+        </div>
+        <div class="text-xs">
+          Absents
+        </div>
+      </div>
+      <div class="inline-block w-32 text-center p-2 m-2 bg-yellow-100 rounded">
+        <div class="text-3xl font-bold text-yellow-600">
+          {{ lateRate }}%
+        </div>
+        <div class="text-xs">
+          Retards
+        </div>
+      </div>
+    </div>
+
+    <!-- Tableau des absences -->
+    <div class="mb-6">
+      <h3 class="font-bold mb-2">
+        DÃ©tail des absences et retards
+      </h3>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-3 py-2 text-left">
+                Date
+              </th>
+              <th class="px-3 py-2 text-left">
+                PÃ©riode
+              </th>
+              <th class="px-3 py-2 text-left">
+                Statut
+              </th>
+              <th class="px-3 py-2 text-left">
+                Justification
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(record in absenceRecords)
+              <tr class="border-b">
+                <td class="px-3 py-2">
+                  {{ record.date }}
+                </td>
+                <td class="px-3 py-2">
+                  {{ record.periodLabel || 'JournÃ©e' }}
+                </td>
+                <td class="px-3 py-2">
+                  {{ record.status === 'absent' ? 'Absence' : (record.status === 'late' ? 'Retard' : 'ExcusÃ©') }}
+                </td>
+                <td class="px-3 py-2">
+                  {{ record.reason || '-' }}
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="4" class="text-center py-6">
+                  Aucune absence ou retard enregistrÃ©
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ã‰volution mensuelle -->
+    <div class="mb-6">
+      <h3 class="font-bold mb-2">
+        Ã‰volution mensuelle
+      </h3>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-3 py-2">
+                Mois
+              </th>
+              <th class="px-3 py-2 text-center">
+                PrÃ©sences
+              </th>
+              <th class="px-3 py-2 text-center">
+                Absences
+              </th>
+              <th class="px-3 py-2 text-center">
+                Retards
+              </th>
+              <th class="px-3 py-2 text-center">
+                Taux prÃ©sence
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(month in monthlyData)
+              <tr class="border-b">
+                <td class="px-3 py-2">
+                  {{ month.name }}
+                </td>
+                <td class="px-3 py-2 text-center">
+                  {{ month.present }}
+                </td>
+                <td class="px-3 py-2 text-center">
+                  {{ month.absent }}
+                </td>
+                <td class="px-3 py-2 text-center">
+                  {{ month.late }}
+                </td>
+                <td class="px-3 py-2 text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                      <div class="bg-green-500 rounded-full h-1.5" style="width: {{ month.rate }}%">
+                      </div>
+                    </div>
+                    <span>{{ month.rate }}%</span>
+                  </div>
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ApprÃ©ciation -->
+    <div class="mt-6 p-3 border-l-4 border-primary bg-gray-50">
+      <p class="font-bold">
+        APPRÃ‰CIATION DE L'ASSIDUITÃ‰
+      </p>
+      <p class="mt-1">
+        @if(presentRate >= 90)
+          FÃ©licitations ! Votre assiduitÃ© est exemplaire. Continuez ainsi.
+        @elseif(presentRate >= 75)
+          Bonne assiduitÃ©. Quelques efforts supplÃ©mentaires vous permettront d'atteindre l'excellence.
+        @elseif(presentRate >= 60)
+          AssiduitÃ© Ã  amÃ©liorer. Votre prÃ©sence rÃ©guliÃ¨re est importante pour votre rÃ©ussite.
+        @else
+          Votre taux de prÃ©sence est prÃ©occupant. Une meilleure assiduitÃ© est nÃ©cessaire pour votre scolaritÃ©.
+        @endif
+      </p>
+    </div>
+
+    <!-- Signatures -->
+    <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
+      <div class="text-center">
+        <p>
+          L'Ã‰lÃ¨ve
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+      <div class="text-center">
+        <p>
+          Le Chef d'Ã‰tablissement
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
     .attendance-report {
-      padding: 0;
+      font-family: 'Times New Roman', 'Arial', sans-serif;
+      padding: 20px;
     }
-  }
-</style>
+    
+    table {
+      border-collapse: collapse;
+    }
+    
+    .border {
+      border: 1px solid #ddd;
+    }
+    
+    .border-b {
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .bg-gray-100 {
+      background-color: #f3f4f6;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+    
+      .attendance-report {
+        padding: 0;
+      }
+    }
+  </style>
 
-{{# /layout }}

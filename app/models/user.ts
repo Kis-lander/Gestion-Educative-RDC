@@ -1,7 +1,8 @@
 import { UserSchema } from '#database/schema'
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
-import { column, belongsTo, hasMany, beforeSave } from '@adonisjs/lucid/orm'
+import { randomUUID } from 'node:crypto'
+import { column, belongsTo, hasMany, beforeCreate, beforeSave } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import School from '#models/school'
 import Message from '#models/message'
@@ -73,6 +74,11 @@ export default class User extends UserSchema {
   /**
    * HOOKS
    */
+  @beforeCreate()
+  public static assignId(user: User) {
+    user.id = user.id ?? randomUUID()
+  }
+
   @beforeSave()
   public static async hashPassword(user: User) {
     if (user.$dirty.password) {

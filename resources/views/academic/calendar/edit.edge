@@ -1,130 +1,198 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier événement - {{ event.title }}{{# /section }}
-
-{{# section('dashboardTitle') }}Modifier l'événement{{# /section }}
-{{# section('dashboardSubtitle') }}{{ event.title }}{{# /section }}
-
-{{# section('actions') }}
-<button onclick="deleteEvent()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-  <i class="fas fa-trash mr-2"></i> Supprimer l'événement
+  @section('title')
+    Modifier Ã©vÃ©nement - {{ event.title }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Modifier l'Ã©vÃ©nement
+  @endsection
+  @section('dashboardSubtitle')
+    {{ event.title }}
+  @endsection
+  
+  @section('actions')
+    <button onclick="deleteEvent()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+      <i class="fas fa-trash mr-2"></i>Supprimer l'Ã©vÃ©nement
 </button>
-{{# /section }}
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl mx-auto">
+      <form
+        method="POST"
+        action="/academic/calendar/{{ event.id }}/update"
+        x-data="{ loading: false, eventType: '{{ event.type }}' }"
+        @submit="loading = true"
+      >
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+        <input type="hidden" name="_method" value="PUT" />
 
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl mx-auto">
-  <form method="POST" action="/academic/calendar/{{ event.id }}/update" x-data="{ loading: false, eventType: '{{ event.type }}' }" @submit="loading = true">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <input type="hidden" name="_method" value="PUT">
-    
-    <div class="space-y-4">
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'événement *</label>
-        <select name="type" required x-model="eventType" class="w-full px-3 py-2 border rounded-lg">
-          <option value="event" {{ event.type === 'event' ? 'selected' : '' }}>Événement spécial</option>
-          <option value="holiday" {{ event.type === 'holiday' ? 'selected' : '' }}>Vacances / Congé</option>
-          <option value="exam" {{ event.type === 'exam' ? 'selected' : '' }}>Examen</option>
-          <option value="meeting" {{ event.type === 'meeting' ? 'selected' : '' }}>Réunion</option>
-          <option value="deadline" {{ event.type === 'deadline' ? 'selected' : '' }}>Date limite</option>
-        </select>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
-        <input type="text" name="title" value="{{ event.title }}" required 
-               class="w-full px-3 py-2 border rounded-lg">
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
-        <textarea name="description" rows="3" 
-                  class="w-full px-3 py-2 border rounded-lg">{{ event.description || '' }}</textarea>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début *</label>
-          <input type="date" name="startDate" value="{{ event.start_date }}" required class="w-full px-3 py-2 border rounded-lg">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'Ã©vÃ©nement *</label>
+            <select name="type" required x-model="eventType" class="w-full px-3 py-2 border rounded-lg">
+              <option value="event" {{ event.type === 'event' ? 'selected' : '' }}>
+                Ã‰vÃ©nement spÃ©cial
+              </option>
+              <option value="holiday" {{ event.type === 'holiday' ? 'selected' : '' }}>
+                Vacances / CongÃ©
+              </option>
+              <option value="exam" {{ event.type === 'exam' ? 'selected' : '' }}>
+                Examen
+              </option>
+              <option value="meeting" {{ event.type === 'meeting' ? 'selected' : '' }}>
+                RÃ©union
+              </option>
+              <option value="deadline" {{ event.type === 'deadline' ? 'selected' : '' }}>
+                Date limite
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
+            <input
+              type="text"
+              name="title"
+              value="{{ event.title }}"
+              required
+              class="w-full px-3 py-2 border rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+            <textarea name="description" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ event.description || '' }}</textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date dÃ©but *</label>
+              <input
+                type="date"
+                name="startDate"
+                value="{{ event.start_date }}"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure dÃ©but</label>
+              <input
+                type="time"
+                name="startTime"
+                value="{{ event.start_time || '' }}"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin</label>
+              <input
+                type="date"
+                name="endDate"
+                value="{{ event.end_date || '' }}"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure fin</label>
+              <input
+                type="time"
+                name="endTime"
+                value="{{ event.end_time || '' }}"
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Lieu</label>
+            <input
+              type="text"
+              name="location"
+              value="{{ event.location || '' }}"
+              class="w-full px-3 py-2 border rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Public cible</label>
+            <select name="targetAudience" class="w-full px-3 py-2 border rounded-lg">
+              <option value="all" {{ event.target_audience === 'all' ? 'selected' : '' }}>
+                Tous
+              </option>
+              <option value="students" {{ event.target_audience === 'students' ? 'selected' : '' }}>
+                Ã‰lÃ¨ves uniquement
+              </option>
+              <option value="teachers" {{ event.target_audience === 'teachers' ? 'selected' : '' }}>
+                Enseignants uniquement
+              </option>
+              <option value="parents" {{ event.target_audience === 'parents' ? 'selected' : '' }}>
+                Parents uniquement
+              </option>
+              <option value="staff" {{ event.target_audience === 'staff' ? 'selected' : '' }}>
+                Personnel uniquement
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Année scolaire *</label>
+            <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
+              <option value="{{ currentYear }}" {{ event.academic_year == currentYear ? 'selected' : '' }}>
+                {{ currentYear }}
+              </option>
+              <option value="{{ currentYear - 1 }}" {{ event.academic_year == currentYear - 1 ? 'selected' : '' }}>
+                {{ currentYear - 1 }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-4 pt-2 border-t">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="notifyUpdate" class="w-4 h-4" checked />
+              <span>Notifier les utilisateurs de la modification</span>
+            </label>
+          </div>
         </div>
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure début</label>
-          <input type="time" name="startTime" value="{{ event.start_time || '' }}" class="w-full px-3 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin</label>
-          <input type="date" name="endDate" value="{{ event.end_date || '' }}" class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure fin</label>
-          <input type="time" name="endTime" value="{{ event.end_time || '' }}" class="w-full px-3 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Lieu</label>
-        <input type="text" name="location" value="{{ event.location || '' }}" 
-               class="w-full px-3 py-2 border rounded-lg">
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Public cible</label>
-        <select name="targetAudience" class="w-full px-3 py-2 border rounded-lg">
-          <option value="all" {{ event.target_audience === 'all' ? 'selected' : '' }}>Tous</option>
-          <option value="students" {{ event.target_audience === 'students' ? 'selected' : '' }}>Élèves uniquement</option>
-          <option value="teachers" {{ event.target_audience === 'teachers' ? 'selected' : '' }}>Enseignants uniquement</option>
-          <option value="parents" {{ event.target_audience === 'parents' ? 'selected' : '' }}>Parents uniquement</option>
-          <option value="staff" {{ event.target_audience === 'staff' ? 'selected' : '' }}>Personnel uniquement</option>
-        </select>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique *</label>
-        <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
-          <option value="{{ currentYear }}" {{ event.academic_year == currentYear ? 'selected' : '' }}>{{ currentYear }}</option>
-          <option value="{{ currentYear - 1 }}" {{ event.academic_year == currentYear - 1 ? 'selected' : '' }}>{{ currentYear - 1 }}</option>
-        </select>
-      </div>
-      
-      <div class="flex items-center gap-4 pt-2 border-t">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="notifyUpdate" class="w-4 h-4" checked>
-          <span>Notifier les utilisateurs de la modification</span>
-        </label>
-      </div>
-    </div>
-    
-    <div class="flex gap-3 mt-6 pt-4 border-t">
-      <button type="submit" :disabled="loading"
-              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-        Enregistrer les modifications
+
+        <div class="flex gap-3 mt-6 pt-4 border-t">
+          <button
+            type="submit"
+            :disabled="loading"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+            Enregistrer les modifications
       </button>
-      <a href="/academic/calendar" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-        Annuler
+          <a href="/academic/calendar" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+            Annuler
       </a>
+        </div>
+      </form>
     </div>
-  </form>
-</div>
 
-<script>
-  function deleteEvent() {
-    if (confirm('Supprimer définitivement cet événement ? Cette action est irréversible.')) {
-      fetch('/academic/calendar/{{ event.id }}', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) {
-          window.location.href = '/academic/calendar'
-        } else {
-          alert('Erreur: ' + data.message)
+    <script>
+      function deleteEvent() {
+        if (confirm("Supprimer dÃ©finitivement cet Ã©vÃ©nement ? Cette action est irrÃ©versible.")) {
+          fetch("/academic/calendar/{{ event.id }}", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) {
+              window.location.href = "/academic/calendar";
+            } else {
+              alert("Erreur: " + data.message);
+            }
+          });
         }
-      })
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+      }
+    </script>
+  @endsection
+  

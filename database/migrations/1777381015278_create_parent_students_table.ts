@@ -10,7 +10,7 @@ export default class ParentStudentSchema extends BaseSchema {
       table.uuid('student_id').references('id').inTable('students').onDelete('CASCADE')
       table.boolean('is_primary').defaultTo(false)
       table.timestamps(true)
-      
+
       table.unique(['parent_id', 'student_id'])
     })
   }

@@ -1,6 +1,63 @@
-<footer class="bg-white dark:bg-gray-800 border-t dark:border-gray-700 mt-12">
-  <div class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-    <p>&copy; {{ new Date().getFullYear() }} Gestion Éducative RDC. Tous droits réservés.</p>
-    <p class="mt-1">Version 1.0 - Plateforme d'inspection pédagogique</p>
+<footer
+  class="bg-white/95 dark:bg-gray-800/95 border-t border-gray-200 dark:border-gray-700 transition-all duration-300"
+  :class="sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'"
+>
+  <div class="px-4 md:px-6 py-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      <div class="flex items-start gap-3">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png"
+          alt="Logo RDC"
+          class="h-10 w-10 object-contain rounded-full bg-white p-1"
+        />
+        <div>
+          <p class="font-semibold text-gray-900 dark:text-white">
+            Gestion Éducative RDC
+          </p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Plateforme nationale d'inspection pédagogique et de suivi des établissements.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <a href="/inspection/dashboard" class="text-gray-600 dark:text-gray-300 hover:text-primary">
+          Tableau de bord
+        </a>
+        <a href="/inspection/schools" class="text-gray-600 dark:text-gray-300 hover:text-primary">
+          Écoles
+        </a>
+        <a href="/inspection/communications/history" class="text-gray-600 dark:text-gray-300 hover:text-primary">
+          Communications
+        </a>
+        <a href="/inspection/settings" class="text-gray-600 dark:text-gray-300 hover:text-primary">
+          Paramètres
+        </a>
+      </div>
+
+      <div class="md:text-right">
+        <div class="flex md:justify-end flex-wrap gap-2">
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
+            <i class="fas fa-circle text-[0.5rem]"></i>
+            Système actif
+          </span>
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
+            Version 1.0
+          </span>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+          Support : inspection@gestion-educative-rdc.cd
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+      <p>
+        &copy; {{ new Date().getFullYear() }} Gestion Éducative RDC. Tous droits réservés.
+      </p>
+      <p>
+        République Démocratique du Congo - Inspection pédagogique
+      </p>
+    </div>
   </div>
 </footer>

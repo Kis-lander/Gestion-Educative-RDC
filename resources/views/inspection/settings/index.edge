@@ -1,518 +1,771 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Paramètres - Inspection RDC{{# /section }}
-
-{{# section('dashboardTitle') }}Paramètres généraux{{# /section }}
-{{# section('dashboardSubtitle') }}Configuration du système d'inspection pédagogique{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-  <!-- Sidebar navigation -->
-  <div class="lg:col-span-1">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden sticky top-20">
-      <div class="p-4 border-b dark:border-gray-700">
-        <h3 class="font-semibold">Configuration</h3>
-      </div>
-      <div class="divide-y dark:divide-gray-700">
-        <button onclick="showTab('general')" id="tab-general" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
-          <i class="fas fa-globe w-5 text-gray-500"></i>
-          <span>Général</span>
-        </button>
-        <button onclick="showTab('inspection')" id="tab-inspection" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
-          <i class="fas fa-clipboard-list w-5 text-gray-500"></i>
-          <span>Inspection</span>
-        </button>
-        <button onclick="showTab('notifications')" id="tab-notifications" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
-          <i class="fas fa-bell w-5 text-gray-500"></i>
-          <span>Notifications</span>
-        </button>
-        <button onclick="showTab('backup')" id="tab-backup" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
-          <i class="fas fa-database w-5 text-gray-500"></i>
-          <span>Sauvegarde</span>
-        </button>
-        <button onclick="showTab('security')" id="tab-security" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
-          <i class="fas fa-shield-alt w-5 text-gray-500"></i>
-          <span>Sécurité</span>
-        </button>
-        <button onclick="showTab('logs')" id="tab-logs" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition">
-          <i class="fas fa-history w-5 text-gray-500"></i>
-          <span>Journaux</span>
-        </button>
-      </div>
-    </div>
-  </div>
+  @section('title')
+    Paramètres - Inspection RDC
+  @endsection
   
-  <!-- Content area -->
-  <div class="lg:col-span-3">
-    
-    <!-- Tab: Général -->
-    <div id="panel-general" class="tab-panel">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Paramètres généraux</h3>
-        
-        <form method="POST" action="/inspection/settings/general" x-data="{ loading: false }" @submit="loading = true">
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom du système</label>
-              <input type="text" name="system_name" value="{{ settings.systemName || 'Gestion Éducative RDC' }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique en cours</label>
-              <select name="current_academic_year" class="w-full px-3 py-2 border rounded-lg">
-                <option value="2024-2025" {{ settings.currentAcademicYear === '2024-2025' ? 'selected' : '' }}>2024-2025</option>
-                <option value="2023-2024" {{ settings.currentAcademicYear === '2023-2024' ? 'selected' : '' }}>2023-2024</option>
-                <option value="2022-2023" {{ settings.currentAcademicYear === '2022-2023' ? 'selected' : '' }}>2022-2023</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre actuel</label>
-              <select name="current_term" class="w-full px-3 py-2 border rounded-lg">
-                <option value="T1" {{ settings.currentTerm === 'T1' ? 'selected' : '' }}>Trimestre 1</option>
-                <option value="T2" {{ settings.currentTerm === 'T2' ? 'selected' : '' }}>Trimestre 2</option>
-                <option value="T3" {{ settings.currentTerm === 'T3' ? 'selected' : '' }}>Trimestre 3</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Langue par défaut</label>
-              <select name="default_language" class="w-full px-3 py-2 border rounded-lg">
-                <option value="fr" {{ settings.defaultLanguage === 'fr' ? 'selected' : '' }}>Français</option>
-                <option value="en" {{ settings.defaultLanguage === 'en' ? 'selected' : '' }}>English</option>
-                <option value="ln" {{ settings.defaultLanguage === 'ln' ? 'selected' : '' }}>Lingala</option>
-                <option value="sw" {{ settings.defaultLanguage === 'sw' ? 'selected' : '' }}>Swahili</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
-              <select name="timezone" class="w-full px-3 py-2 border rounded-lg">
-                <option value="Africa/Kinshasa" {{ settings.timezone === 'Africa/Kinshasa' ? 'selected' : '' }}>Afrique/Kinshasa</option>
-                <option value="Africa/Lubumbashi" {{ settings.timezone === 'Africa/Lubumbashi' ? 'selected' : '' }}>Afrique/Lubumbashi</option>
-              </select>
-            </div>
+  @section('dashboardTitle')
+    Paramètres généraux
+  @endsection
+  @section('dashboardSubtitle')
+    Configuration du système d'inspection pédagogique
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <!-- Sidebar navigation -->
+      <div class="lg:col-span-1">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden sticky top-20">
+          <div class="p-4 border-b dark:border-gray-700">
+            <h3 class="font-semibold">
+              Configuration
+            </h3>
           </div>
-          
-          <div class="mt-6 pt-4 border-t">
-            <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              Enregistrer les modifications
+          <div class="divide-y dark:divide-gray-700">
+            <button
+              onclick="showTab('general')"
+              id="tab-general"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
+            >
+              <i class="fas fa-globe w-5 text-gray-500"></i>
+              <span>Général</span>
+            </button>
+            <button
+              onclick="showTab('inspection')"
+              id="tab-inspection"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
+            >
+              <i class="fas fa-clipboard-list w-5 text-gray-500"></i>
+              <span>Inspection</span>
+            </button>
+            <button
+              onclick="showTab('notifications')"
+              id="tab-notifications"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
+            >
+              <i class="fas fa-bell w-5 text-gray-500"></i>
+              <span>Notifications</span>
+            </button>
+            <button
+              onclick="showTab('backup')"
+              id="tab-backup"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
+            >
+              <i class="fas fa-database w-5 text-gray-500"></i>
+              <span>Sauvegarde</span>
+            </button>
+            <button
+              onclick="showTab('security')"
+              id="tab-security"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
+            >
+              <i class="fas fa-shield-alt w-5 text-gray-500"></i>
+              <span>Sécurité</span>
+            </button>
+            <button
+              onclick="showTab('logs')"
+              id="tab-logs"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
+            >
+              <i class="fas fa-history w-5 text-gray-500"></i>
+              <span>Journaux</span>
             </button>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
-    
-    <!-- Tab: Inspection -->
-    <div id="panel-inspection" class="tab-panel hidden">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Paramètres d'inspection</h3>
-        
-        <form method="POST" action="/inspection/settings/inspection" x-data="{ loading: false }" @submit="loading = true">
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          
-          <div class="space-y-4">
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="auto_approve_schools" {{ settings.autoApproveSchools ? 'checked' : '' }} class="w-4 h-4">
-                <span>Approbation automatique des nouvelles écoles (désactivé par défaut)</span>
-              </label>
-              <p class="text-xs text-gray-500 mt-1 ml-7">Activez cette option pour approuver automatiquement les nouvelles inscriptions</p>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="require_inspection_report" {{ settings.requireInspectionReport ? 'checked' : '' }} class="w-4 h-4">
-                <span>Exiger un rapport d'inspection avant approbation</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Fréquence minimale des inspections (mois)</label>
-              <input type="number" name="inspection_frequency" value="{{ settings.inspectionFrequency || 12 }}" min="1" max="36"
-                     class="w-full px-3 py-2 border rounded-lg">
-              <p class="text-xs text-gray-500 mt-1">Tous les X mois, une inspection doit être réalisée</p>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Délai de réponse aux demandes d'inspection (jours)</label>
-              <input type="number" name="response_deadline" value="{{ settings.responseDeadline || 15 }}" min="1" max="60"
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Grille d'évaluation par défaut</label>
-              <select name="default_evaluation_grid" class="w-full px-3 py-2 border rounded-lg">
-                <option value="standard" {{ settings.defaultEvaluationGrid === 'standard' ? 'selected' : '' }}>Standard</option>
-                <option value="detailed" {{ settings.defaultEvaluationGrid === 'detailed' ? 'selected' : '' }}>Détaillée</option>
-                <option value="simplified" {{ settings.defaultEvaluationGrid === 'simplified' ? 'selected' : '' }}>Simplifiée</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="mt-6 pt-4 border-t">
-            <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              Enregistrer
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-    
-    <!-- Tab: Notifications -->
-    <div id="panel-notifications" class="tab-panel hidden">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Paramètres des notifications</h3>
-        
-        <form method="POST" action="/inspection/settings/notifications" x-data="{ loading: false }" @submit="loading = true">
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          
-          <div class="space-y-4">
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="notify_on_new_school" {{ settings.notifyOnNewSchool ? 'checked' : '' }} class="w-4 h-4">
-                <span>Notification lors d'une nouvelle inscription d'école</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="notify_on_transfer_request" {{ settings.notifyOnTransferRequest ? 'checked' : '' }} class="w-4 h-4">
-                <span>Notification lors d'une demande de transfert</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="notify_on_approval" {{ settings.notifyOnApproval ? 'checked' : '' }} class="w-4 h-4">
-                <span>Notification après approbation d'une école</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Email de notification</label>
-              <input type="email" name="notification_email" value="{{ settings.notificationEmail || '' }}" 
-                     class="w-full px-3 py-2 border rounded-lg"
-                     placeholder="inspection@education.gouv.cd">
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Email d'urgence</label>
-              <input type="email" name="emergency_email" value="{{ settings.emergencyEmail || '' }}" 
-                     class="w-full px-3 py-2 border rounded-lg"
-                     placeholder="urgence@inspection.gouv.cd">
-            </div>
-          </div>
-          
-          <div class="mt-6 pt-4 border-t">
-            <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              Enregistrer
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-    
-    <!-- Tab: Sauvegarde -->
-    <div id="panel-backup" class="tab-panel hidden">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Sauvegarde des données</h3>
-        
-        <div class="space-y-6">
-          <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <div class="flex justify-between items-center">
-              <div>
-                <p class="font-medium">Dernière sauvegarde</p>
-                <p class="text-sm text-gray-600" id="lastBackup">{{ settings.lastBackup || 'Jamais' }}</p>
-              </div>
-              <button onclick="triggerBackup()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-                <i class="fas fa-database mr-2"></i> Sauvegarder maintenant
-              </button>
-            </div>
-          </div>
-          
-          <form method="POST" action="/inspection/settings/backup" x-data="{ loading: false }" @submit="loading = true">
-            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-            
-            <div class="space-y-4">
-              <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Fréquence de sauvegarde automatique</label>
-                <select name="backup_frequency" class="w-full px-3 py-2 border rounded-lg">
-                  <option value="daily" {{ settings.backupFrequency === 'daily' ? 'selected' : '' }}>Quotidienne</option>
-                  <option value="weekly" {{ settings.backupFrequency === 'weekly' ? 'selected' : '' }}>Hebdomadaire</option>
-                  <option value="monthly" {{ settings.backupFrequency === 'monthly' ? 'selected' : '' }}>Mensuelle</option>
-                  <option value="never" {{ settings.backupFrequency === 'never' ? 'selected' : '' }}>Jamais</option>
-                </select>
-              </div>
-              
-              <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre de sauvegardes à conserver</label>
-                <input type="number" name="backup_retention" value="{{ settings.backupRetention || 30 }}" min="1" max="365"
-                       class="w-full px-3 py-2 border rounded-lg">
-              </div>
-              
-              <div>
-                <label class="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" name="backup_logs" {{ settings.backupLogs ? 'checked' : '' }} class="w-4 h-4">
-                  <span>Inclure les journaux système dans les sauvegardes</span>
-                </label>
-              </div>
-            </div>
-            
-            <div class="mt-6 pt-4 border-t">
-              <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-                <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-                Enregistrer paramètres
-              </button>
-            </div>
-          </form>
-          
-          <!-- Liste des sauvegardes -->
-          <div class="mt-6">
-            <h4 class="font-semibold mb-3">Sauvegardes disponibles</h4>
-            <div class="space-y-2" id="backupList">
-              @each(backup in backups)
-              <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+
+      <!-- Content area -->
+      <div class="lg:col-span-3">
+
+        <!-- Tab: Général -->
+        <div id="panel-general" class="tab-panel">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h3 class="font-semibold text-lg border-b pb-3 mb-4">
+              Paramètres généraux
+            </h3>
+
+            <form
+              method="POST"
+              action="/inspection/settings/general"
+              x-data="{ loading: false }"
+              @submit="loading = true"
+            >
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+              <div class="space-y-4">
                 <div>
-                  <p class="font-medium">{{ backup.filename }}</p>
-                  <p class="text-xs text-gray-500">{{ backup.date }} - {{ backup.size }}</p>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom du système</label>
+                  <input
+                    type="text"
+                    name="system_name"
+                    value="{{ settings.systemName || 'Gestion Éducative RDC' }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
                 </div>
-                <button onclick="downloadBackup('{{ backup.filename }}')" class="text-primary hover:underline text-sm">
-                  <i class="fas fa-download mr-1"></i> Télécharger
-                </button>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Année scolaire en cours</label>
+                  <select name="current_academic_year" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="2024-2025" {{ settings.currentAcademicYear === '2024-2025' ? 'selected' : '' }}>
+                      2024-2025
+                    </option>
+                    <option value="2023-2024" {{ settings.currentAcademicYear === '2023-2024' ? 'selected' : '' }}>
+                      2023-2024
+                    </option>
+                    <option value="2022-2023" {{ settings.currentAcademicYear === '2022-2023' ? 'selected' : '' }}>
+                      2022-2023
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre actuel</label>
+                  <select name="current_term" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="T1" {{ settings.currentTerm === 'T1' ? 'selected' : '' }}>
+                      Trimestre 1
+                    </option>
+                    <option value="T2" {{ settings.currentTerm === 'T2' ? 'selected' : '' }}>
+                      Trimestre 2
+                    </option>
+                    <option value="T3" {{ settings.currentTerm === 'T3' ? 'selected' : '' }}>
+                      Trimestre 3
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Langue par défaut</label>
+                  <select name="default_language" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="fr" {{ settings.defaultLanguage === 'fr' ? 'selected' : '' }}>
+                      Français
+                    </option>
+                    <option value="en" {{ settings.defaultLanguage === 'en' ? 'selected' : '' }}>
+                      English
+                    </option>
+                    <option value="ln" {{ settings.defaultLanguage === 'ln' ? 'selected' : '' }}>
+                      Lingala
+                    </option>
+                    <option value="sw" {{ settings.defaultLanguage === 'sw' ? 'selected' : '' }}>
+                      Swahili
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
+                  <select name="timezone" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="Africa/Kinshasa" {{ settings.timezone === 'Africa/Kinshasa' ? 'selected' : '' }}>
+                      Afrique/Kinshasa
+                    </option>
+                    <option value="Africa/Lubumbashi" {{ settings.timezone === 'Africa/Lubumbashi' ? 'selected' : '' }}>
+                      Afrique/Lubumbashi
+                    </option>
+                  </select>
+                </div>
               </div>
-              @eachelse
-              <p class="text-gray-500 text-center py-4">Aucune sauvegarde disponible</p>
-              @end
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Tab: Sécurité -->
-    <div id="panel-security" class="tab-panel hidden">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Paramètres de sécurité</h3>
-        
-        <form method="POST" action="/inspection/settings/security" x-data="{ loading: false }" @submit="loading = true">
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Longueur minimale du mot de passe</label>
-              <input type="number" name="min_password_length" value="{{ settings.minPasswordLength || 8 }}" min="6" max="20"
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="require_strong_password" {{ settings.requireStrongPassword ? 'checked' : '' }} class="w-4 h-4">
-                <span>Exiger des mots de passe forts (majuscules, minuscules, chiffres, symboles)</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Validité du mot de passe (jours)</label>
-              <input type="number" name="password_expiry_days" value="{{ settings.passwordExpiryDays || 90 }}" min="0" max="365"
-                     class="w-full px-3 py-2 border rounded-lg">
-              <p class="text-xs text-gray-500 mt-1">0 = jamais</p>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Tentatives de connexion avant verrouillage</label>
-              <input type="number" name="max_login_attempts" value="{{ settings.maxLoginAttempts || 5 }}" min="3" max="10"
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Durée de verrouillage (minutes)</label>
-              <input type="number" name="lockout_duration" value="{{ settings.lockoutDuration || 30 }}" min="5" max="120"
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="two_factor_auth" {{ settings.twoFactorAuth ? 'checked' : '' }} class="w-4 h-4">
-                <span>Activer l'authentification à deux facteurs pour l'inspection</span>
-              </label>
-            </div>
-          </div>
-          
-          <div class="mt-6 pt-4 border-t">
-            <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              Enregistrer
+
+              <div class="mt-6 pt-4 border-t">
+                <button
+                  type="submit"
+                  :disabled="loading"
+                  class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+                >
+                  <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                  Enregistrer les modifications
             </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
-    </div>
-    
-    <!-- Tab: Journaux -->
-    <div id="panel-logs" class="tab-panel hidden">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg border-b pb-3 mb-4">Journaux système</h3>
-        
-        <div class="flex justify-between items-center mb-4">
-          <div class="flex gap-2">
-            <select id="logType" class="px-3 py-1 border rounded-lg text-sm">
-              <option value="all">Tous les logs</option>
-              <option value="auth">Authentification</option>
-              <option value="school">Écoles</option>
-              <option value="transfer">Transferts</option>
-              <option value="system">Système</option>
-            </select>
-            <input type="date" id="logDate" class="px-3 py-1 border rounded-lg text-sm">
-            <button onclick="loadLogs()" class="px-3 py-1 bg-primary text-white rounded-lg text-sm">Filtrer</button>
-          </div>
-          <button onclick="exportLogs()" class="px-3 py-1 border rounded-lg text-sm">
-            <i class="fas fa-download mr-1"></i> Exporter
-          </button>
         </div>
-        
-        <div class="table-responsive max-h-96 overflow-y-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0">
-              <tr>
-                <th class="px-3 py-2">Date/Heure</th>
-                <th class="px-3 py-2">Utilisateur</th>
-                <th class="px-3 py-2">Action</th>
-                <th class="px-3 py-2">Détails</th>
-                <th class="px-3 py-2">IP</th>
-              </tr>
-            </thead>
-            <tbody id="logsTableBody">
-              <tr>
-                <td colspan="5" class="text-center py-8 text-gray-500">Chargement des logs...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <div class="mt-4 flex justify-between items-center">
-          <button id="prevLogs" class="px-3 py-1 border rounded-lg text-sm disabled:opacity-50" disabled>
-            <i class="fas fa-chevron-left mr-1"></i> Précédent
-          </button>
-          <span id="logPageInfo" class="text-sm text-gray-500">Page 1</span>
-          <button id="nextLogs" class="px-3 py-1 border rounded-lg text-sm disabled:opacity-50">
-            Suivant <i class="fas fa-chevron-right ml-1"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-    
-  </div>
-</div>
 
-<script>
-  let currentTab = 'general'
-  let currentLogPage = 1
-  
-  function showTab(tabName) {
-    // Cacher tous les panels
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-      panel.classList.add('hidden')
-    })
-    
-    // Afficher le panel sélectionné
-    document.getElementById(`panel-${tabName}`).classList.remove('hidden')
-    
-    // Mettre à jour l'apparence des onglets
-    document.querySelectorAll('[id^="tab-"]').forEach(tab => {
-      tab.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'font-semibold')
-    })
-    document.getElementById(`tab-${tabName}`).classList.add('bg-gray-100', 'dark:bg-gray-700', 'font-semibold')
-    
-    currentTab = tabName
-    
-    // Si onglet logs, charger les données
-    if (tabName === 'logs') {
-      loadLogs()
-    }
-  }
-  
-  async function loadLogs() {
-    const type = document.getElementById('logType')?.value || 'all'
-    const date = document.getElementById('logDate')?.value || ''
-    
-    const res = await fetch(`/api/inspection/logs?page=${currentLogPage}&type=${type}&date=${date}`)
-    const data = await res.json()
-    
-    const tbody = document.getElementById('logsTableBody')
-    if (data.logs && data.logs.length > 0) {
-      tbody.innerHTML = data.logs.map(log => `
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-3 py-2 text-xs">${log.datetime}</td>
-          <td class="px-3 py-2">${log.user || 'Système'}</td>
-          <td class="px-3 py-2">${log.action}</td>
-          <td class="px-3 py-2 text-xs break-all">${log.details}</td>
-          <td class="px-3 py-2 font-mono text-xs">${log.ip || '-'}</td>
-        </tr>
-      `).join('')
-    } else {
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Aucun log trouvé</td></tr>'
-    }
-    
-    document.getElementById('logPageInfo').textContent = `Page ${currentLogPage} / ${data.totalPages || 1}`
-    document.getElementById('prevLogs').disabled = currentLogPage <= 1
-    document.getElementById('nextLogs').disabled = currentLogPage >= (data.totalPages || 1)
-  }
-  
-  function triggerBackup() {
-    fetch('/api/inspection/backup', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' } })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert('Sauvegarde déclenchée avec succès')
-          location.reload()
-        } else {
-          alert('Erreur: ' + data.message)
+        <!-- Tab: Inspection -->
+        <div id="panel-inspection" class="tab-panel hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h3 class="font-semibold text-lg border-b pb-3 mb-4">
+              Paramètres d'inspection
+            </h3>
+
+            <form
+              method="POST"
+              action="/inspection/settings/inspection"
+              x-data="{ loading: false }"
+              @submit="loading = true"
+            >
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+              <div class="space-y-4">
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="auto_approve_schools"
+                      class="w-4 h-4"
+                      {{ settings.autoApproveSchools ? 'checked' : '' }}
+                    />
+                    <span>Approbation automatique des nouvelles écoles (désactivé par défaut)</span>
+                  </label>
+                  <p class="text-xs text-gray-500 mt-1 ml-7">
+                    Activez cette option pour approuver automatiquement les nouvelles inscriptions
+                  </p>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="require_inspection_report"
+                      class="w-4 h-4"
+                      {{ settings.requireInspectionReport ? 'checked' : '' }}
+                    />
+                    <span>Exiger un rapport d'inspection avant approbation</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Fréquence minimale des inspections (mois)</label>
+                  <input
+                    type="number"
+                    name="inspection_frequency"
+                    value="{{ settings.inspectionFrequency || 12 }}"
+                    min="1"
+                    max="36"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <p class="text-xs text-gray-500 mt-1">
+                    Tous les X mois, une inspection doit être réalisée
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Délai de réponse aux demandes d'inspection (jours)</label>
+                  <input
+                    type="number"
+                    name="response_deadline"
+                    value="{{ settings.responseDeadline || 15 }}"
+                    min="1"
+                    max="60"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Grille d'évaluation par défaut</label>
+                  <select name="default_evaluation_grid" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="standard" {{ settings.defaultEvaluationGrid === 'standard' ? 'selected' : '' }}>
+                      Standard
+                    </option>
+                    <option value="detailed" {{ settings.defaultEvaluationGrid === 'detailed' ? 'selected' : '' }}>
+                      Détaillée
+                    </option>
+                    <option value="simplified" {{ settings.defaultEvaluationGrid === 'simplified' ? 'selected' : '' }}>
+                      Simplifiée
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mt-6 pt-4 border-t">
+                <button
+                  type="submit"
+                  :disabled="loading"
+                  class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+                >
+                  <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                  Enregistrer
+            </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab: Notifications -->
+        <div id="panel-notifications" class="tab-panel hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h3 class="font-semibold text-lg border-b pb-3 mb-4">
+              Paramètres des notifications
+            </h3>
+
+            <form
+              method="POST"
+              action="/inspection/settings/notifications"
+              x-data="{ loading: false }"
+              @submit="loading = true"
+            >
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+              <div class="space-y-4">
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="notify_on_new_school"
+                      class="w-4 h-4"
+                      {{ settings.notifyOnNewSchool ? 'checked' : '' }}
+                    />
+                    <span>Notification lors d'une nouvelle inscription d'école</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="notify_on_transfer_request"
+                      class="w-4 h-4"
+                      {{ settings.notifyOnTransferRequest ? 'checked' : '' }}
+                    />
+                    <span>Notification lors d'une demande de transfert</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="notify_on_approval"
+                      class="w-4 h-4"
+                      {{ settings.notifyOnApproval ? 'checked' : '' }}
+                    />
+                    <span>Notification après approbation d'une école</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Email de notification</label>
+                  <input
+                    type="email"
+                    name="notification_email"
+                    value="{{ settings.notificationEmail || '' }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="inspection@education.gouv.cd"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Email d'urgence</label>
+                  <input
+                    type="email"
+                    name="emergency_email"
+                    value="{{ settings.emergencyEmail || '' }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="urgence@inspection.gouv.cd"
+                  />
+                </div>
+              </div>
+
+              <div class="mt-6 pt-4 border-t">
+                <button
+                  type="submit"
+                  :disabled="loading"
+                  class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+                >
+                  <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                  Enregistrer
+            </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab: Sauvegarde -->
+        <div id="panel-backup" class="tab-panel hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h3 class="font-semibold text-lg border-b pb-3 mb-4">
+              Sauvegarde des données
+            </h3>
+
+            <div class="space-y-6">
+              <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                <div class="flex justify-between items-center">
+                  <div>
+                    <p class="font-medium">
+                      Dernière sauvegarde
+                    </p>
+                    <p class="text-sm text-gray-600" id="lastBackup">
+                      {{ settings.lastBackup || 'Jamais' }}
+                    </p>
+                  </div>
+                  <button onclick="triggerBackup()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-database mr-2"></i>Sauvegarder maintenant
+              </button>
+                </div>
+              </div>
+
+              <form
+                method="POST"
+                action="/inspection/settings/backup"
+                x-data="{ loading: false }"
+                @submit="loading = true"
+              >
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">Fréquence de sauvegarde automatique</label>
+                    <select name="backup_frequency" class="w-full px-3 py-2 border rounded-lg">
+                      <option value="daily" {{ settings.backupFrequency === 'daily' ? 'selected' : '' }}>
+                        Quotidienne
+                      </option>
+                      <option value="weekly" {{ settings.backupFrequency === 'weekly' ? 'selected' : '' }}>
+                        Hebdomadaire
+                      </option>
+                      <option value="monthly" {{ settings.backupFrequency === 'monthly' ? 'selected' : '' }}>
+                        Mensuelle
+                      </option>
+                      <option value="never" {{ settings.backupFrequency === 'never' ? 'selected' : '' }}>
+                        Jamais
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">Nombre de sauvegardes à conserver</label>
+                    <input
+                      type="number"
+                      name="backup_retention"
+                      value="{{ settings.backupRetention || 30 }}"
+                      min="1"
+                      max="365"
+                      class="w-full px-3 py-2 border rounded-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" name="backup_logs" class="w-4 h-4" {{ settings.backupLogs ? 'checked' : '' }} />
+                      <span>Inclure les journaux système dans les sauvegardes</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t">
+                  <button
+                    type="submit"
+                    :disabled="loading"
+                    class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+                  >
+                    <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                    Enregistrer paramètres
+              </button>
+                </div>
+              </form>
+
+              <!-- Liste des sauvegardes -->
+              <div class="mt-6">
+                <h4 class="font-semibold mb-3">
+                  Sauvegardes disponibles
+                </h4>
+                <div class="space-y-2" id="backupList">
+                  @each(backup in backups)
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div>
+                        <p class="font-medium">
+                          {{ backup.filename }}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                          {{ backup.date }} - {{ backup.size }}
+                        </p>
+                      </div>
+                      <button onclick="downloadBackup('{{ backup.filename }}')" class="text-primary hover:underline text-sm">
+                        <i class="fas fa-download mr-1"></i>Télécharger
+                </button>
+                    </div>
+                    @else
+                    <p class="text-gray-500 text-center py-4">
+                      Aucune sauvegarde disponible
+                    </p>
+                  @end
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Sécurité -->
+        <div id="panel-security" class="tab-panel hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h3 class="font-semibold text-lg border-b pb-3 mb-4">
+              Paramètres de sécurité
+            </h3>
+
+            <form
+              method="POST"
+              action="/inspection/settings/security"
+              x-data="{ loading: false }"
+              @submit="loading = true"
+            >
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Longueur minimale du mot de passe</label>
+                  <input
+                    type="number"
+                    name="min_password_length"
+                    value="{{ settings.minPasswordLength || 8 }}"
+                    min="6"
+                    max="20"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="require_strong_password"
+                      class="w-4 h-4"
+                      {{ settings.requireStrongPassword ? 'checked' : '' }}
+                    />
+                    <span>Exiger des mots de passe forts (majuscules, minuscules, chiffres, symboles)</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Validité du mot de passe (jours)</label>
+                  <input
+                    type="number"
+                    name="password_expiry_days"
+                    value="{{ settings.passwordExpiryDays || 90 }}"
+                    min="0"
+                    max="365"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <p class="text-xs text-gray-500 mt-1">
+                    0 = jamais
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Tentatives de connexion avant verrouillage</label>
+                  <input
+                    type="number"
+                    name="max_login_attempts"
+                    value="{{ settings.maxLoginAttempts || 5 }}"
+                    min="3"
+                    max="10"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Durée de verrouillage (minutes)</label>
+                  <input
+                    type="number"
+                    name="lockout_duration"
+                    value="{{ settings.lockoutDuration || 30 }}"
+                    min="5"
+                    max="120"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="two_factor_auth"
+                      class="w-4 h-4"
+                      {{ settings.twoFactorAuth ? 'checked' : '' }}
+                    />
+                    <span>Activer l'authentification à deux facteurs pour l'inspection</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="mt-6 pt-4 border-t">
+                <button
+                  type="submit"
+                  :disabled="loading"
+                  class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+                >
+                  <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                  Enregistrer
+            </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab: Journaux -->
+        <div id="panel-logs" class="tab-panel hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h3 class="font-semibold text-lg border-b pb-3 mb-4">
+              Journaux système
+            </h3>
+
+            <div class="flex justify-between items-center mb-4">
+              <div class="flex gap-2">
+                <select id="logType" class="px-3 py-1 border rounded-lg text-sm">
+                  <option value="all">
+                    Tous les logs
+                  </option>
+                  <option value="auth">
+                    Authentification
+                  </option>
+                  <option value="school">
+                    Écoles
+                  </option>
+                  <option value="transfer">
+                    Transferts
+                  </option>
+                  <option value="system">
+                    Système
+                  </option>
+                </select>
+                <input type="date" id="logDate" class="px-3 py-1 border rounded-lg text-sm" />
+                <button onclick="loadLogs()" class="px-3 py-1 bg-primary text-white rounded-lg text-sm">Filtrer</button>
+              </div>
+              <button onclick="exportLogs()" class="px-3 py-1 border rounded-lg text-sm">
+                <i class="fas fa-download mr-1"></i>Exporter
+          </button>
+            </div>
+
+            <div class="table-responsive max-h-96 overflow-y-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0">
+                  <tr>
+                    <th class="px-3 py-2">
+                      Date/Heure
+                    </th>
+                    <th class="px-3 py-2">
+                      Utilisateur
+                    </th>
+                    <th class="px-3 py-2">
+                      Action
+                    </th>
+                    <th class="px-3 py-2">
+                      Détails
+                    </th>
+                    <th class="px-3 py-2">
+                      IP
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                  <tr>
+                    <td colspan="5" class="text-center py-8 text-gray-500">
+                      Chargement des logs...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center">
+              <button id="prevLogs" class="px-3 py-1 border rounded-lg text-sm disabled:opacity-50" disabled>
+                <i class="fas fa-chevron-left mr-1"></i>Précédent
+          </button>
+              <span id="logPageInfo" class="text-sm text-gray-500">Page 1</span>
+              <button id="nextLogs" class="px-3 py-1 border rounded-lg text-sm disabled:opacity-50">
+                Suivant <i class="fas fa-chevron-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      let currentTab = "general";
+
+      let currentLogPage = 1;
+
+      function showTab(tabName) {
+        // Cacher tous les panels
+        document.querySelectorAll(".tab-panel").forEach(panel => {
+          panel.classList.add("hidden");
+        });
+        // Afficher le panel sélectionné
+        document.getElementById(`panel-${tabName}`).classList.remove("hidden");
+        // Mettre à jour l'apparence des onglets
+        document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+          tab.classList.remove("bg-gray-100", "dark:bg-gray-700", "font-semibold");
+        });
+        document.getElementById(`tab-${tabName}`).classList.add("bg-gray-100", "dark:bg-gray-700", "font-semibold");
+        currentTab = tabName;
+        // Si onglet logs, charger les données
+        if (tabName === "logs") {
+          loadLogs();
         }
-      })
-  }
-  
-  function downloadBackup(filename) {
-    window.location.href = `/api/inspection/backup/download/${filename}`
-  }
-  
-  function exportLogs() {
-    const type = document.getElementById('logType')?.value || 'all'
-    const date = document.getElementById('logDate')?.value || ''
-    window.location.href = `/api/inspection/logs/export?type=${type}&date=${date}`
-  }
-  
-  // Pagination logs
-  document.getElementById('prevLogs')?.addEventListener('click', () => {
-    if (currentLogPage > 1) {
-      currentLogPage--
-      loadLogs()
-    }
-  })
-  
-  document.getElementById('nextLogs')?.addEventListener('click', () => {
-    currentLogPage++
-    loadLogs()
-  })
-  
-  // Initialisation: afficher l'onglet général par défaut
-  showTab('general')
-</script>
+      }
 
-<style>
-  .tab-panel {
-    transition: opacity 0.2s ease;
-  }
-  [id^="tab-"] {
-    transition: all 0.2s ease;
-  }
-</style>
-{{# /section }}
+      async function loadLogs() {
+        const type = document.getElementById("logType")?.value || "all";
+        const date = document.getElementById("logDate")?.value || "";
+        const res = await fetch(`/api/inspection/logs?page=${currentLogPage}&type=${type}&date=${date}`);
+        const data = await res.json();
+        const tbody = document.getElementById("logsTableBody");
+        if (data.logs && data.logs.length > 0) {
+          tbody.innerHTML = data.logs.map(log => `
+                  <tr class="border-b dark:border-gray-700">
+                    <td class="px-3 py-2 text-xs">${log.datetime}</td>
+                    <td class="px-3 py-2">${log.user || "Système"}</td>
+                    <td class="px-3 py-2">${log.action}</td>
+                    <td class="px-3 py-2 text-xs break-all">${log.details}</td>
+                    <td class="px-3 py-2 font-mono text-xs">${log.ip || "-"}</td>
+                  </tr>
+                `).join("");
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Aucun log trouvé</td></tr>';
+        }
+        document.getElementById("logPageInfo").textContent = `Page ${currentLogPage} / ${data.totalPages || 1}`;
+        document.getElementById("prevLogs").disabled = currentLogPage <= 1;
+        document.getElementById("nextLogs").disabled = currentLogPage >= (data.totalPages || 1);
+      }
 
-{{# /layout }}
+      function triggerBackup() {
+        fetch("/api/inspection/backup", {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        }).then(res => res.json()).then(data => {
+          if (data.success) {
+            alert("Sauvegarde déclenchée avec succès");
+            location.reload();
+          } else {
+            alert("Erreur: " + data.message);
+          }
+        });
+      }
+
+      function downloadBackup(filename) {
+        window.location.href = `/api/inspection/backup/download/${filename}`;
+      }
+
+      function exportLogs() {
+        const type = document.getElementById("logType")?.value || "all";
+        const date = document.getElementById("logDate")?.value || "";
+        window.location.href = `/api/inspection/logs/export?type=${type}&date=${date}`;
+      }
+      // Pagination logs
+
+      document.getElementById("prevLogs")?.addEventListener("click", () => {
+        if (currentLogPage > 1) {
+          currentLogPage--;
+          loadLogs();
+        }
+      });
+
+      document.getElementById("nextLogs")?.addEventListener("click", () => {
+        currentLogPage++;
+        loadLogs();
+      });
+      // Initialisation: afficher l'onglet général par défaut
+
+      showTab("general");
+    </script>
+
+    <style>
+      .tab-panel {
+        transition: opacity 0.2s ease;
+      }
+      
+      [id^="tab-"] {
+        transition: all 0.2s ease;
+      }
+    </style>
+  @endsection
+  

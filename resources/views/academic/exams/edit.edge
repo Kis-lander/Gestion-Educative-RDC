@@ -1,187 +1,263 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier planning examens - {{ exam.title }}{{# /section }}
-
-{{# section('dashboardTitle') }}Modifier le planning{{# /section }}
-{{# section('dashboardSubtitle') }}{{ exam.title }} - {{ exam.period }}{{# /section }}
-
-{{# section('actions') }}
-<button onclick="deleteExam()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-  <i class="fas fa-trash mr-2"></i> Supprimer le planning
+  @section('title')
+    Modifier planning examens - {{ exam.title }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Modifier le planning
+  @endsection
+  @section('dashboardSubtitle')
+    {{ exam.title }} - {{ exam.period }}
+  @endsection
+  
+  @section('actions')
+    <button onclick="deleteExam()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+      <i class="fas fa-trash mr-2"></i>Supprimer le planning
 </button>
-{{# /section }}
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/academic/exams/{{ exam.id }}/update"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="_method" value="PUT" />
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/academic/exams/{{ exam.id }}/update" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <input type="hidden" name="_method" value="PUT">
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div class="md:col-span-2">
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre de l'examen *</label>
-          <input type="text" name="title" value="{{ exam.title }}" required 
-                 class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Période *</label>
-          <select name="period" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="T1" {{ exam.period == 'T1' ? 'selected' : '' }}>Trimestre 1</option>
-            <option value="T2" {{ exam.period == 'T2' ? 'selected' : '' }}>Trimestre 2</option>
-            <option value="T3" {{ exam.period == 'T3' ? 'selected' : '' }}>Trimestre 3</option>
-            <option value="Examens Blancs" {{ exam.period == 'Examens Blancs' ? 'selected' : '' }}>Examens Blancs</option>
-            <option value="Examen National" {{ exam.period == 'Examen National' ? 'selected' : '' }}>Examen National</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique *</label>
-          <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="{{ currentYear }}" {{ exam.academicYear == currentYear ? 'selected' : '' }}>{{ currentYear }}</option>
-            <option value="{{ currentYear - 1 }}" {{ exam.academicYear == currentYear - 1 ? 'selected' : '' }}>{{ currentYear - 1 }}</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début *</label>
-          <input type="date" name="startDate" value="{{ exam.startDate }}" required class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
-          <input type="date" name="endDate" value="{{ exam.endDate }}" required class="w-full px-3 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Classes concernées *</label>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-          @each(classObj in classes)
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="classIds[]" value="{{ classObj.id }}" 
-                   {{ exam.classIds && exam.classIds.includes(classObj.id) ? 'checked' : '' }} class="w-4 h-4">
-            <span class="text-sm">{{ classObj.name }}</span>
-          </label>
-          @end
-        </div>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Détail des épreuves</label>
-        <div class="space-y-3" id="subjectsContainer">
-          @each(subject in examSubjects)
-          <div class="grid grid-cols-3 gap-2 items-center">
-            <select name="subjects[{{ subject.index }}][subjectId]" class="subject-select px-2 py-1 border rounded text-sm">
-              <option value="">Sélectionner matière</option>
-              @each(matiere in subjects)
-              <option value="{{ matiere.id }}" {{ subject.subjectId == matiere.id ? 'selected' : '' }}>{{ matiere.name }}</option>
-              @end
-            </select>
-            <input type="date" name="subjects[{{ subject.index }}][examDate]" value="{{ subject.examDate }}" class="px-2 py-1 border rounded text-sm">
-            <div class="flex gap-2">
-              <input type="text" name="subjects[{{ subject.index }}][duration]" value="{{ subject.duration }}" placeholder="Durée (h)" class="px-2 py-1 border rounded text-sm w-24">
-              <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">✕</button>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="md:col-span-2">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre de l'examen *</label>
+              <input
+                type="text"
+                name="title"
+                value="{{ exam.title }}"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">PÃ©riode *</label>
+              <select name="period" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="T1" {{ exam.period == 'T1' ? 'selected' : '' }}>
+                  Trimestre 1
+                </option>
+                <option value="T2" {{ exam.period == 'T2' ? 'selected' : '' }}>
+                  Trimestre 2
+                </option>
+                <option value="T3" {{ exam.period == 'T3' ? 'selected' : '' }}>
+                  Trimestre 3
+                </option>
+                <option value="Examens Blancs" {{ exam.period == 'Examens Blancs' ? 'selected' : '' }}>
+                  Examens Blancs
+                </option>
+                <option value="Examen National" {{ exam.period == 'Examen National' ? 'selected' : '' }}>
+                  Examen National
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Année scolaire *</label>
+              <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="{{ currentYear }}" {{ exam.academicYear == currentYear ? 'selected' : '' }}>
+                  {{ currentYear }}
+                </option>
+                <option value="{{ currentYear - 1 }}" {{ exam.academicYear == currentYear - 1 ? 'selected' : '' }}>
+                  {{ currentYear - 1 }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date dÃ©but *</label>
+              <input
+                type="date"
+                name="startDate"
+                value="{{ exam.startDate }}"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
+              <input
+                type="date"
+                name="endDate"
+                value="{{ exam.endDate }}"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+              />
             </div>
           </div>
-          @end
-        </div>
-        <button type="button" onclick="addSubjectLine()" class="mt-2 text-primary text-sm hover:underline">
-          <i class="fas fa-plus mr-1"></i> Ajouter une matière
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classes concernÃ©es *</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
+              @each(classObj in classes)
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="classIds[]"
+                    value="{{ classObj.id }}"
+                    class="w-4 h-4"
+                    {{ exam.classIds && exam.classIds.includes(classObj.id) ? 'checked' : '' }}
+                  />
+                  <span class="text-sm">{{ classObj.name }}</span>
+                </label>
+              @end
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">DÃ©tail des Ã©preuves</label>
+            <div class="space-y-3" id="subjectsContainer">
+              @each(subject in examSubjects)
+                <div class="grid grid-cols-3 gap-2 items-center">
+                  <select
+                    name="subjects[{{ subject.index }}][subjectId]"
+                    class="subject-select px-2 py-1 border rounded text-sm"
+                  >
+                    <option value="">
+                      SÃ©lectionner matiÃ¨re
+                    </option>
+                    @each(matiere in subjects)
+                      <option value="{{ matiere.id }}" {{ subject.subjectId == matiere.id ? 'selected' : '' }}>
+                        {{ matiere.name }}
+                      </option>
+                    @end
+                  </select>
+                  <input
+                    type="date"
+                    name="subjects[{{ subject.index }}][examDate]"
+                    value="{{ subject.examDate }}"
+                    class="px-2 py-1 border rounded text-sm"
+                  />
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      name="subjects[{{ subject.index }}][duration]"
+                      value="{{ subject.duration }}"
+                      placeholder="DurÃ©e (h)"
+                      class="px-2 py-1 border rounded text-sm w-24"
+                    />
+                    <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">âœ•</button>
+                  </div>
+                </div>
+              @end
+            </div>
+            <button type="button" onclick="addSubjectLine()" class="mt-2 text-primary text-sm hover:underline">
+              <i class="fas fa-plus mr-1"></i>Ajouter une matiÃ¨re
         </button>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer les modifications
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer les modifications
         </button>
-        <a href="/academic/exams/schedule" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
+            <a href="/academic/exams/schedule" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
         </a>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Statistiques -->
-  <div class="space-y-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-3">Statistiques</h3>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Classes concernées</span>
-          <span class="font-bold">{{ exam.classesCount || 0 }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Matières évaluées</span>
-          <span class="font-bold">{{ examSubjects.length }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Durée totale</span>
-          <span class="font-bold">{{ exam.totalDuration || 0 }}h</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Salles nécessaires</span>
-          <span class="font-bold">{{ exam.roomsNeeded || 0 }}</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-check-circle text-green-600"></i>
-        <span>Si vous modifiez ce planning, les élèves et enseignants seront notifiés.</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  let subjectIndex = {{ examSubjects.length }}
-  
-  function addSubjectLine() {
-    const container = document.getElementById('subjectsContainer')
-    const newLine = document.createElement('div')
-    newLine.className = 'grid grid-cols-3 gap-2 items-center mt-2'
-    newLine.innerHTML = `
-      <select name="subjects[${subjectIndex}][subjectId]" class="subject-select px-2 py-1 border rounded text-sm">
-        <option value="">Sélectionner matière</option>
-        @each(subject in subjects)
-        <option value="{{ subject.id }}">{{ subject.name }}</option>
-        @end
-      </select>
-      <input type="date" name="subjects[${subjectIndex}][examDate]" class="px-2 py-1 border rounded text-sm">
-      <div class="flex gap-2">
-        <input type="text" name="subjects[${subjectIndex}][duration]" placeholder="Durée (h)" class="px-2 py-1 border rounded text-sm w-24">
-        <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">✕</button>
+      <!-- Statistiques -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-3">
+            Statistiques
+          </h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Classes concernÃ©es</span>
+              <span class="font-bold">{{ exam.classesCount || 0 }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">MatiÃ¨res Ã©valuÃ©es</span>
+              <span class="font-bold">{{ examSubjects.length }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">DurÃ©e totale</span>
+              <span class="font-bold">{{ exam.totalDuration || 0 }}h</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Salles nÃ©cessaires</span>
+              <span class="font-bold">{{ exam.roomsNeeded || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-check-circle text-green-600"></i>
+            <span>Si vous modifiez ce planning, les Ã©lÃ¨ves et enseignants seront notifiÃ©s.</span>
+          </p>
+        </div>
       </div>
-    `
-    container.appendChild(newLine)
-    subjectIndex++
-  }
-  
-  function removeSubjectLine(btn) {
-    btn.closest('.grid').remove()
-  }
-  
-  function deleteExam() {
-    if (confirm('Supprimer définitivement ce planning d\'examens ? Tous les résultats associés seront également supprimés.')) {
-      fetch('/academic/exams/{{ exam.id }}', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) {
-          window.location.href = '/academic/exams/schedule'
-        } else {
-          alert('Erreur: ' + data.message)
+    </div>
+
+    <script>
+      let subjectIndex = {{ examSubjects.length }};
+
+      function addSubjectLine() {
+        const container = document.getElementById("subjectsContainer");
+        const newLine = document.createElement("div");
+        newLine.className = "grid grid-cols-3 gap-2 items-center mt-2";
+        newLine.innerHTML = `
+                <select name="subjects[${subjectIndex}][subjectId]" class="subject-select px-2 py-1 border rounded text-sm">
+                  <option value="">SÃ©lectionner matiÃ¨re</option>
+                  @each(subject in subjects)
+        <option value="{{ subject.id }}">
+          {{ subject.name }}
+        </option>
+      @end
+
+
+
+                </select>
+                <input type="date" name="subjects[${subjectIndex}][examDate]" class="px-2 py-1 border rounded text-sm">
+                <div class="flex gap-2">
+                  <input type="text" name="subjects[${subjectIndex}][duration]" placeholder="DurÃ©e (h)" class="px-2 py-1 border rounded text-sm w-24">
+                  <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">âœ•</button>
+                </div>
+              `;
+        container.appendChild(newLine);
+        subjectIndex++;
+      }
+
+      function removeSubjectLine(btn) {
+        btn.closest(".grid").remove();
+      }
+
+      function deleteExam() {
+        if (confirm("Supprimer dÃ©finitivement ce planning d'examens ? Tous les rÃ©sultats associÃ©s seront Ã©galement supprimÃ©s.")) {
+          fetch("/academic/exams/{{ exam.id }}", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) {
+              window.location.href = "/academic/exams/schedule";
+            } else {
+              alert("Erreur: " + data.message);
+            }
+          });
         }
-      })
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+      }
+    </script>
+  @endsection
+  

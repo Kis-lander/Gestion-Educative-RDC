@@ -18,7 +18,7 @@ export default class SchoolsSchema extends BaseSchema {
       table.enum('status', ['active', 'suspended', 'pending']).defaultTo('pending')
       table.timestamp('approved_at')
       table.timestamps(true)
-      
+
       // Index pour optimiser les recherches
       table.index(['province', 'territory'])
       table.index(['status'])

@@ -9,11 +9,6 @@ const inertiaConfig = defineConfig({
      * Toggle SSR mode for Inertia pages.
      */
     enabled: false,
-
-    /**
-     * Entry file used by the SSR server build.
-     */
-    entrypoint: 'inertia/ssr.ts',
   },
 })
 

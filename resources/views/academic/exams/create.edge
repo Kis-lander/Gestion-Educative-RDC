@@ -1,178 +1,244 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Créer planning examens - {{ school.name }}{{# /section }}
+  @section('title')
+    CrÃ©er planning examens - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    CrÃ©er un planning d'examens
+  @endsection
+  @section('dashboardSubtitle')
+    Planifiez les Ã©valuations par classe
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/academic/exams/create"
+          x-data="{ loading: false, examType: 'normal' }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Créer un planning d'examens{{# /section }}
-{{# section('dashboardSubtitle') }}Planifiez les évaluations par classe{{# /section }}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="md:col-span-2">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre de l'examen *</label>
+              <input
+                type="text"
+                name="title"
+                required
+                class="w-full px-3 py-2 border rounded-lg"
+                placeholder="Ex: Composition du 1er Trimestre, Examen Blanc"
+              />
+            </div>
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/academic/exams/create" x-data="{ loading: false, examType: 'normal' }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div class="md:col-span-2">
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre de l'examen *</label>
-          <input type="text" name="title" required 
-                 class="w-full px-3 py-2 border rounded-lg"
-                 placeholder="Ex: Composition du 1er Trimestre, Examen Blanc">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Période *</label>
-          <select name="period" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="T1">Trimestre 1</option>
-            <option value="T2">Trimestre 2</option>
-            <option value="T3">Trimestre 3</option>
-            <option value="Examens Blancs">Examens Blancs</option>
-            <option value="Examen National">Examen National</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Année académique *</label>
-          <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="{{ currentYear }}">{{ currentYear }}</option>
-            <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début *</label>
-          <input type="date" name="startDate" required class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
-          <input type="date" name="endDate" required class="w-full px-3 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Classes concernées *</label>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-          @each(classObj in classes)
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="classIds[]" value="{{ classObj.id }}" class="w-4 h-4">
-            <span class="text-sm">{{ classObj.name }}</span>
-          </label>
-          @end
-        </div>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Détail des épreuves</label>
-        <div class="space-y-3" id="subjectsContainer">
-          <div class="grid grid-cols-3 gap-2 items-center">
-            <select name="subjects[0][subjectId]" class="subject-select px-2 py-1 border rounded text-sm">
-              <option value="">Sélectionner matière</option>
-              @each(subject in subjects)
-              <option value="{{ subject.id }}">{{ subject.name }}</option>
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">PÃ©riode *</label>
+              <select name="period" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="T1">
+                  Trimestre 1
+                </option>
+                <option value="T2">
+                  Trimestre 2
+                </option>
+                <option value="T3">
+                  Trimestre 3
+                </option>
+                <option value="Examens Blancs">
+                  Examens Blancs
+                </option>
+                <option value="Examen National">
+                  Examen National
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Année scolaire *</label>
+              <select name="academicYear" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="{{ currentYear }}">
+                  {{ currentYear }}
+                </option>
+                <option value="{{ currentYear - 1 }}">
+                  {{ currentYear - 1 }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date dÃ©but *</label>
+              <input type="date" name="startDate" required class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+
+            <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date fin *</label>
+              <input type="date" name="endDate" required class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classes concernÃ©es *</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
+              @each(classObj in classes)
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="classIds[]" value="{{ classObj.id }}" class="w-4 h-4" />
+                  <span class="text-sm">{{ classObj.name }}</span>
+                </label>
               @end
-            </select>
-            <input type="date" name="subjects[0][examDate]" placeholder="Date" class="px-2 py-1 border rounded text-sm">
-            <input type="text" name="subjects[0][duration]" placeholder="Durée (h)" class="px-2 py-1 border rounded text-sm w-24">
-            <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">✕</button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">DÃ©tail des Ã©preuves</label>
+            <div class="space-y-3" id="subjectsContainer">
+              <div class="grid grid-cols-3 gap-2 items-center">
+                <select name="subjects[0][subjectId]" class="subject-select px-2 py-1 border rounded text-sm">
+                  <option value="">
+                    SÃ©lectionner matiÃ¨re
+                  </option>
+                  @each(subject in subjects)
+                    <option value="{{ subject.id }}">
+                      {{ subject.name }}
+                    </option>
+                  @end
+                </select>
+                <input
+                  type="date"
+                  name="subjects[0][examDate]"
+                  placeholder="Date"
+                  class="px-2 py-1 border rounded text-sm"
+                />
+                <input
+                  type="text"
+                  name="subjects[0][duration]"
+                  placeholder="DurÃ©e (h)"
+                  class="px-2 py-1 border rounded text-sm w-24"
+                />
+                <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">âœ•</button>
+              </div>
+            </div>
+            <button type="button" onclick="addSubjectLine()" class="mt-2 text-primary text-sm hover:underline">
+              <i class="fas fa-plus mr-1"></i>Ajouter une matiÃ¨re
+        </button>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              CrÃ©er le planning
+        </button>
+            <a href="/academic/exams/schedule" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
+        </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Informations -->
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Conseils de planification
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Ã‰vitez de chevaucher les examens d'une mÃªme classe</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>PrÃ©voyez des pauses entre les Ã©preuves</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Communiquez le planning au moins une semaine Ã  l'avance</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+          <h3 class="font-semibold mb-2">
+            Exemple d'emploi du temps
+          </h3>
+          <div class="text-sm space-y-1">
+            <div class="flex justify-between">
+              <span>Lundi 8h-10h:</span>              <span>MathÃ©matiques - Salle A1</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Lundi 10h-12h:</span>              <span>FranÃ§ais - Salle A2</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Mardi 8h-10h:</span>              <span>Sciences - Salle B1</span>
+            </div>
           </div>
         </div>
-        <button type="button" onclick="addSubjectLine()" class="mt-2 text-primary text-sm hover:underline">
-          <i class="fas fa-plus mr-1"></i> Ajouter une matière
-        </button>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Créer le planning
-        </button>
-        <a href="/academic/exams/schedule" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
-        </a>
-      </div>
-    </form>
-  </div>
-  
-  <!-- Informations -->
-  <div class="space-y-6">
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Conseils de planification</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Évitez de chevaucher les examens d'une même classe</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Prévoyez des pauses entre les épreuves</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Communiquez le planning au moins une semaine à l'avance</span>
-        </li>
-      </ul>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-      <h3 class="font-semibold mb-2">Exemple d'emploi du temps</h3>
-      <div class="text-sm space-y-1">
-        <div class="flex justify-between"><span>Lundi 8h-10h:</span><span>Mathématiques - Salle A1</span></div>
-        <div class="flex justify-between"><span>Lundi 10h-12h:</span><span>Français - Salle A2</span></div>
-        <div class="flex justify-between"><span>Mardi 8h-10h:</span><span>Sciences - Salle B1</span></div>
-      </div>
-    </div>
-    
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
-      <p class="text-sm flex gap-2">
-        <i class="fas fa-info-circle text-yellow-600"></i>
-        <span>Les dates doivent être comprises dans la période définie.</span>
-      </p>
-    </div>
-  </div>
-</div>
 
-<script>
-  let subjectIndex = 1
-  
-  function addSubjectLine() {
-    const container = document.getElementById('subjectsContainer')
-    const newLine = document.createElement('div')
-    newLine.className = 'grid grid-cols-3 gap-2 items-center mt-2'
-    newLine.innerHTML = `
-      <select name="subjects[${subjectIndex}][subjectId]" class="subject-select px-2 py-1 border rounded text-sm">
-        <option value="">Sélectionner matière</option>
-        @each(subject in subjects)
-        <option value="{{ subject.id }}">{{ subject.name }}</option>
-        @end
-      </select>
-      <input type="date" name="subjects[${subjectIndex}][examDate]" placeholder="Date" class="px-2 py-1 border rounded text-sm">
-      <input type="text" name="subjects[${subjectIndex}][duration]" placeholder="Durée (h)" class="px-2 py-1 border rounded text-sm w-24">
-      <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">✕</button>
-    `
-    container.appendChild(newLine)
-    subjectIndex++
-  }
-  
-  function removeSubjectLine(btn) {
-    btn.parentElement.remove()
-  }
-  
-  // Validation des dates
-  const startDateInput = document.querySelector('input[name="startDate"]')
-  const endDateInput = document.querySelector('input[name="endDate"]')
-  startDateInput.addEventListener('change', () => {
-    endDateInput.min = startDateInput.value
-  })
-  
-  // Dates par défaut
-  const today = new Date()
-  startDateInput.value = today.toISOString().split('T')[0]
-  const nextWeek = new Date(today)
-  nextWeek.setDate(today.getDate() + 7)
-  endDateInput.value = nextWeek.toISOString().split('T')[0]
-</script>
-{{# /section }}
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+          <p class="text-sm flex gap-2">
+            <i class="fas fa-info-circle text-yellow-600"></i>
+            <span>Les dates doivent Ãªtre comprises dans la pÃ©riode dÃ©finie.</span>
+          </p>
+        </div>
+      </div>
+    </div>
 
-{{# /layout }}
+    <script>
+      let subjectIndex = 1;
+
+      function addSubjectLine() {
+        const container = document.getElementById("subjectsContainer");
+        const newLine = document.createElement("div");
+        newLine.className = "grid grid-cols-3 gap-2 items-center mt-2";
+        newLine.innerHTML = `
+                <select name="subjects[${subjectIndex}][subjectId]" class="subject-select px-2 py-1 border rounded text-sm">
+                  <option value="">SÃ©lectionner matiÃ¨re</option>
+                  @each(subject in subjects)
+        <option value="{{ subject.id }}">
+          {{ subject.name }}
+        </option>
+      @end
+
+
+
+                </select>
+                <input type="date" name="subjects[${subjectIndex}][examDate]" placeholder="Date" class="px-2 py-1 border rounded text-sm">
+                <input type="text" name="subjects[${subjectIndex}][duration]" placeholder="DurÃ©e (h)" class="px-2 py-1 border rounded text-sm w-24">
+                <button type="button" onclick="removeSubjectLine(this)" class="text-red-500">âœ•</button>
+              `;
+        container.appendChild(newLine);
+        subjectIndex++;
+      }
+
+      function removeSubjectLine(btn) {
+        btn.parentElement.remove();
+      }
+      // Validation des dates
+
+      const startDateInput = document.querySelector('input[name="startDate"]');
+
+      const endDateInput = document.querySelector('input[name="endDate"]');
+
+      startDateInput.addEventListener("change", () => {
+        endDateInput.min = startDateInput.value;
+      });
+      // Dates par dÃ©faut
+
+      const today = new Date();
+
+      startDateInput.value = today.toISOString().split("T")[0];
+
+      const nextWeek = new Date(today);
+
+      nextWeek.setDate(today.getDate() + 7);
+
+      endDateInput.value = nextWeek.toISOString().split("T")[0];
+    </script>
+  @endsection
+  

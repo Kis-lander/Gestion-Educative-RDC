@@ -1,192 +1,260 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Mes classes - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Mes classes{{# /section }}
-{{# section('dashboardSubtitle') }}Classes dont je suis responsable{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportClasses()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+  @section('title')
+    Mes classes - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Mes classes
+  @endsection
+  @section('dashboardSubtitle')
+    Classes dont je suis responsable
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="exportClasses()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Classes totales</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.totalStudents || 0 }}</p>
-    <p class="text-sm text-gray-500">Total élèves</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ stats.avgClassSize || 0 }}</p>
-    <p class="text-sm text-gray-500">Moyenne/classe</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.totalSubjects || 0 }}</p>
-    <p class="text-sm text-gray-500">Matières enseignées</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
-      <select id="filterLevel" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="Primaire">Primaire</option>
-        <option value="Secondaire">Secondaire</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année académique</label>
-      <select id="filterYear" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="{{ currentYear }}">{{ currentYear }}</option>
-        <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" placeholder="Nom de la classe..."
-               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Classes totales
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.totalStudents || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total Ã©lÃ¨ves
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ stats.avgClassSize || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Moyenne/classe
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.totalSubjects || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          MatiÃ¨res enseignÃ©es
+        </p>
       </div>
     </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
+          <select id="filterLevel" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="Maternelle">
+              Maternelle
+            </option>
+            <option value="Primaire">
+              Primaire
+            </option>
+            <option value="Secondaire">
+              Secondaire
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année scolaire</label>
+          <select id="filterYear" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="{{ currentYear }}">
+              {{ currentYear }}
+            </option>
+            <option value="{{ currentYear - 1 }}">
+              {{ currentYear - 1 }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Nom de la classe..."
+              class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Grille des classes -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="classesGrid">
-  @each(classObj in classes)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover"
-       data-level="{{ classObj.level }}"
-       data-name="{{ classObj.name.toLowerCase() }}">
-    
-    <div class="bg-gradient-to-r from-primary to-blue-700 px-4 py-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-white text-lg">{{ classObj.name }}</h3>
-        <span class="text-xs bg-white/20 text-white px-2 py-1 rounded">
-          {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'Après-midi' : 'Soir') }}
+    <!-- Grille des classes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="classesGrid">
+      @each(classObj in classes)
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover"
+          data-level="{{ classObj.level }}"
+          data-name="{{ classObj.name.toLowerCase() }}"
+        >
+
+          <div class="bg-gradient-to-r from-primary to-blue-700 px-4 py-3">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-white text-lg">
+                {{ classObj.name }}
+              </h3>
+              <span class="text-xs bg-white/20 text-white px-2 py-1 rounded">
+                {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'AprÃ¨s-midi' : 'Soir') }}
         </span>
-      </div>
-    </div>
-    
-    <div class="p-4">
-      <div class="grid grid-cols-2 gap-3 mb-3">
-        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p class="text-xs text-gray-500">Élèves</p>
-          <p class="font-semibold text-lg">{{ classObj.studentsCount || 0 }}</p>
-        </div>
-        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p class="text-xs text-gray-500">Moyenne</p>
-          <p class="font-semibold text-lg">{{ classObj.averageGrade || '-' }}/20</p>
-        </div>
-      </div>
-      
-      <div class="mb-3">
-        <div class="flex justify-between text-xs mb-1">
-          <span>Taux présence</span>
-          <span>{{ classObj.attendanceRate || 0 }}%</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-1.5">
-          <div class="bg-green-500 rounded-full h-1.5" style="width: {{ classObj.attendanceRate || 0 }}%"></div>
-        </div>
-      </div>
-      
-      <div class="flex flex-wrap gap-1 mb-3">
-        @each(subject in classObj.subjects)
-        <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ subject.name }}</span>
-        @end
-      </div>
-      
-      <div class="flex gap-2 mt-3 pt-2 border-t dark:border-gray-700">
-        <a href="/teacher/classes/{{ classObj.id }}" class="flex-1 text-center px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-blue-700">
-          <i class="fas fa-eye mr-1"></i> Détails
-        </a>
-        <a href="/teacher/classes/{{ classObj.id }}/students" class="flex-1 text-center px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
-          <i class="fas fa-users mr-1"></i> Élèves
-        </a>
-        <a href="/teacher/attendance/mark?class_id={{ classObj.id }}" class="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
-          <i class="fas fa-calendar-check"></i>
-        </a>
-      </div>
-    </div>
-  </div>
-  @eachelse
-  <div class="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
-    <i class="fas fa-chalkboard text-5xl text-gray-400 mb-3"></i>
-    <p class="text-gray-500">Aucune classe assignée</p>
-    <p class="text-sm text-gray-400 mt-1">Contactez la direction pour vous assigner des classes</p>
-  </div>
-  @end
-</div>
+            </div>
+          </div>
 
-<script>
-  const filterLevel = document.getElementById('filterLevel')
-  const filterYear = document.getElementById('filterYear')
-  const searchInput = document.getElementById('searchInput')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  const classesGrid = document.getElementById('classesGrid')
-  
-  function filterClasses() {
-    const level = filterLevel.value
-    const search = searchInput.value.toLowerCase()
-    
-    const cards = classesGrid.querySelectorAll('.card-hover')
-    let visibleCount = 0
-    
-    cards.forEach(card => {
-      let show = true
-      if (level && card.dataset.level !== level) show = false
-      if (search && !card.dataset.name.includes(search)) show = false
-      card.style.display = show ? '' : 'none'
-      if (show) visibleCount++
-    })
-    
-    let noResultMsg = classesGrid.querySelector('.no-result-message')
-    if (visibleCount === 0 && cards.length > 0) {
-      if (!noResultMsg) {
-        noResultMsg = document.createElement('div')
-        noResultMsg.className = 'col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl no-result-message'
-        noResultMsg.innerHTML = '<i class="fas fa-search text-4xl text-gray-400 mb-3"></i><p class="text-gray-500">Aucune classe ne correspond aux critères</p>'
-        classesGrid.appendChild(noResultMsg)
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-xs text-gray-500">
+                  Ã‰lÃ¨ves
+                </p>
+                <p class="font-semibold text-lg">
+                  {{ classObj.studentsCount || 0 }}
+                </p>
+              </div>
+              <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-xs text-gray-500">
+                  Moyenne
+                </p>
+                <p class="font-semibold text-lg">
+                  {{ classObj.averageGrade || '-' }}/20
+                </p>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="flex justify-between text-xs mb-1">
+                <span>Taux prÃ©sence</span>
+                <span>{{ classObj.attendanceRate || 0 }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div class="bg-green-500 rounded-full h-1.5" style="width: {{ classObj.attendanceRate || 0 }}%">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1 mb-3">
+              @each(subject in classObj.subjects)
+                <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ subject.name }}</span>
+              @end
+            </div>
+
+            <div class="flex gap-2 mt-3 pt-2 border-t dark:border-gray-700">
+              <a
+                href="/teacher/classes/{{ classObj.id }}"
+                class="flex-1 text-center px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-blue-700"
+              >
+                <i class="fas fa-eye mr-1"></i>DÃ©tails
+        </a>
+              <a
+                href="/teacher/classes/{{ classObj.id }}/students"
+                class="flex-1 text-center px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <i class="fas fa-users mr-1"></i>Ã‰lÃ¨ves
+        </a>
+              <a
+                href="/teacher/attendance/mark?class_id={{ classObj.id }}"
+                class="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <i class="fas fa-calendar-check"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        @else
+        <div class="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+          <i class="fas fa-chalkboard text-5xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500">
+            Aucune classe assignÃ©e
+          </p>
+          <p class="text-sm text-gray-400 mt-1">
+            Contactez la direction pour vous assigner des classes
+          </p>
+        </div>
+      @end
+    </div>
+
+    <script>
+      const filterLevel = document.getElementById("filterLevel");
+
+      const filterYear = document.getElementById("filterYear");
+
+      const searchInput = document.getElementById("searchInput");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      const classesGrid = document.getElementById("classesGrid");
+
+      function filterClasses() {
+        const level = filterLevel.value;
+        const search = searchInput.value.toLowerCase();
+        const cards = classesGrid.querySelectorAll(".card-hover");
+        let visibleCount = 0;
+        cards.forEach(card => {
+          let show = true;
+          if (level && card.dataset.level !== level) show = false;
+          if (search && !card.dataset.name.includes(search)) show = false;
+          card.style.display = show ? "" : "none";
+          if (show) visibleCount++;
+        });
+        let noResultMsg = classesGrid.querySelector(".no-result-message");
+        if (visibleCount === 0 && cards.length > 0) {
+          if (!noResultMsg) {
+            noResultMsg = document.createElement("div");
+            noResultMsg.className = "col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl no-result-message";
+            noResultMsg.innerHTML = '<i class="fas fa-search text-4xl text-gray-400 mb-3"></i><p class="text-gray-500">Aucune classe ne correspond aux critÃ¨res</p>';
+            classesGrid.appendChild(noResultMsg);
+          }
+        } else if (noResultMsg) {
+          noResultMsg.remove();
+        }
       }
-    } else if (noResultMsg) {
-      noResultMsg.remove()
-    }
-  }
-  
-  applyBtn.addEventListener('click', filterClasses)
-  resetBtn.addEventListener('click', () => {
-    filterLevel.value = ''
-    filterYear.value = '{{ currentYear }}'
-    searchInput.value = ''
-    filterClasses()
-  })
-  searchInput.addEventListener('keyup', filterClasses)
-  
-  function exportClasses() {
-    window.location.href = '/api/teacher/classes/export'
-  }
-</script>
-{{# /section }}
 
-{{# /layout }}
+      applyBtn.addEventListener("click", filterClasses);
+
+      resetBtn.addEventListener("click", () => {
+        filterLevel.value = "";
+        filterYear.value = "{{ currentYear }}";
+        searchInput.value = "";
+        filterClasses();
+      });
+
+      searchInput.addEventListener("keyup", filterClasses);
+
+      function exportClasses() {
+        window.location.href = "/api/teacher/classes/export";
+      }
+    </script>
+  @endsection
+  

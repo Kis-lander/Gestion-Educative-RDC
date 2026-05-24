@@ -10,7 +10,17 @@ export interface ApiDefinition {
     contact: typeof routes['welcome.contact']
     terms: typeof routes['welcome.terms']
   }
+  home: typeof routes['home']
   about: typeof routes['about']
+  schools: {
+    register: typeof routes['schools.register'] & {
+      create: typeof routes['schools.register.create']
+    }
+    registerSchool: typeof routes['schools.register_school']
+    dashboard: typeof routes['schools.dashboard']
+    updateSchoolProfile: typeof routes['schools.update_school_profile']
+    addTeacher: typeof routes['schools.add_teacher']
+  }
   help: {
     index: typeof routes['help.index']
     faq: typeof routes['help.faq']
@@ -19,11 +29,101 @@ export interface ApiDefinition {
     contact: typeof routes['help.contact']
     documentation: typeof routes['help.documentation']
   }
-  schools: {
-    registerSchool: typeof routes['schools.register_school']
-    dashboard: typeof routes['schools.dashboard']
-    updateSchoolProfile: typeof routes['schools.update_school_profile']
-    addTeacher: typeof routes['schools.add_teacher']
+  session: {
+    create: typeof routes['session.create']
+    store: typeof routes['session.store']
+    destroy: typeof routes['session.destroy']
+  }
+  newAccount: {
+    create: typeof routes['new_account.create']
+    store: typeof routes['new_account.store']
+  }
+  inspection: {
+    dashboard: typeof routes['inspection.dashboard']
+    communications: {
+      global: {
+        store: typeof routes['inspection.communications.global.store']
+      }
+    }
+    settings: {
+      general: {
+        store: typeof routes['inspection.settings.general.store']
+      }
+      inspection: {
+        store: typeof routes['inspection.settings.inspection.store']
+      }
+      notifications: {
+        store: typeof routes['inspection.settings.notifications.store']
+      }
+      backup: {
+        store: typeof routes['inspection.settings.backup.store']
+      }
+      security: {
+        store: typeof routes['inspection.settings.security.store']
+      }
+    }
+    teachers: typeof routes['inspection.teachers']
+    messages: typeof routes['inspection.messages']
+    users: {
+      stats: typeof routes['inspection.users.stats']
+    }
+    sendSchoolCommunication: typeof routes['inspection.send_school_communication']
+  }
+  inspections: {
+    schoolsPage: typeof routes['inspections.schools_page']
+    pendingSchoolsPage: typeof routes['inspections.pending_schools_page']
+    schoolClassesPage: typeof routes['inspections.school_classes_page']
+    inspectSchoolPage: typeof routes['inspections.inspect_school_page']
+    storeSchoolInspection: typeof routes['inspections.store_school_inspection']
+    schoolDetailsPage: typeof routes['inspections.school_details_page']
+    approveSchoolPage: typeof routes['inspections.approve_school_page']
+    approveAndGenerateCredentials: typeof routes['inspections.approve_and_generate_credentials']
+    rejectSchool: typeof routes['inspections.reject_school']
+    toggleSuspendSchool: typeof routes['inspections.toggle_suspend_school']
+    communicationsGlobalPage: typeof routes['inspections.communications_global_page']
+    communicationsSchoolPage: typeof routes['inspections.communications_school_page']
+    communicationsHistoryPage: typeof routes['inspections.communications_history_page']
+    communicationDetails: typeof routes['inspections.communication_details']
+    reportsSchoolsPage: typeof routes['inspections.reports_schools_page']
+    reportsPerformancePage: typeof routes['inspections.reports_performance_page']
+    reportsStatisticsPage: typeof routes['inspections.reports_statistics_page']
+    reportsTransfersPage: typeof routes['inspections.reports_transfers_page']
+    schoolReportPage: typeof routes['inspections.school_report_page']
+    settingsPage: typeof routes['inspections.settings_page']
+    exportSchools: typeof routes['inspections.export_schools']
+    schoolsReportData: typeof routes['inspections.schools_report_data']
+    performanceReportData: typeof routes['inspections.performance_report_data']
+    statisticsReportData: typeof routes['inspections.statistics_report_data']
+    transfersReportData: typeof routes['inspections.transfers_report_data']
+    logs: typeof routes['inspections.logs']
+    exportLogs: typeof routes['inspections.export_logs']
+    getAllSchools: typeof routes['inspections.get_all_schools']
+    getSchoolById: typeof routes['inspections.get_school_by_id']
+    approveSchool: typeof routes['inspections.approve_school']
+    suspendSchool: typeof routes['inspections.suspend_school']
+    inspectSchool: typeof routes['inspections.inspect_school']
+    sendGlobalCommunication: typeof routes['inspections.send_global_communication']
+    getGlobalStats: typeof routes['inspections.get_global_stats']
+    generateSchoolReport: typeof routes['inspections.generate_school_report']
+  }
+  messages: {
+    sendSchoolCommunication: typeof routes['messages.send_school_communication']
+    getMessages: typeof routes['messages.get_messages']
+    sendMessage: typeof routes['messages.send_message']
+    markAsRead: typeof routes['messages.mark_as_read']
+    getConversations: typeof routes['messages.get_conversations']
+    getConversation: typeof routes['messages.get_conversation']
+  }
+  dashboard: typeof routes['dashboard']
+  settings: typeof routes['settings']
+  profile: typeof routes['profile'] & {
+    edit: typeof routes['profile.edit']
+    security: typeof routes['profile.security']
+    preferences: typeof routes['profile.preferences']
+    activity: typeof routes['profile.activity']
+    avatar: {
+      update: typeof routes['profile.avatar.update']
+    }
   }
   auth: {
     login: typeof routes['auth.login']
@@ -42,19 +142,6 @@ export interface ApiDefinition {
     approveTransfer: typeof routes['transfers.approve_transfer']
     rejectTransfer: typeof routes['transfers.reject_transfer']
     completeTransfer: typeof routes['transfers.complete_transfer']
-  }
-  inspections: {
-    getAllSchools: typeof routes['inspections.get_all_schools']
-    getSchoolById: typeof routes['inspections.get_school_by_id']
-    approveSchool: typeof routes['inspections.approve_school']
-    suspendSchool: typeof routes['inspections.suspend_school']
-    inspectSchool: typeof routes['inspections.inspect_school']
-    sendGlobalCommunication: typeof routes['inspections.send_global_communication']
-    getGlobalStats: typeof routes['inspections.get_global_stats']
-    generateSchoolReport: typeof routes['inspections.generate_school_report']
-  }
-  inspection: {
-    sendSchoolCommunication: typeof routes['inspection.send_school_communication']
   }
   academics: {
     getClasses: typeof routes['academics.get_classes']
@@ -133,13 +220,6 @@ export interface ApiDefinition {
     deleteIncident: typeof routes['disciplines.delete_incident']
     applySanction: typeof routes['disciplines.apply_sanction']
     notifyParent: typeof routes['disciplines.notify_parent']
-  }
-  messages: {
-    getMessages: typeof routes['messages.get_messages']
-    sendMessage: typeof routes['messages.send_message']
-    markAsRead: typeof routes['messages.mark_as_read']
-    getConversations: typeof routes['messages.get_conversations']
-    getConversation: typeof routes['messages.get_conversation']
   }
   communication: {
     sendGlobalCommunication: typeof routes['communication.send_global_communication']

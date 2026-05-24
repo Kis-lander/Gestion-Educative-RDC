@@ -1,247 +1,332 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Rapport des transferts - Inspection RDC{{# /section }}
-
-{{# section('dashboardTitle') }}Rapport des transferts d'élèves{{# /section }}
-{{# section('dashboardSubtitle') }}Suivi des mobilités scolaires inter-écoles{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-file-pdf mr-2"></i> PDF
+  @section('title')
+    Rapport des transferts - Inspection RDC
+  @endsection
+  
+  @section('dashboardTitle')
+    Rapport des transferts d'élèves
+  @endsection
+  @section('dashboardSubtitle')
+    Suivi des mobilités scolaires inter-écoles
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button
+        onclick="exportReport('pdf')"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>PDF
   </button>
-  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-file-excel mr-2"></i> Excel
+      <button
+        onclick="exportReport('excel')"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-file-excel mr-2"></i>Excel
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Province</label>
-      <select id="province" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        <option value="Kinshasa">Kinshasa</option>
-        <option value="Kongo Central">Kongo Central</option>
-        <option value="Haut-Katanga">Haut-Katanga</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
-      <select id="status" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="pending">En attente</option>
-        <option value="approved">Approuvé</option>
-        <option value="completed">Complété</option>
-        <option value="rejected">Rejeté</option>
-      </select>
-    </div>
-    <div class="flex items-end">
-      <button id="applyFilters" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-chart-line mr-2"></i> Analyser
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Province</label>
+          <select id="province" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            <option value="Kinshasa">
+              Kinshasa
+            </option>
+            <option value="Kongo Central">
+              Kongo Central
+            </option>
+            <option value="Haut-Katanga">
+              Haut-Katanga
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <select id="status" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="pending">
+              En attente
+            </option>
+            <option value="approved">
+              Approuvé
+            </option>
+            <option value="completed">
+              Complété
+            </option>
+            <option value="rejected">
+              Rejeté
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button id="applyFilters" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-chart-line mr-2"></i>Analyser
       </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Indicateurs -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary" id="totalTransfers">0</p>
-    <p class="text-sm text-gray-500">Total transferts</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600" id="completedTransfers">0</p>
-    <p class="text-sm text-gray-500">Transferts complétés</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600" id="pendingTransfers">0</p>
-    <p class="text-sm text-gray-500">En attente</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-blue-600" id="avgProcessingTime">0</p>
-    <p class="text-sm text-gray-500">Délai moyen (jours)</p>
-  </div>
-</div>
+    <!-- Indicateurs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary" id="totalTransfers">
+          0
+        </p>
+        <p class="text-sm text-gray-500">
+          Total transferts
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600" id="completedTransfers">
+          0
+        </p>
+        <p class="text-sm text-gray-500">
+          Transferts complétés
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600" id="pendingTransfers">
+          0
+        </p>
+        <p class="text-sm text-gray-500">
+          En attente
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-blue-600" id="avgProcessingTime">
+          0
+        </p>
+        <p class="text-sm text-gray-500">
+          Délai moyen (jours)
+        </p>
+      </div>
+    </div>
 
-<!-- Graphiques -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-4">Évolution des transferts</h3>
-    <canvas id="trendChart" height="200"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-4">Top provinces d'origine</h3>
-    <canvas id="originChart" height="200"></canvas>
-  </div>
-</div>
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-4">
+          Évolution des transferts
+        </h3>
+        <canvas id="trendChart" height="200">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-4">
+          Top provinces d'origine
+        </h3>
+        <canvas id="originChart" height="200">
+        </canvas>
+      </div>
+    </div>
 
-<!-- Flux réseau -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <h3 class="font-semibold mb-4">Flux de transferts entre provinces</h3>
-  <div class="table-responsive">
-    <table class="w-full text-sm" id="flowMatrix">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-3 py-2">De / Vers</th>
-          <th class="px-3 py-2 text-center">Kinshasa</th>
-          <th class="px-3 py-2 text-center">Kongo Central</th>
-          <th class="px-3 py-2 text-center">Haut-Katanga</th>
-          <th class="px-3 py-2 text-center">Nord-Kivu</th>
-          <th class="px-3 py-2 text-center">Sud-Kivu</th>
-        </tr>
-      </thead>
-      <tbody id="flowMatrixBody"></tbody>
-    </table>
-  </div>
-</div>
+    <!-- Flux réseau -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <h3 class="font-semibold mb-4">
+        Flux de transferts entre provinces
+      </h3>
+      <div class="table-responsive">
+        <table class="w-full text-sm" id="flowMatrix">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-3 py-2">
+                De / Vers
+              </th>
+              <th class="px-3 py-2 text-center">
+                Kinshasa
+              </th>
+              <th class="px-3 py-2 text-center">
+                Kongo Central
+              </th>
+              <th class="px-3 py-2 text-center">
+                Haut-Katanga
+              </th>
+              <th class="px-3 py-2 text-center">
+                Nord-Kivu
+              </th>
+              <th class="px-3 py-2 text-center">
+                Sud-Kivu
+              </th>
+            </tr>
+          </thead>
+          <tbody id="flowMatrixBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<!-- Liste des transferts -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Détail des transferts</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Élève</th>
-          <th class="px-4 py-2">École origine</th>
-          <th class="px-4 py-2">École destination</th>
-          <th class="px-4 py-2 text-center">Statut</th>
-          <th class="px-4 py-2 text-center">Délai</th>
-        </tr>
-      </thead>
-      <tbody id="transfersList"></tbody>
-    </table>
-  </div>
-</div>
+    <!-- Liste des transferts -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Détail des transferts
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date
+              </th>
+              <th class="px-4 py-2">
+                Élève
+              </th>
+              <th class="px-4 py-2">
+                École origine
+              </th>
+              <th class="px-4 py-2">
+                École destination
+              </th>
+              <th class="px-4 py-2 text-center">
+                Statut
+              </th>
+              <th class="px-4 py-2 text-center">
+                Délai
+              </th>
+            </tr>
+          </thead>
+          <tbody id="transfersList">
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<script>
-  let chart1, chart2
-  
-  async function loadReport() {
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const province = document.getElementById('province').value
-    const status = document.getElementById('status').value
-    
-    const params = new URLSearchParams()
-    if (startDate) params.append('start_date', startDate)
-    if (endDate) params.append('end_date', endDate)
-    if (province) params.append('province', province)
-    if (status) params.append('status', status)
-    
-    const res = await fetch(`/api/inspection/reports/transfers?${params.toString()}`)
-    const data = await res.json()
-    
-    // Indicateurs
-    document.getElementById('totalTransfers').textContent = data.summary?.total || 0
-    document.getElementById('completedTransfers').textContent = data.summary?.completed || 0
-    document.getElementById('pendingTransfers').textContent = data.summary?.pending || 0
-    document.getElementById('avgProcessingTime').textContent = data.summary?.avgDays || 0
-    
-    // Graphique tendance
-    if (chart1) chart1.destroy()
-    const ctx1 = document.getElementById('trendChart').getContext('2d')
-    chart1 = new Chart(ctx1, {
-      type: 'line',
-      data: {
-        labels: data.trend?.labels || [],
-        datasets: [{
-          label: 'Nombre de transferts',
-          data: data.trend?.values || [],
-          borderColor: '#2563eb',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Graphique origines
-    if (chart2) chart2.destroy()
-    const ctx2 = document.getElementById('originChart').getContext('2d')
-    chart2 = new Chart(ctx2, {
-      type: 'pie',
-      data: {
-        labels: data.topOrigins?.map(o => o.province) || [],
-        datasets: [{ data: data.topOrigins?.map(o => o.count) || [], backgroundColor: ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#8b5cf6'] }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Matrice des flux
-    if (data.flowMatrix) {
-      const provinces = ['Kinshasa', 'Kongo Central', 'Haut-Katanga', 'Nord-Kivu', 'Sud-Kivu']
-      let matrixHtml = ''
-      provinces.forEach(from => {
-        matrixHtml += `<tr class="border-b"><td class="px-3 py-2 font-medium">${from}</td>`
-        provinces.forEach(to => {
-          const value = data.flowMatrix[from]?.[to] || 0
-          matrixHtml += `<td class="px-3 py-2 text-center ${value > 0 ? 'bg-green-50 dark:bg-green-900/20' : ''}">${value || '-'}</td>`
-        })
-        matrixHtml += '</tr>'
-      })
-      document.getElementById('flowMatrixBody').innerHTML = matrixHtml
-    }
-    
-    // Liste des transferts
-    if (data.transfers && data.transfers.length > 0) {
-      document.getElementById('transfersList').innerHTML = data.transfers.map(t => `
-        <tr class="border-b dark:border-gray-700">
-          <td class="px-4 py-2">${formatDate(t.date)}</td>
-          <td class="px-4 py-2">${t.studentName}</td>
-          <td class="px-4 py-2">${t.fromSchool}</td>
-          <td class="px-4 py-2">${t.toSchool}</td>
-          <td class="px-4 py-2 text-center">
-            <span class="px-2 py-0.5 rounded-full text-xs ${t.status === 'completed' ? 'bg-green-100 text-green-800' : (t.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')}">
-              ${t.status === 'completed' ? 'Complété' : (t.status === 'pending' ? 'En attente' : t.status)}
-            </span>
-          </td>
-          <td class="px-4 py-2 text-center">${t.processingDays || '-'} j</td>
-        </tr>
-      `).join('')
-    } else {
-      document.getElementById('transfersList').innerHTML = '<tr><td colspan="6" class="text-center py-8">Aucun transfert trouvé</td></tr>'
-    }
-  }
-  
-  function formatDate(date) {
-    return new Date(date).toLocaleDateString('fr-FR')
-  }
-  
-  function exportReport(format) {
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const province = document.getElementById('province').value
-    const status = document.getElementById('status').value
-    window.location.href = `/api/inspection/reports/transfers/export?format=${format}&start_date=${startDate}&end_date=${endDate}&province=${province}&status=${status}`
-  }
-  
-  document.getElementById('applyFilters').addEventListener('click', loadReport)
-  
-  // Dates par défaut (3 derniers mois)
-  const today = new Date()
-  const threeMonthsAgo = new Date()
-  threeMonthsAgo.setMonth(today.getMonth() - 3)
-  document.getElementById('startDate').value = threeMonthsAgo.toISOString().split('T')[0]
-  document.getElementById('endDate').value = today.toISOString().split('T')[0]
-  
-  loadReport()
-</script>
-{{# /section }}
+    <script>
+      let chart1, chart2;
 
-{{# /layout }}
+      async function loadReport() {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const province = document.getElementById("province").value;
+        const status = document.getElementById("status").value;
+        const params = new URLSearchParams();
+        if (startDate) params.append("start_date", startDate);
+        if (endDate) params.append("end_date", endDate);
+        if (province) params.append("province", province);
+        if (status) params.append("status", status);
+        const res = await fetch(`/api/inspection/reports/transfers?${params.toString()}`);
+        const data = await res.json();
+        // Indicateurs
+        document.getElementById("totalTransfers").textContent = data.summary?.total || 0;
+        document.getElementById("completedTransfers").textContent = data.summary?.completed || 0;
+        document.getElementById("pendingTransfers").textContent = data.summary?.pending || 0;
+        document.getElementById("avgProcessingTime").textContent = data.summary?.avgDays || 0;
+        // Graphique tendance
+        if (chart1) chart1.destroy();
+        const ctx1 = document.getElementById("trendChart").getContext("2d");
+        chart1 = new Chart(ctx1, {
+          type: "line",
+          data: {
+            labels: data.trend?.labels || [],
+            datasets: [ {
+              label: "Nombre de transferts",
+              data: data.trend?.values || [],
+              borderColor: "#2563eb",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Graphique origines
+        if (chart2) chart2.destroy();
+        const ctx2 = document.getElementById("originChart").getContext("2d");
+        chart2 = new Chart(ctx2, {
+          type: "pie",
+          data: {
+            labels: data.topOrigins?.map(o => o.province) || [],
+            datasets: [ {
+              data: data.topOrigins?.map(o => o.count) || [],
+              backgroundColor: [ "#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#8b5cf6" ]
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Matrice des flux
+        if (data.flowMatrix) {
+          const provinces = [ "Kinshasa", "Kongo Central", "Haut-Katanga", "Nord-Kivu", "Sud-Kivu" ];
+          let matrixHtml = "";
+          provinces.forEach(from => {
+            matrixHtml += `<tr class="border-b"><td class="px-3 py-2 font-medium">${from}</td>`;
+            provinces.forEach(to => {
+              const value = data.flowMatrix[from]?.[to] || 0;
+              matrixHtml += `<td class="px-3 py-2 text-center ${value > 0 ? "bg-green-50 dark:bg-green-900/20" : ""}">${value || "-"}</td>`;
+            });
+            matrixHtml += "</tr>";
+          });
+          document.getElementById("flowMatrixBody").innerHTML = matrixHtml;
+        }
+        // Liste des transferts
+        if (data.transfers && data.transfers.length > 0) {
+          document.getElementById("transfersList").innerHTML = data.transfers.map(t => `
+                  <tr class="border-b dark:border-gray-700">
+                    <td class="px-4 py-2">${formatDate(t.date)}</td>
+                    <td class="px-4 py-2">${t.studentName}</td>
+                    <td class="px-4 py-2">${t.fromSchool}</td>
+                    <td class="px-4 py-2">${t.toSchool}</td>
+                    <td class="px-4 py-2 text-center">
+                      <span class="px-2 py-0.5 rounded-full text-xs ${t.status === "completed" ? "bg-green-100 text-green-800" : t.status === "pending" ? "bg-yellow-100 text-yellow-800" : "bg-gray-100 text-gray-800"}">
+                        ${t.status === "completed" ? "Complété" : t.status === "pending" ? "En attente" : t.status}
+                      </span>
+                    </td>
+                    <td class="px-4 py-2 text-center">${t.processingDays || "-"} j</td>
+                  </tr>
+                `).join("");
+        } else {
+          document.getElementById("transfersList").innerHTML = '<tr><td colspan="6" class="text-center py-8">Aucun transfert trouvé</td></tr>';
+        }
+      }
+
+      function formatDate(date) {
+        return new Date(date).toLocaleDateString("fr-FR");
+      }
+
+      function exportReport(format) {
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const province = document.getElementById("province").value;
+        const status = document.getElementById("status").value;
+        window.location.href = `/api/inspection/reports/transfers/export?format=${format}&start_date=${startDate}&end_date=${endDate}&province=${province}&status=${status}`;
+      }
+
+      document.getElementById("applyFilters").addEventListener("click", loadReport);
+      // Dates par défaut (3 derniers mois)
+
+      const today = new Date();
+
+      const threeMonthsAgo = new Date();
+
+      threeMonthsAgo.setMonth(today.getMonth() - 3);
+
+      document.getElementById("startDate").value = threeMonthsAgo.toISOString().split("T")[0];
+
+      document.getElementById("endDate").value = today.toISOString().split("T")[0];
+
+      loadReport();
+    </script>
+  @endsection
+  

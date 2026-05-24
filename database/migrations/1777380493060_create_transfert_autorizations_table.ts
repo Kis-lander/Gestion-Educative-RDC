@@ -17,7 +17,7 @@ export default class TransferAuthorizationsSchema extends BaseSchema {
       table.timestamp('issued_at')
       table.uuid('approved_by').references('id').inTable('users')
       table.timestamps(true)
-      
+
       table.index(['authorization_code'])
       table.index(['student_id', 'status'])
     })

@@ -1,118 +1,345 @@
 <!-- Alpine.js pour l'interactivité -->
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js">
+
+</script>
 
 <script>
-  // Store global Alpine
-  document.addEventListener('alpine:init', () => {
-    Alpine.store('loading', { loading: false })
-    
-    Alpine.store('toast', {
-      show(message, type = 'success') {
-        const toastEvent = new CustomEvent('show-toast', { detail: { message, type } })
-        window.dispatchEvent(toastEvent)
+  (() => {
+    const styleId = "global-scroll-effects";
+
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        html { scroll-behavior: smooth; }
+
+        @media (prefers-reduced-motion: no-preference) {
+          .scroll-reveal {
+            opacity: 0;
+            transform: translateY(44px) scale(0.98);
+            transition:
+              opacity 1.12s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1.12s cubic-bezier(0.16, 1, 0.3, 1);
+            transition-delay: var(--reveal-delay, 0ms);
+            will-change: opacity, transform;
+          }
+
+          .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        .scroll-top-button {
+          position: fixed;
+          right: 22px;
+          bottom: 22px;
+          z-index: 70;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          border: 1px solid rgba(255, 255, 255, 0.42);
+          border-radius: 9999px;
+          background: rgba(29, 78, 216, 0.94);
+          color: #fff;
+          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.28);
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(14px);
+          transition:
+            opacity 0.22s ease,
+            transform 0.22s ease,
+            background-color 0.18s ease;
+        }
+
+        .scroll-top-button.is-visible {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateY(0);
+        }
+
+        .scroll-top-button:hover {
+          background: #1e40af;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const initScrollEffects = () => {
+      const revealSelector = [
+        "main > div > *",
+        ".card-hover",
+        ".bg-white.rounded-lg",
+        ".bg-white.rounded-xl",
+        ".dark\\:bg-gray-800.rounded-lg",
+        ".dark\\:bg-gray-800.rounded-xl"
+      ].join(",");
+
+      const revealItems = Array.from(document.querySelectorAll(revealSelector))
+        .filter((item) => !item.closest("[x-cloak]") && !item.classList.contains("scroll-top-button"));
+
+      revealItems.forEach((item, index) => {
+        item.classList.add("scroll-reveal");
+        item.style.setProperty("--reveal-delay", `${Math.min(index % 6, 5) * 80}ms`);
+      });
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.14,
+          rootMargin: "0px 0px -70px 0px"
+        });
+
+        revealItems.forEach((item) => observer.observe(item));
+      } else {
+        revealItems.forEach((item) => item.classList.add("is-visible"));
       }
-    })
-  })
-  
+
+      let scrollButton = document.querySelector(".scroll-top-button");
+      if (!scrollButton) {
+        scrollButton = document.createElement("button");
+        scrollButton.type = "button";
+        scrollButton.className = "scroll-top-button";
+        scrollButton.setAttribute("aria-label", "Remonter au debut de la page");
+        scrollButton.innerHTML = '<i class="fas fa-arrow-up" aria-hidden="true"></i>';
+        document.body.appendChild(scrollButton);
+      }
+
+      const toggleScrollButton = () => {
+        scrollButton.classList.toggle("is-visible", window.scrollY > 360);
+      };
+
+      scrollButton.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      toggleScrollButton();
+      window.addEventListener("scroll", toggleScrollButton, { passive: true });
+    };
+
+    const provincesRdc = [
+      "Bas-Uele",
+      "Équateur",
+      "Haut-Katanga",
+      "Haut-Lomami",
+      "Haut-Uele",
+      "Ituri",
+      "Kasaï",
+      "Kasaï-Central",
+      "Kasaï-Oriental",
+      "Kinshasa",
+      "Kongo Central",
+      "Kwango",
+      "Kwilu",
+      "Lomami",
+      "Lualaba",
+      "Mai-Ndombe",
+      "Maniema",
+      "Mongala",
+      "Nord-Kivu",
+      "Nord-Ubangi",
+      "Sankuru",
+      "Sud-Kivu",
+      "Sud-Ubangi",
+      "Tanganyika",
+      "Tshopo",
+      "Tshuapa"
+    ];
+
+    const initProvinceSelects = () => {
+      const selectors = [
+        'select[name="province"]',
+        'select[name="targetProvince"]',
+        'select[id="filterProvince"]',
+        'select[id="province"]'
+      ].join(",");
+
+      document.querySelectorAll(selectors).forEach((select) => {
+        const selectedValue = select.value;
+        const firstOption = select.querySelector("option");
+        const placeholder =
+          firstOption && firstOption.value === ""
+            ? { value: "", text: firstOption.textContent.trim() || "Toutes" }
+            : null;
+
+        select.innerHTML = "";
+
+        if (placeholder) {
+          const option = document.createElement("option");
+          option.value = placeholder.value;
+          option.textContent = placeholder.text;
+          select.appendChild(option);
+        }
+
+        if (selectedValue && !provincesRdc.includes(selectedValue)) {
+          const option = document.createElement("option");
+          option.value = selectedValue;
+          option.textContent = selectedValue;
+          select.appendChild(option);
+        }
+
+        provincesRdc.forEach((province) => {
+          const option = document.createElement("option");
+          option.value = province;
+          option.textContent = province;
+          select.appendChild(option);
+        });
+
+        select.value = selectedValue || "";
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        initProvinceSelects();
+        initScrollEffects();
+      }, { once: true });
+    } else {
+      initProvinceSelects();
+      initScrollEffects();
+    }
+  })();
+
+  // Store global Alpine
+  document.addEventListener("alpine:init", () => {
+    Alpine.store("loading", {
+      loading: false
+    });
+    Alpine.store("toast", {
+      show(message, type = "success") {
+        const toastEvent = new CustomEvent("show-toast", {
+          detail: {
+            message: message,
+            type: type
+          }
+        });
+        window.dispatchEvent(toastEvent);
+      }
+    });
+  });
   // Fonctions utilitaires
+
   function formatDate(date) {
-    if (!date) return '-'
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
   }
-  
+
   function formatDateTime(date) {
-    if (!date) return '-'
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
   }
-  
-  function formatCurrency(amount, currency = 'USD') {
-    if (!amount && amount !== 0) return '-'
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
+
+  function formatCurrency(amount, currency = "USD") {
+    if (!amount && amount !== 0) return "-";
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
       currency: currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount)
+    }).format(amount);
   }
-  
+
   function formatPercentage(value) {
-    if (!value && value !== 0) return '-'
-    return `${Math.round(value)}%`
+    if (!value && value !== 0) return "-";
+    return `${Math.round(value)}%`;
   }
-  
+
   function truncateText(text, maxLength = 50) {
-    if (!text) return ''
-    if (text.length <= maxLength) return text
-    return text.substring(0, maxLength) + '...'
+    if (!text) return "";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
   }
-  
   // Gestion des toasts
-  window.showToastFn = null
-  
-  document.addEventListener('alpine:init', () => {
+
+  window.showToastFn = null;
+
+  document.addEventListener("alpine:init", () => {
     window.showToastFn = (message, type) => {
-      const toastEvent = new CustomEvent('show-toast', { detail: { message, type } })
-      window.dispatchEvent(toastEvent)
-    }
-  })
-  
-  window.addEventListener('show-toast', (e) => {
-    const { message, type } = e.detail
-    const toastDiv = document.querySelector('[x-data]')?.__x?.$data
+      const toastEvent = new CustomEvent("show-toast", {
+        detail: {
+          message: message,
+          type: type
+        }
+      });
+      window.dispatchEvent(toastEvent);
+    };
+  });
+
+  window.addEventListener("show-toast", e => {
+    const {
+      message,
+      type
+    } = e.detail;
+    const toastDiv = document.querySelector("[x-data]")?.__x?.$data;
     if (toastDiv) {
-      toastDiv.toastMessage = message
-      toastDiv.toastType = type
-      toastDiv.showToast = true
-      setTimeout(() => { toastDiv.showToast = false }, 3000)
+      toastDiv.toastMessage = message;
+      toastDiv.toastType = type;
+      toastDiv.showToast = true;
+      setTimeout(() => {
+        toastDiv.showToast = false;
+      }, 3e3);
     }
-  })
-  
+  });
   // Gestion du chargement
+
   window.showLoading = () => {
-    const app = document.querySelector('[x-data]')?.__x?.$data
-    if (app) app.$store.loading = true
-  }
-  
+    Alpine.store("loading").loading = true;
+  };
+
   window.hideLoading = () => {
-    const app = document.querySelector('[x-data]')?.__x?.$data
-    if (app) app.$store.loading = false
+    Alpine.store("loading").loading = false;
   }
-  
   // Confirmation avant action
+  ;
+
   window.confirmAction = (message, callback) => {
-    if (confirm(message || 'Êtes-vous sûr de vouloir effectuer cette action ?')) {
-      callback()
+    if (confirm(message || "Êtes-vous sûr de vouloir effectuer cette action ?")) {
+      callback();
     }
   }
-  
   // Debounce pour les recherches
+  ;
+
   function debounce(func, wait) {
-    let timeout
+    let timeout;
     return function executedFunction(...args) {
       const later = () => {
-        clearTimeout(timeout)
-        func(...args)
-      }
-      clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
-    }
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   }
-  
   // Export des fonctions globales
-  window.formatDate = formatDate
-  window.formatDateTime = formatDateTime
-  window.formatCurrency = formatCurrency
-  window.formatPercentage = formatPercentage
-  window.truncateText = truncateText
-  window.debounce = debounce
+
+  window.formatDate = formatDate;
+
+  window.formatDateTime = formatDateTime;
+
+  window.formatCurrency = formatCurrency;
+
+  window.formatPercentage = formatPercentage;
+
+  window.truncateText = truncateText;
+
+  window.debounce = debounce;
 </script>

@@ -6,14 +6,17 @@ export default class SchoolRoleMiddleware {
    * Sans argument, ce middleware verifie seulement que l'utilisateur est connecte.
    * Si des roles sont fournis, il applique aussi la restriction de role.
    */
-  async handle(
-    ctx: HttpContext,
-    next: NextFn,
-    params?: { allowedRoles?: string[] }
-  ) {
+  async handle(ctx: HttpContext, next: NextFn, params?: { allowedRoles?: string[] }) {
     const user = ctx.auth.user
 
     if (!user) {
+      const acceptsHtml = ctx.request.accepts(['html', 'json']) === 'html'
+
+      if (acceptsHtml && !ctx.request.url().startsWith('/api')) {
+        ctx.session.flash('error', 'Veuillez vous connecter pour continuer')
+        return ctx.response.redirect('/login')
+      }
+
       return ctx.response.unauthorized({ message: 'Non authentifie' })
     }
 

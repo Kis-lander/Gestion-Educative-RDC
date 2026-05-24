@@ -1,195 +1,288 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Liste des élèves - Discipline{{# /section }}
-
-{{# section('dashboardTitle') }}Liste des élèves{{# /section }}
-{{# section('dashboardSubtitle') }}Consultez le dossier disciplinaire des élèves{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/discipline/incidents/report" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-plus mr-2"></i> Signaler un incident
+  @section('title')
+    Liste des élèves - Discipline
+  @endsection
+  
+  @section('dashboardTitle')
+    Liste des élèves
+  @endsection
+  @section('dashboardSubtitle')
+    Consultez le dossier disciplinaire des élèves
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a
+        href="/discipline/incidents/report"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-plus mr-2"></i>Signaler un incident
   </a>
-  <button onclick="exportStudents()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+      <button onclick="exportStudents()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ stats.total || 0 }}</p>
-    <p class="text-sm text-gray-500">Total élèves</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-red-600">{{ stats.withIncidents || 0 }}</p>
-    <p class="text-sm text-gray-500">Avec incidents</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ stats.activeSanctions || 0 }}</p>
-    <p class="text-sm text-gray-500">Sous sanction</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ stats.exemplary || 0 }}</p>
-    <p class="text-sm text-gray-500">Comportement exemplaire</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
-      <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Toutes</option>
-        @each(classObj in classes)
-        <option value="{{ classObj.id }}">{{ classObj.name }}</option>
-        @end
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut disciplinaire</label>
-      <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="exemplary">Exemplaire</option>
-        <option value="warning">Averti</option>
-        <option value="sanctioned">Sanctionné</option>
-        <option value="suspended">Suspendu</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" placeholder="Nom, matricule..."
-               class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm">
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ stats.total || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Total élèves
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-red-600">
+          {{ stats.withIncidents || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Avec incidents
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ stats.activeSanctions || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Sous sanction
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ stats.exemplary || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Comportement exemplaire
+        </p>
       </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trier par</label>
-      <select id="sortBy" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="name">Nom</option>
-        <option value="incidents">Nombre d'incidents</option>
-        <option value="class">Classe</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Classe</label>
+          <select id="filterClass" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Toutes
+            </option>
+            @each(classObj in classes)
+              <option value="{{ classObj.id }}">
+                {{ classObj.name }}
+              </option>
+            @end
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut disciplinaire</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="exemplary">
+              Exemplaire
+            </option>
+            <option value="warning">
+              Averti
+            </option>
+            <option value="sanctioned">
+              Sanctionné
+            </option>
+            <option value="suspended">
+              Suspendu
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Nom, matricule..."
+              class="w-full pl-9 pr-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trier par</label>
+          <select id="sortBy" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="name">
+              Nom
+            </option>
+            <option value="incidents">
+              Nombre d'incidents
+            </option>
+            <option value="class">
+              Classe
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Tableau des élèves -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Matricule</th>
-          <th class="px-4 py-3 text-left">Élève</th>
-          <th class="px-4 py-3 text-left">Classe</th>
-          <th class="px-4 py-3 text-center">Incidents</th>
-          <th class="px-4 py-3 text-center">Statut</th>
-          <th class="px-4 py-3 text-center">Dernier incident</th>
-          <th class="px-4 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(student in students)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-            data-student-id="{{ student.id }}">
-          <td class="px-4 py-3 font-mono text-xs">{{ student.registrationNumber }}</td>
-          <td class="px-4 py-3 font-medium">{{ student.name }}</td>
-          <td class="px-4 py-3">{{ student.className }}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full {{ student.incidentCount > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-              {{ student.incidentCount }}
+    <!-- Tableau des élèves -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Matricule
+              </th>
+              <th class="px-4 py-3 text-left">
+                Élève
+              </th>
+              <th class="px-4 py-3 text-left">
+                Classe
+              </th>
+              <th class="px-4 py-3 text-center">
+                Incidents
+              </th>
+              <th class="px-4 py-3 text-center">
+                Statut
+              </th>
+              <th class="px-4 py-3 text-center">
+                Dernier incident
+              </th>
+              <th class="px-4 py-3 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(student in students)
+              <tr
+                class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                data-student-id="{{ student.id }}"
+              >
+                <td class="px-4 py-3 font-mono text-xs">
+                  {{ student.registrationNumber }}
+                </td>
+                <td class="px-4 py-3 font-medium">
+                  {{ student.name }}
+                </td>
+                <td class="px-4 py-3">
+                  {{ student.className }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full {{ student.incidentCount > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}"
+                  >
+                    {{ student.incidentCount }}
             </span>
-          </td>
-          <td class="px-4 py-3 text-center">
-            <span class="px-2 py-1 rounded-full text-xs
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ student.status === 'exemplary' ? 'bg-green-100 text-green-800' : 
                  (student.status === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
-                 (student.status === 'sanctioned' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}">
-              {{ student.status === 'exemplary' ? 'Exemplaire' : 
+                 (student.status === 'sanctioned' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')) }}"
+                  >
+                    {{ student.status === 'exemplary' ? 'Exemplaire' : 
                  (student.status === 'warning' ? 'Averti' : 
                  (student.status === 'sanctioned' ? 'Sanctionné' : 'Suspendu')) }}
             </span>
-          </td>
-          <td class="px-4 py-3 text-center">{{ student.lastIncidentDate || '-' }}</td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex justify-center gap-2">
-              <a href="/discipline/students/{{ student.id }}" class="text-primary hover:underline" title="Détails">
-                <i class="fas fa-eye"></i>
-              </a>
-              <button onclick="reportIncident('{{ student.id }}', '{{ student.name }}')" class="text-green-600 hover:text-green-800" title="Signaler">
-                <i class="fas fa-plus-circle"></i>
-              </button>
-              <button onclick="viewHistory('{{ student.id }}')" class="text-purple-600 hover:text-purple-800" title="Historique">
-                <i class="fas fa-history"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="7" class="text-center py-12 text-gray-500">
-            <i class="fas fa-users text-4xl mb-2 block"></i>
-            Aucun élève trouvé
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/discipline/students' })
-</div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  {{ student.lastIncidentDate || '-' }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex justify-center gap-2">
+                    <a
+                      href="/discipline/students/{{ student.id }}"
+                      class="text-primary hover:underline"
+                      title="Détails"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <button
+                      onclick="reportIncident('{{ student.id }}', '{{ student.name }}')"
+                      class="text-green-600 hover:text-green-800"
+                      title="Signaler"
+                    >
+                      <i class="fas fa-plus-circle"></i>
+                    </button>
+                    <button
+                      onclick="viewHistory('{{ student.id }}')"
+                      class="text-purple-600 hover:text-purple-800"
+                      title="Historique"
+                    >
+                      <i class="fas fa-history"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="7" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-users text-4xl mb-2 block"></i>
+                  Aucun élève trouvé
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
 
-<script>
-  const filterClass = document.getElementById('filterClass')
-  const filterStatus = document.getElementById('filterStatus')
-  const searchInput = document.getElementById('searchInput')
-  const sortBy = document.getElementById('sortBy')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterClass.value) params.set('class_id', filterClass.value)
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    if (searchInput.value) params.set('search', searchInput.value)
-    if (sortBy.value) params.set('sort', sortBy.value)
-    window.location.href = `/discipline/students?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/discipline/students'
-  })
-  
-  function reportIncident(studentId, studentName) {
-    window.location.href = `/discipline/incidents/report?student_id=${studentId}`
-  }
-  
-  function viewHistory(studentId) {
-    window.location.href = `/discipline/students/${studentId}?tab=history`
-  }
-  
-  function exportStudents() {
-    const params = new URLSearchParams()
-    if (filterClass.value) params.set('class_id', filterClass.value)
-    if (filterStatus.value) params.set('status', filterStatus.value)
-    window.location.href = `/api/discipline/students/export?${params.toString()}`
-  }
-</script>
-{{# /section }}
+      @include('partials/pagination', { pagination: pagination, url: '/discipline/students' })
+    </div>
 
-{{# /layout }}
+    <script>
+      const filterClass = document.getElementById("filterClass");
+
+      const filterStatus = document.getElementById("filterStatus");
+
+      const searchInput = document.getElementById("searchInput");
+
+      const sortBy = document.getElementById("sortBy");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterClass.value) params.set("class_id", filterClass.value);
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (searchInput.value) params.set("search", searchInput.value);
+        if (sortBy.value) params.set("sort", sortBy.value);
+        window.location.href = `/discipline/students?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/discipline/students";
+      });
+
+      function reportIncident(studentId, studentName) {
+        window.location.href = `/discipline/incidents/report?student_id=${studentId}`;
+      }
+
+      function viewHistory(studentId) {
+        window.location.href = `/discipline/students/${studentId}?tab=history`;
+      }
+
+      function exportStudents() {
+        const params = new URLSearchParams();
+        if (filterClass.value) params.set("class_id", filterClass.value);
+        if (filterStatus.value) params.set("status", filterStatus.value);
+        window.location.href = `/api/discipline/students/export?${params.toString()}`;
+      }
+    </script>
+  @endsection
+  

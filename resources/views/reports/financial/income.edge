@@ -1,235 +1,330 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Rapport des revenus - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Rapport des revenus{{# /section }}
-{{# section('dashboardSubtitle') }}Analyse détaillée des encaissements{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportReport('pdf')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-file-pdf mr-2"></i> PDF
+  @section('title')
+    Rapport des revenus - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Rapport des revenus
+  @endsection
+  @section('dashboardSubtitle')
+    Analyse détaillée des encaissements
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button
+        onclick="exportReport('pdf')"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>PDF
   </button>
-  <button onclick="exportReport('excel')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-    <i class="fas fa-file-excel mr-2"></i> Excel
+      <button
+        onclick="exportReport('excel')"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-file-excel mr-2"></i>Excel
   </button>
-  <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
+      <button onclick="window.print()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
-      <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="month">Ce mois</option>
-        <option value="quarter">Ce trimestre</option>
-        <option value="year">Cette année</option>
-        <option value="custom">Personnalisée</option>
-      </select>
     </div>
-    <div id="dateRange" class="hidden">
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div id="dateRangeEnd" class="hidden">
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type frais</label>
-      <select id="feeType" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="Inscription">Inscription</option>
-        <option value="Minerval">Minerval</option>
-        <option value="Assurance">Assurance</option>
-        <option value="Transport">Transport</option>
-        <option value="Cantine">Cantine</option>
-      </select>
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-chart-line mr-2"></i> Générer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
+          <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="month">
+              Ce mois
+            </option>
+            <option value="quarter">
+              Ce trimestre
+            </option>
+            <option value="year">
+              Cette année
+            </option>
+            <option value="custom">
+              Personnalisée
+            </option>
+          </select>
+        </div>
+        <div id="dateRange" class="hidden">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div id="dateRangeEnd" class="hidden">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type frais</label>
+          <select id="feeType" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="Inscription">
+              Inscription
+            </option>
+            <option value="Minerval">
+              Minerval
+            </option>
+            <option value="Assurance">
+              Assurance
+            </option>
+            <option value="Transport">
+              Transport
+            </option>
+            <option value="Cantine">
+              Cantine
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-chart-line mr-2"></i>Générer
       </button>
-    </div>
-  </div>
-</div>
-
-<!-- Indicateurs clés -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total encaissé</p>
-    <p class="text-3xl font-bold" id="totalIncome">0 $</p>
-  </div>
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Transactions</p>
-    <p class="text-3xl font-bold" id="transactionCount">0</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Moyenne transaction</p>
-    <p class="text-3xl font-bold" id="avgTransaction">0 $</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Meilleur jour</p>
-    <p class="text-lg font-bold" id="bestDay">--</p>
-  </div>
-</div>
-
-<!-- Graphiques -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution quotidienne</h3>
-    <canvas id="dailyIncomeChart" height="200"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par type de frais</h3>
-    <canvas id="incomeByTypeChart" height="200"></canvas>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution mensuelle</h3>
-    <canvas id="monthlyIncomeChart" height="200"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Top 10 contributeurs</h3>
-    <div id="topContributors" class="space-y-2 max-h-64 overflow-y-auto"></div>
-  </div>
-</div>
-
-<!-- Tableau détaillé -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Détail des transactions</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date</th>
-          <th class="px-4 py-2">Élève</th>
-          <th class="px-4 py-2">Type</th>
-          <th class="px-4 py-2 text-right">Montant</th>
-          <th class="px-4 py-2">Mode</th>
-          <th class="px-4 py-2">Reçu n°</th>
-        </tr>
-      </thead>
-      <tbody id="transactionsTable">
-        <!-- Dynamique -->
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<script>
-  let dailyChart, typeChart, monthlyChart
-  
-  document.getElementById('periodSelect').addEventListener('change', function() {
-    const isCustom = this.value === 'custom'
-    document.getElementById('dateRange').classList.toggle('hidden', !isCustom)
-    document.getElementById('dateRangeEnd').classList.toggle('hidden', !isCustom)
-  })
-  
-  async function loadReport() {
-    const period = document.getElementById('periodSelect').value
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const feeType = document.getElementById('feeType').value
-    
-    const params = new URLSearchParams({ period })
-    if (startDate) params.append('start_date', startDate)
-    if (endDate) params.append('end_date', endDate)
-    if (feeType) params.append('fee_type', feeType)
-    
-    const res = await fetch(`/api/reports/financial/income?${params.toString()}`)
-    const data = await res.json()
-    
-    // Mise à jour indicateurs
-    document.getElementById('totalIncome').textContent = `$ ${data.summary.total.toLocaleString()}`
-    document.getElementById('transactionCount').textContent = data.summary.count
-    document.getElementById('avgTransaction').textContent = `$ ${data.summary.average.toLocaleString()}`
-    document.getElementById('bestDay').textContent = data.summary.bestDay
-    
-    // Graphique quotidien
-    if (dailyChart) dailyChart.destroy()
-    const dailyCtx = document.getElementById('dailyIncomeChart').getContext('2d')
-    dailyChart = new Chart(dailyCtx, {
-      type: 'line',
-      data: {
-        labels: data.daily.labels,
-        datasets: [{ label: 'Encaissements ($)', data: data.daily.values, borderColor: '#10b981', fill: true, tension: 0.4 }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Graphique par type
-    if (typeChart) typeChart.destroy()
-    const typeCtx = document.getElementById('incomeByTypeChart').getContext('2d')
-    typeChart = new Chart(typeCtx, {
-      type: 'doughnut',
-      data: {
-        labels: data.byType.labels,
-        datasets: [{ data: data.byType.values, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'] }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    })
-    
-    // Graphique mensuel
-    if (monthlyChart) monthlyChart.destroy()
-    const monthlyCtx = document.getElementById('monthlyIncomeChart').getContext('2d')
-    monthlyChart = new Chart(monthlyCtx, {
-      type: 'bar',
-      data: {
-        labels: data.monthly.labels,
-        datasets: [{ label: 'Encaissements ($)', data: data.monthly.values, backgroundColor: '#2563eb', borderRadius: 8 }]
-      },
-      options: { responsive: true }
-    })
-    
-    // Top contributeurs
-    document.getElementById('topContributors').innerHTML = data.topContributors.map((c, i) => `
-      <div class="flex justify-between items-center p-2 border-b">
-        <div><span class="w-6 inline-block font-bold">${i + 1}</span> ${c.name}</div>
-        <span class="font-bold text-green-600">$ ${c.total.toLocaleString()}</span>
+        </div>
       </div>
-    `).join('')
-    
-    // Tableau
-    document.getElementById('transactionsTable').innerHTML = data.transactions.map(t => `
-      <tr class="border-b dark:border-gray-700">
-        <td class="px-4 py-2">${t.date}</td>
-        <td class="px-4 py-2">${t.studentName}</td>
-        <td class="px-4 py-2">${t.feeType}</td>
-        <td class="px-4 py-2 text-right font-bold text-green-600">$ ${t.amount.toLocaleString()}</td>
-        <td class="px-4 py-2">${t.method}</td>
-        <td class="px-4 py-2 font-mono">${t.receiptNumber}</td>
-      </tr>
-    `).join('')
-  }
-  
-  document.getElementById('applyFilters').addEventListener('click', loadReport)
-  
-  function exportReport(format) {
-    const period = document.getElementById('periodSelect').value
-    const startDate = document.getElementById('startDate').value
-    const endDate = document.getElementById('endDate').value
-    const feeType = document.getElementById('feeType').value
-    window.location.href = `/api/reports/financial/income/export?format=${format}&period=${period}&start_date=${startDate}&end_date=${endDate}&fee_type=${feeType}`
-  }
-  
-  // Dates par défaut
-  const today = new Date()
-  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
-  document.getElementById('startDate').value = firstDay.toISOString().split('T')[0]
-  document.getElementById('endDate').value = today.toISOString().split('T')[0]
-  
-  loadReport()
-</script>
-{{# /section }}
+    </div>
 
-{{# /layout }}
+    <!-- Indicateurs clés -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total encaissé
+        </p>
+        <p class="text-3xl font-bold" id="totalIncome">
+          0 $
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Transactions
+        </p>
+        <p class="text-3xl font-bold" id="transactionCount">
+          0
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Moyenne transaction
+        </p>
+        <p class="text-3xl font-bold" id="avgTransaction">
+          0 $
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Meilleur jour
+        </p>
+        <p class="text-lg font-bold" id="bestDay">
+          --
+        </p>
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Évolution quotidienne
+        </h3>
+        <canvas id="dailyIncomeChart" height="200">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Répartition par type de frais
+        </h3>
+        <canvas id="incomeByTypeChart" height="200">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Évolution mensuelle
+        </h3>
+        <canvas id="monthlyIncomeChart" height="200">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Top 10 contributeurs
+        </h3>
+        <div id="topContributors" class="space-y-2 max-h-64 overflow-y-auto">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tableau détaillé -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Détail des transactions
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date
+              </th>
+              <th class="px-4 py-2">
+                Élève
+              </th>
+              <th class="px-4 py-2">
+                Type
+              </th>
+              <th class="px-4 py-2 text-right">
+                Montant
+              </th>
+              <th class="px-4 py-2">
+                Mode
+              </th>
+              <th class="px-4 py-2">
+                Reçu n°
+              </th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTable">
+            <!-- Dynamique -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let dailyChart, typeChart, monthlyChart;
+
+      document.getElementById("periodSelect").addEventListener("change", function() {
+        const isCustom = this.value === "custom";
+        document.getElementById("dateRange").classList.toggle("hidden", !isCustom);
+        document.getElementById("dateRangeEnd").classList.toggle("hidden", !isCustom);
+      });
+
+      async function loadReport() {
+        const period = document.getElementById("periodSelect").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const feeType = document.getElementById("feeType").value;
+        const params = new URLSearchParams({
+          period: period
+        });
+        if (startDate) params.append("start_date", startDate);
+        if (endDate) params.append("end_date", endDate);
+        if (feeType) params.append("fee_type", feeType);
+        const res = await fetch(`/api/reports/financial/income?${params.toString()}`);
+        const data = await res.json();
+        // Mise à jour indicateurs
+        document.getElementById("totalIncome").textContent = `$ ${data.summary.total.toLocaleString()}`;
+        document.getElementById("transactionCount").textContent = data.summary.count;
+        document.getElementById("avgTransaction").textContent = `$ ${data.summary.average.toLocaleString()}`;
+        document.getElementById("bestDay").textContent = data.summary.bestDay;
+        // Graphique quotidien
+        if (dailyChart) dailyChart.destroy();
+        const dailyCtx = document.getElementById("dailyIncomeChart").getContext("2d");
+        dailyChart = new Chart(dailyCtx, {
+          type: "line",
+          data: {
+            labels: data.daily.labels,
+            datasets: [ {
+              label: "Encaissements ($)",
+              data: data.daily.values,
+              borderColor: "#10b981",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Graphique par type
+        if (typeChart) typeChart.destroy();
+        const typeCtx = document.getElementById("incomeByTypeChart").getContext("2d");
+        typeChart = new Chart(typeCtx, {
+          type: "doughnut",
+          data: {
+            labels: data.byType.labels,
+            datasets: [ {
+              data: data.byType.values,
+              backgroundColor: [ "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4" ]
+            } ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom"
+              }
+            }
+          }
+        });
+        // Graphique mensuel
+        if (monthlyChart) monthlyChart.destroy();
+        const monthlyCtx = document.getElementById("monthlyIncomeChart").getContext("2d");
+        monthlyChart = new Chart(monthlyCtx, {
+          type: "bar",
+          data: {
+            labels: data.monthly.labels,
+            datasets: [ {
+              label: "Encaissements ($)",
+              data: data.monthly.values,
+              backgroundColor: "#2563eb",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+        // Top contributeurs
+        document.getElementById("topContributors").innerHTML = data.topContributors.map((c, i) => `
+                <div class="flex justify-between items-center p-2 border-b">
+                  <div><span class="w-6 inline-block font-bold">${i + 1}</span> ${c.name}</div>
+                  <span class="font-bold text-green-600">$ ${c.total.toLocaleString()}</span>
+                </div>
+              `).join("");
+        // Tableau
+        document.getElementById("transactionsTable").innerHTML = data.transactions.map(t => `
+                <tr class="border-b dark:border-gray-700">
+                  <td class="px-4 py-2">${t.date}</td>
+                  <td class="px-4 py-2">${t.studentName}</td>
+                  <td class="px-4 py-2">${t.feeType}</td>
+                  <td class="px-4 py-2 text-right font-bold text-green-600">$ ${t.amount.toLocaleString()}</td>
+                  <td class="px-4 py-2">${t.method}</td>
+                  <td class="px-4 py-2 font-mono">${t.receiptNumber}</td>
+                </tr>
+              `).join("");
+      }
+
+      document.getElementById("applyFilters").addEventListener("click", loadReport);
+
+      function exportReport(format) {
+        const period = document.getElementById("periodSelect").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const feeType = document.getElementById("feeType").value;
+        window.location.href = `/api/reports/financial/income/export?format=${format}&period=${period}&start_date=${startDate}&end_date=${endDate}&fee_type=${feeType}`;
+      }
+      // Dates par défaut
+
+      const today = new Date();
+
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      document.getElementById("startDate").value = firstDay.toISOString().split("T")[0];
+
+      document.getElementById("endDate").value = today.toISOString().split("T")[0];
+
+      loadReport();
+    </script>
+  @endsection
+  

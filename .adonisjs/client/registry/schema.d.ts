@@ -15,8 +15,20 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['index']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['index']>>>
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'home': {
+    methods: ["GET","HEAD"]
+    pattern: '/home'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
     }
   }
   'about': {
@@ -27,8 +39,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['about']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['about']>>>
+      response: unknown
+      errorResponse: unknown
     }
   }
   'welcome.landing': {
@@ -39,8 +51,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['landing']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['landing']>>>
+      response: unknown
+      errorResponse: unknown
     }
   }
   'welcome.about': {
@@ -51,8 +63,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['about']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['about']>>>
+      response: unknown
+      errorResponse: unknown
     }
   }
   'welcome.features': {
@@ -63,8 +75,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['features']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['features']>>>
+      response: unknown
+      errorResponse: unknown
     }
   }
   'welcome.contact': {
@@ -75,8 +87,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['contact']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['contact']>>>
+      response: unknown
+      errorResponse: unknown
     }
   }
   'welcome.terms': {
@@ -87,8 +99,32 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['terms']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/welcome_controller').default['terms']>>>
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'schools.register.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/register-school'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'schools.register': {
+    methods: ["POST"]
+    pattern: '/register-school'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['registerSchool']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['registerSchool']>>>
     }
   }
   'help.index': {
@@ -161,6 +197,618 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/help_controller').default['documentation']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/help_controller').default['documentation']>>>
+    }
+  }
+  'session.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/login'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['create']>>>
+    }
+  }
+  'session.store': {
+    methods: ["POST"]
+    pattern: '/login'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').loginValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').loginValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'new_account.create': {
+    methods: ["GET","HEAD"]
+    pattern: '/signup'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/new_account_controller').default['create']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/new_account_controller').default['create']>>>
+    }
+  }
+  'new_account.store': {
+    methods: ["POST"]
+    pattern: '/signup'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/new_account_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/new_account_controller').default['store']>>>
+    }
+  }
+  'session.destroy': {
+    methods: ["POST"]
+    pattern: '/logout'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/session_controller').default['destroy']>>>
+    }
+  }
+  'inspection.dashboard': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['inspection']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['inspection']>>>
+    }
+  }
+  'inspections.schools_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolsPage']>>>
+    }
+  }
+  'inspections.pending_schools_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools/pending'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['pendingSchoolsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['pendingSchoolsPage']>>>
+    }
+  }
+  'inspections.school_classes_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools/:id/classes'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolClassesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolClassesPage']>>>
+    }
+  }
+  'inspections.inspect_school_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools/:id/inspect'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['inspectSchoolPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['inspectSchoolPage']>>>
+    }
+  }
+  'inspections.store_school_inspection': {
+    methods: ["POST"]
+    pattern: '/inspection/schools/:id/inspect'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/inspection').inspectSchoolValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/inspection').inspectSchoolValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['storeSchoolInspection']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['storeSchoolInspection']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'inspections.school_details_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolDetailsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolDetailsPage']>>>
+    }
+  }
+  'inspections.approve_school_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools/:id/approve'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['approveSchoolPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['approveSchoolPage']>>>
+    }
+  }
+  'inspections.approve_and_generate_credentials': {
+    methods: ["POST"]
+    pattern: '/inspection/schools/:id/generate-credentials'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['approveAndGenerateCredentials']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['approveAndGenerateCredentials']>>>
+    }
+  }
+  'inspections.reject_school': {
+    methods: ["POST"]
+    pattern: '/inspection/schools/:id/reject'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['rejectSchool']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['rejectSchool']>>>
+    }
+  }
+  'inspections.toggle_suspend_school': {
+    methods: ["POST"]
+    pattern: '/inspection/schools/:id/toggle-suspend'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['toggleSuspendSchool']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['toggleSuspendSchool']>>>
+    }
+  }
+  'inspections.communications_global_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/communications/global'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationsGlobalPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationsGlobalPage']>>>
+    }
+  }
+  'inspection.communications.global.store': {
+    methods: ["POST"]
+    pattern: '/inspection/communications/global'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/inspection').sendGlobalCommunicationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/inspection').sendGlobalCommunicationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['sendGlobalCommunication']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['sendGlobalCommunication']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'inspections.communications_school_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/communications/school'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationsSchoolPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationsSchoolPage']>>>
+    }
+  }
+  'messages.send_school_communication': {
+    methods: ["POST"]
+    pattern: '/inspection/communications/school'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/message').sendSchoolCommunicationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/message').sendSchoolCommunicationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/messages_controller').default['sendSchoolCommunication']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/messages_controller').default['sendSchoolCommunication']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'inspections.communications_history_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/communications/history'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationsHistoryPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationsHistoryPage']>>>
+    }
+  }
+  'inspections.communication_details': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/communications/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationDetails']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationDetails']>>>
+    }
+  }
+  'inspections.reports_schools_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/reports/schools'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsSchoolsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsSchoolsPage']>>>
+    }
+  }
+  'inspections.reports_performance_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/reports/performance'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsPerformancePage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsPerformancePage']>>>
+    }
+  }
+  'inspections.reports_statistics_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/reports/statistics'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsStatisticsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsStatisticsPage']>>>
+    }
+  }
+  'inspections.reports_transfers_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/reports/transfers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsTransfersPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['reportsTransfersPage']>>>
+    }
+  }
+  'inspections.school_report_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/reports/school/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolReportPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolReportPage']>>>
+    }
+  }
+  'inspections.settings_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/settings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['settingsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['settingsPage']>>>
+    }
+  }
+  'inspection.settings.general.store': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/general'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+    }
+  }
+  'inspection.settings.inspection.store': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/inspection'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+    }
+  }
+  'inspection.settings.notifications.store': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/notifications'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+    }
+  }
+  'inspection.settings.backup.store': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/backup'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+    }
+  }
+  'inspection.settings.security.store': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/security'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
+    }
+  }
+  'inspections.export_schools': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['exportSchools']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['exportSchools']>>>
+    }
+  }
+  'inspections.schools_report_data': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/inspection/reports/schools'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolsReportData']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['schoolsReportData']>>>
+    }
+  }
+  'inspections.performance_report_data': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/inspection/reports/performance'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['performanceReportData']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['performanceReportData']>>>
+    }
+  }
+  'inspections.statistics_report_data': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/inspection/reports/statistics'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['statisticsReportData']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['statisticsReportData']>>>
+    }
+  }
+  'inspections.transfers_report_data': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/inspection/reports/transfers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['transfersReportData']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['transfersReportData']>>>
+    }
+  }
+  'inspections.logs': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/inspection/logs'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['logs']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['logs']>>>
+    }
+  }
+  'inspections.export_logs': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/inspection/logs/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['exportLogs']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['exportLogs']>>>
+    }
+  }
+  'dashboard': {
+    methods: ["GET","HEAD"]
+    pattern: '/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['workspace']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['workspace']>>>
+    }
+  }
+  'settings': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'inspection.teachers': {
+    methods: ["GET","HEAD"]
+    pattern: '/teachers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['teachersPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['teachersPage']>>>
+    }
+  }
+  'inspection.messages': {
+    methods: ["GET","HEAD"]
+    pattern: '/communication/messages'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
+  'inspection.users.stats': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/users/stats'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['usersStats']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['usersStats']>>>
+    }
+  }
+  'profile': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['profile']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['profile']>>>
+    }
+  }
+  'profile.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/edit'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['editProfilePage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['editProfilePage']>>>
+    }
+  }
+  'profile.security': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/security'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['securityPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['securityPage']>>>
+    }
+  }
+  'profile.preferences': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/preferences'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['preferencesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['preferencesPage']>>>
+    }
+  }
+  'profile.activity': {
+    methods: ["GET","HEAD"]
+    pattern: '/profile/activity'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['activityPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['activityPage']>>>
+    }
+  }
+  'profile.avatar.update': {
+    methods: ["POST"]
+    pattern: '/api/profile/avatar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateAvatar']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateAvatar']>>>
     }
   }
   'schools.register_school': {

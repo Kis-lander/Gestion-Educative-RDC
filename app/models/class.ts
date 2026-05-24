@@ -10,7 +10,7 @@ import Student from '#models/student'
 import Subject from '#models/subject'
 
 export default class Class extends ClassSchema {
-    public static selfAssignPrimaryKey = true
+  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string

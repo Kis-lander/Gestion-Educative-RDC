@@ -1,238 +1,279 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Communication ciblée - Inspection RDC{{# /section }}
+  @section('title')
+    Communication ciblée - Inspection RDC
+  @endsection
+  
+  @section('dashboardTitle')
+    Communication ciblée
+  @endsection
+  @section('dashboardSubtitle')
+    Envoyer un message à une école spécifique
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Formulaire de communication -->
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/inspection/communications/school"
+          x-data="{ loading: false, preview: false, selectedSchool: null }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Communication ciblée{{# /section }}
-{{# section('dashboardSubtitle') }}Envoyer un message à une école spécifique{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Formulaire de communication -->
-  <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/inspection/communications/school" x-data="{ loading: false, preview: false, selectedSchool: null }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Sélectionner l'école *</label>
-        <select name="schoolId" required class="w-full px-3 py-2 border rounded-lg" x-model="selectedSchool">
-          <option value="">-- Choisir une école --</option>
-          @each(school in schools)
-          <option value="{{ school.id }}">{{ school.name }} ({{ school.province }})</option>
-          @end
-        </select>
-      </div>
-      
-      <div x-show="selectedSchool" x-cloak>
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Objet *</label>
-          <input type="text" name="subject" required 
-                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                 placeholder="Ex: Prochaine inspection">
-        </div>
-        
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu du message *</label>
-          <textarea name="content" rows="8" required 
-                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                    placeholder="Saisissez votre message ici..."></textarea>
-        </div>
-        
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataires spécifiques (optionnel)</label>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="targetRole" value="all" checked class="w-4 h-4">
-              <span>Tous les utilisateurs de l'école</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="targetRole" value="director" class="w-4 h-4">
-              <span>Directeur uniquement</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="targetRole" value="teacher" class="w-4 h-4">
-              <span>Enseignants uniquement</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="targetRole" value="parent" class="w-4 h-4">
-              <span>Parents uniquement</span>
-            </label>
+          <div class="mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Sélectionner l'école *</label>
+            <select name="schoolId" required class="w-full px-3 py-2 border rounded-lg" x-model="selectedSchool">
+              <option value="">
+                -- Choisir une école --
+              </option>
+              @each(school in schools)
+                <option value="{{ school.id }}">
+                  {{ school.name }} ({{ school.province }})
+                </option>
+              @end
+            </select>
           </div>
-        </div>
-        
-        <div class="mb-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="requireAcknowledgment" class="w-4 h-4">
-            <span>Exiger un accusé de réception</span>
-          </label>
-        </div>
-        
-        <div class="flex gap-3">
-          <button type="button" @click="preview = !preview" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-            <i class="fas fa-eye mr-2"></i> Aperçu
-          </button>
-          <button type="submit" :disabled="loading"
-                  class="flex-1 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-            <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-            <span>Envoyer le message</span>
-          </button>
-        </div>
-      </div>
-    </form>
-  </div>
-  
-  <!-- Aperçu et informations école -->
-  <div class="space-y-6">
-    <!-- Aperçu du message -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" x-show="preview" x-cloak>
-      <h3 class="font-semibold text-lg border-b pb-2 mb-3">Aperçu du message</h3>
-      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <i class="fas fa-bullhorn"></i>
-          <span>Inspection Pédagogique - RDC</span>
-        </div>
-        <div class="font-bold text-gray-800 dark:text-white mb-2" x-text="document.querySelector('[name=subject]')?.value || 'Objet'"></div>
-        <div class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap" x-text="document.querySelector('[name=content]')?.value || 'Contenu du message...'"></div>
-      </div>
-    </div>
-    
-    <!-- Informations école sélectionnée -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-      <h3 class="font-semibold mb-3">Informations de l'école</h3>
-      <div id="schoolInfo" class="text-sm text-gray-500 text-center py-4">
-        Sélectionnez une école pour voir ses informations
-      </div>
-    </div>
-    
-    <!-- Conseils -->
-    <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">Conseils de communication</h3>
-      <ul class="text-sm space-y-2">
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Soyez clair et concis dans votre message</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Précisez les dates et délais importants</span>
-        </li>
-        <li class="flex gap-2">
-          <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-          <span>Utilisez le mode "urgent" pour les sujets prioritaires</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
 
-<!-- Historique des communications avec cette école -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Historique des communications</h3>
-  </div>
-  <div class="divide-y dark:divide-gray-700 max-h-96 overflow-y-auto" id="historyContainer">
-    <div class="p-8 text-center text-gray-500">
-      Sélectionnez une école pour voir l'historique des communications
-    </div>
-  </div>
-</div>
+          <div x-show="selectedSchool" x-cloak>
+            <div class="mb-4">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Objet *</label>
+              <input
+                type="text"
+                name="subject"
+                required
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Ex: Prochaine inspection"
+              />
+            </div>
 
-<script>
-  // Charger les informations de l'école
-  async function loadSchoolInfo(schoolId) {
-    if (!schoolId) return
-    
-    const res = await fetch(`/api/schools/${schoolId}/info`)
-    const data = await res.json()
-    
-    const infoHtml = `
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Nom</span>
-          <span class="font-medium">${data.name || '-'}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Province</span>
-          <span>${data.province || '-'}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Directeur</span>
-          <span>${data.directorName || '-'}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Email</span>
-          <span>${data.email || '-'}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Téléphone</span>
-          <span>${data.phone || '-'}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Statut</span>
-          <span class="px-2 py-0.5 rounded-full text-xs ${data.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${data.status === 'active' ? 'Actif' : 'En attente'}</span>
-        </div>
-      </div>
-    `
-    document.getElementById('schoolInfo').innerHTML = infoHtml
-    
-    // Charger l'historique
-    loadHistory(schoolId)
-  }
-  
-  // Charger l'historique des communications
-  async function loadHistory(schoolId) {
-    const res = await fetch(`/api/schools/${schoolId}/communications`)
-    const data = await res.json()
-    
-    if (data.communications && data.communications.length > 0) {
-      let historyHtml = ''
-      for (const comm of data.communications) {
-        historyHtml += `
-          <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-            <div class="flex justify-between items-start">
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <p class="font-medium">${comm.subject}</p>
-                  ${comm.urgent ? '<span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Urgent</span>' : ''}
-                </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${comm.content.substring(0, 150)}${comm.content.length > 150 ? '...' : ''}</p>
-                <div class="flex gap-3 mt-2 text-xs text-gray-400">
-                  <span><i class="fas fa-calendar mr-1"></i> ${formatDate(comm.createdAt)}</span>
-                  <span><i class="fas fa-envelope mr-1"></i> Destinataires: ${comm.recipientType === 'all' ? 'Tous' : comm.recipientType}</span>
-                  ${comm.acknowledged ? '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> Accusé reçu</span>' : ''}
-                </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu du message *</label>
+              <textarea
+                name="content"
+                rows="8"
+                required
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                placeholder="Saisissez votre message ici..."
+              ></textarea>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataires spécifiques (optionnel)</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="all" checked class="w-4 h-4" />
+                  <span>Tous les utilisateurs de l'école</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="director" class="w-4 h-4" />
+                  <span>Directeur uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="teacher" class="w-4 h-4" />
+                  <span>Enseignants uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="parent" class="w-4 h-4" />
+                  <span>Parents uniquement</span>
+                </label>
               </div>
-              <button onclick="viewCommunication('${comm.id}')" class="text-primary text-sm hover:underline">Détails</button>
+            </div>
+
+            <div class="mb-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="requireAcknowledgment" class="w-4 h-4" />
+                <span>Exiger un accusé de réception</span>
+              </label>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                type="button"
+                @click="preview = !preview"
+                class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <i class="fas fa-eye mr-2"></i>Aperçu
+          </button>
+              <button
+                type="submit"
+                :disabled="loading"
+                class="flex-1 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+              >
+                <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                <span>Envoyer le message</span>
+              </button>
             </div>
           </div>
-        `
-      }
-      document.getElementById('historyContainer').innerHTML = historyHtml
-    } else {
-      document.getElementById('historyContainer').innerHTML = `
-        <div class="p-8 text-center text-gray-500">
-          <i class="fas fa-history text-3xl mb-2 block"></i>
-          Aucune communication antérieure avec cette école
-        </div>
-      `
-    }
-  }
-  
-  // Observer le changement d'école
-  document.querySelector('[name=schoolId]').addEventListener('change', (e) => {
-    const schoolId = e.target.value
-    if (schoolId) {
-      loadSchoolInfo(schoolId)
-    }
-  })
-  
-  function viewCommunication(id) {
-    window.location.href = `/inspection/communications/${id}`
-  }
-  
-  function formatDate(date) {
-    return new Date(date).toLocaleDateString('fr-FR')
-  }
-</script>
-{{# /section }}
+        </form>
+      </div>
 
-{{# /layout }}
+      <!-- Aperçu et informations école -->
+      <div class="space-y-6">
+        <!-- Aperçu du message -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" x-show="preview" x-cloak>
+          <h3 class="font-semibold text-lg border-b pb-2 mb-3">
+            Aperçu du message
+          </h3>
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+              <i class="fas fa-bullhorn"></i>
+              <span>Inspection Pédagogique - RDC</span>
+            </div>
+            <div
+              class="font-bold text-gray-800 dark:text-white mb-2"
+              x-text="document.querySelector('[name=subject]')?.value || 'Objet'"
+            >
+            </div>
+            <div
+              class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap"
+              x-text="document.querySelector('[name=content]')?.value || 'Contenu du message...'"
+            >
+            </div>
+          </div>
+        </div>
+
+        <!-- Informations école sélectionnée -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+          <h3 class="font-semibold mb-3">
+            Informations de l'école
+          </h3>
+          <div id="schoolInfo" class="text-sm text-gray-500 text-center py-4">
+            Sélectionnez une école pour voir ses informations
+          </div>
+        </div>
+
+        <!-- Conseils -->
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            Conseils de communication
+          </h3>
+          <ul class="text-sm space-y-2">
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Soyez clair et concis dans votre message</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Précisez les dates et délais importants</span>
+            </li>
+            <li class="flex gap-2">
+              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+              <span>Utilisez le mode "urgent" pour les sujets prioritaires</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique des communications avec cette école -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Historique des communications
+        </h3>
+      </div>
+      <div class="divide-y dark:divide-gray-700 max-h-96 overflow-y-auto" id="historyContainer">
+        <div class="p-8 text-center text-gray-500">
+          Sélectionnez une école pour voir l'historique des communications
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Charger les informations de l'école
+      async function loadSchoolInfo(schoolId) {
+        if (!schoolId) return;
+        const res = await fetch(`/api/schools/${schoolId}/info`);
+        const data = await res.json();
+        const infoHtml = `
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Nom</span>
+                    <span class="font-medium">${data.name || "-"}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Province</span>
+                    <span>${data.province || "-"}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Directeur</span>
+                    <span>${data.directorName || "-"}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Email</span>
+                    <span>${data.email || "-"}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Téléphone</span>
+                    <span>${data.phone || "-"}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500">Statut</span>
+                    <span class="px-2 py-0.5 rounded-full text-xs ${data.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">${data.status === "active" ? "Actif" : "En attente"}</span>
+                  </div>
+                </div>
+              `;
+        document.getElementById("schoolInfo").innerHTML = infoHtml;
+        // Charger l'historique
+        loadHistory(schoolId);
+      }
+      // Charger l'historique des communications
+
+      async function loadHistory(schoolId) {
+        const res = await fetch(`/api/schools/${schoolId}/communications`);
+        const data = await res.json();
+        if (data.communications && data.communications.length > 0) {
+          let historyHtml = "";
+          for (const comm of data.communications) {
+            historyHtml += `
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                          <div class="flex items-center gap-2">
+                            <p class="font-medium">${comm.subject}</p>
+                            ${comm.urgent ? '<span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Urgent</span>' : ""}
+                          </div>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${comm.content.substring(0, 150)}${comm.content.length > 150 ? "..." : ""}</p>
+                          <div class="flex gap-3 mt-2 text-xs text-gray-400">
+                            <span><i class="fas fa-calendar mr-1"></i> ${formatDate(comm.createdAt)}</span>
+                            <span><i class="fas fa-envelope mr-1"></i> Destinataires: ${comm.recipientType === "all" ? "Tous" : comm.recipientType}</span>
+                            ${comm.acknowledged ? '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> Accusé reçu</span>' : ""}
+                          </div>
+                        </div>
+                        <button onclick="viewCommunication('${comm.id}')" class="text-primary text-sm hover:underline">Détails</button>
+                      </div>
+                    </div>
+                  `;
+          }
+          document.getElementById("historyContainer").innerHTML = historyHtml;
+        } else {
+          document.getElementById("historyContainer").innerHTML = `
+                  <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-history text-3xl mb-2 block"></i>
+                    Aucune communication antérieure avec cette école
+                  </div>
+                `;
+        }
+      }
+      // Observer le changement d'école
+
+      document.querySelector("[name=schoolId]").addEventListener("change", e => {
+        const schoolId = e.target.value;
+        if (schoolId) {
+          loadSchoolInfo(schoolId);
+        }
+      });
+
+      function viewCommunication(id) {
+        window.location.href = `/inspection/communications/${id}`;
+      }
+
+      function formatDate(date) {
+        return new Date(date).toLocaleDateString("fr-FR");
+      }
+    </script>
+  @endsection
+  

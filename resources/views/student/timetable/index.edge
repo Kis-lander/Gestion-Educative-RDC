@@ -1,243 +1,261 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Mon emploi du temps - {{ student.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Mon emploi du temps{{# /section }}
-{{# section('dashboardSubtitle') }}Classe de {{ student.className }} - {{ shiftLabel }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <a href="/student/timetable/print" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-print mr-2"></i> Imprimer
+  @section('title')
+    Mon emploi du temps - {{ student.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Mon emploi du temps
+  @endsection
+  @section('dashboardSubtitle')
+    Classe de {{ student.className }} - {{ shiftLabel }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <a href="/student/timetable/print" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-print mr-2"></i>Imprimer
   </a>
-  <button onclick="downloadPDF()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> PDF
+      <button onclick="downloadPDF()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>PDF
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Sélection semaine -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="flex flex-wrap justify-between items-center gap-3">
-    <div class="flex items-center gap-2">
-      <button onclick="previousWeek()" class="px-3 py-1 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <span id="weekRange" class="font-medium px-3 py-1">{{ weekRange }}</span>
-      <button onclick="nextWeek()" class="px-3 py-1 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-chevron-right"></i>
-      </button>
     </div>
-    <button onclick="goToToday()" class="px-3 py-1 bg-primary text-white rounded-lg hover:bg-blue-700">
-      Aujourd'hui
+  @endsection
+  
+  @section('content')
+    <!-- Sélection semaine -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-2">
+          <button onclick="previousWeek()" class="px-3 py-1 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span id="weekRange" class="font-medium px-3 py-1">{{ weekRange }}</span>
+          <button onclick="nextWeek()" class="px-3 py-1 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <button onclick="goToToday()" class="px-3 py-1 bg-primary text-white rounded-lg hover:bg-blue-700">
+          Aujourd'hui
     </button>
-    <select id="weekSelect" onchange="changeWeek()" class="px-3 py-1 border rounded-lg">
-      @each(week in weeks)
-      <option value="{{ week.value }}" {{ week.selected ? 'selected' : '' }}>{{ week.label }}</option>
-      @end
-    </select>
-  </div>
-</div>
-
-<!-- Emploi du temps -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-3 py-3 text-center" style="min-width: 100px">Horaire</th>
-          <th class="px-3 py-3 text-center">Lundi</th>
-          <th class="px-3 py-3 text-center">Mardi</th>
-          <th class="px-3 py-3 text-center">Mercredi</th>
-          <th class="px-3 py-3 text-center">Jeudi</th>
-          <th class="px-3 py-3 text-center">Vendredi</th>
-          <th class="px-3 py-3 text-center">Samedi</th>
-        </tr>
-      </thead>
-      <tbody id="timetableBody">
-        <!-- Généré par JS -->
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Légende -->
-<div class="mt-6 flex flex-wrap gap-4 justify-center">
-  <div class="flex items-center gap-2">
-    <div class="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-    <span class="text-sm">Cours normal</span>
-  </div>
-  <div class="flex items-center gap-2">
-    <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-    <span class="text-sm">Cours en cours (maintenant)</span>
-  </div>
-  <div class="flex items-center gap-2">
-    <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
-    <span class="text-sm">Pause / Libre</span>
-  </div>
-</div>
-
-<!-- Récapitulatif hebdomadaire -->
-<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Récapitulatif des heures</h3>
-    <div class="space-y-2">
-      <div class="flex justify-between text-sm">
-        <span>Total heures de cours</span>
-        <span class="font-bold" id="totalHours">0h</span>
-      </div>
-      <div class="flex justify-between text-sm">
-        <span>Nombre de matières</span>
-        <span class="font-bold" id="subjectsCount">0</span>
-      </div>
-      <div class="flex justify-between text-sm">
-        <span>Enseignants différents</span>
-        <span class="font-bold" id="teachersCount">0</span>
+        <select id="weekSelect" onchange="changeWeek()" class="px-3 py-1 border rounded-lg">
+          @each(week in weeks)
+            <option value="{{ week.value }}" {{ week.selected ? 'selected' : '' }}>
+              {{ week.label }}
+            </option>
+          @end
+        </select>
       </div>
     </div>
-  </div>
-  
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Cours par jour</h3>
-    <div class="space-y-2" id="dailyHours">
-      <!-- Généré par JS -->
-    </div>
-  </div>
-</div>
 
-<script>
-  let currentDate = new Date()
-  
-  function getWeekRange(date) {
-    const start = new Date(date)
-    start.setDate(date.getDate() - date.getDay() + 1)
-    const end = new Date(start)
-    end.setDate(start.getDate() + 4)
-    return `${start.toLocaleDateString('fr-FR')} - ${end.toLocaleDateString('fr-FR')}`
-  }
-  
-  function getWeekNumber(date) {
-    const d = new Date(date)
-    d.setHours(0, 0, 0, 0)
-    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
-    const week1 = new Date(d.getFullYear(), 0, 4)
-    return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7)
-  }
-  
-  async function loadTimetable() {
-    const classId = {{ student.classId }}
-    const year = currentDate.getFullYear()
-    const week = getWeekNumber(currentDate)
-    
-    document.getElementById('weekRange').textContent = getWeekRange(currentDate)
-    
-    const res = await fetch(`/api/student/timetable?class_id=${classId}&year=${year}&week=${week}`)
-    const data = await res.json()
-    
-    renderTimetable(data.timetable)
-    updateSummary(data.summary)
-  }
-  
-  function renderTimetable(timetable) {
-    const timeSlots = ['08:00-09:00', '09:00-10:00', '10:00-11:00', '11:00-12:00', '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00']
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-    const now = new Date()
-    const currentHour = now.getHours()
-    const currentMinute = now.getMinutes()
-    const currentDay = now.getDay()
-    
-    let html = ''
-    
-    timeSlots.forEach(slot => {
-      const [startHour, startMinute] = slot.split('-')[0].split(':').map(Number)
-      const isCurrentSlot = (currentDay >= 1 && currentDay <= 6) && 
-                            (currentHour === startHour && Math.abs(currentMinute - startMinute) <= 30)
-      
-      html += `<tr class="border-b dark:border-gray-700">`
-      html += `<td class="px-3 py-3 font-medium text-center bg-gray-50 dark:bg-gray-700 ${isCurrentSlot ? 'bg-blue-50 dark:bg-blue-900/20' : ''}">
-                ${slot}
-               </td>`
-      
-      days.forEach(day => {
-        const entry = timetable[day]?.find(e => e.time === slot) || null
-        if (entry) {
-          const isCurrent = isCurrentSlot && day === getDayName(currentDay)
-          html += `
-            <td class="px-2 py-2 ${isCurrent ? 'bg-green-50 dark:bg-green-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}">
-              <div class="text-center">
-                <p class="font-medium">${entry.subject}</p>
-                <p class="text-xs text-gray-500">${entry.teacher}</p>
-                <p class="text-xs text-gray-400">Salle ${entry.room}</p>
-              </div>
-            </td>
-          `
-        } else {
-          html += `<td class="px-2 py-2 text-center text-gray-400">-</td>`
+    <!-- Emploi du temps -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-3 py-3 text-center" style="min-width: 100px">
+                Horaire
+              </th>
+              <th class="px-3 py-3 text-center">
+                Lundi
+              </th>
+              <th class="px-3 py-3 text-center">
+                Mardi
+              </th>
+              <th class="px-3 py-3 text-center">
+                Mercredi
+              </th>
+              <th class="px-3 py-3 text-center">
+                Jeudi
+              </th>
+              <th class="px-3 py-3 text-center">
+                Vendredi
+              </th>
+              <th class="px-3 py-3 text-center">
+                Samedi
+              </th>
+            </tr>
+          </thead>
+          <tbody id="timetableBody">
+            <!-- Généré par JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Légende -->
+    <div class="mt-6 flex flex-wrap gap-4 justify-center">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-blue-100 border border-blue-300 rounded">
+        </div>
+        <span class="text-sm">Cours normal</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-green-100 border border-green-300 rounded">
+        </div>
+        <span class="text-sm">Cours en cours (maintenant)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded">
+        </div>
+        <span class="text-sm">Pause / Libre</span>
+      </div>
+    </div>
+
+    <!-- Récapitulatif hebdomadaire -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Récapitulatif des heures
+        </h3>
+        <div class="space-y-2">
+          <div class="flex justify-between text-sm">
+            <span>Total heures de cours</span>
+            <span class="font-bold" id="totalHours">0h</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>Nombre de matières</span>
+            <span class="font-bold" id="subjectsCount">0</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>Enseignants différents</span>
+            <span class="font-bold" id="teachersCount">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Cours par jour
+        </h3>
+        <div class="space-y-2" id="dailyHours">
+          <!-- Généré par JS -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentDate = new Date();
+
+      function getWeekRange(date) {
+        const start = new Date(date);
+        start.setDate(date.getDate() - date.getDay() + 1);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 4);
+        return `${start.toLocaleDateString("fr-FR")} - ${end.toLocaleDateString("fr-FR")}`;
+      }
+
+      function getWeekNumber(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+        const week1 = new Date(d.getFullYear(), 0, 4);
+        return 1 + Math.round(((d - week1) / 864e5 - 3 + (week1.getDay() + 6) % 7) / 7);
+      }
+
+      async function loadTimetable() {
+        const classId = {{ student.classId }};
+        const year = currentDate.getFullYear();
+        const week = getWeekNumber(currentDate);
+        document.getElementById("weekRange").textContent = getWeekRange(currentDate);
+        const res = await fetch(`/api/student/timetable?class_id=${classId}&year=${year}&week=${week}`);
+        const data = await res.json();
+        renderTimetable(data.timetable);
+        updateSummary(data.summary);
+      }
+
+      function renderTimetable(timetable) {
+        const timeSlots = [ "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "13:00-14:00", "14:00-15:00", "15:00-16:00", "16:00-17:00" ];
+        const days = [ "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" ];
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentDay = now.getDay();
+        let html = "";
+        timeSlots.forEach(slot => {
+          const [ startHour, startMinute ] = slot.split("-")[0].split(":").map(Number);
+          const isCurrentSlot = currentDay >= 1 && currentDay <= 6 && (currentHour === startHour && Math.abs(currentMinute - startMinute) <= 30);
+          html += `<tr class="border-b dark:border-gray-700">`;
+          html += `<td class="px-3 py-3 font-medium text-center bg-gray-50 dark:bg-gray-700 ${isCurrentSlot ? "bg-blue-50 dark:bg-blue-900/20" : ""}">
+                          ${slot}
+                         </td>`;
+          days.forEach(day => {
+            const entry = timetable[day]?.find(e => e.time === slot) || null;
+            if (entry) {
+              const isCurrent = isCurrentSlot && day === getDayName(currentDay);
+              html += `
+                      <td class="px-2 py-2 ${isCurrent ? "bg-green-50 dark:bg-green-900/20" : "hover:bg-gray-50 dark:hover:bg-gray-700"}">
+                        <div class="text-center">
+                          <p class="font-medium">${entry.subject}</p>
+                          <p class="text-xs text-gray-500">${entry.teacher}</p>
+                          <p class="text-xs text-gray-400">Salle ${entry.room}</p>
+                        </div>
+                      </td>
+                    `;
+            } else {
+              html += `<td class="px-2 py-2 text-center text-gray-400">-</td>`;
+            }
+          });
+          html += `</tr>`;
+        });
+        document.getElementById("timetableBody").innerHTML = html;
+      }
+
+      function getDayName(dayNumber) {
+        const days = [ "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" ];
+        return days[dayNumber];
+      }
+
+      function updateSummary(summary) {
+        if (summary) {
+          document.getElementById("totalHours").textContent = `${summary.totalHours}h`;
+          document.getElementById("subjectsCount").textContent = summary.subjectsCount || 0;
+          document.getElementById("teachersCount").textContent = summary.teachersCount || 0;
+          const dailyHtml = `
+                  <div class="flex justify-between text-sm"><span>Lundi</span><span>${summary.mondayHours || 0}h</span></div>
+                  <div class="flex justify-between text-sm"><span>Mardi</span><span>${summary.tuesdayHours || 0}h</span></div>
+                  <div class="flex justify-between text-sm"><span>Mercredi</span><span>${summary.wednesdayHours || 0}h</span></div>
+                  <div class="flex justify-between text-sm"><span>Jeudi</span><span>${summary.thursdayHours || 0}h</span></div>
+                  <div class="flex justify-between text-sm"><span>Vendredi</span><span>${summary.fridayHours || 0}h</span></div>
+                  <div class="flex justify-between text-sm"><span>Samedi</span><span>${summary.saturdayHours || 0}h</span></div>
+                `;
+          document.getElementById("dailyHours").innerHTML = dailyHtml;
         }
-      })
-      html += `</tr>`
-    })
-    
-    document.getElementById('timetableBody').innerHTML = html
-  }
-  
-  function getDayName(dayNumber) {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-    return days[dayNumber]
-  }
-  
-  function updateSummary(summary) {
-    if (summary) {
-      document.getElementById('totalHours').textContent = `${summary.totalHours}h`
-      document.getElementById('subjectsCount').textContent = summary.subjectsCount || 0
-      document.getElementById('teachersCount').textContent = summary.teachersCount || 0
-      
-      const dailyHtml = `
-        <div class="flex justify-between text-sm"><span>Lundi</span><span>${summary.mondayHours || 0}h</span></div>
-        <div class="flex justify-between text-sm"><span>Mardi</span><span>${summary.tuesdayHours || 0}h</span></div>
-        <div class="flex justify-between text-sm"><span>Mercredi</span><span>${summary.wednesdayHours || 0}h</span></div>
-        <div class="flex justify-between text-sm"><span>Jeudi</span><span>${summary.thursdayHours || 0}h</span></div>
-        <div class="flex justify-between text-sm"><span>Vendredi</span><span>${summary.fridayHours || 0}h</span></div>
-        <div class="flex justify-between text-sm"><span>Samedi</span><span>${summary.saturdayHours || 0}h</span></div>
-      `
-      document.getElementById('dailyHours').innerHTML = dailyHtml
-    }
-  }
-  
-  function previousWeek() {
-    currentDate.setDate(currentDate.getDate() - 7)
-    loadTimetable()
-  }
-  
-  function nextWeek() {
-    currentDate.setDate(currentDate.getDate() + 7)
-    loadTimetable()
-  }
-  
-  function goToToday() {
-    currentDate = new Date()
-    loadTimetable()
-  }
-  
-  function changeWeek() {
-    const select = document.getElementById('weekSelect')
-    const [year, week] = select.value.split('-W')
-    // Calculer la date à partir du numéro de semaine
-    const simple = new Date(year, 0, 1 + (week - 1) * 7)
-    const dayOfWeek = simple.getDay()
-    const startDate = new Date(simple)
-    startDate.setDate(simple.getDate() - dayOfWeek + 1)
-    currentDate = startDate
-    loadTimetable()
-  }
-  
-  function downloadPDF() {
-    window.location.href = `/student/timetable/print?pdf=1`
-  }
-  
-  loadTimetable()
-</script>
-{{# /section }}
+      }
 
-{{# /layout }}
+      function previousWeek() {
+        currentDate.setDate(currentDate.getDate() - 7);
+        loadTimetable();
+      }
+
+      function nextWeek() {
+        currentDate.setDate(currentDate.getDate() + 7);
+        loadTimetable();
+      }
+
+      function goToToday() {
+        currentDate = new Date();
+        loadTimetable();
+      }
+
+      function changeWeek() {
+        const select = document.getElementById("weekSelect");
+        const [ year, week ] = select.value.split("-W");
+        // Calculer la date à partir du numéro de semaine
+        const simple = new Date(year, 0, 1 + (week - 1) * 7);
+        const dayOfWeek = simple.getDay();
+        const startDate = new Date(simple);
+        startDate.setDate(simple.getDate() - dayOfWeek + 1);
+        currentDate = startDate;
+        loadTimetable();
+      }
+
+      function downloadPDF() {
+        window.location.href = `/student/timetable/print?pdf=1`;
+      }
+
+      loadTimetable();
+    </script>
+  @endsection
+  

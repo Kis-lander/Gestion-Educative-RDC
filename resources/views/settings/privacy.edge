@@ -1,182 +1,244 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Confidentialité - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Confidentialité{{# /section }}
-{{# section('dashboardSubtitle') }}Gérez votre vie privée{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Visibilité -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Visibilité du profil</h3>
-    
-    <div class="space-y-4">
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Mon profil est visible par</label>
-        <select id="profileVisibility" class="w-full px-3 py-2 border rounded-lg">
-          <option value="everyone" {{ privacy.profileVisibility === 'everyone' ? 'selected' : '' }}>Tout le monde</option>
-          <option value="school" {{ privacy.profileVisibility === 'school' ? 'selected' : '' }}>Mon école uniquement</option>
-          <option value="teachers" {{ privacy.profileVisibility === 'teachers' ? 'selected' : '' }}>Enseignants uniquement</option>
-          <option value="administrators" {{ privacy.profileVisibility === 'administrators' ? 'selected' : '' }}>Administrateurs uniquement</option>
-          <option value="noone" {{ privacy.profileVisibility === 'noone' ? 'selected' : '' }}>Personne</option>
-        </select>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Mon email est visible par</label>
-        <select id="emailVisibility" class="w-full px-3 py-2 border rounded-lg">
-          <option value="everyone" {{ privacy.emailVisibility === 'everyone' ? 'selected' : '' }}>Tout le monde</option>
-          <option value="school" {{ privacy.emailVisibility === 'school' ? 'selected' : '' }}>Mon école uniquement</option>
-          <option value="teachers" {{ privacy.emailVisibility === 'teachers' ? 'selected' : '' }}>Enseignants uniquement</option>
-          <option value="noone" {{ privacy.emailVisibility === 'noone' ? 'selected' : '' }}>Personne</option>
-        </select>
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Mon téléphone est visible par</label>
-        <select id="phoneVisibility" class="w-full px-3 py-2 border rounded-lg">
-          <option value="everyone" {{ privacy.phoneVisibility === 'everyone' ? 'selected' : '' }}>Tout le monde</option>
-          <option value="school" {{ privacy.phoneVisibility === 'school' ? 'selected' : '' }}>Mon école uniquement</option>
-          <option value="teachers" {{ privacy.phoneVisibility === 'teachers' ? 'selected' : '' }}>Enseignants uniquement</option>
-          <option value="noone" {{ privacy.phoneVisibility === 'noone' ? 'selected' : '' }}>Personne</option>
-        </select>
-      </div>
-    </div>
-    
-    <div class="mt-6 pt-4 border-t">
-      <button onclick="saveVisibility()" class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        Enregistrer
-      </button>
-    </div>
-  </div>
+  @section('title')
+    Confidentialité - {{ school.name }}
+  @endsection
   
-  <!-- Données personnelles -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h3 class="font-semibold text-lg border-b pb-2 mb-4">Gestion des données</h3>
-    
-    <div class="space-y-4">
-      <div>
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" id="dataCollection" {{ privacy.dataCollection ? 'checked' : '' }} class="w-4 h-4">
-          <span>Autoriser la collecte de données d'utilisation anonymes</span>
-        </label>
-        <p class="text-xs text-gray-400 mt-1">Ces données nous aident à améliorer la plateforme</p>
-      </div>
-      
-      <div>
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" id="activityTracking" {{ privacy.activityTracking ? 'checked' : '' }} class="w-4 h-4">
-          <span>Autoriser le suivi d'activité</span>
-        </label>
-      </div>
-    </div>
-    
-    <div class="mt-6 pt-4 border-t">
-      <button onclick="downloadMyData()" class="w-full mb-3 px-6 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-download mr-2"></i> Télécharger mes données
-      </button>
-      <button onclick="deleteMyData()" class="w-full px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-        <i class="fas fa-trash-alt mr-2"></i> Supprimer toutes mes données
-      </button>
-      <p class="text-xs text-gray-400 mt-2">Cette action est irréversible</p>
-    </div>
-  </div>
-</div>
-
-<!-- Blocage utilisateur -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-  <h3 class="font-semibold text-lg border-b pb-2 mb-4">Utilisateurs bloqués</h3>
+  @section('dashboardTitle')
+    Confidentialité
+  @endsection
+  @section('dashboardSubtitle')
+    Gérez votre vie privée
+  @endsection
   
-  <div class="flex gap-2 mb-4">
-    <input type="text" id="blockUserInput" placeholder="Email ou nom d'utilisateur" 
-           class="flex-1 px-3 py-2 border rounded-lg">
-    <button onclick="blockUser()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-      Bloquer
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Visibilité -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+          Visibilité du profil
+        </h3>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Mon profil est visible par</label>
+            <select id="profileVisibility" class="w-full px-3 py-2 border rounded-lg">
+              <option value="everyone" {{ privacy.profileVisibility === 'everyone' ? 'selected' : '' }}>
+                Tout le monde
+              </option>
+              <option value="school" {{ privacy.profileVisibility === 'school' ? 'selected' : '' }}>
+                Mon école uniquement
+              </option>
+              <option value="teachers" {{ privacy.profileVisibility === 'teachers' ? 'selected' : '' }}>
+                Enseignants uniquement
+              </option>
+              <option value="administrators" {{ privacy.profileVisibility === 'administrators' ? 'selected' : '' }}>
+                Administrateurs uniquement
+              </option>
+              <option value="noone" {{ privacy.profileVisibility === 'noone' ? 'selected' : '' }}>
+                Personne
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Mon email est visible par</label>
+            <select id="emailVisibility" class="w-full px-3 py-2 border rounded-lg">
+              <option value="everyone" {{ privacy.emailVisibility === 'everyone' ? 'selected' : '' }}>
+                Tout le monde
+              </option>
+              <option value="school" {{ privacy.emailVisibility === 'school' ? 'selected' : '' }}>
+                Mon école uniquement
+              </option>
+              <option value="teachers" {{ privacy.emailVisibility === 'teachers' ? 'selected' : '' }}>
+                Enseignants uniquement
+              </option>
+              <option value="noone" {{ privacy.emailVisibility === 'noone' ? 'selected' : '' }}>
+                Personne
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Mon téléphone est visible par</label>
+            <select id="phoneVisibility" class="w-full px-3 py-2 border rounded-lg">
+              <option value="everyone" {{ privacy.phoneVisibility === 'everyone' ? 'selected' : '' }}>
+                Tout le monde
+              </option>
+              <option value="school" {{ privacy.phoneVisibility === 'school' ? 'selected' : '' }}>
+                Mon école uniquement
+              </option>
+              <option value="teachers" {{ privacy.phoneVisibility === 'teachers' ? 'selected' : '' }}>
+                Enseignants uniquement
+              </option>
+              <option value="noone" {{ privacy.phoneVisibility === 'noone' ? 'selected' : '' }}>
+                Personne
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t">
+          <button
+            onclick="saveVisibility()"
+            class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            Enregistrer
+      </button>
+        </div>
+      </div>
+
+      <!-- Données personnelles -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+          Gestion des données
+        </h3>
+
+        <div class="space-y-4">
+          <div>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="dataCollection" class="w-4 h-4" {{ privacy.dataCollection ? 'checked' : '' }} />
+              <span>Autoriser la collecte de données d'utilisation anonymes</span>
+            </label>
+            <p class="text-xs text-gray-400 mt-1">
+              Ces données nous aident à améliorer la plateforme
+            </p>
+          </div>
+
+          <div>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                id="activityTracking"
+                class="w-4 h-4"
+                {{ privacy.activityTracking ? 'checked' : '' }}
+              />
+              <span>Autoriser le suivi d'activité</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t">
+          <button onclick="downloadMyData()" class="w-full mb-3 px-6 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-download mr-2"></i>Télécharger mes données
+      </button>
+          <button
+            onclick="deleteMyData()"
+            class="w-full px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            <i class="fas fa-trash-alt mr-2"></i>Supprimer toutes mes données
+      </button>
+          <p class="text-xs text-gray-400 mt-2">
+            Cette action est irréversible
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blocage utilisateur -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+        Utilisateurs bloqués
+      </h3>
+
+      <div class="flex gap-2 mb-4">
+        <input
+          type="text"
+          id="blockUserInput"
+          placeholder="Email ou nom d'utilisateur"
+          class="flex-1 px-3 py-2 border rounded-lg"
+        />
+        <button onclick="blockUser()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+          Bloquer
     </button>
-  </div>
-  
-  <div class="space-y-2" id="blockedList">
-    @each(blocked in blockedUsers)
-    <div class="flex justify-between items-center p-2 border-b">
-      <div>
-        <p class="font-medium">{{ blocked.name }}</p>
-        <p class="text-xs text-gray-500">{{ blocked.email }}</p>
       </div>
-      <button onclick="unblockUser('{{ blocked.id }}')" class="text-green-600 text-sm hover:underline">
-        Débloquer
+
+      <div class="space-y-2" id="blockedList">
+        @each(blocked in blockedUsers)
+          <div class="flex justify-between items-center p-2 border-b">
+            <div>
+              <p class="font-medium">
+                {{ blocked.name }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ blocked.email }}
+              </p>
+            </div>
+            <button onclick="unblockUser('{{ blocked.id }}')" class="text-green-600 text-sm hover:underline">
+              Débloquer
       </button>
+          </div>
+          @else
+          <p class="text-gray-500 text-center py-4">
+            Aucun utilisateur bloqué
+          </p>
+        @end
+      </div>
     </div>
-    @eachelse
-    <p class="text-gray-500 text-center py-4">Aucun utilisateur bloqué</p>
-    @end
-  </div>
-</div>
 
-<script>
-  function saveVisibility() {
-    const visibility = {
-      profile: document.getElementById('profileVisibility').value,
-      email: document.getElementById('emailVisibility').value,
-      phone: document.getElementById('phoneVisibility').value
-    }
-    
-    fetch('/api/settings/privacy/visibility', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrfToken }}'
-      },
-      body: JSON.stringify(visibility)
-    }).then(res => res.json()).then(data => {
-      if (data.success) alert('Paramètres enregistrés')
-      else alert('Erreur: ' + data.message)
-    })
-  }
-  
-  function downloadMyData() {
-    window.location.href = '/api/settings/privacy/export-data'
-  }
-  
-  function deleteMyData() {
-    if (confirm('⚠️ Supprimer TOUTES vos données personnelles ? Cette action est irréversible.')) {
-      fetch('/api/settings/privacy/delete-data', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) window.location.href = '/logout'
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  async function blockUser() {
-    const identifier = document.getElementById('blockUserInput').value
-    if (!identifier) return
-    
-    const res = await fetch('/api/settings/privacy/block', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrfToken }}'
-      },
-      body: JSON.stringify({ identifier })
-    })
-    const data = await res.json()
-    if (data.success) location.reload()
-    else alert('Erreur: ' + data.message)
-  }
-  
-  async function unblockUser(userId) {
-    const res = await fetch(`/api/settings/privacy/unblock/${userId}`, {
-      method: 'DELETE',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-    })
-    const data = await res.json()
-    if (data.success) location.reload()
-    else alert('Erreur: ' + data.message)
-  }
-</script>
-{{# /section }}
+    <script>
+      function saveVisibility() {
+        const visibility = {
+          profile: document.getElementById("profileVisibility").value,
+          email: document.getElementById("emailVisibility").value,
+          phone: document.getElementById("phoneVisibility").value
+        };
+        fetch("/api/settings/privacy/visibility", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify(visibility)
+        }).then(res => res.json()).then(data => {
+          if (data.success) alert("Paramètres enregistrés"); else alert("Erreur: " + data.message);
+        });
+      }
 
-{{# /layout }}
+      function downloadMyData() {
+        window.location.href = "/api/settings/privacy/export-data";
+      }
+
+      function deleteMyData() {
+        if (confirm("⚠️ Supprimer TOUTES vos données personnelles ? Cette action est irréversible.")) {
+          fetch("/api/settings/privacy/delete-data", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.href = "/logout"; else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      async function blockUser() {
+        const identifier = document.getElementById("blockUserInput").value;
+        if (!identifier) return;
+        const res = await fetch("/api/settings/privacy/block", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({
+            identifier: identifier
+          })
+        });
+        const data = await res.json();
+        if (data.success) location.reload(); else alert("Erreur: " + data.message);
+      }
+
+      async function unblockUser(userId) {
+        const res = await fetch(`/api/settings/privacy/unblock/${userId}`, {
+          method: "DELETE",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        });
+        const data = await res.json();
+        if (data.success) location.reload(); else alert("Erreur: " + data.message);
+      }
+    </script>
+  @endsection
+  

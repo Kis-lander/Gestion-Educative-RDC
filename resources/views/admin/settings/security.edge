@@ -1,217 +1,320 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Sécurité - Administration{{# /section }}
+  @section('title')
+    Sécurité - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Paramètres de sécurité
+  @endsection
+  @section('dashboardSubtitle')
+    Configuration de la sécurité de la plateforme
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Formulaire principal -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <form
+          method="POST"
+          action="/admin/settings/security"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-{{# section('dashboardTitle') }}Paramètres de sécurité{{# /section }}
-{{# section('dashboardSubtitle') }}Configuration de la sécurité de la plateforme{{# /section }}
+          <div class="space-y-6">
+            <div>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Politique des mots de passe
+              </h3>
 
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Formulaire principal -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <form method="POST" action="/admin/settings/security" x-data="{ loading: false }" @submit="loading = true">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      
-      <div class="space-y-6">
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Politique des mots de passe</h3>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Longueur minimale</label>
-              <input type="number" name="min_password_length" value="{{ settings.minPasswordLength || 8 }}" 
-                     min="6" max="20" class="w-full px-3 py-2 border rounded-lg">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Longueur minimale</label>
+                  <input
+                    type="number"
+                    name="min_password_length"
+                    value="{{ settings.minPasswordLength || 8 }}"
+                    min="6"
+                    max="20"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="require_uppercase"
+                      class="w-4 h-4"
+                      {{ settings.requireUppercase ? 'checked' : '' }}
+                    />
+                    <span>Exiger une majuscule</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="require_lowercase"
+                      class="w-4 h-4"
+                      {{ settings.requireLowercase ? 'checked' : '' }}
+                    />
+                    <span>Exiger une minuscule</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="require_number"
+                      class="w-4 h-4"
+                      {{ settings.requireNumber ? 'checked' : '' }}
+                    />
+                    <span>Exiger un chiffre</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="require_symbol"
+                      class="w-4 h-4"
+                      {{ settings.requireSymbol ? 'checked' : '' }}
+                    />
+                    <span>Exiger un symbole (                  , #, $, etc.)</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Expiration mot de passe (jours)</label>
+                  <input
+                    type="number"
+                    name="password_expiry_days"
+                    value="{{ settings.passwordExpiryDays || 90 }}"
+                    min="0"
+                    max="365"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <p class="text-xs text-gray-400 mt-1">
+                    0 = jamais
+                  </p>
+                </div>
+              </div>
             </div>
-            
+
             <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="require_uppercase" {{ settings.requireUppercase ? 'checked' : '' }} class="w-4 h-4">
-                <span>Exiger une majuscule</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="require_lowercase" {{ settings.requireLowercase ? 'checked' : '' }} class="w-4 h-4">
-                <span>Exiger une minuscule</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="require_number" {{ settings.requireNumber ? 'checked' : '' }} class="w-4 h-4">
-                <span>Exiger un chiffre</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="require_symbol" {{ settings.requireSymbol ? 'checked' : '' }} class="w-4 h-4">
-                <span>Exiger un symbole (@, #, $, etc.)</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Expiration mot de passe (jours)</label>
-              <input type="number" name="password_expiry_days" value="{{ settings.passwordExpiryDays || 90 }}" 
-                     min="0" max="365" class="w-full px-3 py-2 border rounded-lg">
-              <p class="text-xs text-gray-400 mt-1">0 = jamais</p>
+              <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+                Authentification
+              </h3>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="two_factor_auth"
+                      class="w-4 h-4"
+                      {{ settings.twoFactorAuth ? 'checked' : '' }}
+                    />
+                    <span>Activer l'authentification à deux facteurs (2FA) pour les administrateurs</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="recaptcha_enabled"
+                      class="w-4 h-4"
+                      {{ settings.recaptchaEnabled ? 'checked' : '' }}
+                    />
+                    <span>Activer reCAPTCHA sur le formulaire de connexion</span>
+                  </label>
+                </div>
+
+                <div x-show="recaptchaEnabled">
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Site Key reCAPTCHA</label>
+                  <input
+                    type="text"
+                    name="recaptcha_site_key"
+                    value="{{ settings.recaptchaSiteKey }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2 mt-2">Secret Key reCAPTCHA</label>
+                  <input
+                    type="password"
+                    name="recaptcha_secret_key"
+                    value="{{ settings.recaptchaSecretKey }}"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div>
-          <h3 class="font-semibold text-lg border-b pb-2 mb-4">Authentification</h3>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="two_factor_auth" {{ settings.twoFactorAuth ? 'checked' : '' }} class="w-4 h-4">
-                <span>Activer l'authentification à deux facteurs (2FA) pour les administrateurs</span>
-              </label>
-            </div>
-            
-            <div>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="recaptcha_enabled" {{ settings.recaptchaEnabled ? 'checked' : '' }} class="w-4 h-4">
-                <span>Activer reCAPTCHA sur le formulaire de connexion</span>
-              </label>
-            </div>
-            
-            <div x-show="recaptchaEnabled">
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Site Key reCAPTCHA</label>
-              <input type="text" name="recaptcha_site_key" value="{{ settings.recaptchaSiteKey }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-              
-              <label class="block text-gray-700 dark:text-gray-300 mb-2 mt-2">Secret Key reCAPTCHA</label>
-              <input type="password" name="recaptcha_secret_key" value="{{ settings.recaptchaSecretKey }}" 
-                     class="w-full px-3 py-2 border rounded-lg">
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6 pt-4 border-t">
-        <button type="submit" :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          Enregistrer
+
+          <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Enregistrer
         </button>
-      </div>
-    </form>
-  </div>
-  
-  <!-- Informations et actions -->
-  <div class="space-y-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-      <h3 class="font-semibold border-b pb-2 mb-3">Sessions actives</h3>
-      <div class="space-y-2 max-h-48 overflow-y-auto">
-        @each(session in activeSessions)
-        <div class="flex justify-between items-center p-2 border-b">
-          <div>
-            <p class="text-sm font-medium">{{ session.userName }}</p>
-            <p class="text-xs text-gray-500">{{ session.userRole }} - {{ session.ip }}</p>
           </div>
-          <div class="text-right">
-            <p class="text-xs text-gray-400">{{ session.lastActivity }}</p>
-            <button onclick="revokeSession('{{ session.id }}')" class="text-red-500 text-xs hover:underline">
-              Révoquer
+        </form>
+      </div>
+
+      <!-- Informations et actions -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+          <h3 class="font-semibold border-b pb-2 mb-3">
+            Sessions actives
+          </h3>
+          <div class="space-y-2 max-h-48 overflow-y-auto">
+            @each(session in activeSessions)
+              <div class="flex justify-between items-center p-2 border-b">
+                <div>
+                  <p class="text-sm font-medium">
+                    {{ session.userName }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ session.userRole }} - {{ session.ip }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-gray-400">
+                    {{ session.lastActivity }}
+                  </p>
+                  <button onclick="revokeSession('{{ session.id }}')" class="text-red-500 text-xs hover:underline">
+                    Révoquer
             </button>
+                </div>
+              </div>
+              @else
+              <p class="text-gray-500 text-center py-4">
+                Aucune session active
+              </p>
+            @end
           </div>
+          <button
+            onclick="revokeAllSessions()"
+            class="mt-3 w-full px-3 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50"
+          >
+            <i class="fas fa-sign-out-alt mr-1"></i>Révoquer toutes les sessions
+      </button>
         </div>
-        @eachelse
-        <p class="text-gray-500 text-center py-4">Aucune session active</p>
-        @end
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">
+            IP autorisées
+          </h3>
+          <textarea
+            id="whitelistIps"
+            rows="4"
+            class="w-full px-3 py-2 border rounded-lg font-mono text-sm"
+            placeholder="192.168.1.1&#10;10.0.0.0/24"
+          >{{ settings.whitelistIPs || '' }}</textarea>
+          <button onclick="saveWhitelist()" class="mt-2 px-3 py-1 bg-primary text-white rounded text-sm">
+            Sauvegarder
+      </button>
+          <p class="text-xs text-gray-500 mt-2">
+            Une adresse IP par ligne. Laisser vide pour désactiver la restriction.
+          </p>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4">
+          <h3 class="font-semibold mb-2 text-red-700">
+            Zone à risque
+          </h3>
+          <button
+            onclick="clearAllSessions()"
+            class="w-full px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+          >
+            <i class="fas fa-trash-alt mr-1"></i>Déconnecter tous les utilisateurs
+      </button>
+          <button
+            onclick="resetSecurity()"
+            class="w-full mt-2 px-3 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50"
+          >
+            <i class="fas fa-undo mr-1"></i>Réinitialiser les paramètres de sécurité
+      </button>
+        </div>
       </div>
-      <button onclick="revokeAllSessions()" class="mt-3 w-full px-3 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50">
-        <i class="fas fa-sign-out-alt mr-1"></i> Révoquer toutes les sessions
-      </button>
     </div>
-    
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2">IP autorisées</h3>
-      <textarea id="whitelistIps" rows="4" class="w-full px-3 py-2 border rounded-lg font-mono text-sm"
-                placeholder="192.168.1.1&#10;10.0.0.0/24">{{ settings.whitelistIPs || '' }}</textarea>
-      <button onclick="saveWhitelist()" class="mt-2 px-3 py-1 bg-primary text-white rounded text-sm">
-        Sauvegarder
-      </button>
-      <p class="text-xs text-gray-500 mt-2">Une adresse IP par ligne. Laisser vide pour désactiver la restriction.</p>
-    </div>
-    
-    <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4">
-      <h3 class="font-semibold mb-2 text-red-700">Zone à risque</h3>
-      <button onclick="clearAllSessions()" class="w-full px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700">
-        <i class="fas fa-trash-alt mr-1"></i> Déconnecter tous les utilisateurs
-      </button>
-      <button onclick="resetSecurity()" class="w-full mt-2 px-3 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50">
-        <i class="fas fa-undo mr-1"></i> Réinitialiser les paramètres de sécurité
-      </button>
-    </div>
-  </div>
-</div>
 
-<script>
-  async function revokeSession(sessionId) {
-    const res = await fetch(`/api/admin/security/revoke-session/${sessionId}`, {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-    })
-    const data = await res.json()
-    if (data.success) location.reload()
-    else alert('Erreur: ' + data.message)
-  }
-  
-  async function revokeAllSessions() {
-    if (confirm('Révoquer toutes les sessions sauf la vôtre ?')) {
-      const res = await fetch('/api/admin/security/revoke-all-sessions', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) alert('Sessions révoquées')
-      else alert('Erreur: ' + data.message)
-    }
-  }
-  
-  async function saveWhitelist() {
-    const ips = document.getElementById('whitelistIps').value
-    const res = await fetch('/api/admin/security/whitelist', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrfToken }}'
-      },
-      body: JSON.stringify({ ips })
-    })
-    const data = await res.json()
-    if (data.success) alert('Liste sauvegardée')
-    else alert('Erreur: ' + data.message)
-  }
-  
-  async function clearAllSessions() {
-    if (confirm('⚠️ Déconnecter TOUS les utilisateurs (y compris vous-même) ?')) {
-      const res = await fetch('/api/admin/security/clear-all-sessions', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) window.location.href = '/login'
-      else alert('Erreur: ' + data.message)
-    }
-  }
-  
-  async function resetSecurity() {
-    if (confirm('Réinitialiser tous les paramètres de sécurité ?')) {
-      const res = await fetch('/api/admin/security/reset', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      })
-      const data = await res.json()
-      if (data.success) location.reload()
-      else alert('Erreur: ' + data.message)
-    }
-  }
-</script>
-{{# /section }}
+    <script>
+      async function revokeSession(sessionId) {
+        const res = await fetch(`/api/admin/security/revoke-session/${sessionId}`, {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        });
+        const data = await res.json();
+        if (data.success) location.reload(); else alert("Erreur: " + data.message);
+      }
 
-{{# /layout }}
+      async function revokeAllSessions() {
+        if (confirm("Révoquer toutes les sessions sauf la vôtre ?")) {
+          const res = await fetch("/api/admin/security/revoke-all-sessions", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) alert("Sessions révoquées"); else alert("Erreur: " + data.message);
+        }
+      }
+
+      async function saveWhitelist() {
+        const ips = document.getElementById("whitelistIps").value;
+        const res = await fetch("/api/admin/security/whitelist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({
+            ips: ips
+          })
+        });
+        const data = await res.json();
+        if (data.success) alert("Liste sauvegardée"); else alert("Erreur: " + data.message);
+      }
+
+      async function clearAllSessions() {
+        if (confirm("⚠️ Déconnecter TOUS les utilisateurs (y compris vous-même) ?")) {
+          const res = await fetch("/api/admin/security/clear-all-sessions", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) window.location.href = "/login"; else alert("Erreur: " + data.message);
+        }
+      }
+
+      async function resetSecurity() {
+        if (confirm("Réinitialiser tous les paramètres de sécurité ?")) {
+          const res = await fetch("/api/admin/security/reset", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          });
+          const data = await res.json();
+          if (data.success) location.reload(); else alert("Erreur: " + data.message);
+        }
+      }
+    </script>
+  @endsection
+  

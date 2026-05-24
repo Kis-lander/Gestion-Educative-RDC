@@ -1,166 +1,403 @@
-{{# layout('layouts/app') }}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+    <title>
+      {{ title || 'Gestion Educative RDC - Plateforme nationale' }}
+    </title>
+    <script src="https://cdn.tailwindcss.com">
 
-{{# section('title') }}Gestion Éducative RDC - Plateforme nationale{{# /section }}
+    </script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#2563eb",
+              secondary: "#16a34a",
+              danger: "#dc2626",
+              warning: "#f59e0b"
+            }
+          }
+        }
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: 'Inter', sans-serif;
+      }
 
-{{# section('content') }}
-<!-- Hero Section -->
-<div class="relative bg-gradient-to-r from-primary to-blue-800 overflow-hidden">
-  <div class="absolute inset-0 bg-black/20"></div>
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-    <div class="text-center">
-      <h1 class="text-4xl md:text-6xl font-bold text-white mb-4">
-        Gestion Éducative
-        <span class="text-yellow-400">RDC</span>
-      </h1>
-      <p class="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-        Plateforme intégrée pour l'inspection pédagogique et les établissements scolaires de la République Démocratique du Congo
-      </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="/login" class="px-8 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition">
-          <i class="fas fa-sign-in-alt mr-2"></i> Se connecter
-        </a>
-        <a href="/register-school" class="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition">
-          <i class="fas fa-school mr-2"></i> Inscrire mon école
-        </a>
+      html {
+        scroll-behavior: smooth;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .scroll-reveal {
+          opacity: 0;
+          transform: translateY(46px) scale(0.98);
+          transition:
+            opacity 1.15s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 1.15s cubic-bezier(0.16, 1, 0.3, 1);
+          transition-delay: var(--reveal-delay, 0ms);
+          will-change: opacity, transform;
+        }
+
+        .scroll-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .scroll-top-button {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        z-index: 60;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        border-radius: 9999px;
+        background: rgba(29, 78, 216, 0.94);
+        color: #fff;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(14px);
+        transition:
+          opacity 0.22s ease,
+          transform 0.22s ease,
+          background-color 0.18s ease;
+      }
+
+      .scroll-top-button.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      .scroll-top-button:hover {
+        background: #1e40af;
+      }
+
+      .welcome-hero {
+        background:
+          linear-gradient(135deg, rgba(37, 99, 235, 0.94), rgba(30, 64, 175, 0.98)),
+          url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png')
+            center / min(calc(520px + 25rem), 94vw) no-repeat;
+      }
+
+      .welcome-hero::before {
+        position: absolute;
+        inset: 0;
+        content: '';
+        background: rgba(0, 0, 0, 0.22);
+      }
+
+      .welcome-hero::after {
+        position: absolute;
+        inset: 0;
+        content: '';
+        background:
+          url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png')
+          center / min(calc(520px + 25rem), 94vw) no-repeat;
+        opacity: 0.08;
+        pointer-events: none;
+      }
+
+      .welcome-hero > div {
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body class="antialiased bg-gray-50 text-gray-900">
+    <!-- Hero Section -->
+    <div class="welcome-hero relative overflow-hidden">
+      <div class="absolute inset-0 bg-black/20">
+      </div>
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+        <div class="text-center scroll-reveal">
+          <h1 class="text-4xl md:text-6xl font-bold text-white mb-4">
+            Gestion Éducative
+          <span class="text-yellow-400">RDC</span>
+          </h1>
+          <p class="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+            Plateforme intégrée pour l'inspection pédagogique et les établissements scolaires de la République Démocratique du Congo
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/login"
+              class="px-8 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition"
+            >
+              <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+          </a>
+            <a
+              href="/register-school"
+              class="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition"
+            >
+              <i class="fas fa-school mr-2"></i>Inscrire mon école
+          </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Statistiques -->
-<div class="bg-white dark:bg-gray-800 py-12">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-      <div>
-        <div class="text-3xl md:text-4xl font-bold text-primary">500+</div>
-        <div class="text-gray-600 dark:text-gray-400 mt-1">Écoles inscrites</div>
-      </div>
-      <div>
-        <div class="text-3xl md:text-4xl font-bold text-primary">50k+</div>
-        <div class="text-gray-600 dark:text-gray-400 mt-1">Élèves</div>
-      </div>
-      <div>
-        <div class="text-3xl md:text-4xl font-bold text-primary">2000+</div>
-        <div class="text-gray-600 dark:text-gray-400 mt-1">Enseignants</div>
-      </div>
-      <div>
-        <div class="text-3xl md:text-4xl font-bold text-primary">26</div>
-        <div class="text-gray-600 dark:text-gray-400 mt-1">Provinces</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Fonctionnalités -->
-<div class="py-16 bg-gray-50 dark:bg-gray-900">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Une solution complète</h2>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">Tous les outils nécessaires pour une gestion efficace</p>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center">
-        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-chalkboard-user text-blue-600 text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Gestion pédagogique</h3>
-        <p class="text-gray-600 dark:text-gray-400">Classes, matières, notes, bulletins et emplois du temps centralisés</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-coins text-green-600 text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Gestion financière</h3>
-        <p class="text-gray-600 dark:text-gray-400">Frais scolaires, paiements, reçus et suivi des impayés</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center">
-        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-comments text-purple-600 text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Communication</h3>
-        <p class="text-gray-600 dark:text-gray-400">Messagerie, notifications et forum pédagogique</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center">
-        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-gavel text-red-600 text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Discipline</h3>
-        <p class="text-gray-600 dark:text-gray-400">Suivi des incidents, sanctions et appels</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center">
-        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-chart-line text-yellow-600 text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Rapports et analyses</h3>
-        <p class="text-gray-600 dark:text-gray-400">Tableaux de bord et statistiques détaillées</p>
-      </div>
-      
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center">
-        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-mobile-alt text-indigo-600 text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Mobile & accessible</h3>
-        <p class="text-gray-600 dark:text-gray-400">Interface responsive, accessible sur tous les appareils</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Témoignages -->
-<div class="py-16 bg-white dark:bg-gray-800">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Ils nous font confiance</h2>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
-        <div class="flex items-center gap-2 text-yellow-500 mb-3">
-          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-        </div>
-        <p class="text-gray-700 dark:text-gray-300">"La plateforme a révolutionné la gestion de notre école. Les fonctionnalités sont complètes et le support est réactif."</p>
-        <div class="mt-4">
-          <p class="font-semibold">Jean Mukadi</p>
-          <p class="text-sm text-gray-500">Directeur, Collège Saint Joseph - Kinshasa</p>
-        </div>
-      </div>
-      
-      <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
-        <div class="flex items-center gap-2 text-yellow-500 mb-3">
-          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-        </div>
-        <p class="text-gray-700 dark:text-gray-300">"Un outil indispensable pour l'inspection pédagogique. Le suivi des écoles est désormais transparent et efficace."</p>
-        <div class="mt-4">
-          <p class="font-semibold">Marie Tshibanda</p>
-          <p class="text-sm text-gray-500">Inspectrice, Province du Haut-Katanga</p>
+    <!-- Statistiques -->
+    <div class="bg-white dark:bg-gray-800 py-12 scroll-reveal">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div>
+            <div class="text-3xl md:text-4xl font-bold text-primary">
+              {{ stats?.totalSchools ?? 0 }}
+            </div>
+            <div class="text-gray-600 dark:text-gray-400 mt-1">
+              Écoles inscrites
+            </div>
+          </div>
+          <div>
+            <div class="text-3xl md:text-4xl font-bold text-primary">
+              {{ stats?.totalStudents ?? 0 }}
+            </div>
+            <div class="text-gray-600 dark:text-gray-400 mt-1">
+              Élèves
+            </div>
+          </div>
+          <div>
+            <div class="text-3xl md:text-4xl font-bold text-primary">
+              {{ stats?.totalTeachers ?? 0 }}
+            </div>
+            <div class="text-gray-600 dark:text-gray-400 mt-1">
+              Enseignants
+            </div>
+          </div>
+          <div>
+            <div class="text-3xl md:text-4xl font-bold text-primary">
+              {{ stats?.totalProvinces ?? 0 }}
+            </div>
+            <div class="text-gray-600 dark:text-gray-400 mt-1">
+              Provinces
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- CTA -->
-<div class="bg-primary py-16">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h2 class="text-3xl font-bold text-white mb-4">Prêt à rejoindre la plateforme ?</h2>
-    <p class="text-white/90 mb-8">Inscrivez votre école dès aujourd'hui</p>
-    <a href="/register-school" class="px-8 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition">
-      <i class="fas fa-school mr-2"></i> Inscrire mon école
-    </a>
-  </div>
-</div>
+    <!-- Fonctionnalités -->
+    <div class="py-16 bg-gray-50 dark:bg-gray-900 scroll-reveal">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12 scroll-reveal">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Une solution complète
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">
+            Tous les outils nécessaires pour une gestion efficace
+          </p>
+        </div>
 
-<!-- Footer léger -->
-<div class="bg-gray-900 py-8">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-    <p>&copy; {{ new Date().getFullYear() }} Gestion Éducative RDC - Ministère de l'Enseignement Primaire, Secondaire et Technique</p>
-  </div>
-</div>
-{{# /section }}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center scroll-reveal">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-chalkboard-user text-blue-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">
+              Gestion pédagogique
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Classes, matières, notes, bulletins et emplois du temps centralisés
+            </p>
+          </div>
 
-{{# /layout }}
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center scroll-reveal">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-coins text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">
+              Gestion financière
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Frais scolaires, paiements, reçus et suivi des impayés
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center scroll-reveal">
+            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-comments text-purple-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">
+              Communication
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Messagerie, notifications et forum pédagogique
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center scroll-reveal">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-gavel text-red-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">
+              Discipline
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Suivi des incidents, sanctions et appels
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center scroll-reveal">
+            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-chart-line text-yellow-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">
+              Rapports et analyses
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Tableaux de bord et statistiques détaillées
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md text-center scroll-reveal">
+            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-mobile-alt text-indigo-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">
+              Mobile & accessible
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Interface responsive, accessible sur tous les appareils
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Témoignages -->
+    <div class="py-16 bg-white dark:bg-gray-800 scroll-reveal">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Ils nous font confiance
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 scroll-reveal">
+            <div class="flex items-center gap-2 text-yellow-500 mb-3">
+              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300">
+              "La plateforme a révolutionné la gestion de notre école. Les fonctionnalités sont complètes et le support est réactif."
+            </p>
+            <div class="mt-4">
+              <p class="font-semibold">
+                Jean Mukadi
+              </p>
+              <p class="text-sm text-gray-500">
+                Directeur, Collège Saint Joseph - Kinshasa
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 scroll-reveal">
+            <div class="flex items-center gap-2 text-yellow-500 mb-3">
+              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300">
+              "Un outil indispensable pour l'inspection pédagogique. Le suivi des écoles est désormais transparent et efficace."
+            </p>
+            <div class="mt-4">
+              <p class="font-semibold">
+                Marie Tshibanda
+              </p>
+              <p class="text-sm text-gray-500">
+                Inspectrice, Province du Haut-Katanga
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="bg-primary py-16 scroll-reveal">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">
+          Prêt à rejoindre la plateforme ?
+        </h2>
+        <p class="text-white/90 mb-8">
+          Inscrivez votre école dès aujourd'hui
+        </p>
+        <a
+          href="/register-school"
+          class="px-8 py-3 bg-white text-primary rounded-lg font-semibold hover:bg-gray-100 transition"
+        >
+          <i class="fas fa-school mr-2"></i>Inscrire mon école
+      </a>
+      </div>
+    </div>
+
+    <!-- Footer léger -->
+    <div class="bg-gray-900 py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
+        <p>
+          &copy; {{ new Date().getFullYear() }} Gestion Éducative RDC - Ministère de l'Enseignement Primaire, Secondaire et Technique
+        </p>
+      </div>
+    </div>
+
+    <button class="scroll-top-button" type="button" aria-label="Remonter au debut de la page">
+      <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+      (() => {
+        const revealItems = Array.from(document.querySelectorAll(".scroll-reveal"));
+        revealItems.forEach((item, index) => {
+          item.style.setProperty("--reveal-delay", `${Math.min(index % 6, 5) * 90}ms`);
+        });
+
+        if ("IntersectionObserver" in window) {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("is-visible");
+                observer.unobserve(entry.target);
+              }
+            });
+          }, {
+            threshold: 0.16,
+            rootMargin: "0px 0px -70px 0px"
+          });
+
+          revealItems.forEach((item) => observer.observe(item));
+        } else {
+          revealItems.forEach((item) => item.classList.add("is-visible"));
+        }
+
+        const scrollButton = document.querySelector(".scroll-top-button");
+        const toggleScrollButton = () => {
+          scrollButton?.classList.toggle("is-visible", window.scrollY > 360);
+        };
+
+        scrollButton?.addEventListener("click", () => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+        toggleScrollButton();
+        window.addEventListener("scroll", toggleScrollButton, { passive: true });
+      })();
+    </script>
+  </body>
+</html>

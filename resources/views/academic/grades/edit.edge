@@ -1,111 +1,169 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Modifier une note - {{ school.name }}{{# /section }}
+  @section('title')
+    Modifier une note - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Modifier la note
+  @endsection
+  @section('dashboardSubtitle')
+    {{ grade.studentName }} - {{ grade.subjectName }}
+  @endsection
+  
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl">
+      <form
+        method="POST"
+        action="/academic/grades/{{ grade.id }}"
+        x-data="{ loading: false }"
+        @submit="loading = true"
+      >
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+        <input type="hidden" name="_method" value="PUT" />
 
-{{# section('dashboardTitle') }}Modifier la note{{# /section }}
-{{# section('dashboardSubtitle') }}{{ grade.studentName }} - {{ grade.subjectName }}{{# /section }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève</label>
+            <input
+              type="text"
+              value="{{ grade.studentName }}"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-50"
+              readonly
+              disabled
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière</label>
+            <input
+              type="text"
+              value="{{ grade.subjectName }}"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-50"
+              readonly
+              disabled
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe</label>
+            <input
+              type="text"
+              value="{{ grade.className }}"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-50"
+              readonly
+              disabled
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre</label>
+            <input
+              type="text"
+              value="{{ grade.term }}"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-50"
+              readonly
+              disabled
+            />
+          </div>
+        </div>
 
-{{# section('content') }}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 max-w-2xl">
-  <form method="POST" action="/academic/grades/{{ grade.id }}" x-data="{ loading: false }" @submit="loading = true">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <input type="hidden" name="_method" value="PUT">
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Élève</label>
-        <input type="text" value="{{ grade.studentName }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
-      </div>
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière</label>
-        <input type="text" value="{{ grade.subjectName }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
-      </div>
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe</label>
-        <input type="text" value="{{ grade.className }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
-      </div>
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre</label>
-        <input type="text" value="{{ grade.term }}" class="w-full px-3 py-2 border rounded-lg bg-gray-50" readonly disabled>
-      </div>
-    </div>
-    
-    <div class="space-y-4">
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Note /{{ grade.maxScore }} *</label>
-        <input type="number" name="score" value="{{ grade.score }}" step="0.5" min="0" max="{{ grade.maxScore }}" required
-               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
-      </div>
-      
-      <div>
-        <label class="block text-gray-700 dark:text-gray-300 mb-2">Appréciation</label>
-        <textarea name="teacherComments" rows="3" 
-                  class="w-full px-3 py-2 border rounded-lg">{{ grade.teacherComments || '' }}</textarea>
-      </div>
-      
-      <div>
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" name="published" {{ grade.published ? 'checked' : '' }} class="w-4 h-4">
-          <span class="text-green-600 font-medium">Publier cette note</span>
-        </label>
-      </div>
-    </div>
-    
-    <!-- Aperçu du pourcentage -->
-    <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-      <div class="flex justify-between text-sm">
-        <span>Pourcentage:</span>
-        <span class="font-bold" id="percentagePreview">{{ ((grade.score / grade.maxScore) * 100).toFixed(1) }}%</span>
-      </div>
-      <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-        <div class="bg-primary rounded-full h-1.5" id="percentageBar" style="width: {{ (grade.score / grade.maxScore) * 100 }}%"></div>
-      </div>
-    </div>
-    
-    <div class="flex gap-3 mt-6 pt-4 border-t">
-      <button type="submit" :disabled="loading"
-              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-        Sauvegarder
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Note /{{ grade.maxScore }} *</label>
+            <input
+              type="number"
+              name="score"
+              value="{{ grade.score }}"
+              step="0.5"
+              min="0"
+              max="{{ grade.maxScore }}"
+              required
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Appréciation</label>
+            <textarea name="teacherComments" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ grade.teacherComments || '' }}</textarea>
+          </div>
+
+          <div>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="published" class="w-4 h-4" {{ grade.published ? 'checked' : '' }} />
+              <span class="text-green-600 font-medium">Publier cette note</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Aperçu du pourcentage -->
+        <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div class="flex justify-between text-sm">
+            <span>Pourcentage:</span>
+            <span class="font-bold" id="percentagePreview">{{ ((grade.score / grade.maxScore) * 100).toFixed(1) }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+            <div
+              class="bg-primary rounded-full h-1.5"
+              id="percentageBar"
+              style="width: {{ (grade.score / grade.maxScore) * 100 }}%"
+            >
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6 pt-4 border-t">
+          <button
+            type="submit"
+            :disabled="loading"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+          >
+            <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+            Sauvegarder
       </button>
-      <a href="/academic/grades" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-        Annuler
+          <a href="/academic/grades" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+            Annuler
       </a>
-      <button type="button" onclick="deleteGrade()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 ml-auto">
-        <i class="fas fa-trash mr-2"></i> Supprimer
+          <button
+            type="button"
+            onclick="deleteGrade()"
+            class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 ml-auto"
+          >
+            <i class="fas fa-trash mr-2"></i>Supprimer
       </button>
+        </div>
+      </form>
     </div>
-  </form>
-</div>
 
-<script>
-  const scoreInput = document.querySelector('input[name="score"]')
-  const maxScore = {{ grade.maxScore }} || 20
-  const percentagePreview = document.getElementById('percentagePreview')
-  const percentageBar = document.getElementById('percentageBar')
-  
-  scoreInput?.addEventListener('input', function() {
-    const score = parseFloat(this.value) || 0
-    const percentage = (score / maxScore) * 100
-    percentagePreview.textContent = percentage.toFixed(1) + '%'
-    percentageBar.style.width = percentage + '%'
-  })
-  
-  function deleteGrade() {
-    if (confirm('Supprimer définitivement cette note ? Cette action est irréversible.')) {
-      fetch('/academic/grades/{{ grade.id }}', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) {
-          window.location.href = '/academic/grades'
-        } else {
-          alert('Erreur: ' + data.message)
+    <script>
+      const scoreInput = document.querySelector('input[name="score"]');
+
+      const maxScore = {{ grade.maxScore }} || 20;
+
+      const percentagePreview = document.getElementById("percentagePreview");
+
+      const percentageBar = document.getElementById("percentageBar");
+
+      scoreInput?.addEventListener("input", function() {
+        const score = parseFloat(this.value) || 0;
+        const percentage = score / maxScore * 100;
+        percentagePreview.textContent = percentage.toFixed(1) + "%";
+        percentageBar.style.width = percentage + "%";
+      });
+
+      function deleteGrade() {
+        if (confirm("Supprimer définitivement cette note ? Cette action est irréversible.")) {
+          fetch("/academic/grades/{{ grade.id }}", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) {
+              window.location.href = "/academic/grades";
+            } else {
+              alert("Erreur: " + data.message);
+            }
+          });
         }
-      })
-    }
-  }
-</script>
-{{# /section }}
-
-{{# /layout }}
+      }
+    </script>
+  @endsection
+  

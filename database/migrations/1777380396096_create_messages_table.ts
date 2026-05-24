@@ -17,7 +17,7 @@ export default class MessagesSchema extends BaseSchema {
       table.timestamp('read_at')
       table.boolean('has_attachment').defaultTo(false)
       table.timestamps(true)
-      
+
       table.index(['receiver_id', 'is_read'])
       table.index(['sender_id', 'created_at'])
       table.index(['school_id', 'type'])

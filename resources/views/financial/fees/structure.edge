@@ -1,276 +1,385 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Structure des frais - {{ school.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Structure des frais{{# /section }}
-{{# section('dashboardSubtitle') }}Configuration tarifaire par niveau et classe{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportStructure()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+  @section('title')
+    Structure des frais - {{ school.name }}
+  @endsection
+  
+  @section('dashboardTitle')
+    Structure des frais
+  @endsection
+  @section('dashboardSubtitle')
+    Configuration tarifaire par niveau et classe
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="exportStructure()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
-      <select id="levelFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="Maternel">Maternelle</option>
-        <option value="Primaire">Primaire</option>
-        <option value="Secondaire">Secondaire</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année académique</label>
-      <select id="yearFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="{{ currentYear }}">{{ currentYear }}</option>
-        <option value="{{ currentYear - 1 }}">{{ currentYear - 1 }}</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type frais</label>
-      <select id="typeFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="Inscription">Inscription</option>
-        <option value="Minerval">Minerval</option>
-        <option value="Assurance">Assurance</option>
-        <option value="Transport">Transport</option>
-      </select>
-    </div>
-    <div class="flex items-end">
-      <button id="applyFilters" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-chart-line mr-2"></i> Actualiser
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
+          <select id="levelFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="Maternelle">
+              Maternelle
+            </option>
+            <option value="Primaire">
+              Primaire
+            </option>
+            <option value="Secondaire">
+              Secondaire
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Année scolaire</label>
+          <select id="yearFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="{{ currentYear }}">
+              {{ currentYear }}
+            </option>
+            <option value="{{ currentYear - 1 }}">
+              {{ currentYear - 1 }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type frais</label>
+          <select id="typeFilter" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="Inscription">
+              Inscription
+            </option>
+            <option value="Minerval">
+              Minerval
+            </option>
+            <option value="Assurance">
+              Assurance
+            </option>
+            <option value="Transport">
+              Transport
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button id="applyFilters" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-chart-line mr-2"></i>Actualiser
       </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Grille des frais par classe -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Tarifs par classe</h3>
-  </div>
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-3 text-left">Classe</th>
-          <th class="px-4 py-3 text-right">Inscription</th>
-          <th class="px-4 py-3 text-right">Minerval / trimestre</th>
-          <th class="px-4 py-3 text-right">Assurance</th>
-          <th class="px-4 py-3 text-right">Transport</th>
-          <th class="px-4 py-3 text-right">Total annuel</th>
-          <th class="px-4 py-3 text-center"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(classFee in classFees)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50">
-          <td class="px-4 py-3 font-medium">{{ classFee.className }}</td>
-          <td class="px-4 py-3 text-right">{{ formatCurrency(classFee.inscription, 'USD') }}</td>
-          <td class="px-4 py-3 text-right">{{ formatCurrency(classFee.minerval, 'USD') }}</td>
-          <td class="px-4 py-3 text-right">{{ formatCurrency(classFee.assurance, 'USD') }}</td>
-          <td class="px-4 py-3 text-right">{{ formatCurrency(classFee.transport, 'USD') }}</td>
-          <td class="px-4 py-3 text-right font-bold text-primary">{{ formatCurrency(classFee.total, 'USD') }}</td>
-          <td class="px-4 py-3 text-center">
-            <button onclick="editClassFees('{{ classFee.classId }}')" class="text-primary hover:underline text-sm">
-              <i class="fas fa-edit"></i>
-            </button>
-          </td>
-        </tr>
+    <!-- Grille des frais par classe -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Tarifs par classe
+        </h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">
+                Classe
+              </th>
+              <th class="px-4 py-3 text-right">
+                Inscription
+              </th>
+              <th class="px-4 py-3 text-right">
+                Minerval / trimestre
+              </th>
+              <th class="px-4 py-3 text-right">
+                Assurance
+              </th>
+              <th class="px-4 py-3 text-right">
+                Transport
+              </th>
+              <th class="px-4 py-3 text-right">
+                Total annuel
+              </th>
+              <th class="px-4 py-3 text-center">
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(classFee in classFees)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50">
+                <td class="px-4 py-3 font-medium">
+                  {{ classFee.className }}
+                </td>
+                <td class="px-4 py-3 text-right">
+                  {{ formatCurrency(classFee.inscription, 'USD') }}
+                </td>
+                <td class="px-4 py-3 text-right">
+                  {{ formatCurrency(classFee.minerval, 'USD') }}
+                </td>
+                <td class="px-4 py-3 text-right">
+                  {{ formatCurrency(classFee.assurance, 'USD') }}
+                </td>
+                <td class="px-4 py-3 text-right">
+                  {{ formatCurrency(classFee.transport, 'USD') }}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-primary">
+                  {{ formatCurrency(classFee.total, 'USD') }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <button onclick="editClassFees('{{ classFee.classId }}')" class="text-primary hover:underline text-sm">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Comparaison graphique -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Comparaison par niveau
+        </h3>
+        <canvas id="levelChart" height="250">
+        </canvas>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          RÃ©partition par type de frais
+        </h3>
+        <canvas id="typeChart" height="250">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- RÃ©sumÃ© des frais optionnels -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">
+          Frais optionnels
+        </h3>
+      </div>
+      <div class="divide-y dark:divide-gray-700">
+        @each(optional in optionalFees)
+          <div class="p-3 flex justify-between items-center">
+            <div>
+              <p class="font-medium">
+                {{ optional.type }}
+              </p>
+              <p class="text-sm text-gray-500">
+                {{ optional.description }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold">
+                {{ formatCurrency(optional.amount, optional.currency) }}
+              </p>
+              <p class="text-xs text-gray-400">
+                {{ optional.term || 'Annuel' }}
+              </p>
+            </div>
+          </div>
+          @else
+          <div class="p-6 text-center text-gray-500">
+            Aucun frais optionnel dÃ©fini
+          </div>
         @end
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Comparaison graphique -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Comparaison par niveau</h3>
-    <canvas id="levelChart" height="250"></canvas>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Répartition par type de frais</h3>
-    <canvas id="typeChart" height="250"></canvas>
-  </div>
-</div>
-
-<!-- Résumé des frais optionnels -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700">
-    <h3 class="font-semibold">Frais optionnels</h3>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(optional in optionalFees)
-    <div class="p-3 flex justify-between items-center">
-      <div>
-        <p class="font-medium">{{ optional.type }}</p>
-        <p class="text-sm text-gray-500">{{ optional.description }}</p>
-      </div>
-      <div class="text-right">
-        <p class="font-bold">{{ formatCurrency(optional.amount, optional.currency) }}</p>
-        <p class="text-xs text-gray-400">{{ optional.term || 'Annuel' }}</p>
       </div>
     </div>
-    @eachelse
-    <div class="p-6 text-center text-gray-500">Aucun frais optionnel défini</div>
-    @end
-  </div>
-</div>
 
-<!-- Modal édition tarifs classe -->
-<div id="editFeesModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-lg">Modifier tarifs - <span id="modalClassName"></span></h3>
-      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times"></i>
-      </button>
+    <!-- Modal Ã©dition tarifs classe -->
+    <div id="editFeesModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">
+            Modifier tarifs - <span id="modalClassName"></span>
+          </h3>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="editFeesForm" method="POST">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="_method" value="PUT" />
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-gray-600 text-sm mb-1">Inscription</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
+                <input
+                  type="number"
+                  name="inscription"
+                  id="inscriptionInput"
+                  step="0.01"
+                  class="w-full pl-8 pr-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-600 text-sm mb-1">Minerval / trimestre</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
+                <input
+                  type="number"
+                  name="minerval"
+                  id="minervalInput"
+                  step="0.01"
+                  class="w-full pl-8 pr-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-600 text-sm mb-1">Assurance</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
+                <input
+                  type="number"
+                  name="assurance"
+                  id="assuranceInput"
+                  step="0.01"
+                  class="w-full pl-8 pr-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-600 text-sm mb-1">Transport</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
+                <input
+                  type="number"
+                  name="transport"
+                  id="transportInput"
+                  step="0.01"
+                  class="w-full pl-8 pr-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6">
+            <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+              Enregistrer
+        </button>
+            <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+              Annuler
+        </button>
+          </div>
+        </form>
+      </div>
     </div>
-    <form id="editFeesForm" method="POST">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <input type="hidden" name="_method" value="PUT">
-      
-      <div class="space-y-3">
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Inscription</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-            <input type="number" name="inscription" id="inscriptionInput" step="0.01" class="w-full pl-8 pr-3 py-2 border rounded-lg">
-          </div>
-        </div>
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Minerval / trimestre</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-            <input type="number" name="minerval" id="minervalInput" step="0.01" class="w-full pl-8 pr-3 py-2 border rounded-lg">
-          </div>
-        </div>
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Assurance</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-            <input type="number" name="assurance" id="assuranceInput" step="0.01" class="w-full pl-8 pr-3 py-2 border rounded-lg">
-          </div>
-        </div>
-        <div>
-          <label class="block text-gray-600 text-sm mb-1">Transport</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-            <input type="number" name="transport" id="transportInput" step="0.01" class="w-full pl-8 pr-3 py-2 border rounded-lg">
-          </div>
-        </div>
-      </div>
-      
-      <div class="flex gap-3 mt-6">
-        <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          Enregistrer
-        </button>
-        <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
-          Annuler
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
 
-<script>
-  let levelChart, typeChart
-  
-  function renderCharts() {
-    const levelCtx = document.getElementById('levelChart').getContext('2d')
-    levelChart = new Chart(levelCtx, {
-      type: 'bar',
-      data: {
-        labels: {{ levelLabels|json_encode|raw }},
-        datasets: [
-          { label: 'Inscription', data: {{ levelInscription|json_encode|raw }}, backgroundColor: '#2563eb' },
-          { label: 'Minerval', data: {{ levelMinerval|json_encode|raw }}, backgroundColor: '#16a34a' }
-        ]
-      },
-      options: { responsive: true, maintainAspectRatio: true }
-    })
-    
-    const typeCtx = document.getElementById('typeChart').getContext('2d')
-    typeChart = new Chart(typeCtx, {
-      type: 'pie',
-      data: {
-        labels: {{ feeTypeLabels|json_encode|raw }},
-        datasets: [{ data: {{ feeTypeValues|json_encode|raw }}, backgroundColor: ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#8b5cf6'] }]
-      },
-      options: { responsive: true }
-    })
-  }
-  
-  let currentClassId = null
-  
-  function editClassFees(classId) {
-    currentClassId = classId
-    const row = event.target.closest('tr')
-    const values = {
-      inscription: row.cells[1]?.innerText.replace(/[^0-9.-]/g, '') || 0,
-      minerval: row.cells[2]?.innerText.replace(/[^0-9.-]/g, '') || 0,
-      assurance: row.cells[3]?.innerText.replace(/[^0-9.-]/g, '') || 0,
-      transport: row.cells[4]?.innerText.replace(/[^0-9.-]/g, '') || 0
-    }
-    
-    document.getElementById('modalClassName').textContent = row.cells[0]?.innerText || ''
-    document.getElementById('inscriptionInput').value = values.inscription
-    document.getElementById('minervalInput').value = values.minerval
-    document.getElementById('assuranceInput').value = values.assurance
-    document.getElementById('transportInput').value = values.transport
-    
-    const modal = document.getElementById('editFeesModal')
-    modal.classList.remove('hidden')
-    modal.classList.add('flex')
-  }
-  
-  function closeModal() {
-    const modal = document.getElementById('editFeesModal')
-    modal.classList.add('hidden')
-    modal.classList.remove('flex')
-  }
-  
-  document.getElementById('editFeesForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    formData.append('classId', currentClassId)
-    
-    const res = await fetch('/api/fees/class-structure', {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' },
-      body: formData
-    })
-    const data = await res.json()
-    if (data.success) {
-      location.reload()
-    } else {
-      alert('Erreur: ' + data.message)
-    }
-  })
-  
-  function exportStructure() {
-    const level = document.getElementById('levelFilter').value
-    const year = document.getElementById('yearFilter').value
-    window.location.href = `/api/fees/structure/export?level=${level}&year=${year}`
-  }
-  
-  document.getElementById('applyFilters')?.addEventListener('click', () => {
-    const level = document.getElementById('levelFilter').value
-    const year = document.getElementById('yearFilter').value
-    const type = document.getElementById('typeFilter').value
-    window.location.href = `/financial/fees/structure?level=${level}&year=${year}&type=${type}`
-  })
-  
-  renderCharts()
-</script>
-{{# /section }}
+    <script>
+      let levelChart, typeChart;
 
-{{# /layout }}
+      function renderCharts() {
+        const levelCtx = document.getElementById("levelChart").getContext("2d");
+        levelChart = new Chart(levelCtx, {
+          type: "bar",
+          data: {
+            labels: {{ levelLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Inscription",
+              data: {{ levelInscription|json_encode|raw }},
+              backgroundColor: "#2563eb"
+            }, {
+              label: "Minerval",
+              data: {{ levelMinerval|json_encode|raw }},
+              backgroundColor: "#16a34a"
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+        const typeCtx = document.getElementById("typeChart").getContext("2d");
+        typeChart = new Chart(typeCtx, {
+          type: "pie",
+          data: {
+            labels: {{ feeTypeLabels|json_encode|raw }},
+            datasets: [ {
+              data: {{ feeTypeValues|json_encode|raw }},
+              backgroundColor: [ "#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#8b5cf6" ]
+            } ]
+          },
+          options: {
+            responsive: true
+          }
+        });
+      }
+
+      let currentClassId = null;
+
+      function editClassFees(classId) {
+        currentClassId = classId;
+        const row = event.target.closest("tr");
+        const values = {
+          inscription: row.cells[1]?.innerText.replace(/[^0-9.-]/g, "") || 0,
+          minerval: row.cells[2]?.innerText.replace(/[^0-9.-]/g, "") || 0,
+          assurance: row.cells[3]?.innerText.replace(/[^0-9.-]/g, "") || 0,
+          transport: row.cells[4]?.innerText.replace(/[^0-9.-]/g, "") || 0
+        };
+        document.getElementById("modalClassName").textContent = row.cells[0]?.innerText || "";
+        document.getElementById("inscriptionInput").value = values.inscription;
+        document.getElementById("minervalInput").value = values.minerval;
+        document.getElementById("assuranceInput").value = values.assurance;
+        document.getElementById("transportInput").value = values.transport;
+        const modal = document.getElementById("editFeesModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("editFeesModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      document.getElementById("editFeesForm")?.addEventListener("submit", async e => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        formData.append("classId", currentClassId);
+        const res = await fetch("/api/fees/class-structure", {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        } else {
+          alert("Erreur: " + data.message);
+        }
+      });
+
+      function exportStructure() {
+        const level = document.getElementById("levelFilter").value;
+        const year = document.getElementById("yearFilter").value;
+        window.location.href = `/api/fees/structure/export?level=${level}&year=${year}`;
+      }
+
+      document.getElementById("applyFilters")?.addEventListener("click", () => {
+        const level = document.getElementById("levelFilter").value;
+        const year = document.getElementById("yearFilter").value;
+        const type = document.getElementById("typeFilter").value;
+        window.location.href = `/financial/fees/structure?level=${level}&year=${year}&type=${type}`;
+      });
+
+      renderCharts();
+    </script>
+  @endsection
+  

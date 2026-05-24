@@ -1,245 +1,328 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Logs système - Administration{{# /section }}
-
-{{# section('dashboardTitle') }}Logs système{{# /section }}
-{{# section('dashboardSubtitle') }}Historique des événements système{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  <button onclick="exportLogs()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-download mr-2"></i> Exporter
+  @section('title')
+    Logs système - Administration
+  @endsection
+  
+  @section('dashboardTitle')
+    Logs système
+  @endsection
+  @section('dashboardSubtitle')
+    Historique des événements système
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      <button onclick="exportLogs()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-download mr-2"></i>Exporter
   </button>
-  <button onclick="clearLogs()" class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
-    <i class="fas fa-trash-alt mr-2"></i> Vider les logs
+      <button
+        onclick="clearLogs()"
+        class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
+      >
+        <i class="fas fa-trash-alt mr-2"></i>Vider les logs
   </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Total événements</p>
-    <p class="text-3xl font-bold">{{ stats.total || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Erreurs</p>
-    <p class="text-3xl font-bold">{{ stats.errors || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Avertissements</p>
-    <p class="text-3xl font-bold">{{ stats.warnings || 0 }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Ce mois</p>
-    <p class="text-3xl font-bold">{{ stats.thisMonth || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Filtres -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
-      <select id="filterLevel" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="error">Erreur</option>
-        <option value="warning">Avertissement</option>
-        <option value="info">Information</option>
-        <option value="debug">Debug</option>
-      </select>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Service</label>
-      <select id="filterService" class="w-full px-3 py-2 border rounded-lg text-sm">
-        <option value="">Tous</option>
-        <option value="auth">Authentification</option>
-        <option value="database">Base de données</option>
-        <option value="api">API</option>
-        <option value="cron">Tâches planifiées</option>
-        <option value="mail">Email</option>
-      </select>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Total événements
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.total || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Erreurs
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.errors || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Avertissements
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.warnings || 0 }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Ce mois
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.thisMonth || 0 }}
+        </p>
+      </div>
     </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-      <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div>
-      <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-      <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm">
-    </div>
-    <div class="flex items-end gap-2">
-      <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i class="fas fa-filter mr-2"></i> Filtrer
+  @endsection
+  
+  @section('content')
+    <!-- Filtres -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Niveau</label>
+          <select id="filterLevel" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="error">
+              Erreur
+            </option>
+            <option value="warning">
+              Avertissement
+            </option>
+            <option value="info">
+              Information
+            </option>
+            <option value="debug">
+              Debug
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Service</label>
+          <select id="filterService" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <option value="">
+              Tous
+            </option>
+            <option value="auth">
+              Authentification
+            </option>
+            <option value="database">
+              Base de données
+            </option>
+            <option value="api">
+              API
+            </option>
+            <option value="cron">
+              Tâches planifiées
+            </option>
+            <option value="mail">
+              Email
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
+          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
+          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrer
       </button>
-      <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-undo"></i>
-      </button>
+          <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Graphique des logs -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
-  <h3 class="font-semibold mb-3">Distribution des logs par niveau</h3>
-  <canvas id="logsChart" height="150"></canvas>
-</div>
+    <!-- Graphique des logs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <h3 class="font-semibold mb-3">
+        Distribution des logs par niveau
+      </h3>
+      <canvas id="logsChart" height="150">
+      </canvas>
+    </div>
 
-<!-- Tableau des logs -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="table-responsive">
-    <table class="w-full text-sm">
-      <thead class="bg-gray-50 dark:bg-gray-700">
-        <tr>
-          <th class="px-4 py-2">Date/Heure</th>
-          <th class="px-4 py-2">Niveau</th>
-          <th class="px-4 py-2">Service</th>
-          <th class="px-4 py-2">Message</th>
-          <th class="px-4 py-2">Détails</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(log in logs)
-        <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-          <td class="px-4 py-2">{{ formatDateTime(log.createdAt) }}</td>
-          <td class="px-4 py-2">
-            <span class="px-2 py-1 rounded-full text-xs
+    <!-- Tableau des logs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2">
+                Date/Heure
+              </th>
+              <th class="px-4 py-2">
+                Niveau
+              </th>
+              <th class="px-4 py-2">
+                Service
+              </th>
+              <th class="px-4 py-2">
+                Message
+              </th>
+              <th class="px-4 py-2">
+                Détails
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(log in logs)
+              <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-2">
+                  {{ formatDateTime(log.createdAt) }}
+                </td>
+                <td class="px-4 py-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs
               {{ log.level === 'error' ? 'bg-red-100 text-red-800' : 
                  (log.level === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
-                 (log.level === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
-              {{ log.level === 'error' ? 'Erreur' : 
+                 (log.level === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}"
+                  >
+                    {{ log.level === 'error' ? 'Erreur' : 
                  (log.level === 'warning' ? 'Avertissement' : 
                  (log.level === 'info' ? 'Info' : 'Debug')) }}
             </span>
-          </td>
-          <td class="px-4 py-2">{{ log.service }}</td>
-          <td class="px-4 py-2 max-w-md">{{ log.message }}</td>
-          <td class="px-4 py-2">
-            @if(log.details)
-            <button onclick="showDetails('{{ log.id }}', '{{ escape(log.message) }}', '{{ escape(log.details) }}')" class="text-primary text-sm hover:underline">
-              <i class="fas fa-info-circle"></i>
-            </button>
-            @endif
-          </td>
-        </tr>
-        @eachelse
-        <tr>
-          <td colspan="5" class="text-center py-12 text-gray-500">
-            <i class="fas fa-terminal text-4xl mb-3 block"></i>
-            Aucun log système trouvé
-          </td>
-        </tr>
-        @end
-      </tbody>
-    </table>
-  </div>
-  
-  @include('partials/pagination', { pagination: pagination, url: '/admin/logs/system' })
-</div>
+                </td>
+                <td class="px-4 py-2">
+                  {{ log.service }}
+                </td>
+                <td class="px-4 py-2 max-w-md">
+                  {{ log.message }}
+                </td>
+                <td class="px-4 py-2">
+                  @if(log.details)
+                    <button
+                      onclick="showDetails('{{ log.id }}', '{{ escape(log.message) }}', '{{ escape(log.details) }}')"
+                      class="text-primary text-sm hover:underline"
+                    >
+                      <i class="fas fa-info-circle"></i>
+                    </button>
+                  @endif
+                </td>
+              </tr>
+              @else
+              <tr>
+                <td colspan="5" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-terminal text-4xl mb-3 block"></i>
+                  Aucun log système trouvé
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
 
-<!-- Modal détails -->
-<div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-    <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-      <h3 class="font-bold text-lg">Détails du log</h3>
-      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times"></i>
-      </button>
+      @include('partials/pagination', { pagination: pagination, url: '/admin/logs/system' })
     </div>
-    <div class="p-4 overflow-y-auto" id="modalContent">
-      <!-- Contenu dynamique -->
-    </div>
-  </div>
-</div>
 
-<script>
-  let logsChart
-  
-  function renderChart() {
-    const ctx = document.getElementById('logsChart').getContext('2d')
-    logsChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: {{ chartLabels|json_encode|raw }},
-        datasets: [{
-          label: "Nombre d'événements",
-          data: {{ chartValues|json_encode|raw }},
-          backgroundColor: ['#16a34a', '#2563eb', '#f59e0b', '#dc2626'],
-          borderRadius: 8
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true }
-    })
-  }
-  
-  function showDetails(id, message, details) {
-    const modal = document.getElementById('detailsModal')
-    const content = document.getElementById('modalContent')
-    content.innerHTML = `
-      <div class="space-y-3">
-        <div class="p-3 bg-gray-50 rounded">
-          <p class="font-medium">Message</p>
-          <p class="text-gray-600">${message}</p>
+    <!-- Modal détails -->
+    <div id="detailsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+      >
+        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+          <h3 class="font-bold text-lg">
+            Détails du log
+          </h3>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-        <div class="p-3 bg-gray-50 rounded">
-          <p class="font-medium">Détails complets</p>
-          <pre class="text-xs text-gray-600 whitespace-pre-wrap font-mono">${details}</pre>
+        <div class="p-4 overflow-y-auto" id="modalContent">
+          <!-- Contenu dynamique -->
         </div>
       </div>
-    `
-    modal.classList.remove('hidden')
-    modal.classList.add('flex')
-  }
-  
-  function closeModal() {
-    const modal = document.getElementById('detailsModal')
-    modal.classList.add('hidden')
-    modal.classList.remove('flex')
-  }
-  
-  const filterLevel = document.getElementById('filterLevel')
-  const filterService = document.getElementById('filterService')
-  const startDate = document.getElementById('startDate')
-  const endDate = document.getElementById('endDate')
-  const applyBtn = document.getElementById('applyFilters')
-  const resetBtn = document.getElementById('resetFilters')
-  
-  applyBtn.addEventListener('click', () => {
-    const params = new URLSearchParams()
-    if (filterLevel.value) params.set('level', filterLevel.value)
-    if (filterService.value) params.set('service', filterService.value)
-    if (startDate.value) params.set('start_date', startDate.value)
-    if (endDate.value) params.set('end_date', endDate.value)
-    window.location.href = `/admin/logs/system?${params.toString()}`
-  })
-  
-  resetBtn.addEventListener('click', () => {
-    window.location.href = '/admin/logs/system'
-  })
-  
-  function exportLogs() {
-    const params = new URLSearchParams()
-    if (filterLevel.value) params.set('level', filterLevel.value)
-    if (filterService.value) params.set('service', filterService.value)
-    window.location.href = `/api/admin/logs/export?${params.toString()}`
-  }
-  
-  function clearLogs() {
-    if (confirm('⚠️ Vider tous les logs système ? Cette action est irréversible.')) {
-      fetch('/api/admin/logs/clear', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  renderChart()
-</script>
-{{# /section }}
+    </div>
 
-{{# /layout }}
+    <script>
+      let logsChart;
+
+      function renderChart() {
+        const ctx = document.getElementById("logsChart").getContext("2d");
+        logsChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: {{ chartLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Nombre d'événements",
+              data: {{ chartValues|json_encode|raw }},
+              backgroundColor: [ "#16a34a", "#2563eb", "#f59e0b", "#dc2626" ],
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+      }
+
+      function showDetails(id, message, details) {
+        const modal = document.getElementById("detailsModal");
+        const content = document.getElementById("modalContent");
+        content.innerHTML = `
+                <div class="space-y-3">
+                  <div class="p-3 bg-gray-50 rounded">
+                    <p class="font-medium">Message</p>
+                    <p class="text-gray-600">${message}</p>
+                  </div>
+                  <div class="p-3 bg-gray-50 rounded">
+                    <p class="font-medium">Détails complets</p>
+                    <pre class="text-xs text-gray-600 whitespace-pre-wrap font-mono">${details}</pre>
+                  </div>
+                </div>
+              `;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("detailsModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      const filterLevel = document.getElementById("filterLevel");
+
+      const filterService = document.getElementById("filterService");
+
+      const startDate = document.getElementById("startDate");
+
+      const endDate = document.getElementById("endDate");
+
+      const applyBtn = document.getElementById("applyFilters");
+
+      const resetBtn = document.getElementById("resetFilters");
+
+      applyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams();
+        if (filterLevel.value) params.set("level", filterLevel.value);
+        if (filterService.value) params.set("service", filterService.value);
+        if (startDate.value) params.set("start_date", startDate.value);
+        if (endDate.value) params.set("end_date", endDate.value);
+        window.location.href = `/admin/logs/system?${params.toString()}`;
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.href = "/admin/logs/system";
+      });
+
+      function exportLogs() {
+        const params = new URLSearchParams();
+        if (filterLevel.value) params.set("level", filterLevel.value);
+        if (filterService.value) params.set("service", filterService.value);
+        window.location.href = `/api/admin/logs/export?${params.toString()}`;
+      }
+
+      function clearLogs() {
+        if (confirm("⚠️ Vider tous les logs système ? Cette action est irréversible.")) {
+          fetch("/api/admin/logs/clear", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      renderChart();
+    </script>
+  @endsection
+  

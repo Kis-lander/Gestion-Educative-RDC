@@ -1,77 +1,106 @@
-{{# layout('layouts/app') }}
+@layout('layouts/app')
 
-{{# section('title') }}À propos - Gestion Éducative RDC{{# /section }}
-
-{{# section('content') }}
-<div class="max-w-4xl mx-auto px-4 py-12">
-  <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">À propos de la plateforme</h1>
+  @section('title')
+    À propos - Gestion Éducative RDC
+  @endsection
   
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
-    <h2 class="text-2xl font-semibold mb-4">Notre mission</h2>
-    <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
-      La plateforme de Gestion Éducative RDC a été développée pour répondre aux besoins de modernisation 
+  @section('content')
+    <div class="max-w-4xl mx-auto px-4 py-12">
+      <h1 class="text-3xl md:text-4xl font-bold text-center mb-8">
+        À propos de la plateforme
+      </h1>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-4">
+          Notre mission
+        </h2>
+        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+          La plateforme de Gestion Éducative RDC a été développée pour répondre aux besoins de modernisation 
       du système éducatif congolais. Notre mission est de fournir un outil performant, accessible et fiable 
       pour l'inspection pédagogique et les établissements scolaires de tout le pays.
-    </p>
-  </div>
-  
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-3">Vision</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        Devenir la référence nationale en matière de gestion éducative digitale, en connectant 
-        toutes les écoles de la RDC pour une meilleure coordination et un suivi efficace.
-      </p>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-3">Valeurs</h2>
-      <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
-        <li>Transparence et intégrité</li>
-        <li>Innovation technologique</li>
-        <li>Accessibilité pour tous</li>
-        <li>Respect des normes éducatives</li>
-      </ul>
-    </div>
-  </div>
-  
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
-    <h2 class="text-2xl font-semibold mb-4">Partenaires</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-      <div class="p-4">
-        <i class="fas fa-university text-3xl text-primary mb-2 block"></i>
-        <p class="text-sm">Ministère de l'EPST</p>
+        </p>
       </div>
-      <div class="p-4">
-        <i class="fas fa-chalkboard-user text-3xl text-primary mb-2 block"></i>
-        <p class="text-sm">Inspection Générale</p>
-      </div>
-      <div class="p-4">
-        <i class="fas fa-laptop-code text-3xl text-primary mb-2 block"></i>
-        <p class="text-sm">Programme NUMERIQUE</p>
-      </div>
-      <div class="p-4">
-        <i class="fas fa-handshake text-3xl text-primary mb-2 block"></i>
-        <p class="text-sm">Partenaires techniques</p>
-      </div>
-    </div>
-  </div>
-  
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-    <h2 class="text-2xl font-semibold mb-4">Équipe</h2>
-    <p class="text-gray-700 dark:text-gray-300 mb-4">
-      Une équipe dédiée de développeurs, d'experts pédagogiques et de consultants travaille 
-      quotidiennement à l'amélioration de la plateforme.
-    </p>
-    <div class="flex gap-4 justify-center">
-      <a href="/help/contact" class="text-primary hover:underline">Nous contacter</a>
-      <span class="text-gray-300">|</span>
-      <a href="/help/faq" class="text-primary hover:underline">FAQ</a>
-      <span class="text-gray-300">|</span>
-      <a href="/help/guides" class="text-primary hover:underline">Guides</a>
-    </div>
-  </div>
-</div>
-{{# /section }}
 
-{{# /layout }}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+          <h2 class="text-xl font-semibold mb-3">
+            Vision
+          </h2>
+          <p class="text-gray-700 dark:text-gray-300">
+            Devenir la référence nationale en matière de gestion éducative digitale, en connectant 
+        toutes les écoles de la RDC pour une meilleure coordination et un suivi efficace.
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+          <h2 class="text-xl font-semibold mb-3">
+            Valeurs
+          </h2>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>
+              Transparence et intégrité
+            </li>
+            <li>
+              Innovation technologique
+            </li>
+            <li>
+              Accessibilité pour tous
+            </li>
+            <li>
+              Respect des normes éducatives
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-4">
+          Partenaires
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div class="p-4">
+            <i class="fas fa-university text-3xl text-primary mb-2 block"></i>
+            <p class="text-sm">
+              Ministère de l'EPST
+            </p>
+          </div>
+          <div class="p-4">
+            <i class="fas fa-chalkboard-user text-3xl text-primary mb-2 block"></i>
+            <p class="text-sm">
+              Inspection Générale
+            </p>
+          </div>
+          <div class="p-4">
+            <i class="fas fa-laptop-code text-3xl text-primary mb-2 block"></i>
+            <p class="text-sm">
+              Programme NUMERIQUE
+            </p>
+          </div>
+          <div class="p-4">
+            <i class="fas fa-handshake text-3xl text-primary mb-2 block"></i>
+            <p class="text-sm">
+              Partenaires techniques
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4">
+          Équipe
+        </h2>
+        <p class="text-gray-700 dark:text-gray-300 mb-4">
+          Une équipe dédiée de développeurs, d'experts pédagogiques et de consultants travaille 
+      quotidiennement à l'amélioration de la plateforme.
+        </p>
+        <div class="flex gap-4 justify-center">
+          <a href="/help/contact" class="text-primary hover:underline">Nous contacter</a>
+          <span class="text-gray-300">|</span>
+          <a href="/help/faq" class="text-primary hover:underline">FAQ</a>
+          <span class="text-gray-300">|</span>
+          <a href="/help/guides" class="text-primary hover:underline">Guides</a>
+        </div>
+      </div>
+    </div>
+  @endsection
+  

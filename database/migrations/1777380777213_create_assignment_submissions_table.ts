@@ -16,7 +16,7 @@ export default class AssignmentSubmissionsSchema extends BaseSchema {
       table.boolean('is_late').defaultTo(false)
       table.enum('status', ['draft', 'submitted', 'graded']).defaultTo('draft')
       table.timestamps(true)
-      
+
       table.unique(['assignment_id', 'student_id'])
     })
   }

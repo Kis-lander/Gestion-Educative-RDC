@@ -1,187 +1,300 @@
-{{# layout('layouts/print') }}
+@layout('layouts/print')
 
-{{# section('title') }}Bulletin scolaire - {{ student.name }} - {{ school.name }}{{# /section }}
-
-<div class="report-card">
-  <!-- En-tête officiel -->
-  <div class="text-center mb-6">
-    <h1 class="text-2xl font-bold">RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</h1>
-    <h2 class="text-xl">Ministère de l'Enseignement Primaire, Secondaire et Technique</h2>
-    <div class="my-3">
-      <h3 class="text-lg font-bold">{{ school.name }}</h3>
-    </div>
-    <div class="border-t-2 border-primary w-24 mx-auto my-2"></div>
-    <h2 class="text-xl font-bold">BULLETIN SCOLAIRE</h2>
-    <p class="text-sm">Année académique {{ academicYear }} - {{ termLabel }}</p>
-  </div>
-  
-  <!-- Identité élève -->
-  <div class="identity-box p-3 bg-gray-50 border mb-6">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-      <div><strong>Nom et prénom:</strong> {{ student.name }}</div>
-      <div><strong>Matricule:</strong> {{ student.registrationNumber }}</div>
-      <div><strong>Classe:</strong> {{ student.className }}</div>
-      <div><strong>Date naissance:</strong> {{ student.birthDate || '-' }}</div>
-      <div><strong>Nationalité:</strong> {{ student.nationality || 'Congolaise' }}</div>
-      <div><strong>Redoublant:</strong> {{ student.isRepeating ? 'Oui' : 'Non' }}</div>
-      <div class="col-span-2"><strong>Parent/Tuteur:</strong> {{ student.parentName || '-' }}</div>
-    </div>
-  </div>
-  
-  <!-- Tableau des notes -->
-  <div class="grades-table mb-6">
-    <table class="w-full border-collapse">
-      <thead>
-        <tr>
-          <th class="border p-2 text-left">DISCIPLINES</th>
-          <th class="border p-2 text-center">NOTE /20</th>
-          <th class="border p-2 text-center">COEFF.</th>
-          <th class="border p-2 text-center">POINTS</th>
-          <th class="border p-2 text-left">APPRÉCIATIONS</th>
-        </tr>
-      </thead>
-      <tbody>
-        @each(grade in grades)
-        <tr>
-          <td class="border p-2 font-medium">{{ grade.subject }}</td>
-          <td class="border p-2 text-center font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-dark' : 'text-red-600') }}">
-            {{ grade.score }}
-          </td>
-          <td class="border p-2 text-center">{{ grade.coefficient }}</td>
-          <td class="border p-2 text-center">{{ (grade.score * grade.coefficient).toFixed(1) }}</td>
-          <td class="border p-2">{{ grade.comment || '-' }}</td>
-        </tr>
-        @end
-      </tbody>
-      <tfoot class="font-bold">
-        <tr>
-          <td class="border p-2">TOTAUX</td>
-          <td class="border p-2 text-center"></td>
-          <td class="border p-2 text-center">{{ totalCoefficient }}</td>
-          <td class="border p-2 text-center">{{ totalPoints.toFixed(1) }}</td>
-          <td class="border p-2"></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-  
-  <!-- Moyenne et décision -->
-  <div class="results-section grid grid-cols-3 gap-4 mb-6 text-center">
-    <div class="p-3 border">
-      <p class="font-bold">MOYENNE GÉNÉRALE</p>
-      <p class="text-3xl font-bold {{ overallAverage >= 15 ? 'text-green-600' : (overallAverage >= 10 ? 'text-dark' : 'text-red-600') }}">
-        {{ overallAverage }}/20
+  @section('title')
+    Bulletin scolaire - {{ student.name }} - {{ school.name }}
+  @endsection
+  <div class="report-card">
+    <!-- En-tÃªte officiel -->
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold">
+        RÃ‰PUBLIQUE DÃ‰MOCRATIQUE DU CONGO
+      </h1>
+      <h2 class="text-xl">
+        MinistÃ¨re de l'Enseignement Primaire, Secondaire et Technique
+      </h2>
+      <div class="my-3">
+        <h3 class="text-lg font-bold">
+          {{ school.name }}
+        </h3>
+      </div>
+      <div class="border-t-2 border-primary w-24 mx-auto my-2">
+      </div>
+      <h2 class="text-xl font-bold">
+        BULLETIN SCOLAIRE
+      </h2>
+      <p class="text-sm">
+        Année scolaire {{ academicYear }} - {{ termLabel }}
       </p>
     </div>
-    <div class="p-3 border">
-      <p class="font-bold">RANG / CLASSEMENT</p>
-      <p class="text-3xl font-bold">{{ rank }}/{{ totalStudents }}</p>
+
+    <!-- IdentitÃ© Ã©lÃ¨ve -->
+    <div class="identity-box p-3 bg-gray-50 border mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <div>
+          <strong>Nom et prÃ©nom:</strong>{{ student.name }}
+        </div>
+        <div>
+          <strong>Matricule:</strong>{{ student.registrationNumber }}
+        </div>
+        <div>
+          <strong>Classe:</strong>{{ student.className }}
+        </div>
+        <div>
+          <strong>Date naissance:</strong>{{ student.birthDate || '-' }}
+        </div>
+        <div>
+          <strong>NationalitÃ©:</strong>{{ student.nationality || 'Congolaise' }}
+        </div>
+        <div>
+          <strong>Redoublant:</strong>{{ student.isRepeating ? 'Oui' : 'Non' }}
+        </div>
+        <div class="col-span-2">
+          <strong>Parent/Tuteur:</strong>{{ student.parentName || '-' }}
+        </div>
+      </div>
     </div>
-    <div class="p-3 border">
-      <p class="font-bold">DÉCISION</p>
-      <p class="text-xl font-bold {{ decision === 'Admis' ? 'text-green-600' : (decision === 'Admis avec mention' ? 'text-blue-600' : 'text-red-600') }}">
-        {{ decision }}
+
+    <!-- Tableau des notes -->
+    <div class="grades-table mb-6">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="border p-2 text-left">
+              DISCIPLINES
+            </th>
+            <th class="border p-2 text-center">
+              NOTE /20
+            </th>
+            <th class="border p-2 text-center">
+              COEFF.
+            </th>
+            <th class="border p-2 text-center">
+              POINTS
+            </th>
+            <th class="border p-2 text-left">
+              APPRÃ‰CIATIONS
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(grade in grades)
+            <tr>
+              <td class="border p-2 font-medium">
+                {{ grade.subject }}
+              </td>
+              <td
+                class="border p-2 text-center font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-dark' : 'text-red-600') }}"
+              >
+                {{ grade.score }}
+              </td>
+              <td class="border p-2 text-center">
+                {{ grade.coefficient }}
+              </td>
+              <td class="border p-2 text-center">
+                {{ (grade.score * grade.coefficient).toFixed(1) }}
+              </td>
+              <td class="border p-2">
+                {{ grade.comment || '-' }}
+              </td>
+            </tr>
+          @end
+        </tbody>
+        <tfoot class="font-bold">
+          <tr>
+            <td class="border p-2">
+              TOTAUX
+            </td>
+            <td class="border p-2 text-center">
+            </td>
+            <td class="border p-2 text-center">
+              {{ totalCoefficient }}
+            </td>
+            <td class="border p-2 text-center">
+              {{ totalPoints.toFixed(1) }}
+            </td>
+            <td class="border p-2">
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Moyenne et dÃ©cision -->
+    <div class="results-section grid grid-cols-3 gap-4 mb-6 text-center">
+      <div class="p-3 border">
+        <p class="font-bold">
+          MOYENNE GÃ‰NÃ‰RALE
+        </p>
+        <p
+          class="text-3xl font-bold {{ overallAverage >= 15 ? 'text-green-600' : (overallAverage >= 10 ? 'text-dark' : 'text-red-600') }}"
+        >
+          {{ overallAverage }}/20
+        </p>
+      </div>
+      <div class="p-3 border">
+        <p class="font-bold">
+          RANG / CLASSEMENT
+        </p>
+        <p class="text-3xl font-bold">
+          {{ rank }}/{{ totalStudents }}
+        </p>
+      </div>
+      <div class="p-3 border">
+        <p class="font-bold">
+          DÃ‰CISION
+        </p>
+        <p
+          class="text-xl font-bold {{ decision === 'Admis' ? 'text-green-600' : (decision === 'Admis avec mention' ? 'text-blue-600' : 'text-red-600') }}"
+        >
+          {{ decision }}
+        </p>
+      </div>
+    </div>
+
+    <!-- ApprÃ©ciation gÃ©nÃ©rale -->
+    <div class="appreciation-box mb-6 p-3 border-l-4 border-primary bg-gray-50">
+      <p class="font-bold">
+        APPRÃ‰CIATION GÃ‰NÃ‰RALE
+      </p>
+      <p class="mt-1">
+        {{ appreciation || 'FÃ©licitations pour vos efforts ! Continuez ainsi.' }}
+      </p>
+      @if(classTeacherComment)
+        <p class="text-sm text-gray-600 mt-2 italic">
+          - Le professeur principal
+        </p>
+      @endif
+    </div>
+
+    <!-- Comportement et assiduitÃ© -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="p-3 border">
+        <p class="font-bold">
+          COMPORTEMENT
+        </p>
+        <p>
+          {{ behavior.grade || 'Satisfaisant' }}
+        </p>
+        <div class="flex gap-1 mt-1">
+          @for(i = 1; i <= 5; i++)
+            <span class=text-lg {{ i <= (behavior.rating || 3) ? 'â˜…' : 'â˜†' }}>            @endfor
+          </span>
+        </div>
+        <p class="text-sm mt-1">
+          {{ behavior.comment || '' }}
+        </p>
+      </div>
+      <div class="p-3 border">
+        <p class="font-bold">
+          ASSIDUITÃ‰
+        </p>
+        <p>
+          {{ attendance.rate }}% de prÃ©sence
+        </p>
+        <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+          <div class="bg-green-500 rounded-full h-2" style="width: {{ attendance.rate }}%">
+          </div>
+        </div>
+        <p class="text-sm mt-1">
+          {{ attendance.absences }} absence(s) | {{ attendance.lates }} retard(s)
+        </p>
+      </div>
+    </div>
+
+    <!-- Observations -->
+    <div class="observations mb-6 p-3 border">
+      <p class="font-bold">
+        OBSERVATIONS DU CONSEIL DE CLASSE
+      </p>
+      <p class="mt-1 text-sm">
+        {{ observations || '-' }}
       </p>
     </div>
-  </div>
-  
-  <!-- Appréciation générale -->
-  <div class="appreciation-box mb-6 p-3 border-l-4 border-primary bg-gray-50">
-    <p class="font-bold">APPRÉCIATION GÉNÉRALE</p>
-    <p class="mt-1">{{ appreciation || 'Félicitations pour vos efforts ! Continuez ainsi.' }}</p>
-    @if(classTeacherComment)
-    <p class="text-sm text-gray-600 mt-2 italic">- Le professeur principal</p>
-    @endif
-  </div>
-  
-  <!-- Comportement et assiduité -->
-  <div class="grid grid-cols-2 gap-4 mb-6">
-    <div class="p-3 border">
-      <p class="font-bold">COMPORTEMENT</p>
-      <p>{{ behavior.grade || 'Satisfaisant' }}</p>
-      <div class="flex gap-1 mt-1">
-        @for(i = 1; i <= 5; i++)
-        <span class="text-lg {{ i <= (behavior.rating || 3) ? '★' : '☆' }}">@endfor</span>
-      </div>
-      <p class="text-sm mt-1">{{ behavior.comment || '' }}</p>
-    </div>
-    <div class="p-3 border">
-      <p class="font-bold">ASSIDUITÉ</p>
-      <p>{{ attendance.rate }}% de présence</p>
-      <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-        <div class="bg-green-500 rounded-full h-2" style="width: {{ attendance.rate }}%"></div>
-      </div>
-      <p class="text-sm mt-1">{{ attendance.absences }} absence(s) | {{ attendance.lates }} retard(s)</p>
-    </div>
-  </div>
-  
-  <!-- Observations -->
-  <div class="observations mb-6 p-3 border">
-    <p class="font-bold">OBSERVATIONS DU CONSEIL DE CLASSE</p>
-    <p class="mt-1 text-sm">{{ observations || '-' }}</p>
-  </div>
-  
-  <!-- Signatures -->
-  <div class="signatures grid grid-cols-3 gap-4 mt-8 pt-4 border-t text-center">
-    <div>
-      <p>L'Élève</p>
-      <div class="mt-12">_______________</div>
-    </div>
-    <div>
-      <p>Le Parent/Tuteur</p>
-      <div class="mt-12">_______________</div>
-    </div>
-    <div>
-      <p>Le Chef d'Établissement</p>
-      <div class="mt-12">_______________</div>
-      <p class="text-sm mt-1">{{ principalName }}</p>
-    </div>
-  </div>
-  
-  <!-- Date d'émission -->
-  <div class="text-right text-sm text-gray-500 mt-6 pt-4 border-t">
-    Fait à {{ school.city }}, le {{ generationDate }}
-  </div>
-</div>
 
-<style>
-  .report-card {
-    font-family: 'Times New Roman', 'Arial', sans-serif;
-    padding: 20px;
-  }
-  table {
-    border-collapse: collapse;
-  }
-  .border {
-    border: 1px solid #ddd;
-  }
-  .border-l-4 {
-    border-left-width: 4px;
-  }
-  .border-primary {
-    border-color: #2563eb;
-  }
-  .bg-gray-50 {
-    background-color: #f9fafb;
-  }
-  .text-green-600 {
-    color: #16a34a;
-  }
-  .text-red-600 {
-    color: #dc2626;
-  }
-  .text-blue-600 {
-    color: #2563eb;
-  }
-  @media print {
-    body {
-      padding: 0;
-      margin: 0;
-    }
+    <!-- Signatures -->
+    <div class="signatures grid grid-cols-3 gap-4 mt-8 pt-4 border-t text-center">
+      <div>
+        <p>
+          L'Ã‰lÃ¨ve
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+      <div>
+        <p>
+          Le Parent/Tuteur
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+      </div>
+      <div>
+        <p>
+          Le Chef d'Ã‰tablissement
+        </p>
+        <div class="mt-12">
+          _______________
+        </div>
+        <p class="text-sm mt-1">
+          {{ principalName }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Date d'Ã©mission -->
+    <div class="text-right text-sm text-gray-500 mt-6 pt-4 border-t">
+      Fait Ã  {{ school.city }}, le {{ generationDate }}
+    </div>
+  </div>
+
+  <style>
     .report-card {
-      padding: 0;
+      font-family: 'Times New Roman', 'Arial', sans-serif;
+      padding: 20px;
     }
-  }
-</style>
+    
+    table {
+      border-collapse: collapse;
+    }
+    
+    .border {
+      border: 1px solid #ddd;
+    }
+    
+    .border-l-4 {
+      border-left-width: 4px;
+    }
+    
+    .border-primary {
+      border-color: #2563eb;
+    }
+    
+    .bg-gray-50 {
+      background-color: #f9fafb;
+    }
+    
+    .text-green-600 {
+      color: #16a34a;
+    }
+    
+    .text-red-600 {
+      color: #dc2626;
+    }
+    
+    .text-blue-600 {
+      color: #2563eb;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+    
+      .report-card {
+        padding: 0;
+      }
+    }
+  </style>
 
-{{# /layout }}

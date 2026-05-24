@@ -12,7 +12,7 @@ export default class SchoolController {
   /**
    * Enregistrer une nouvelle école (demande d'inscription)
    */
-  public async registerSchool({ request, response }: HttpContext) {
+  public async registerSchool({ request, response, session }: HttpContext) {
     const schema = vine.compile(
       vine.object({
         name: vine.string().trim().maxLength(255).unique({ table: 'schools', column: 'name' }),
@@ -23,7 +23,7 @@ export default class SchoolController {
         email: vine.string().email().unique({ table: 'schools', column: 'email' }),
         directorName: vine.string(),
         directorPhone: vine.string(),
-        directorEmail: vine.string().email(),
+        directorEmail: vine.string().email().unique({ table: 'users', column: 'email' }),
       })
     )
 
@@ -58,7 +58,7 @@ export default class SchoolController {
       status: 'pending',
     })
 
-    return response.created({
+    const result = {
       success: true,
       message: "Demande d'inscription soumise avec succès. En attente d'approbation.",
       school: {
@@ -67,7 +67,14 @@ export default class SchoolController {
         code: school.code,
         status: school.status,
       },
-    })
+    }
+
+    if (request.header('accept')?.includes('text/html')) {
+      session.flash('success', result.message)
+      return response.redirect('/login')
+    }
+
+    return response.created(result)
   }
 
   /**

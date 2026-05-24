@@ -1,161 +1,231 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}Tableau de bord - {{ student.name }}{{# /section }}
-
-{{# section('dashboardTitle') }}Espace Élève{{# /section }}
-{{# section('dashboardSubtitle') }}Bienvenue, {{ student.name }}{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Moyenne générale</p>
-    <p class="text-3xl font-bold">{{ stats.averageGrade || '-' }}/20</p>
-  </div>
-  <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Rang / Classe</p>
-    <p class="text-3xl font-bold">{{ stats.rank }}/{{ stats.totalStudents }}</p>
-  </div>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Présences</p>
-    <p class="text-3xl font-bold">{{ stats.attendanceRate || 0 }}%</p>
-  </div>
-  <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-    <p class="text-sm opacity-90">Devoirs à rendre</p>
-    <p class="text-3xl font-bold">{{ stats.pendingAssignments || 0 }}</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Progression académique -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Performance par matière</h3>
-    <canvas id="performanceChart" height="200"></canvas>
-  </div>
+  @section('title')
+    Tableau de bord - {{ student.name }}
+  @endsection
   
-  <!-- Évolution trimestrielle -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h3 class="font-semibold mb-3">Évolution des notes</h3>
-    <canvas id="evolutionChart" height="200"></canvas>
-  </div>
-</div>
-
-<!-- Devoirs à rendre -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-    <h3 class="font-semibold">Devoirs à rendre</h3>
-    <a href="/student/assignments" class="text-primary text-sm hover:underline">Voir tout</a>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(assignment in pendingAssignments)
-    <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-      <div>
-        <p class="font-medium">{{ assignment.title }}</p>
-        <p class="text-sm text-gray-500">{{ assignment.subjectName }} - {{ assignment.className }}</p>
-      </div>
-      <div class="text-right">
-        <p class="text-sm {{ assignment.daysRemaining < 0 ? 'text-red-600' : 'text-yellow-600' }}">
-          {{ assignment.daysRemaining < 0 ? 'En retard' : assignment.daysRemaining + ' jours restants' }}
+  @section('dashboardTitle')
+    Espace Élève
+  @endsection
+  @section('dashboardSubtitle')
+    Bienvenue, {{ student.name }}
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Moyenne générale
         </p>
-        <a href="/student/assignments/{{ assignment.id }}" class="text-primary text-sm hover:underline">Soumettre</a>
+        <p class="text-3xl font-bold">
+          {{ stats.averageGrade || '-' }}/20
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Rang / Classe
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.rank }}/{{ stats.totalStudents }}
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Présences
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.attendanceRate || 0 }}%
+        </p>
+      </div>
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+        <p class="text-sm opacity-90">
+          Devoirs à rendre
+        </p>
+        <p class="text-3xl font-bold">
+          {{ stats.pendingAssignments || 0 }}
+        </p>
       </div>
     </div>
-    @eachelse
-    <div class="p-6 text-center text-gray-500">
-      <i class="fas fa-check-circle text-green-500 text-2xl mb-2 block"></i>
-      Aucun devoir en attente
-    </div>
-    @end
-  </div>
-</div>
+  @endsection
+  
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Progression académique -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Performance par matière
+        </h3>
+        <canvas id="performanceChart" height="200">
+        </canvas>
+      </div>
 
-<!-- Dernières notes -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-    <h3 class="font-semibold">Dernières notes</h3>
-    <a href="/student/grades" class="text-primary text-sm hover:underline">Voir tout</a>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(grade in recentGrades)
-    <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
-      <div>
-        <p class="font-medium">{{ grade.subjectName }}</p>
-        <p class="text-sm text-gray-500">{{ grade.examType }} - {{ grade.date }}</p>
+      <!-- Évolution trimestrielle -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <h3 class="font-semibold mb-3">
+          Évolution des notes
+        </h3>
+        <canvas id="evolutionChart" height="200">
+        </canvas>
       </div>
-      <div class="text-right">
-        <span class="text-xl font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-          {{ grade.score }}/20
+    </div>
+
+    <!-- Devoirs à rendre -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="font-semibold">
+          Devoirs à rendre
+        </h3>
+        <a href="/student/assignments" class="text-primary text-sm hover:underline">Voir tout</a>
+      </div>
+      <div class="divide-y dark:divide-gray-700">
+        @each(assignment in pendingAssignments)
+          <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
+            <div>
+              <p class="font-medium">
+                {{ assignment.title }}
+              </p>
+              <p class="text-sm text-gray-500">
+                {{ assignment.subjectName }} - {{ assignment.className }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class=text-sm {{ assignment.daysRemaining < 0 ? 'text-red-600' : 'text-yellow-600' }}>
+                {{ assignment.daysRemaining < 0 ? 'En retard' : assignment.daysRemaining + ' jours restants' }}
+              </p>
+              <a href="/student/assignments/{{ assignment.id }}" class="text-primary text-sm hover:underline">Soumettre</a>
+            </div>
+          </div>
+          @else
+          <div class="p-6 text-center text-gray-500">
+            <i class="fas fa-check-circle text-green-500 text-2xl mb-2 block"></i>
+            Aucun devoir en attente
+          </div>
+        @end
+      </div>
+    </div>
+
+    <!-- Dernières notes -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="font-semibold">
+          Dernières notes
+        </h3>
+        <a href="/student/grades" class="text-primary text-sm hover:underline">Voir tout</a>
+      </div>
+      <div class="divide-y dark:divide-gray-700">
+        @each(grade in recentGrades)
+          <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700">
+            <div>
+              <p class="font-medium">
+                {{ grade.subjectName }}
+              </p>
+              <p class="text-sm text-gray-500">
+                {{ grade.examType }} - {{ grade.date }}
+              </p>
+            </div>
+            <div class="text-right">
+              <span
+                class="text-xl font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+              >
+                {{ grade.score }}/20
         </span>
+            </div>
+          </div>
+          @else
+          <div class="p-6 text-center text-gray-500">
+            Aucune note récente
+          </div>
+        @end
       </div>
     </div>
-    @eachelse
-    <div class="p-6 text-center text-gray-500">Aucune note récente</div>
-    @end
-  </div>
-</div>
 
-<!-- Forum récent -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-  <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
-    <h3 class="font-semibold">Forum - Questions récentes</h3>
-    <a href="/student/forum" class="text-primary text-sm hover:underline">Voir tout</a>
-  </div>
-  <div class="divide-y dark:divide-gray-700">
-    @each(topic in forumTopics)
-    <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onclick="window.location.href='/student/forum/topic/{{ topic.id }}'">
-      <div>
-        <p class="font-medium">{{ topic.title }}</p>
-        <p class="text-sm text-gray-500">{{ topic.subjectName }} - {{ topic.repliesCount }} réponses</p>
+    <!-- Forum récent -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="font-semibold">
+          Forum - Questions récentes
+        </h3>
+        <a href="/student/forum" class="text-primary text-sm hover:underline">Voir tout</a>
       </div>
-      <div class="text-right text-sm text-gray-400">
-        {{ topic.lastReplyAt || topic.createdAt }}
+      <div class="divide-y dark:divide-gray-700">
+        @each(topic in forumTopics)
+          <div
+            class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+            onclick="window.location.href='/student/forum/topic/{{ topic.id }}'"
+          >
+            <div>
+              <p class="font-medium">
+                {{ topic.title }}
+              </p>
+              <p class="text-sm text-gray-500">
+                {{ topic.subjectName }} - {{ topic.repliesCount }} réponses
+              </p>
+            </div>
+            <div class="text-right text-sm text-gray-400">
+              {{ topic.lastReplyAt || topic.createdAt }}
+            </div>
+          </div>
+          @else
+          <div class="p-6 text-center text-gray-500">
+            Aucun sujet récent
+          </div>
+        @end
       </div>
     </div>
-    @eachelse
-    <div class="p-6 text-center text-gray-500">Aucun sujet récent</div>
-    @end
-  </div>
-</div>
 
-<script>
-  let perfChart, evoChart
-  
-  function renderCharts() {
-    const perfCtx = document.getElementById('performanceChart').getContext('2d')
-    perfChart = new Chart(perfCtx, {
-      type: 'bar',
-      data: {
-        labels: {{ subjectLabels|json_encode|raw }},
-        datasets: [{
-          label: 'Moyenne /20',
-          data: {{ subjectAverages|json_encode|raw }},
-          backgroundColor: '#2563eb',
-          borderRadius: 8
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 20 } } }
-    })
-    
-    const evoCtx = document.getElementById('evolutionChart').getContext('2d')
-    evoChart = new Chart(evoCtx, {
-      type: 'line',
-      data: {
-        labels: ['Trimestre 1', 'Trimestre 2', 'Trimestre 3'],
-        datasets: [{
-          label: 'Moyenne générale',
-          data: {{ termAverages|json_encode|raw }},
-          borderColor: '#16a34a',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 20, min: 0 } } }
-    })
-  }
-  
-  renderCharts()
-</script>
-{{# /section }}
+    <script>
+      let perfChart, evoChart;
 
-{{# /layout }}
+      function renderCharts() {
+        const perfCtx = document.getElementById("performanceChart").getContext("2d");
+        perfChart = new Chart(perfCtx, {
+          type: "bar",
+          data: {
+            labels: {{ subjectLabels|json_encode|raw }},
+            datasets: [ {
+              label: "Moyenne /20",
+              data: {{ subjectAverages|json_encode|raw }},
+              backgroundColor: "#2563eb",
+              borderRadius: 8
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: {
+                max: 20
+              }
+            }
+          }
+        });
+        const evoCtx = document.getElementById("evolutionChart").getContext("2d");
+        evoChart = new Chart(evoCtx, {
+          type: "line",
+          data: {
+            labels: [ "Trimestre 1", "Trimestre 2", "Trimestre 3" ],
+            datasets: [ {
+              label: "Moyenne générale",
+              data: {{ termAverages|json_encode|raw }},
+              borderColor: "#16a34a",
+              fill: true,
+              tension: .4
+            } ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: {
+                max: 20,
+                min: 0
+              }
+            }
+          }
+        });
+      }
+
+      renderCharts();
+    </script>
+  @endsection
+  

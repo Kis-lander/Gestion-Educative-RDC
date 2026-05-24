@@ -1,190 +1,245 @@
-{{# layout('layouts/dashboard') }}
+@layout('layouts/dashboard')
 
-{{# section('title') }}{{ topic.title }} - Forum pédagogique{{# /section }}
-
-{{# section('dashboardTitle') }}{{ topic.title }}{{# /section }}
-{{# section('dashboardSubtitle') }}{{ topic.className }} - {{ topic.subjectName }}{{# /section }}
-
-{{# section('actions') }}
-<div class="flex gap-2">
-  @if(!topic.isLocked)
-  <button onclick="toggleLock()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-lock mr-2"></i> Verrouiller
-  </button>
-  @else
-  <button onclick="toggleLock()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-lock-open mr-2"></i> Déverrouiller
-  </button>
-  @endif
-  <button onclick="togglePin()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-    <i class="fas fa-thumbtack mr-2"></i> {{ topic.isPinned ? 'Désépingler' : 'Épingler' }}
-  </button>
-  <button onclick="deleteTopic()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-    <i class="fas fa-trash mr-2"></i> Supprimer
-  </button>
-</div>
-{{# /section }}
-
-{{# section('stats') }}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-primary">{{ topic.repliesCount || 0 }}</p>
-    <p class="text-sm text-gray-500">Réponses</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-green-600">{{ topic.views || 0 }}</p>
-    <p class="text-sm text-gray-500">Vues</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-purple-600">{{ topic.participants || 0 }}</p>
-    <p class="text-sm text-gray-500">Participants</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{ topic.createdAt }}</p>
-    <p class="text-sm text-gray-500">Créé le</p>
-  </div>
-</div>
-{{# /section }}
-
-{{# section('content') }}
-<!-- Message original -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
-  <div class="p-4 border-b bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
-        {{ topic.authorName.charAt(0) }}
-      </div>
-      <div>
-        <span class="font-medium">{{ topic.authorName }}</span>
-        <span class="text-xs text-gray-500 ml-2">Enseignant</span>
-      </div>
-    </div>
-    <div class="text-xs text-gray-400">{{ topic.createdAt }} à {{ topic.createdTime }}</div>
-  </div>
-  <div class="p-4">
-    <div class="prose max-w-none">
-      <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ topic.content }}</p>
-    </div>
-  </div>
-</div>
-
-<!-- Liste des réponses -->
-<div class="space-y-4 mb-6">
-  <h3 class="font-semibold text-lg">Réponses ({{ topic.repliesCount || 0 }})</h3>
+  @section('title')
+    {{ topic.title }} - Forum pédagogique
+  @endsection
   
-  @each(reply in replies)
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-    <div class="p-3 border-b bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full {{ reply.isTeacher ? 'bg-primary' : 'bg-gray-400' }} flex items-center justify-center text-white text-sm font-bold">
-          {{ reply.authorName.charAt(0) }}
+  @section('dashboardTitle')
+    {{ topic.title }}
+  @endsection
+  @section('dashboardSubtitle')
+    {{ topic.className }} - {{ topic.subjectName }}
+  @endsection
+  
+  @section('actions')
+    <div class="flex gap-2">
+      @if(!topic.isLocked)
+        <button onclick="toggleLock()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+          <i class="fas fa-lock mr-2"></i>Verrouiller
+  </button>
+      @else
+        <button onclick="toggleLock()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+          <i class="fas fa-lock-open mr-2"></i>Déverrouiller
+  </button>
+      @endif
+      <button onclick="togglePin()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-thumbtack mr-2"></i>{{ topic.isPinned ? 'Désépingler' : 'Épingler' }}
+  </button>
+      <button onclick="deleteTopic()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        <i class="fas fa-trash mr-2"></i>Supprimer
+  </button>
+    </div>
+  @endsection
+  
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">
+          {{ topic.repliesCount || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Réponses
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ topic.views || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Vues
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">
+          {{ topic.participants || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Participants
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-yellow-600">
+          {{ topic.createdAt }}
+        </p>
+        <p class="text-sm text-gray-500">
+          Créé le
+        </p>
+      </div>
+    </div>
+  @endsection
+  
+  @section('content')
+    <!-- Message original -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
+      <div class="p-4 border-b bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <div
+            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold"
+          >
+            {{ topic.authorName.charAt(0) }}
+          </div>
+          <div>
+            <span class="font-medium">{{ topic.authorName }}</span>
+            <span class="text-xs text-gray-500 ml-2">Enseignant</span>
+          </div>
         </div>
-        <div>
-          <span class="font-medium">{{ reply.authorName }}</span>
-          <span class="text-xs {{ reply.isTeacher ? 'text-primary' : 'text-gray-500' }} ml-2">{{ reply.userType }}</span>
+        <div class="text-xs text-gray-400">
+          {{ topic.createdAt }} à {{ topic.createdTime }}
         </div>
       </div>
-      <div class="text-xs text-gray-400">{{ reply.createdAt }} à {{ reply.createdTime }}</div>
+      <div class="p-4">
+        <div class="prose max-w-none">
+          <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+            {{ topic.content }}
+          </p>
+        </div>
+      </div>
     </div>
-    <div class="p-4">
-      <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ reply.content }}</p>
-    </div>
-    @if(reply.isTeacher)
-    <div class="px-4 pb-3">
-      <button onclick="deleteReply('{{ reply.id }}')" class="text-red-500 text-xs hover:underline">
-        <i class="fas fa-trash mr-1"></i> Supprimer
+
+    <!-- Liste des réponses -->
+    <div class="space-y-4 mb-6">
+      <h3 class="font-semibold text-lg">
+        Réponses ({{ topic.repliesCount || 0 }})
+      </h3>
+
+      @each(reply in replies)
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          <div class="p-3 border-b bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+              <div
+                class="w-8 h-8 rounded-full {{ reply.isTeacher ? 'bg-primary' : 'bg-gray-400' }} flex items-center justify-center text-white text-sm font-bold"
+              >
+                {{ reply.authorName.charAt(0) }}
+              </div>
+              <div>
+                <span class="font-medium">{{ reply.authorName }}</span>
+                <span class="text-xs {{ reply.isTeacher ? 'text-primary' : 'text-gray-500' }} ml-2">{{ reply.userType }}</span>
+              </div>
+            </div>
+            <div class="text-xs text-gray-400">
+              {{ reply.createdAt }} à {{ reply.createdTime }}
+            </div>
+          </div>
+          <div class="p-4">
+            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {{ reply.content }}
+            </p>
+          </div>
+          @if(reply.isTeacher)
+            <div class="px-4 pb-3">
+              <button onclick="deleteReply('{{ reply.id }}')" class="text-red-500 text-xs hover:underline">
+                <i class="fas fa-trash mr-1"></i>Supprimer
       </button>
+            </div>
+          @endif
+        </div>
+        @else
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 text-center text-gray-500">
+          <i class="fas fa-comment-dots text-3xl mb-2 block"></i>
+          Aucune réponse pour le moment. Soyez le premier à répondre !
+        </div>
+      @end
     </div>
+
+    <!-- Formulaire de réponse -->
+    @if(!topic.isLocked)
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg mb-4">
+          Votre réponse
+        </h3>
+        <form
+          method="POST"
+          action="/teacher/forum/topic/{{ topic.id }}/reply"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+          <div class="mb-4">
+            <textarea
+              name="content"
+              required
+              rows="5"
+              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+              placeholder="Rédigez votre réponse ici..."
+            ></textarea>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            >
+              <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+              Publier la réponse
+      </button>
+          </div>
+        </form>
+      </div>
+    @else
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 text-center">
+        <i class="fas fa-lock mr-2"></i>
+        Ce sujet est verrouillé. Vous ne pouvez plus ajouter de réponses.
+      </div>
     @endif
-  </div>
-  @eachelse
-  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-8 text-center text-gray-500">
-    <i class="fas fa-comment-dots text-3xl mb-2 block"></i>
-    Aucune réponse pour le moment. Soyez le premier à répondre !
-  </div>
-  @end
-</div>
-
-<!-- Formulaire de réponse -->
-@if(!topic.isLocked)
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-  <h3 class="font-semibold text-lg mb-4">Votre réponse</h3>
-  <form method="POST" action="/teacher/forum/topic/{{ topic.id }}/reply" x-data="{ loading: false }" @submit="loading = true">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     
-    <div class="mb-4">
-      <textarea name="content" required rows="5" 
-                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                placeholder="Rédigez votre réponse ici..."></textarea>
-    </div>
-    
-    <div class="flex gap-3">
-      <button type="submit" :disabled="loading"
-              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-        <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-        Publier la réponse
-      </button>
-    </div>
-  </form>
-</div>
-@else
-<div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 text-center">
-  <i class="fas fa-lock mr-2"></i>
-  Ce sujet est verrouillé. Vous ne pouvez plus ajouter de réponses.
-</div>
-@endif
+    <script>
+      function toggleLock() {
+        const action = {{ topic.isLocked }} ? "déverrouiller" : "verrouiller";
+        if (confirm(`Voulez-vous ${action} ce sujet ?`)) {
+          fetch("/teacher/forum/topic/{{ topic.id }}/toggle-lock", {
+            method: "POST",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
 
-<script>
-  function toggleLock() {
-    const action = {{ topic.isLocked }} ? 'déverrouiller' : 'verrouiller'
-    if (confirm(`Voulez-vous ${action} ce sujet ?`)) {
-      fetch('/teacher/forum/topic/{{ topic.id }}/toggle-lock', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  function togglePin() {
-    fetch('/teacher/forum/topic/{{ topic.id }}/toggle-pin', {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-    }).then(res => res.json()).then(data => {
-      if (data.success) location.reload()
-      else alert('Erreur: ' + data.message)
-    })
-  }
-  
-  function deleteTopic() {
-    if (confirm('Supprimer définitivement ce sujet ? Toutes les réponses seront également supprimées.')) {
-      fetch('/teacher/forum/topic/{{ topic.id }}', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) window.location.href = '/teacher/forum'
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  function deleteReply(replyId) {
-    if (confirm('Supprimer cette réponse ?')) {
-      fetch(`/teacher/forum/reply/${replyId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrfToken }}' }
-      }).then(res => res.json()).then(data => {
-        if (data.success) location.reload()
-        else alert('Erreur: ' + data.message)
-      })
-    }
-  }
-  
-  // Incrémenter le compteur de vues
-  fetch('/api/forum/topic/{{ topic.id }}/view', { method: 'POST' })
-</script>
-{{# /section }}
+      function togglePin() {
+        fetch("/teacher/forum/topic/{{ topic.id }}/toggle-pin", {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        }).then(res => res.json()).then(data => {
+          if (data.success) location.reload(); else alert("Erreur: " + data.message);
+        });
+      }
 
-{{# /layout }}
+      function deleteTopic() {
+        if (confirm("Supprimer définitivement ce sujet ? Toutes les réponses seront également supprimées.")) {
+          fetch("/teacher/forum/topic/{{ topic.id }}", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.href = "/teacher/forum"; else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      function deleteReply(replyId) {
+        if (confirm("Supprimer cette réponse ?")) {
+          fetch(`/teacher/forum/reply/${replyId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
+      }
+      // Incrémenter le compteur de vues
+
+      fetch("/api/forum/topic/{{ topic.id }}/view", {
+        method: "POST"
+      });
+    </script>
+  @endsection
+  
