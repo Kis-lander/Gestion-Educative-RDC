@@ -19,6 +19,14 @@
       >
         <i class="fas fa-reply mr-2"></i>Répondre
   </a>
+      @if(message.canEdit)
+        <a
+          href="/communication/messages/{{ message.id }}/edit"
+          class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+        >
+          <i class="fas fa-edit mr-2"></i>Modifier
+        </a>
+      @endif
       <button
         onclick="deleteMessage()"
         class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
@@ -72,11 +80,27 @@
                 </div>
               @endif
             </div>
-            @if(message.ccList)
-              <div class="text-xs text-gray-400">
-                <span>CC: {{ message.ccList }}</span>
-              </div>
-            @endif
+            <div class="flex flex-col items-end gap-2 ml-4">
+              <a
+                href="/communication/messages/compose?reply_to={{ message.id }}"
+                class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 text-sm font-semibold"
+              >
+                <i class="fas fa-reply mr-2"></i>Répondre
+              </a>
+              @if(message.canEdit)
+                <a
+                  href="/communication/messages/{{ message.id }}/edit"
+                  class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-sm font-semibold"
+                >
+                  <i class="fas fa-edit mr-2"></i>Modifier
+                </a>
+              @endif
+              @if(message.ccList)
+                <div class="text-xs text-gray-400">
+                  <span>CC: {{ message.ccList }}</span>
+                </div>
+              @endif
+            </div>
           </div>
 
           <!-- Contenu -->

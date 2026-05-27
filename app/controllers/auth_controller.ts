@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
+import db from '@adonisjs/lucid/services/db'
 import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
 import { DateTime } from 'luxon'
@@ -25,6 +26,12 @@ export default class AuthController {
   public async profile({ auth, view }: HttpContext) {
     const user = auth.getUserOrFail()
     await user.load('school')
+    const profileStats = await this.getProfileStats(user)
+    const recentActivities = (await this.getUserActivities(user)).slice(0, 5).map((activity) => ({
+      type: activity.action,
+      description: activity.description,
+      time: this.formatRelativeTime(activity.createdAt),
+    }))
 
     const roleLabels: Record<string, string> = {
       inspection: 'Inspection pédagogique',
@@ -65,14 +72,115 @@ export default class AuthController {
         memberSince: user.createdAt?.toFormat('dd/LL/yyyy') ?? '-',
         lastLogin: user.lastLogin?.toFormat('dd/LL/yyyy') ?? '-',
         loginCount: 0,
-        documentsCount: 0,
-        messagesSent: 0,
-        documentsShared: 0,
-        activeDays: 0,
+        documentsCount: profileStats.documentsShared,
+        messagesSent: profileStats.messagesSent,
+        documentsShared: profileStats.documentsShared,
+        activeDays: profileStats.activeDays,
       },
       profileCompletion: Math.round((filledFields / 7) * 100),
-      recentActivities: [],
+      recentActivities,
     })
+  }
+
+  private formatRelativeTime(value: Date | string) {
+    const date = DateTime.fromJSDate(new Date(value))
+    const now = DateTime.now()
+    const minutes = Math.max(0, Math.floor(now.diff(date, 'minutes').minutes))
+
+    if (minutes < 1) return "À l'instant"
+    if (minutes < 60) return `Il y a ${minutes} min`
+
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `Il y a ${hours} h`
+
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `Il y a ${days} j`
+
+    return date.toFormat('dd/LL/yyyy HH:mm')
+  }
+
+  private async getProfileStats(user: User) {
+    const countRows = async (query: any) => {
+      try {
+        const row = await query.count('* as total').first()
+        return Number(row?.total || 0)
+      } catch {
+        return 0
+      }
+    }
+
+    const messagesSent = await countRows(db.from('messages').where('sender_id', user.id))
+    const messageDocuments = await countRows(
+      db.from('messages').where('sender_id', user.id).where('has_attachment', true)
+    )
+
+    const teacherDocuments = await countRows(
+      db
+        .from('assignments')
+        .join('teachers', 'assignments.teacher_id', 'teachers.id')
+        .where('teachers.user_id', user.id)
+        .whereNotNull('assignments.attachment_url')
+        .whereNot('assignments.attachment_url', '')
+    )
+
+    const studentDocuments = await countRows(
+      db
+        .from('assignment_submissions')
+        .join('students', 'assignment_submissions.student_id', 'students.id')
+        .where('students.user_id', user.id)
+        .whereNotNull('assignment_submissions.attachment_url')
+        .whereNot('assignment_submissions.attachment_url', '')
+    )
+
+    const justifiedDocuments = await countRows(
+      db
+        .from('attendances')
+        .where('justified_by', user.id)
+        .whereNotNull('justification_document')
+        .whereNot('justification_document', '')
+    )
+
+    const activeDays = new Set<string>()
+    const collectDays = async (query: any, column: string) => {
+      try {
+        const rows = await query.select(column)
+        for (const row of rows) {
+          const value = row[column]
+          if (!value) continue
+          activeDays.add(DateTime.fromJSDate(new Date(value)).toISODate()!)
+        }
+      } catch {}
+    }
+
+    await Promise.all([
+      collectDays(db.from('messages').where('sender_id', user.id), 'created_at'),
+      collectDays(
+        db
+          .from('assignments')
+          .join('teachers', 'assignments.teacher_id', 'teachers.id')
+          .where('teachers.user_id', user.id),
+        'created_at'
+      ),
+      collectDays(
+        db
+          .from('assignment_submissions')
+          .join('students', 'assignment_submissions.student_id', 'students.id')
+          .where('students.user_id', user.id),
+        'created_at'
+      ),
+      collectDays(db.from('attendances').where('recorded_by', user.id), 'created_at'),
+    ])
+
+    const createdAtDay = user.createdAt?.toISODate()
+    const lastLoginDay = user.lastLogin?.toISODate()
+    if (createdAtDay) activeDays.add(createdAtDay)
+    if (lastLoginDay) activeDays.add(lastLoginDay)
+
+    return {
+      messagesSent,
+      documentsShared: messageDocuments + teacherDocuments + studentDocuments + justifiedDocuments,
+      activeDays: activeDays.size,
+    }
   }
 
   public async editProfilePage({ auth, view }: HttpContext) {
@@ -125,30 +233,253 @@ export default class AuthController {
     const user = auth.getUserOrFail()
     await user.load('school')
     const page = Number(request.input('page', 1))
+    const perPage = 20
+    const selectedType = String(request.input('type', ''))
+    const startDate = String(request.input('start_date', ''))
+    const endDate = String(request.input('end_date', ''))
+    const rawSearch = String(request.input('search', '')).trim()
+    const search = rawSearch.toLowerCase()
+    const allActivities = await this.getUserActivities(user)
+    const filteredActivities = allActivities.filter((activity) => {
+      const activityDate = DateTime.fromJSDate(new Date(activity.createdAt)).toISODate()
+      if (selectedType && activity.action !== selectedType) return false
+      if (startDate && activityDate && activityDate < startDate) return false
+      if (endDate && activityDate && activityDate > endDate) return false
+      if (search) {
+        const haystack = `${activity.actionLabel} ${activity.description}`.toLowerCase()
+        if (!haystack.includes(search)) return false
+      }
+      return true
+    })
+    const total = filteredActivities.length
+    const lastPage = Math.max(1, Math.ceil(total / perPage))
+    const currentPage = Math.min(Math.max(page, 1), lastPage)
+    const activities = filteredActivities.slice((currentPage - 1) * perPage, currentPage * perPage)
+    const now = DateTime.now()
+    const thisMonth = filteredActivities.filter((activity) => {
+      const date = DateTime.fromJSDate(new Date(activity.createdAt))
+      return date.hasSame(now, 'month') && date.hasSame(now, 'year')
+    }).length
+    const activeDaysSet = new Set(
+      filteredActivities
+        .map((activity) => DateTime.fromJSDate(new Date(activity.createdAt)).toISODate())
+        .filter(Boolean)
+    )
+    const byType = filteredActivities.reduce<Record<string, number>>((acc, activity) => {
+      acc[activity.action] = (acc[activity.action] || 0) + 1
+      return acc
+    }, {})
+    const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    const byDay = filteredActivities.reduce<Record<string, number>>((acc, activity) => {
+      const key = dayKeys[DateTime.fromJSDate(new Date(activity.createdAt)).weekday - 1]
+      acc[key] = (acc[key] || 0) + 1
+      return acc
+    }, {})
+    const byHour = filteredActivities.reduce<Record<string, number>>((acc, activity) => {
+      const hour = DateTime.fromJSDate(new Date(activity.createdAt)).hour
+      const key = hour < 6 ? 'night' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
+      acc[key] = (acc[key] || 0) + 1
+      return acc
+    }, {})
+    const chartLabels = Array.from({ length: 30 }, (_, index) =>
+      now.minus({ days: 29 - index }).toFormat('dd/LL')
+    )
+    const chartValues = Array.from({ length: 30 }, (_, index) => {
+      const day = now.minus({ days: 29 - index }).toISODate()
+      return allActivities.filter(
+        (activity) => DateTime.fromJSDate(new Date(activity.createdAt)).toISODate() === day
+      ).length
+    })
+    const maxChartValue = Math.max(...chartValues, 1)
+    const chartItems = chartLabels.map((label, index) => {
+      const value = chartValues[index]
+      return {
+        label,
+        value,
+        height: value ? Math.max(Math.round((value / maxChartValue) * 100), 10) : 3,
+        showLabel: index % 5 === 0,
+      }
+    })
+    const today = now.toISODate()
+    const last30DaysStart = now.minus({ days: 29 }).startOf('day')
+    const todayActivities = allActivities.filter(
+      (activity) => DateTime.fromJSDate(new Date(activity.createdAt)).toISODate() === today
+    )
+    const last30DaysCount = allActivities.filter((activity) => {
+      const activityDate = DateTime.fromJSDate(new Date(activity.createdAt))
+      return activityDate >= last30DaysStart && activityDate <= now
+    }).length
 
     return view.render('profile/activity', {
       title: `Mon activité - ${user.firstName} ${user.lastName}`,
       user: this.getProfileViewUser(user),
-      activities: [],
+      activities,
       url: '/profile/activity',
       pagination: {
-        total: 0,
-        perPage: 20,
-        currentPage: page,
-        lastPage: 1,
-        from: 0,
-        to: 0,
+        total,
+        perPage,
+        currentPage,
+        lastPage,
+        from: total ? (currentPage - 1) * perPage + 1 : 0,
+        to: Math.min(currentPage * perPage, total),
       },
       stats: {
-        total: 0,
-        thisMonth: 0,
-        activeDays: 0,
+        total,
+        thisMonth,
+        today: todayActivities.length,
+        last30Days: last30DaysCount,
+        activeDays: activeDaysSet.size,
         currentStreak: 0,
-        byType: {},
-        byDay: {},
-        byHour: {},
+        byType,
+        byDay,
+        byHour,
       },
+      chartLabels,
+      chartValues,
+      chartItems,
+      todayActivityCount: todayActivities.length,
+      todayActivities: todayActivities.slice(0, 5),
+      filters: { type: selectedType, startDate, endDate, search: rawSearch },
     })
+  }
+
+  private async getUserActivities(user: User) {
+    const activities: Array<{
+      action: string
+      actionLabel: string
+      description: string
+      createdAt: Date | string
+      ip: string | null
+    }> = []
+    const addActivity = (
+      action: string,
+      actionLabel: string,
+      description: string,
+      createdAt?: Date | string | null,
+      ip: string | null = null
+    ) => {
+      if (!createdAt) return
+      activities.push({ action, actionLabel, description, createdAt, ip })
+    }
+
+    addActivity('login', 'Connexion', 'Dernière connexion au compte', user.lastLogin?.toJSDate())
+    addActivity('create', 'Création', 'Création du compte utilisateur', user.createdAt?.toJSDate())
+
+    try {
+      const messages = await db
+        .from('messages')
+        .select('subject', 'has_attachment', 'created_at')
+        .where('sender_id', user.id)
+        .orderBy('created_at', 'desc')
+        .limit(300)
+
+      for (const message of messages) {
+        addActivity('message', 'Message', `Message envoyé : ${message.subject}`, message.created_at)
+        if (message.has_attachment) {
+          addActivity('document', 'Document', `Document joint au message : ${message.subject}`, message.created_at)
+        }
+      }
+    } catch {}
+
+    try {
+      const assignments = await db
+        .from('assignments')
+        .join('teachers', 'assignments.teacher_id', 'teachers.id')
+        .select('assignments.title', 'assignments.attachment_url', 'assignments.created_at')
+        .where('teachers.user_id', user.id)
+        .orderBy('assignments.created_at', 'desc')
+        .limit(300)
+
+      for (const assignment of assignments) {
+        addActivity('create', 'Création', `Devoir créé : ${assignment.title}`, assignment.created_at)
+        if (assignment.attachment_url) {
+          addActivity('document', 'Document', `Document partagé dans le devoir : ${assignment.title}`, assignment.created_at)
+        }
+      }
+    } catch {}
+
+    try {
+      const submissions = await db
+        .from('assignment_submissions')
+        .join('students', 'assignment_submissions.student_id', 'students.id')
+        .join('assignments', 'assignment_submissions.assignment_id', 'assignments.id')
+        .select(
+          'assignments.title',
+          'assignment_submissions.attachment_url',
+          'assignment_submissions.created_at'
+        )
+        .where('students.user_id', user.id)
+        .orderBy('assignment_submissions.created_at', 'desc')
+        .limit(300)
+
+      for (const submission of submissions) {
+        addActivity('create', 'Création', `Travail rendu : ${submission.title}`, submission.created_at)
+        if (submission.attachment_url) {
+          addActivity('document', 'Document', `Document remis : ${submission.title}`, submission.created_at)
+        }
+      }
+    } catch {}
+
+    try {
+      const attendances = await db
+        .from('attendances')
+        .join('classes', 'attendances.class_id', 'classes.id')
+        .select('classes.name', 'attendances.period', 'attendances.created_at')
+        .where('attendances.recorded_by', user.id)
+        .orderBy('attendances.created_at', 'desc')
+        .limit(300)
+
+      for (const attendance of attendances) {
+        addActivity(
+          'attendance',
+          'Présence',
+          `Présences pointées pour ${attendance.name} (${attendance.period})`,
+          attendance.created_at
+        )
+      }
+    } catch {}
+
+    try {
+      const grades = await db
+        .from('grades')
+        .join('students', 'grades.student_id', 'students.id')
+        .join('subjects', 'grades.subject_id', 'subjects.id')
+        .select('subjects.name', 'grades.score', 'grades.max_score', 'grades.created_at')
+        .where('students.user_id', user.id)
+        .orderBy('grades.created_at', 'desc')
+        .limit(300)
+
+      for (const grade of grades) {
+        addActivity(
+          'grade',
+          'Note',
+          `Note reçue en ${grade.name} : ${grade.score}/${grade.max_score}`,
+          grade.created_at
+        )
+      }
+    } catch {}
+
+    try {
+      const payments = await db
+        .from('fee_payments')
+        .select('receipt_number', 'amount_paid', 'currency', 'created_at')
+        .where('recorded_by', user.id)
+        .orderBy('created_at', 'desc')
+        .limit(300)
+
+      for (const payment of payments) {
+        addActivity(
+          'payment',
+          'Paiement',
+          `Paiement enregistré : ${payment.amount_paid} ${payment.currency} (${payment.receipt_number})`,
+          payment.created_at
+        )
+      }
+    } catch {}
+
+    return activities.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
   }
 
   private getProfileViewUser(user: User) {

@@ -1,10 +1,13 @@
 import { type HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
+import { randomBytes } from 'node:crypto'
+import vine from '@vinejs/vine'
 
 // Imports des modèles (Subpath alias)
 import Student from '#models/student'
 import User from '#models/user'
+import Class from '#models/class'
 import Grade from '#models/grade'
 import Assignment from '#models/assignment'
 import AssignmentSubmission from '#models/assignment_submission'
@@ -20,6 +23,208 @@ import Message from '#models/message'
 import { submitAssignmentValidator, postForumQuestionValidator } from '#validators/student'
 
 export default class StudentController {
+  private getRdcDasClassCatalog() {
+    return [
+      { name: '1ère Maternelle', level: 'Maternelle', gradeLevel: 1 },
+      { name: '2ème Maternelle', level: 'Maternelle', gradeLevel: 2 },
+      { name: '3ème Maternelle', level: 'Maternelle', gradeLevel: 3 },
+      { name: '1ère Primaire', level: 'Primaire', gradeLevel: 1 },
+      { name: '2ème Primaire', level: 'Primaire', gradeLevel: 2 },
+      { name: '3ème Primaire', level: 'Primaire', gradeLevel: 3 },
+      { name: '4ème Primaire', level: 'Primaire', gradeLevel: 4 },
+      { name: '5ème Primaire', level: 'Primaire', gradeLevel: 5 },
+      { name: '6ème Primaire', level: 'Primaire', gradeLevel: 6 },
+      { name: '7ème Éducation de base', level: 'Éducation de base', gradeLevel: 7 },
+      { name: '8ème Éducation de base', level: 'Éducation de base', gradeLevel: 8 },
+      { name: '1ère Humanités', level: 'Humanités', gradeLevel: 9 },
+      { name: '2ème Humanités', level: 'Humanités', gradeLevel: 10 },
+      { name: '3ème Humanités', level: 'Humanités', gradeLevel: 11 },
+      { name: '4ème Humanités', level: 'Humanités', gradeLevel: 12 },
+    ]
+  }
+
+  private async ensureRdcDasClasses(schoolId?: string | null) {
+    if (!schoolId) return
+
+    const currentYear = DateTime.now().year.toString()
+    const existingCount = await Class.query()
+      .where('schoolId', schoolId)
+      .where('academicYear', currentYear)
+      .count('* as total')
+      .first()
+
+    if (Number(existingCount?.$extras.total || 0) > 0) return
+
+    await Class.createMany(
+      this.getRdcDasClassCatalog().map((classItem) => ({
+        schoolId,
+        name: classItem.name,
+        level: classItem.level,
+        gradeLevel: classItem.gradeLevel,
+        maxCapacity: 50,
+        currentEnrollment: 0,
+        academicYear: currentYear,
+        shift: 'morning' as const,
+        teacherId: null,
+      }))
+    )
+  }
+
+  private getPaginationMeta(paginator: { toJSON: () => any }) {
+    const meta = paginator.toJSON().meta
+
+    return {
+      total: meta.total,
+      perPage: meta.perPage,
+      currentPage: meta.currentPage,
+      lastPage: meta.lastPage,
+      from: meta.total ? (meta.currentPage - 1) * meta.perPage + 1 : 0,
+      to: Math.min(meta.currentPage * meta.perPage, meta.total),
+    }
+  }
+
+  public async indexPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const page = Number(request.input('page', 1))
+    const classId = request.input('class_id')
+    const status = request.input('status')
+    const gender = request.input('gender')
+    const search = String(request.input('search', '')).trim()
+
+    const query = Student.query()
+      .where('schoolId', user.schoolId)
+      .preload('user')
+      .preload('class')
+      .if(classId, (studentQuery) => studentQuery.where('classId', classId))
+      .if(status, (studentQuery) => studentQuery.where('academicStatus', status))
+      .if(gender, (studentQuery) => studentQuery.where('gender', gender))
+      .if(search, (studentQuery) => {
+        studentQuery.where((searchQuery) => {
+          searchQuery
+            .whereILike('registrationNumber', `%${search}%`)
+            .orWhereHas('user', (userQuery) => {
+              userQuery
+                .whereILike('firstName', `%${search}%`)
+                .orWhereILike('lastName', `%${search}%`)
+                .orWhereILike('email', `%${search}%`)
+            })
+        })
+      })
+      .orderBy('createdAt', 'desc')
+
+    const paginator = await query.paginate(page, 20)
+    const [classes, total, active, girls, boys] = await Promise.all([
+      Class.query().where('schoolId', user.schoolId).orderBy('name', 'asc'),
+      Student.query().where('schoolId', user.schoolId).count('* as total').first(),
+      Student.query()
+        .where('schoolId', user.schoolId)
+        .where('academicStatus', 'active')
+        .count('* as total')
+        .first(),
+      Student.query().where('schoolId', user.schoolId).where('gender', 'female').count('* as total').first(),
+      Student.query().where('schoolId', user.schoolId).where('gender', 'male').count('* as total').first(),
+    ])
+
+    return view.render('students/index', {
+      school: {
+        id: user.schoolId,
+        name: 'Gestion Éducative RDC',
+      },
+      students: paginator.all(),
+      classes,
+      stats: {
+        total: Number(total?.$extras.total || 0),
+        active: Number(active?.$extras.total || 0),
+        girls: Number(girls?.$extras.total || 0),
+        boys: Number(boys?.$extras.total || 0),
+      },
+      pagination: this.getPaginationMeta(paginator),
+      url: '/students',
+    })
+  }
+
+  public async createPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await this.ensureRdcDasClasses(user.schoolId)
+
+    const classes = await Class.query()
+      .where('schoolId', user.schoolId)
+      .orderBy('gradeLevel', 'asc')
+      .orderBy('name', 'asc')
+
+    return view.render('students/create', {
+      school: {
+        id: user.schoolId,
+        name: 'Gestion Éducative RDC',
+      },
+      classes,
+      selectedClassId: request.input('class_id', ''),
+    })
+  }
+
+  public async store({ auth, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const schema = vine.compile(
+      vine.object({
+        firstName: vine.string().trim(),
+        postnom: vine.string().trim().optional(),
+        lastName: vine.string().trim(),
+        email: vine.string().email().unique({ table: 'users', column: 'email' }),
+        phone: vine.string().trim().optional(),
+        classId: vine.string().exists({ table: 'classes', column: 'id' }).optional(),
+        birthDate: vine.date({ formats: ['YYYY-MM-DD'] }),
+        birthPlace: vine.string().trim().optional(),
+        nationality: vine.string().trim().optional(),
+        gender: vine.enum(['male', 'female']),
+        parentPhone: vine.string().trim(),
+        address: vine.string().trim().optional(),
+        medicalInfo: vine.string().trim().optional(),
+      })
+    )
+    const payload = await request.validateUsing(schema)
+    const tempPassword = randomBytes(6).toString('hex')
+    const registrationNumber = `STU-${Date.now()}`
+
+    await db.transaction(async (trx) => {
+      const studentUser = new User()
+      studentUser.useTransaction(trx)
+      studentUser.schoolId = user.schoolId
+      studentUser.firstName = payload.firstName
+      studentUser.postnom = payload.postnom || null
+      studentUser.lastName = payload.lastName
+      studentUser.email = payload.email.trim().toLowerCase()
+      studentUser.phone = payload.phone || null
+      studentUser.password = tempPassword
+      studentUser.role = 'student'
+      studentUser.status = 'active'
+      await studentUser.save()
+
+      const student = new Student()
+      student.useTransaction(trx)
+      student.userId = studentUser.id
+      student.schoolId = user.schoolId
+      student.classId = payload.classId || null
+      student.registrationNumber = registrationNumber
+      student.birthDate = payload.birthDate
+      student.birthPlace = payload.birthPlace || ''
+      student.nationality = payload.nationality || 'Congolaise'
+      student.gender = payload.gender
+      student.parentPhone = payload.parentPhone
+      student.address = payload.address || ''
+      student.medicalInfo = payload.medicalInfo || null
+      student.academicStatus = 'active'
+      student.shift = 'morning'
+      await student.save()
+    })
+
+    session.flash(
+      'success',
+      `Élève créé avec succès. Email: ${payload.email}. Mot de passe temporaire: ${tempPassword}`
+    )
+
+    return response.redirect('/students/create')
+  }
+
   /**
    * Obtenir mon profil
    */

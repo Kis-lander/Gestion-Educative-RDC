@@ -45,10 +45,10 @@
       </div>
       <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Série actuelle
+          Aujourd'hui
         </p>
         <p class="text-3xl font-bold">
-          {{ stats.currentStreak || 0 }} jours
+          {{ stats.today || 0 }}
         </p>
       </div>
     </div>
@@ -61,39 +61,43 @@
         <div>
           <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type</label>
           <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
-            <option value="">
+            <option value="" {{ filters.type === '' ? 'selected' : '' }}>
               Tous
             </option>
-            <option value="login">
+            <option value="login" {{ filters.type === 'login' ? 'selected' : '' }}>
               Connexions
             </option>
-            <option value="message">
+            <option value="message" {{ filters.type === 'message' ? 'selected' : '' }}>
               Messages
             </option>
-            <option value="document">
+            <option value="document" {{ filters.type === 'document' ? 'selected' : '' }}>
               Documents
             </option>
-            <option value="grade">
+            <option value="attendance" {{ filters.type === 'attendance' ? 'selected' : '' }}>
+              Présences
+            </option>
+            <option value="grade" {{ filters.type === 'grade' ? 'selected' : '' }}>
               Notes
             </option>
-            <option value="payment">
+            <option value="payment" {{ filters.type === 'payment' ? 'selected' : '' }}>
               Paiements
             </option>
           </select>
         </div>
         <div>
           <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+          <input type="date" id="startDate" value="{{ filters.startDate }}" class="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
         <div>
           <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+          <input type="date" id="endDate" value="{{ filters.endDate }}" class="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
         <div>
           <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
           <input
             type="text"
             id="searchInput"
+            value="{{ filters.search }}"
             placeholder="Action..."
             class="w-full px-3 py-2 border rounded-lg text-sm"
           />
@@ -114,8 +118,32 @@
       <h3 class="font-semibold mb-3">
         Activité des 30 derniers jours
       </h3>
-      <canvas id="activityChart" height="150">
-      </canvas>
+      <div class="flex flex-wrap gap-3 mb-3 text-sm">
+        <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">
+          Aujourd'hui : {{ stats.today || 0 }}
+        </span>
+        <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+          30 jours : {{ stats.last30Days || 0 }}
+        </span>
+      </div>
+      <div class="h-52 flex items-end gap-1 border-b border-gray-200 dark:border-gray-700 pt-4">
+        @each(item in chartItems)
+          <div class="flex-1 min-w-[6px] h-full flex flex-col justify-end items-center gap-1" title="{{ item.label }} : {{ item.value }}">
+            @if(item.value > 0)
+              <span class="text-[10px] text-gray-500 dark:text-gray-300">{{ item.value }}</span>
+            @endif
+            <div class="w-full max-w-7 rounded-t bg-primary" style="height: {{ item.height }}%">
+            </div>
+          </div>
+        @end
+      </div>
+      <div class="mt-2 grid grid-cols-6 text-[10px] text-gray-500 dark:text-gray-400">
+        @each(item in chartItems)
+          @if(item.showLabel)
+            <span>{{ item.label }}</span>
+          @endif
+        @end
+      </div>
     </div>
 
     <!-- Tableau des activités -->
@@ -149,9 +177,10 @@
                     class="px-2 py-1 rounded-full text-xs
               {{ activity.action === 'login' ? 'bg-green-100 text-green-800' : 
                  (activity.action === 'message' ? 'bg-blue-100 text-blue-800' : 
+                 (activity.action === 'attendance' ? 'bg-emerald-100 text-emerald-800' :
                  (activity.action === 'create' ? 'bg-purple-100 text-purple-800' : 
                  (activity.action === 'update' ? 'bg-yellow-100 text-yellow-800' : 
-                 (activity.action === 'delete' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')))) }}"
+                 (activity.action === 'delete' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))))) }}"
                   >
                     {{ activity.actionLabel }}
             </span>
@@ -190,6 +219,9 @@
           </div>
           <div class="flex justify-between">
             <span>Messages</span>            <span>{{ stats.byType?.message || 0 }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Présences</span>            <span>{{ stats.byType?.attendance || 0 }}</span>
           </div>
           <div class="flex justify-between">
             <span>Créations</span>            <span>{{ stats.byType?.create || 0 }}</span>
@@ -251,7 +283,15 @@
       let activityChart;
 
       function renderChart() {
-        const ctx = document.getElementById("activityChart").getContext("2d");
+        const canvas = document.getElementById("activityChart");
+        const fallback = document.getElementById("activityChartFallback");
+        if (!canvas) return;
+        if (typeof Chart === "undefined") {
+          if (fallback) fallback.classList.remove("hidden");
+          return;
+        }
+
+        const ctx = canvas.getContext("2d");
         activityChart = new Chart(ctx, {
           type: "bar",
           data: {

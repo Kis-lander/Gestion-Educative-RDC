@@ -8,7 +8,7 @@
     Frais scolaires
   @endsection
   @section('dashboardSubtitle')
-    GÃ©rez les frais et tarifs de l'Ã©tablissement
+    Gérez les frais et tarifs de l'établissement
   @endsection
   
   @section('actions')
@@ -72,6 +72,11 @@
             <option value="">
               Tous
             </option>
+            @each(feeType in feeTypes)
+              <option value="{{ feeType }}">
+                {{ feeType }}
+              </option>
+            @end
             <option value="Inscription">
               Inscription
             </option>
@@ -90,8 +95,8 @@
             <option value="Uniforme">
               Uniforme
             </option>
-            <option value="ActivitÃ©s">
-              ActivitÃ©s
+            <option value="Activités">
+              Activités
             </option>
             <option value="Autre">
               Autre
@@ -145,7 +150,7 @@
               Inactif
             </option>
             <option value="archived">
-              ArchivÃ©
+              Archivé
             </option>
           </select>
         </div>
@@ -179,7 +184,7 @@
                 Trimestre
               </th>
               <th class="px-4 py-3 text-center">
-                Ã‰chÃ©ance
+                Échéance
               </th>
               <th class="px-4 py-3 text-center">
                 Statut
@@ -223,7 +228,7 @@
                   <span
                     class="px-2 py-1 rounded-full text-xs {{ fee.status === 'active' ? 'bg-green-100 text-green-800' : (fee.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}"
                   >
-                    {{ fee.status === 'active' ? 'Actif' : (fee.status === 'inactive' ? 'Inactif' : 'ArchivÃ©') }}
+                    {{ fee.status === 'active' ? 'Actif' : (fee.status === 'inactive' ? 'Inactif' : 'Archivé') }}
             </span>
                 </td>
                 <td class="px-4 py-3 text-center">
@@ -247,7 +252,7 @@
                     <button
                       onclick="toggleStatus('{{ fee.id }}', '{{ fee.status }}')"
                       class="text-yellow-600 hover:text-yellow-800"
-                      title="{{ fee.status === 'active' ? 'DÃ©sactiver' : 'Activer' }}"
+                      title="{{ fee.status === 'active' ? 'Désactiver' : 'Activer' }}"
                     >
                       <i class="fas {{ fee.status === 'active' ? 'fa-pause' : 'fa-play' }}"></i>
                     </button>
@@ -261,10 +266,10 @@
               <tr>
                 <td colspan="8" class="text-center py-12 text-gray-500">
                   <i class="fas fa-coins text-4xl mb-3 block"></i>
-                  Aucun frais dÃ©fini
+                  Aucun frais défini
                   <div class="mt-3">
                     <a href="/financial/fees/create" class="text-primary hover:underline">
-                      DÃ©finir les premiers frais
+                      Définir les premiers frais
               </a>
                   </div>
                 </td>
@@ -274,13 +279,13 @@
         </table>
       </div>
 
-      @include('partials/pagination', { pagination: pagination, url: '/financial/fees' })
+      @include('partials/pagination')
     </div>
 
-    <!-- RÃ©capitulatif par type -->
+    <!-- Récapitulatif par type -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
       <h3 class="font-semibold mb-3">
-        RÃ©capitulatif par type de frais
+        Récapitulatif par type de frais
       </h3>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         @each(summary in typeSummary)
@@ -327,7 +332,7 @@
 
       function toggleStatus(feeId, currentStatus) {
         const newStatus = currentStatus === "active" ? "inactive" : "active";
-        if (confirm(`${newStatus === "active" ? "Activer" : "DÃ©sactiver"} ce frais ?`)) {
+        if (confirm(`${newStatus === "active" ? "Activer" : "Désactiver"} ce frais ?`)) {
           fetch(`/financial/fees/${feeId}/toggle-status`, {
             method: "POST",
             headers: {
@@ -340,7 +345,7 @@
       }
 
       function deleteFee(feeId) {
-        if (confirm("Supprimer dÃ©finitivement ce frais ? Cette action est irrÃ©versible.")) {
+        if (confirm("Supprimer définitivement ce frais ? Cette action est irréversible.")) {
           fetch(`/financial/fees/${feeId}`, {
             method: "DELETE",
             headers: {

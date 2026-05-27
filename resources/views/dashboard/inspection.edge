@@ -111,7 +111,7 @@
         </div>
         <div class="space-y-3 max-h-80 overflow-y-auto">
           @each(school in pendingSchools)
-            <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div class="flex-1">
                 <p class="font-medium text-gray-800 dark:text-white">
                   {{ school.name }}
@@ -120,12 +120,26 @@
                   {{ school.province }} - {{ school.createdAt }}
                 </p>
               </div>
-              <a
-                href="/inspection/schools/{{ school.id }}"
-                class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700"
-              >
-                Examiner
-        </a>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <a
+                  href="/inspection/schools/{{ school.id }}"
+                  class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700"
+                >
+                  Voir
+                </a>
+                <a
+                  href="/inspection/schools/{{ school.id }}/approve"
+                  class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                >
+                  Approuver / identifiants
+                </a>
+                <a
+                  href="/inspection/schools/{{ school.id }}/inspect"
+                  class="px-3 py-1 border rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-600"
+                >
+                  Inspecter
+                </a>
+              </div>
             </div>
             @else
             <p class="text-gray-500 dark:text-gray-400 text-center py-8">
@@ -133,6 +147,65 @@
             </p>
           @end
         </div>
+      </div>
+    </div>
+
+    <!-- Suivi des écoles actives -->
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-gray-800 dark:text-white">
+          Écoles suivies
+        </h3>
+        <a href="/inspection/schools" class="text-primary text-sm hover:underline">Toutes les écoles</a>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        @each(school in activeSchools)
+          <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div class="flex justify-between gap-3">
+              <div>
+                <p class="font-medium text-gray-800 dark:text-white">
+                  {{ school.name }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ school.province }} - {{ school.territory || 'Territoire non renseigné' }}
+                </p>
+              </div>
+              <span class="h-fit px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                Active
+              </span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <a
+                href="/inspection/schools/{{ school.id }}"
+                class="px-3 py-1 bg-primary text-white rounded text-sm hover:bg-blue-700"
+              >
+                Voir
+              </a>
+              <a
+                href="/inspection/schools/{{ school.id }}/classes"
+                class="px-3 py-1 border rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Classes
+              </a>
+              <a
+                href="/inspection/schools/{{ school.id }}/inspect"
+                class="px-3 py-1 border rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Inspecter
+              </a>
+              <a
+                href="/inspection/reports/school/{{ school.id }}"
+                class="px-3 py-1 border rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Rapport
+              </a>
+            </div>
+          </div>
+          @else
+          <p class="text-gray-500 dark:text-gray-400 text-center py-6 lg:col-span-2">
+            Aucune école active à suivre
+          </p>
+        @end
       </div>
     </div>
 
@@ -173,10 +246,28 @@
     <!-- Actions rapides inspection -->
     <div class="mt-6 flex flex-wrap gap-3">
       <a
+        href="/inspection/schools"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-building mr-2"></i>Toutes les écoles
+  </a>
+      <a
         href="/inspection/communications/global"
         class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
       >
         <i class="fas fa-bullhorn mr-2"></i>Communication globale
+  </a>
+      <a
+        href="/inspection/communications/school"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-school mr-2"></i>Communication école
+  </a>
+      <a
+        href="/inspection/communications/history"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-history mr-2"></i>Historique communications
   </a>
       <a
         href="/inspection/reports/schools"
@@ -189,6 +280,18 @@
         class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
       >
         <i class="fas fa-chart-line mr-2"></i>Rapport performance
+  </a>
+      <a
+        href="/inspection/reports/statistics"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-chart-pie mr-2"></i>Rapport statistiques
+  </a>
+      <a
+        href="/inspection/reports/transfers"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-exchange-alt mr-2"></i>Rapport transferts
   </a>
     </div>
   @endsection

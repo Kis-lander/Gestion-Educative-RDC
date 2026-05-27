@@ -37,7 +37,7 @@
                   Sélectionner un élève
                 </option>
                 @each(student in students)
-                  <option value="{{ student.id }}">
+                  <option value="{{ student.id }}" {{ selectedStudentId === student.id ? 'selected' : '' }}>
                     {{ student.name }} - {{ student.className }} ({{ student.registrationNumber }})
                   </option>
                 @end

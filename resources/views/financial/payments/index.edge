@@ -103,21 +103,11 @@
             <option value="">
               Tous
             </option>
-            <option value="Inscription">
-              Inscription
-            </option>
-            <option value="Minerval">
-              Minerval
-            </option>
-            <option value="Assurance">
-              Assurance
-            </option>
-            <option value="Transport">
-              Transport
-            </option>
-            <option value="Cantine">
-              Cantine
-            </option>
+            @each(feeType in feeTypes)
+              <option value="{{ feeType }}" {{ filters.feeType === feeType ? 'selected' : '' }}>
+                {{ feeType }}
+              </option>
+            @end
           </select>
         </div>
         <div>
@@ -246,7 +236,7 @@
         </table>
       </div>
 
-      @include('partials/pagination', { pagination: pagination, url: '/financial/payments' })
+      @include('partials/pagination')
     </div>
 
     <!-- Sommaire par mode -->

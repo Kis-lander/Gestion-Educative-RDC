@@ -41,7 +41,7 @@ export default class Parent extends ParentSchema {
 
   // Relation ManyToMany avec les élèves (un parent peut avoir plusieurs enfants)
   @manyToMany(() => Student, {
-    pivotTable: 'parent_students', // Vérifie bien que le nom match ta migration (souvent au pluriel)
+    pivotTable: 'parent_student',
     pivotForeignKey: 'parent_id',
     pivotRelatedForeignKey: 'student_id',
     pivotTimestamps: true, // Recommandé si tu as created_at/updated_at dans ta table pivot

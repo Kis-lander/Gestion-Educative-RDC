@@ -53,6 +53,9 @@ export default class Student extends StudentSchema {
   @column()
   declare academicStatus: 'active' | 'transferred' | 'graduated' | 'suspended' | 'expelled'
 
+  @column()
+  declare shift: 'morning' | 'afternoon' | 'evening'
+
   @column.date()
   declare enrollmentDate: DateTime
 

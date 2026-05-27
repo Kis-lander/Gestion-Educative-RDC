@@ -71,6 +71,39 @@ export class AssignmentSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class AttendanceSchema extends BaseModel {
+  static $columns = ['classId', 'createdAt', 'date', 'id', 'justification', 'justificationDocument', 'justifiedAt', 'justifiedBy', 'period', 'reason', 'recordedBy', 'status', 'studentId', 'updatedAt'] as const
+  $columns = AttendanceSchema.$columns
+  @column()
+  declare classId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.date()
+  declare date: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare justification: string | null
+  @column()
+  declare justificationDocument: string | null
+  @column.dateTime()
+  declare justifiedAt: DateTime | null
+  @column()
+  declare justifiedBy: string | null
+  @column()
+  declare period: string
+  @column()
+  declare reason: string | null
+  @column()
+  declare recordedBy: string | null
+  @column()
+  declare status: string
+  @column()
+  declare studentId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class ClassSubjectSchema extends BaseModel {
   static $columns = ['classId', 'createdAt', 'hoursPerWeek', 'id', 'subjectId', 'teacherId', 'updatedAt'] as const
   $columns = ClassSubjectSchema.$columns
@@ -266,6 +299,21 @@ export class GradeSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class InspectionSettingSchema extends BaseModel {
+  static $columns = ['createdAt', 'group', 'key', 'updatedAt', 'value'] as const
+  $columns = InspectionSettingSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare group: string
+  @column({ isPrimary: true })
+  declare key: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare value: string | null
+}
+
 export class MessageSchema extends BaseModel {
   static $columns = ['content', 'createdAt', 'hasAttachment', 'id', 'isGlobal', 'isRead', 'readAt', 'receiverId', 'schoolId', 'senderId', 'subject', 'type', 'updatedAt'] as const
   $columns = MessageSchema.$columns
@@ -428,7 +476,7 @@ export class SchoolInspectionSchema extends BaseModel {
 }
 
 export class SchoolSchema extends BaseModel {
-  static $columns = ['address', 'approvedAt', 'code', 'createdAt', 'email', 'id', 'logoUrl', 'name', 'phone', 'province', 'status', 'teacherId', 'territory', 'updatedAt'] as const
+  static $columns = ['address', 'approvedAt', 'code', 'createdAt', 'email', 'hasElectricity', 'hasInternet', 'hasLibrary', 'id', 'logoUrl', 'name', 'phone', 'province', 'status', 'teacherId', 'territory', 'updatedAt'] as const
   $columns = SchoolSchema.$columns
   @column()
   declare address: string
@@ -440,6 +488,12 @@ export class SchoolSchema extends BaseModel {
   declare createdAt: DateTime | null
   @column()
   declare email: string | null
+  @column()
+  declare hasElectricity: boolean
+  @column()
+  declare hasInternet: boolean
+  @column()
+  declare hasLibrary: boolean
   @column({ isPrimary: true })
   declare id: string
   @column()
@@ -461,7 +515,7 @@ export class SchoolSchema extends BaseModel {
 }
 
 export class StudentSchema extends BaseModel {
-  static $columns = ['academicStatus', 'address', 'birthDate', 'birthPlace', 'classId', 'createdAt', 'gender', 'id', 'medicalInfo', 'nationality', 'parentPhone', 'registrationNumber', 'schoolId', 'updatedAt', 'userId'] as const
+  static $columns = ['academicStatus', 'address', 'birthDate', 'birthPlace', 'classId', 'createdAt', 'gender', 'id', 'medicalInfo', 'nationality', 'parentPhone', 'registrationNumber', 'schoolId', 'shift', 'updatedAt', 'userId'] as const
   $columns = StudentSchema.$columns
   @column()
   declare academicStatus: string | null
@@ -489,6 +543,8 @@ export class StudentSchema extends BaseModel {
   declare registrationNumber: string
   @column()
   declare schoolId: string | null
+  @column()
+  declare shift: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
@@ -539,6 +595,37 @@ export class TeacherSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class TimetableSchema extends BaseModel {
+  static $columns = ['academicYear', 'classId', 'createdAt', 'dayOfWeek', 'endTime', 'id', 'room', 'shift', 'startTime', 'subjectId', 'teacherId', 'term', 'updatedAt'] as const
+  $columns = TimetableSchema.$columns
+  @column()
+  declare academicYear: string
+  @column()
+  declare classId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare dayOfWeek: number
+  @column()
+  declare endTime: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare room: string | null
+  @column()
+  declare shift: string | null
+  @column()
+  declare startTime: string
+  @column()
+  declare subjectId: string | null
+  @column()
+  declare teacherId: string | null
+  @column()
+  declare term: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class TransferAuthorizationSchema extends BaseModel {
   static $columns = ['approvedBy', 'authorizationCode', 'createdAt', 'fromSchoolId', 'id', 'issuedAt', 'reason', 'rejectionReason', 'status', 'studentId', 'toSchoolId', 'updatedAt', 'validUntil'] as const
   $columns = TransferAuthorizationSchema.$columns
@@ -571,7 +658,7 @@ export class TransferAuthorizationSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['avatarUrl', 'createdAt', 'email', 'firstName', 'id', 'lastLogin', 'lastName', 'password', 'phone', 'rememberMeToken', 'role', 'schoolId', 'status', 'updatedAt'] as const
+  static $columns = ['avatarUrl', 'createdAt', 'email', 'firstName', 'id', 'lastLogin', 'lastName', 'password', 'phone', 'postnom', 'rememberMeToken', 'role', 'schoolId', 'status', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatarUrl: string | null
@@ -591,6 +678,8 @@ export class UserSchema extends BaseModel {
   declare password: string
   @column()
   declare phone: string | null
+  @column()
+  declare postnom: string | null
   @column()
   declare rememberMeToken: string | null
   @column()

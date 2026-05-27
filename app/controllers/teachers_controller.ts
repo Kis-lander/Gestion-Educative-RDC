@@ -1,10 +1,12 @@
 import { type HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
+import { edgePageContext } from '#start/view_context'
 
 // Imports des modèles via subpath alias
 import Teacher from '#models/teacher'
 import Class from '#models/class'
+import Student from '#models/student'
 import Assignment from '#models/assignment'
 import AssignmentSubmission from '#models/assignment_submission'
 import ForumTopic from '#models/forum_topic'
@@ -18,6 +20,156 @@ import {
 } from '#validators/teacher'
 
 export default class TeacherController {
+  private async getAttendanceClassesForUser(user: any) {
+    const query = Class.query().orderBy('gradeLevel', 'asc').orderBy('name', 'asc')
+
+    if (['director', 'discipline_director'].includes(user.role)) {
+      return query.where('schoolId', user.schoolId)
+    }
+
+    const teacher = await Teacher.query().where('userId', user.id).first()
+    return teacher ? query.where('teacherId', teacher.id) : []
+  }
+
+  private async authorizeAttendanceClass(user: any, classId: string) {
+    if (['director', 'discipline_director'].includes(user.role)) {
+      return Class.query().where('id', classId).where('schoolId', user.schoolId).firstOrFail()
+    }
+
+    const teacher = await Teacher.findByOrFail('user_id', user.id)
+    return Class.query().where('id', classId).where('teacher_id', teacher.id).firstOrFail()
+  }
+
+  public async attendanceMarkPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const myClasses = await this.getAttendanceClassesForUser(user)
+
+    return ctx.view.render(
+      'teacher/attendance/mark',
+      await edgePageContext(ctx, {
+        myClasses,
+        selectedClassId: ctx.request.input('class_id', ''),
+      })
+    )
+  }
+
+  public async attendanceIndexPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const classes = await this.getAttendanceClassesForUser(user)
+    const selectedClassId = String(ctx.request.input('class_id', ''))
+    const startDate =
+      ctx.request.input('start_date') || DateTime.now().startOf('month').toISODate()
+    const endDate = ctx.request.input('end_date') || DateTime.now().toISODate()
+    const allowedClassIds = classes.map((classObj) => classObj.id)
+    const visibleClasses = selectedClassId
+      ? classes.filter((classObj) => classObj.id === selectedClassId)
+      : classes
+
+    if (selectedClassId && !allowedClassIds.includes(selectedClassId)) {
+      await this.authorizeAttendanceClass(user, selectedClassId)
+    }
+
+    const attendanceRows = visibleClasses.length
+      ? await db
+          .from('attendances')
+          .join('students', 'attendances.student_id', 'students.id')
+          .join('users', 'students.user_id', 'users.id')
+          .select(
+            'attendances.class_id',
+            'attendances.student_id',
+            'attendances.status',
+            'students.registration_number',
+            'users.first_name',
+            'users.postnom',
+            'users.last_name'
+          )
+          .whereIn(
+            'attendances.class_id',
+            visibleClasses.map((classObj) => classObj.id)
+          )
+          .whereBetween('attendances.date', [startDate, endDate])
+      : []
+
+    const rowsByClass = new Map<string, any[]>()
+    for (const row of attendanceRows) {
+      const classRows = rowsByClass.get(String(row.class_id)) || []
+      classRows.push(row)
+      rowsByClass.set(String(row.class_id), classRows)
+    }
+
+    const attendanceData = visibleClasses
+      .map((classObj) => {
+        const classRows = rowsByClass.get(classObj.id) || []
+        const studentsById = new Map<string, any>()
+
+        for (const row of classRows) {
+          const studentId = String(row.student_id)
+          if (!studentsById.has(studentId)) {
+            studentsById.set(studentId, {
+              id: studentId,
+              name: [row.first_name, row.postnom, row.last_name].filter(Boolean).join(' '),
+              registrationNumber: row.registration_number,
+              present: 0,
+              absent: 0,
+              late: 0,
+              excused: 0,
+              rate: 0,
+            })
+          }
+
+          const student = studentsById.get(studentId)
+          if (row.status === 'present') student.present += 1
+          if (row.status === 'absent') student.absent += 1
+          if (row.status === 'late') student.late += 1
+          if (row.status === 'excused') student.excused += 1
+        }
+
+        const students = Array.from(studentsById.values()).map((student) => {
+          const total = student.present + student.absent + student.late + student.excused
+          return {
+            ...student,
+            rate: total ? Math.round(((student.present + student.excused) / total) * 100) : 0,
+          }
+        })
+
+        const totalRecords = classRows.length
+        const presentCount = classRows.filter((row) => row.status === 'present' || row.status === 'excused').length
+        const absentCount = classRows.filter((row) => row.status === 'absent').length
+        const lateCount = classRows.filter((row) => row.status === 'late').length
+
+        return {
+          className: classObj.name,
+          period: { startDate, endDate },
+          presentRate: totalRecords ? Math.round((presentCount / totalRecords) * 100) : 0,
+          absentRate: totalRecords ? Math.round((absentCount / totalRecords) * 100) : 0,
+          lateRate: totalRecords ? Math.round((lateCount / totalRecords) * 100) : 0,
+          students,
+          totalRecords,
+        }
+      })
+      .filter((classAttendance) => classAttendance.totalRecords > 0)
+
+    const allRows = attendanceRows
+    const totalPresent = allRows.filter((row) => row.status === 'present' || row.status === 'excused').length
+
+    return ctx.view.render(
+      'teacher/attendance/index',
+      await edgePageContext(ctx, {
+        classes,
+        attendanceData,
+        selectedClassId,
+        selectedStartDate: startDate,
+        selectedEndDate: endDate,
+        stats: {
+          totalClasses: classes.length,
+          avgAttendance: allRows.length ? Math.round((totalPresent / allRows.length) * 100) : 0,
+          totalAbsences: allRows.filter((row) => row.status === 'absent').length,
+          totalLates: allRows.filter((row) => row.status === 'late').length,
+        },
+      })
+    )
+  }
+
   /**
    * Obtenir mes classes avec statistiques
    */
@@ -30,24 +182,28 @@ export default class TeacherController {
 
     const query = Class.query()
       .where('teacher_id', teacher.id)
-      .preload('students', (studentQuery) => {
-        studentQuery.where('academic_status', 'active')
-      })
 
     if (academicYear) {
       query.where('academic_year', academicYear)
     }
 
     const classes = await query.orderBy('grade_level', 'asc')
+    const classIds = classes.map((classObj) => classObj.id)
+    const studentRows = classIds.length
+      ? await db
+          .from('students')
+          .select('class_id')
+          .count('* as total')
+          .whereIn('class_id', classIds)
+          .where('academic_status', 'active')
+          .groupBy('class_id')
+      : []
+    const studentsByClass = new Map(
+      studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
+    )
 
     const classesWithStats = await Promise.all(
       classes.map(async (classObj) => {
-        const studentsCount = await db
-          .from('students')
-          .where('class_id', classObj.id)
-          .where('academic_status', 'active')
-          .count('* as total')
-
         const averageGrade = await db
           .from('grades')
           .where('class_id', classObj.id)
@@ -56,7 +212,7 @@ export default class TeacherController {
 
         return {
           ...classObj.toJSON(),
-          studentsCount: Number(studentsCount[0].total),
+          studentsCount: studentsByClass.get(classObj.id) || 0,
           averageGrade: Number(averageGrade[0].average || 0),
         }
       })
@@ -188,10 +344,10 @@ export default class TeacherController {
   public async markAttendance({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(markAttendanceValidator)
     const user = auth.getUserOrFail()
-    const teacher = await Teacher.findByOrFail('user_id', user.id)
+    const period = payload.period || 'morning'
 
     // Vérifier légitimité
-    await Class.query().where('id', payload.classId).where('teacher_id', teacher.id).firstOrFail()
+    await this.authorizeAttendanceClass(user, payload.classId)
 
     const formattedDate = payload.date.toISODate()!
 
@@ -201,6 +357,7 @@ export default class TeacherController {
         .from('attendances')
         .where('class_id', payload.classId)
         .where('date', formattedDate)
+        .where('period', period)
         .delete()
 
       // Insertion de masse
@@ -208,6 +365,7 @@ export default class TeacherController {
         class_id: payload.classId,
         student_id: s.studentId,
         date: formattedDate,
+        period,
         status: s.status,
         reason: s.reason,
         recorded_by: user.id,
@@ -223,6 +381,50 @@ export default class TeacherController {
   /**
    * Créer un sujet de forum
    */
+  public async getClassStudentsForAttendance({ params, auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    await this.authorizeAttendanceClass(user, params.id)
+
+    const students = await Student.query()
+      .where('classId', params.id)
+      .where('academicStatus', 'active')
+      .preload('user')
+      .orderBy('createdAt', 'asc')
+
+    return response.ok({
+      success: true,
+      students: students.map((student) => ({
+        id: student.id,
+        registrationNumber: student.registrationNumber,
+        name: student.user?.fullName || '-',
+      })),
+    })
+  }
+
+  public async getClassAttendance({ params, request, auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const date = request.input('date')
+    const period = request.input('period') || 'morning'
+
+    await this.authorizeAttendanceClass(user, params.id)
+
+    const query = db.from('attendances').where('class_id', params.id)
+    if (date) query.where('date', date)
+    if (period) query.where('period', period)
+
+    const attendances = await query
+
+    return response.ok({
+      success: true,
+      attendances: attendances.map((attendance) => ({
+        studentId: attendance.student_id,
+        status: attendance.status,
+        reason: attendance.reason || '',
+      })),
+    })
+  }
+
   public async createForumTopic({ request, auth, response }: HttpContext) {
     // Utiliser un validateur approprié ici (ex: createForumTopicValidator)
     const user = auth.getUserOrFail()

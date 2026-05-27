@@ -3,6 +3,7 @@
   @section('title')
     Impression reçu - {{ payment.receiptNumber }}
   @endsection
+  @section('content')
   <div class="print-receipt">
     <div class="text-center">
       <h1 class="text-3xl font-bold">
@@ -189,4 +190,4 @@
       window.print();
     };
   </script>
-
+  @endsection

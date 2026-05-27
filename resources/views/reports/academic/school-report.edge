@@ -1,12 +1,12 @@
 @layout('layouts/print')
 
   @section('title')
-    Rapport acadÃ©mique - {{ school.name }}
+    Rapport académique - {{ school.name }}
   @endsection
   <div class="school-report">
     <div class="text-center mb-6">
       <h1 class="text-2xl font-bold">
-        RAPPORT ACADÃ‰MIQUE
+        RAPPORT ACADÉMIQUE
       </h1>
       <h2 class="text-xl">
         {{ school.name }}
@@ -15,27 +15,27 @@
         Année scolaire {{ academicYear }} - {{ termLabel }}
       </p>
       <p class="text-sm">
-        GÃ©nÃ©rÃ© le {{ generationDate }}
+        Généré le {{ generationDate }}
       </p>
     </div>
 
-    <!-- RÃ©sumÃ© gÃ©nÃ©ral -->
+    <!-- Résumé général -->
     <div class="summary-box mb-6 p-3 bg-gray-50 border">
       <h3 class="font-bold mb-2">
-        RÃ©sumÃ© gÃ©nÃ©ral
+        Résumé général
       </h3>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
         <div>
-          <strong>Total Ã©lÃ¨ves:</strong>{{ stats.totalStudents || 0 }}
+          <strong>Total élèves:</strong>{{ stats.totalStudents || 0 }}
         </div>
         <div>
           <strong>Total classes:</strong>{{ stats.totalClasses || 0 }}
         </div>
         <div>
-          <strong>Moyenne gÃ©nÃ©rale:</strong>{{ stats.overallAverage }}/20
+          <strong>Moyenne générale:</strong>{{ stats.overallAverage }}/20
         </div>
         <div>
-          <strong>Taux rÃ©ussite:</strong>{{ stats.successRate }}%
+          <strong>Taux réussite:</strong>{{ stats.successRate }}%
         </div>
         <div>
           <strong>Admis:</strong>{{ stats.passedCount }}
@@ -59,16 +59,16 @@
                 Classe
               </th>
               <th class="px-3 py-2 text-center">
-                Ã‰lÃ¨ves
+                Élèves
               </th>
               <th class="px-3 py-2 text-center">
                 Moyenne
               </th>
               <th class="px-3 py-2 text-center">
-                Taux rÃ©ussite
+                Taux réussite
               </th>
               <th class="px-3 py-2 text-center">
-                Meilleur Ã©lÃ¨ve
+                Meilleur élève
               </th>
             </tr>
           </thead>
@@ -97,10 +97,10 @@
       </div>
     </div>
 
-    <!-- Top 10 des meilleurs Ã©lÃ¨ves -->
+    <!-- Top 10 des meilleurs élèves -->
     <div class="mb-6">
       <h3 class="font-bold mb-2">
-        Top 10 des meilleurs Ã©lÃ¨ves
+        Top 10 des meilleurs élèves
       </h3>
       <div class="table-responsive">
         <table class="w-full text-sm">
@@ -110,7 +110,7 @@
                 Rang
               </th>
               <th class="px-3 py-2">
-                Ã‰lÃ¨ve
+                Élève
               </th>
               <th class="px-3 py-2">
                 Classe
@@ -142,20 +142,20 @@
       </div>
     </div>
 
-    <!-- Performance par matiÃ¨re -->
+    <!-- Performance par matière -->
     <div class="mb-6">
       <h3 class="font-bold mb-2">
-        Performance par matiÃ¨re
+        Performance par matière
       </h3>
       <div class="table-responsive">
         <table class="w-full text-sm">
           <thead class="bg-gray-100">
             <tr>
               <th class="px-3 py-2">
-                MatiÃ¨re
+                Matière
               </th>
               <th class="px-3 py-2 text-center">
-                Moyenne Ã©cole
+                Moyenne école
               </th>
               <th class="px-3 py-2 text-center">
                 Meilleure note
@@ -184,13 +184,13 @@
     <!-- Tendances -->
     <div class="mb-6">
       <h3 class="font-bold mb-2">
-        Ã‰volution sur 3 ans
+        Évolution sur 3 ans
       </h3>
       <div class="space-y-2">
         <div>
           <div class="flex justify-between text-sm">
-            <span>Moyenne gÃ©nÃ©rale</span>
-            <span>{{ trend.y1 }}/20 â†’ {{ trend.y2 }}/20 â†’ {{ trend.y3 }}/20</span>
+            <span>Moyenne générale</span>
+            <span>{{ trend.y1 }}/20 → {{ trend.y2 }}/20 → {{ trend.y3 }}/20</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2">
             <div class="bg-green-500 rounded-full h-2" style="width: {{ trend.y3Percent }}%">
@@ -214,7 +214,7 @@
     <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
       <div class="text-center">
         <p>
-          Le Chef d'Ã‰tablissement
+          Le Chef d'Établissement
         </p>
         <div class="mt-12">
           _______________
@@ -222,7 +222,7 @@
       </div>
       <div class="text-center">
         <p>
-          Le Responsable AcadÃ©mique
+          Le Responsable Académique
         </p>
         <div class="mt-12">
           _______________

@@ -203,11 +203,10 @@
                   {{ subject.average }}/20
                 </td>
                 <td class="px-4 py-2 text-center">
-                  <span class=subject.trend>0 ? 'text-green-600' : (subject.trend
-                    <text-red-600 : text-gray-500>
-                      {{ subject.trend > 0 ? '+' : '' }}{{ subject.trend }} pts
-            </span>
-                  </td>
+                  <span class="{{ subject.trend > 0 ? 'text-green-600' : (subject.trend < 0 ? 'text-red-600' : 'text-gray-500') }}">
+                    {{ subject.trend > 0 ? '+' : '' }}{{ subject.trend }} pts
+                  </span>
+                </td>
                   <td class="px-4 py-2 text-gray-600">
                     {{ subject.comment || '-' }}
                   </td>

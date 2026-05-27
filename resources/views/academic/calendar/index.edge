@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Calendrier acadÃ©mique - {{ school.name }}
+    Calendrier académique - {{ school.name }}
   @endsection
   
   @section('dashboardTitle')
-    Calendrier acadÃ©mique
+    Calendrier académique
   @endsection
   @section('dashboardSubtitle')
-    GÃ©rez les Ã©vÃ©nements et dates importantes de l'annÃ©e scolaire
+    Gérez les événements et dates importantes de l'année scolaire
   @endsection
   
   @section('actions')
@@ -38,7 +38,7 @@
         href="/academic/calendar/create"
         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
       >
-        <i class="fas fa-plus mr-2"></i>Ajouter Ã©vÃ©nement
+        <i class="fas fa-plus mr-2"></i>Ajouter événement
   </a>
     </div>
   @endsection
@@ -48,22 +48,22 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type d'Ã©vÃ©nement</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type d'événement</label>
           <select id="filterType" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">
               Tous
             </option>
             <option value="holiday">
-              Vacances / CongÃ©
+              Vacances / Congé
             </option>
             <option value="exam">
               Examen
             </option>
             <option value="meeting">
-              RÃ©union
+              Réunion
             </option>
             <option value="event">
-              Ã‰vÃ©nement spÃ©cial
+              Événement spécial
             </option>
             <option value="deadline">
               Date limite
@@ -104,7 +104,7 @@
       </div>
     </div>
 
-    <!-- Vue Mois (par dÃ©faut) -->
+    <!-- Vue Mois (par défaut) -->
     <div id="monthView" class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="p-4 border-b dark:border-gray-700">
         <div class="flex justify-between items-center">
@@ -113,7 +113,7 @@
           </h3>
           <div class="flex gap-2">
             <button onclick="previousMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
-              <i class="fas fa-chevron-left"></i>Mois prÃ©cÃ©dent
+              <i class="fas fa-chevron-left"></i>Mois précédent
         </button>
             <button onclick="goToToday()" class="px-3 py-1 border rounded hover:bg-gray-50">
               Aujourd'hui
@@ -153,7 +153,7 @@
           </div>
         </div>
         <div id="calendarGrid" class="grid grid-cols-7 gap-1">
-          <!-- GÃ©nÃ©rÃ© par JS -->
+          <!-- Généré par JS -->
         </div>
       </div>
     </div>
@@ -167,7 +167,7 @@
           </h3>
           <div class="flex gap-2">
             <button onclick="previousWeek()" class="px-3 py-1 border rounded hover:bg-gray-50">
-              <i class="fas fa-chevron-left"></i>Semaine prÃ©cÃ©dente
+              <i class="fas fa-chevron-left"></i>Semaine précédente
         </button>
             <button onclick="goToTodayWeek()" class="px-3 py-1 border rounded hover:bg-gray-50">
               Aujourd'hui
@@ -184,7 +184,7 @@
           </h2>
         </div>
         <div id="weekGrid" class="grid grid-cols-7 gap-2">
-          <!-- GÃ©nÃ©rÃ© par JS -->
+          <!-- Généré par JS -->
         </div>
       </div>
     </div>
@@ -193,11 +193,11 @@
     <div id="agendaView" class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hidden">
       <div class="p-4 border-b dark:border-gray-700">
         <h3 class="font-semibold">
-          Agenda des Ã©vÃ©nements
+          Agenda des événements
         </h3>
       </div>
       <div class="divide-y dark:divide-gray-700" id="agendaList">
-        <!-- GÃ©nÃ©rÃ© par JS -->
+        <!-- Généré par JS -->
       </div>
     </div>
 
@@ -207,7 +207,7 @@
       let currentView = "month";
 
       let eventsData = [];
-      // Charger les Ã©vÃ©nements
+      // Charger les événements
 
       async function loadEvents() {
         const year = currentDate.getFullYear();
@@ -232,7 +232,7 @@
         const lastDay = new Date(year, month + 1, 0);
         const startDayOfWeek = firstDay.getDay();
         const daysInMonth = lastDay.getDate();
-        const monthNames = [ "Janvier", "FÃ©vrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "AoÃ»t", "Septembre", "Octobre", "Novembre", "DÃ©cembre" ];
+        const monthNames = [ "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" ];
         document.getElementById("currentMonthYear").textContent = `${monthNames[month]} ${year}`;
         const calendarGrid = document.getElementById("calendarGrid");
         calendarGrid.innerHTML = "";
@@ -267,7 +267,7 @@
                 `;
           calendarGrid.appendChild(dayDiv);
         }
-        // ComplÃ©ter la derniÃ¨re ligne
+        // Compléter la dernière ligne
         const totalCells = startDayOfWeek + daysInMonth;
         const remainingCells = 42 - totalCells;
         for (let i = 0; i < remainingCells; i++) {
@@ -327,7 +327,7 @@
           agendaList.innerHTML = `
                   <div class="p-8 text-center text-gray-500">
                     <i class="fas fa-calendar-alt text-4xl mb-3 block"></i>
-                    Aucun Ã©vÃ©nement Ã  venir
+                    Aucun événement à venir
                   </div>
                 `;
           return;
@@ -343,7 +343,7 @@
                         <h4 class="font-semibold">${event.title}</h4>
                       </div>
                       <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-sm">
-                        <div><i class="fas fa-calendar w-5 text-gray-400"></i> ${formatDate(event.start_date)} ${event.start_time ? `Ã  ${event.start_time}` : ""}</div>
+                        <div><i class="fas fa-calendar w-5 text-gray-400"></i> ${formatDate(event.start_date)} ${event.start_time ? `à ${event.start_time}` : ""}</div>
                         ${event.end_date !== event.start_date ? `<div><i class="fas fa-calendar-check w-5 text-gray-400"></i> Jusqu'au ${formatDate(event.end_date)}</div>` : ""}
                         ${event.location ? `<div><i class="fas fa-map-marker-alt w-5 text-gray-400"></i> ${event.location}</div>` : ""}
                       </div>
@@ -429,8 +429,8 @@
         const labels = {
           holiday: "Vacances",
           exam: "Examen",
-          meeting: "RÃ©union",
-          event: "Ã‰vÃ©nement",
+          meeting: "Réunion",
+          event: "Événement",
           deadline: "Date limite"
         };
         return labels[type] || type;

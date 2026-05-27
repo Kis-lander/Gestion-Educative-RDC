@@ -57,6 +57,11 @@
             <option value="">
               Tous
             </option>
+            @each(feeType in feeTypes)
+              <option value="{{ feeType }}">
+                {{ feeType }}
+              </option>
+            @end
             <option value="Inscription">
               Inscription
             </option>
@@ -156,14 +161,14 @@
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          RÃ©partition par type de frais
+          Répartition par type de frais
         </h3>
         <canvas id="typeChart" height="250">
         </canvas>
       </div>
     </div>
 
-    <!-- RÃ©sumÃ© des frais optionnels -->
+    <!-- Résumé des frais optionnels -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="px-4 py-3 border-b dark:border-gray-700">
         <h3 class="font-semibold">
@@ -192,13 +197,13 @@
           </div>
           @else
           <div class="p-6 text-center text-gray-500">
-            Aucun frais optionnel dÃ©fini
+            Aucun frais optionnel défini
           </div>
         @end
       </div>
     </div>
 
-    <!-- Modal Ã©dition tarifs classe -->
+    <!-- Modal édition tarifs classe -->
     <div id="editFeesModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
         <div class="flex justify-between items-center mb-4">

@@ -12,6 +12,369 @@ import {
 import { DateTime } from 'luxon'
 
 export default class DisciplineController {
+  private getPaginationMeta(paginator: { toJSON: () => any }) {
+    const meta = paginator.toJSON().meta
+
+    return {
+      total: meta.total,
+      perPage: meta.perPage,
+      currentPage: meta.currentPage,
+      lastPage: meta.lastPage,
+      from: meta.total ? (meta.currentPage - 1) * meta.perPage + 1 : 0,
+      to: Math.min(meta.currentPage * meta.perPage, meta.total),
+    }
+  }
+
+  private getTypeLabel(type: string) {
+    const labels: Record<string, string> = {
+      absence: 'Absence',
+      late: 'Retard',
+      misconduct: 'Inconduite',
+      violence: 'Violence',
+      fraud: 'Fraude',
+      uniform_violation: 'Tenue non conforme',
+      other: 'Autre',
+    }
+
+    return labels[type] || type
+  }
+
+  private getSeverityLabel(severity: string) {
+    const labels: Record<string, string> = {
+      minor: 'Mineure',
+      moderate: 'Modérée',
+      major: 'Majeure',
+      critical: 'Critique',
+    }
+
+    return labels[severity] || severity
+  }
+
+  private getSanctionLabel(sanction: string | null) {
+    const labels: Record<string, string> = {
+      warning: 'Avertissement',
+      community_service: "Travail d'intérêt général",
+      suspension: 'Suspension',
+      expulsion: 'Exclusion',
+      none: 'Aucune',
+    }
+
+    return sanction ? labels[sanction] || sanction : '-'
+  }
+
+  private serializeIncident(incident: Discipline) {
+    const status = incident.sanction && incident.sanction !== 'none' ? 'resolved' : 'pending'
+
+    return {
+      id: incident.id,
+      studentId: incident.studentId,
+      studentName: incident.student?.user?.fullName || '-',
+      registrationNumber: incident.student?.registrationNumber || '-',
+      className: incident.student?.class?.name || 'Non affecté',
+      type: incident.incidentType,
+      typeLabel: this.getTypeLabel(incident.incidentType),
+      severity: incident.severity,
+      severityLabel: this.getSeverityLabel(incident.severity),
+      status,
+      sanction: incident.sanction === 'none' ? null : this.getSanctionLabel(incident.sanction),
+      sanctionLabel: this.getSanctionLabel(incident.sanction),
+      description: incident.description,
+      actionTaken: incident.actionTaken,
+      date: incident.incidentDate,
+      createdAt: incident.createdAt,
+      updatedAt: incident.updatedAt,
+      reporterName: incident.reporter?.fullName || '-',
+      parentNotified: incident.parentNotified,
+      parentNotifiedAt: incident.parentNotifiedAt,
+      parentResponse: incident.parentResponse,
+      pastIncidentsCount: 0,
+      location: null,
+      witnesses: null,
+    }
+  }
+
+  public async dashboardPage({ auth, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const incidents = await Discipline.query()
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .preload('student', (studentQuery) => {
+        studentQuery.preload('user')
+        studentQuery.preload('class')
+      })
+      .preload('reporter')
+      .orderBy('incidentDate', 'desc')
+      .limit(5)
+    const totalIncidents = await Discipline.query()
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .count('* as total')
+      .first()
+    const majorIncidents = await Discipline.query()
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .whereIn('severity', ['major', 'critical'])
+      .count('* as total')
+      .first()
+
+    return view.render('discipline/dashboard', {
+      school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
+      stats: {
+        totalIncidents: Number(totalIncidents?.$extras.total || 0),
+        majorIncidents: Number(majorIncidents?.$extras.total || 0),
+        affectedStudents: 0,
+        activeSanctions: 0,
+        activeSuspensions: 0,
+        pendingIncidents: 0,
+      },
+      topStudents: [],
+      recentIncidents: incidents.map((incident) => ({
+        id: incident.id,
+        studentId: incident.studentId,
+        studentName: incident.student?.user?.fullName || '-',
+        type: incident.incidentType,
+        typeLabel: incident.incidentType,
+        severity: incident.severity,
+        severityLabel: incident.severity,
+        description: incident.description,
+        date: incident.incidentDate,
+        reporterName: incident.reporter?.fullName || '-',
+      })),
+    })
+  }
+
+  public async incidentsPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const page = Number(request.input('page', 1))
+    const type = request.input('type')
+    const severity = request.input('severity')
+    const startDate = request.input('start_date')
+    const endDate = request.input('end_date')
+
+    const query = Discipline.query()
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .preload('student', (studentQuery) => {
+        studentQuery.preload('user')
+        studentQuery.preload('class')
+      })
+      .preload('reporter')
+      .if(type, (incidentQuery) => incidentQuery.where('incidentType', type))
+      .if(severity, (incidentQuery) => incidentQuery.where('severity', severity))
+      .if(startDate && endDate, (incidentQuery) => {
+        incidentQuery.whereBetween('incidentDate', [startDate, endDate])
+      })
+      .orderBy('incidentDate', 'desc')
+
+    const paginator = await query.paginate(page, 20)
+    const total = await Discipline.query()
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .count('* as total')
+      .first()
+    const weekStart = DateTime.now().startOf('week').toSQLDate()
+    const thisWeek = await Discipline.query()
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .where('incidentDate', '>=', weekStart!)
+      .count('* as total')
+      .first()
+
+    return view.render('discipline/incidents/index', {
+      school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
+      incidents: paginator.all().map((incident) => this.serializeIncident(incident)),
+      stats: {
+        total: Number(total?.$extras.total || 0),
+        thisWeek: Number(thisWeek?.$extras.total || 0),
+        pending: 0,
+        resolved: 0,
+      },
+      pagination: this.getPaginationMeta(paginator),
+      url: '/discipline/incidents',
+    })
+  }
+
+  public async reportIncidentPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const selectedStudentId = request.input('student_id', '')
+    const students = await Student.query()
+      .where('schoolId', user.schoolId)
+      .where('academicStatus', 'active')
+      .preload('user')
+      .preload('class')
+      .orderBy('createdAt', 'desc')
+
+    return view.render('discipline/incidents/report', {
+      school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
+      students: students.map((student) => ({
+        id: student.id,
+        name: student.user?.fullName || student.registrationNumber,
+        className: student.class?.name || 'Non affecté',
+        registrationNumber: student.registrationNumber,
+      })),
+      selectedStudentId,
+      studentIncidentCount: 0,
+    })
+  }
+
+  public async storeIncidentWeb({ auth, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const student = await Student.query()
+      .where('id', request.input('studentId'))
+      .where('schoolId', user.schoolId)
+      .firstOrFail()
+
+    await Discipline.create({
+      studentId: student.id,
+      reportedBy: user.id,
+      incidentType: request.input('incidentType'),
+      description: request.input('description'),
+      severity: request.input('severity'),
+      incidentDate: DateTime.fromISO(request.input('incidentDate')),
+      actionTaken: request.input('actionTaken') || null,
+      parentNotified: Boolean(request.input('parentNotified')),
+      sanction: 'none',
+    })
+
+    session.flash('success', 'Incident enregistré avec succès.')
+    return response.redirect('/discipline/incidents')
+  }
+
+  public async showIncidentPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const incident = await Discipline.query()
+      .where('id', params.id)
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .preload('student', (studentQuery) => {
+        studentQuery.preload('user')
+        studentQuery.preload('class')
+      })
+      .preload('reporter')
+      .firstOrFail()
+
+    return view.render('discipline/incidents/show', {
+      school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
+      incident: this.serializeIncident(incident),
+      previousIncidents: [],
+    })
+  }
+
+  public async editIncidentPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const incident = await Discipline.query()
+      .where('id', params.id)
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .preload('student', (studentQuery) => {
+        studentQuery.preload('user')
+        studentQuery.preload('class')
+      })
+      .preload('reporter')
+      .firstOrFail()
+
+    return view.render('discipline/incidents/edit', {
+      school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
+      incident: this.serializeIncident(incident),
+    })
+  }
+
+  public async updateIncidentWeb({ auth, params, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const incident = await Discipline.query()
+      .where('id', params.id)
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .firstOrFail()
+
+    incident.merge({
+      incidentType: request.input('incidentType', incident.incidentType),
+      description: request.input('description', incident.description),
+      severity: request.input('severity', incident.severity),
+      incidentDate: request.input('incidentDate')
+        ? DateTime.fromISO(request.input('incidentDate'))
+        : incident.incidentDate,
+      actionTaken: request.input('actionTaken') || null,
+      parentNotified: Boolean(request.input('parentNotified')),
+    })
+    await incident.save()
+
+    session.flash('success', 'Incident mis à jour.')
+    return response.redirect(`/discipline/incidents/${incident.id}/show`)
+  }
+
+  public async applySanctionPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const incident = await Discipline.query()
+      .where('id', request.input('incident_id'))
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .preload('student', (studentQuery) => {
+        studentQuery.preload('user')
+        studentQuery.preload('class')
+      })
+      .preload('reporter')
+      .firstOrFail()
+
+    return view.render('discipline/sanctions/apply', {
+      school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
+      incident: this.serializeIncident(incident),
+      previousSanctions: [],
+      selectedSanctionType: incident.sanction === 'none' ? 'warning' : incident.sanction,
+    })
+  }
+
+  public async applySanctionWeb({ auth, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const incident = await Discipline.query()
+      .where('id', request.input('incidentId'))
+      .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
+      .firstOrFail()
+
+    incident.sanction = request.input('sanctionType', 'warning')
+    incident.actionTaken = [incident.actionTaken, request.input('details')].filter(Boolean).join('\n')
+    await incident.save()
+
+    session.flash('success', 'Sanction appliquée.')
+    return response.redirect(`/discipline/incidents/${incident.id}/show`)
+  }
+
+  public async studentsPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const page = Number(request.input('page', 1))
+    const classId = request.input('class_id')
+    const search = String(request.input('search', '')).trim()
+    const query = Student.query()
+      .where('schoolId', user.schoolId)
+      .preload('user')
+      .preload('class')
+      .if(classId, (studentQuery) => studentQuery.where('classId', classId))
+      .if(search, (studentQuery) => {
+        studentQuery.whereHas('user', (userQuery) => {
+          userQuery.whereILike('firstName', `%${search}%`).orWhereILike('lastName', `%${search}%`)
+        })
+      })
+      .orderBy('createdAt', 'desc')
+    const paginator = await query.paginate(page, 20)
+    const classes = await db
+      .from('classes')
+      .where('school_id', user.schoolId)
+      .select('id', 'name')
+      .orderBy('name', 'asc')
+
+    return view.render('discipline/students/index', {
+      school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
+      classes,
+      students: paginator.all().map((student) => ({
+        id: student.id,
+        registrationNumber: student.registrationNumber,
+        name: student.user?.fullName || '-',
+        className: student.class?.name || 'Non affecté',
+        incidentCount: 0,
+        status: 'exemplary',
+        lastIncidentDate: null,
+      })),
+      stats: {
+        total: paginator.total,
+        withIncidents: 0,
+        activeSanctions: 0,
+        exemplary: paginator.total,
+      },
+      pagination: this.getPaginationMeta(paginator),
+      url: '/discipline/students',
+    })
+  }
+
   /**
    * Obtenir tous les élèves avec statistiques
    */

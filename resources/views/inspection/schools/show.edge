@@ -164,11 +164,19 @@
         </h3>
         @if(director)
           <div class="flex items-center gap-3 mb-4">
-            <div
-              class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
-            >
-              {{ director.firstName?.charAt(0) }}{{ director.lastName?.charAt(0) }}
-            </div>
+            @if(director.avatarUrl)
+              <img
+                src="{{ director.avatarUrl }}"
+                alt="Photo de profil de {{ director.firstName }} {{ director.lastName }}"
+                class="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+              />
+            @else
+              <div
+                class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
+              >
+                {{ director.firstName?.charAt(0) }}{{ director.lastName?.charAt(0) }}
+              </div>
+            @endif
             <div>
               <p class="font-semibold">
                 {{ director.firstName }} {{ director.lastName }}

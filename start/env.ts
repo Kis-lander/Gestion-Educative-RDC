@@ -35,13 +35,13 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Mail / OTP
   MAIL_MAILER: Env.schema.enum(['console', 'smtp', 'brevo_api'] as const),
-  MAIL_HOST: Env.schema.string(),
-  MAIL_PORT: Env.schema.number(),
+  MAIL_HOST: Env.schema.string.optional(),
+  MAIL_PORT: Env.schema.number.optional(),
   MAIL_USERNAME: Env.schema.string.optional(),
   MAIL_PASSWORD: Env.schema.string.optional(),
   MAIL_FROM_ADDRESS: Env.schema.string(),
   MAIL_FROM_NAME: Env.schema.string(),
-  MAIL_SECURE: Env.schema.boolean(),
+  MAIL_SECURE: Env.schema.boolean.optional(),
   BREVO_API_KEY: Env.schema.string.optional(),
   BREVO_API_URL: Env.schema.string(),
   BREVO_SENDER_EMAIL: Env.schema.string(),

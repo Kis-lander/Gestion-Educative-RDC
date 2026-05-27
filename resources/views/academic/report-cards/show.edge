@@ -20,7 +20,7 @@
         href="/academic/report-cards/{{ reportId }}/pdf"
         class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
       >
-        <i class="fas fa-file-pdf mr-2"></i>TÃ©lÃ©charger PDF
+        <i class="fas fa-file-pdf mr-2"></i>Télécharger PDF
   </a>
       @if(status === 'draft')
         <button
@@ -35,23 +35,23 @@
   
   @section('content')
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 report-card-container">
-      <!-- En-tÃªte du bulletin -->
+      <!-- En-tête du bulletin -->
       <div class="text-center mb-6 pb-4 border-b">
         <div class="flex justify-between items-start mb-2">
           <div class="w-20">
           </div>
           <div>
             <h1 class="text-xl font-bold">
-              RÃ‰PUBLIQUE DÃ‰MOCRATIQUE DU CONGO
+              RÉPUBLIQUE DÉMOCRATIQUE DU CONGO
             </h1>
             <h2 class="text-lg">
-              MinistÃ¨re de l'Enseignement Primaire, Secondaire et Technique
+              Ministère de l'Enseignement Primaire, Secondaire et Technique
             </h2>
             <h3 class="text-md font-semibold mt-1">
               {{ schoolName }}
             </h3>
             <p class="text-sm">
-              BULLETIN SCOLAIRE - {{ term === 'T1' ? 'PREMIER TRIMESTRE' : (term === 'T2' ? 'DEUXIÃˆME TRIMESTRE' : 'TROISIÃˆME TRIMESTRE') }}
+              BULLETIN SCOLAIRE - {{ term === 'T1' ? 'PREMIER TRIMESTRE' : (term === 'T2' ? 'DEUXIÈME TRIMESTRE' : 'TROISIÈME TRIMESTRE') }}
             </p>
             <p class="text-sm">
               Année scolaire {{ academicYear }}
@@ -65,10 +65,10 @@
         </div>
       </div>
 
-      <!-- IdentitÃ© Ã©lÃ¨ve -->
+      <!-- Identité élève -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
         <div>
-          <span class="text-gray-500">Nom et prÃ©nom:</span>          <strong>{{ student.name }}</strong>
+          <span class="text-gray-500">Nom et prénom:</span>          <strong>{{ student.name }}</strong>
         </div>
         <div>
           <span class="text-gray-500">Matricule:</span>          <span class="font-mono">{{ student.registrationNumber }}</span>
@@ -80,7 +80,7 @@
           <span class="text-gray-500">Date naissance:</span>{{ student.birthDate || '-' }}
         </div>
         <div>
-          <span class="text-gray-500">NationalitÃ©:</span>{{ student.nationality || 'Congolaise' }}
+          <span class="text-gray-500">Nationalité:</span>{{ student.nationality || 'Congolaise' }}
         </div>
         <div>
           <span class="text-gray-500">Redoublant:</span>{{ student.isRepeating ? 'Oui' : 'Non' }}
@@ -93,7 +93,7 @@
       <!-- Tableau des notes -->
       <div class="mb-6">
         <h4 class="font-semibold mb-2">
-          RÃ‰SULTATS PAR MATIÃˆRE
+          RÉSULTATS PAR MATIÈRE
         </h4>
         <div class="table-responsive">
           <table class="w-full text-sm border">
@@ -112,7 +112,7 @@
                   POINTS
                 </th>
                 <th class="px-3 py-2 text-left">
-                  APPRÃ‰CIATIONS
+                  APPRÉCIATIONS
                 </th>
               </tr>
             </thead>
@@ -160,11 +160,11 @@
         </div>
       </div>
 
-      <!-- Moyenne et dÃ©cisions -->
+      <!-- Moyenne et décisions -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <p class="text-sm text-gray-500">
-            MOYENNE GÃ‰NÃ‰RALE
+            MOYENNE GÉNÉRALE
           </p>
           <p
             class="text-3xl font-bold {{ overallAverage >= 15 ? 'text-green-600' : (overallAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
@@ -182,7 +182,7 @@
         </div>
         <div class="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
           <p class="text-sm text-gray-500">
-            DÃ‰CISION
+            DÉCISION
           </p>
           <p
             class="text-xl font-bold {{ decision === 'Admis' ? 'text-green-600' : (decision === 'Admis avec mention' ? 'text-blue-600' : 'text-red-600') }}"
@@ -192,17 +192,17 @@
         </div>
       </div>
 
-      <!-- ApprÃ©ciations -->
+      <!-- Appréciations -->
       <div class="mb-6 p-3 border-l-4 border-primary bg-gray-50 dark:bg-gray-700 rounded-r-lg">
         <p class="font-semibold mb-1">
-          APPRÃ‰CIATION GÃ‰NÃ‰RALE
+          APPRÉCIATION GÉNÉRALE
         </p>
         <p class="text-sm">
-          {{ appreciation || 'FÃ©licitations pour vos efforts ! Continuez ainsi.' }}
+          {{ appreciation || 'Félicitations pour vos efforts ! Continuez ainsi.' }}
         </p>
       </div>
 
-      <!-- Comportement et prÃ©sence -->
+      <!-- Comportement et présence -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div class="p-3 border rounded-lg">
           <p class="font-semibold mb-1">
@@ -217,15 +217,15 @@
             </div>
           </div>
           <p class="text-xs text-gray-500 mt-1">
-            {{ behavior.comment || 'Ã‰lÃ¨ve disciplinÃ© et respectueux des rÃ¨gles.' }}
+            {{ behavior.comment || 'Élève discipliné et respectueux des règles.' }}
           </p>
         </div>
         <div class="p-3 border rounded-lg">
           <p class="font-semibold mb-1">
-            ASSIDUITÃ‰ / PRÃ‰SENCES
+            ASSIDUITÉ / PRÉSENCES
           </p>
           <div class="flex justify-between items-center">
-            <span>{{ attendance.rate }}% de prÃ©sence</span>
+            <span>{{ attendance.rate }}% de présence</span>
             <div class="w-32 bg-gray-200 rounded-full h-2">
               <div class="bg-green-500 rounded-full h-2" style="width: {{ attendance.rate }}%">
               </div>
@@ -241,7 +241,7 @@
       <div class="grid grid-cols-3 gap-4 mt-6 pt-4 border-t text-center">
         <div>
           <p class="text-sm">
-            L'Ã‰lÃ¨ve
+            L'Élève
           </p>
           <div class="mt-8">
             _______________
@@ -257,7 +257,7 @@
         </div>
         <div>
           <p class="text-sm">
-            Le Chef d'Ã‰tablissement
+            Le Chef d'Établissement
           </p>
           <div class="mt-8">
             _______________
@@ -268,15 +268,15 @@
         </div>
       </div>
 
-      <!-- Date d'Ã©mission -->
+      <!-- Date d'émission -->
       <div class="mt-4 text-right text-xs text-gray-400">
-        GÃ©nÃ©rÃ© le {{ generationDate }}
+        Généré le {{ generationDate }}
       </div>
     </div>
 
     <script>
       function publishReport() {
-        if (confirm("Publier ce bulletin ? Il deviendra visible par les parents et l'Ã©lÃ¨ve.")) {
+        if (confirm("Publier ce bulletin ? Il deviendra visible par les parents et l'élève.")) {
           fetch("/academic/report-cards/{{ reportId }}/publish", {
             method: "POST",
             headers: {

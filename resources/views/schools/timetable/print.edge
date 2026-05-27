@@ -9,7 +9,7 @@
         REPUBLIQUE DEMOCRATIQUE DU CONGO
       </h1>
       <h2 class="text-lg">
-        MinistÃ¨re de l'Enseignement Primaire, Secondaire et Technique
+        Ministère de l'Enseignement Primaire, Secondaire et Technique
       </h2>
       <h3 class="text-md mt-2">
         {{ schoolName }}
@@ -18,7 +18,7 @@
         Emploi du temps - Classe de {{ className }}
       </h4>
       <p class="text-sm">
-        Année scolaire {{ academicYear }} - {{ shift === 'morning' ? 'Matin' : (shift === 'afternoon' ? 'AprÃ¨s-midi' : 'Soir') }}
+        Année scolaire {{ academicYear }} - {{ shift === 'morning' ? 'Matin' : (shift === 'afternoon' ? 'Après-midi' : 'Soir') }}
       </p>
       <p class="text-sm">
         Semaine du {{ weekStart }} au {{ weekEnd }}
@@ -79,11 +79,11 @@
       </table>
     </div>
 
-    <!-- RÃ©capitulatif -->
+    <!-- Récapitulatif -->
     <div class="mt-6 grid grid-cols-2 gap-4">
       <div class="border rounded p-3">
         <h4 class="font-bold">
-          RÃ©capitulatif des heures
+          Récapitulatif des heures
         </h4>
         <div class="text-sm mt-2 space-y-1">
           @each(hour in summary)
@@ -138,7 +138,7 @@
       </div>
       <div class="text-center">
         <p>
-          Le Chef d'Ã‰tablissement
+          Le Chef d'Établissement
         </p>
         <div class="mt-12">
           _______________

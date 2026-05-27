@@ -22,7 +22,7 @@
               Sélectionner
             </option>
             @each(classObj in myClasses)
-              <option value="{{ classObj.id }}">
+              <option value="{{ classObj.id }}" {{ selectedClassId === classObj.id ? 'selected' : '' }}>
                 {{ classObj.name }}
               </option>
             @end
@@ -51,19 +51,22 @@
       <!-- Actions rapides -->
       <div class="flex gap-2 mb-4">
         <button
-          onclick="markAll('present')"
+          type="button"
+          id="markAllPresent"
           class="px-3 py-1 bg-green-100 text-green-800 rounded text-sm hover:bg-green-200"
         >
           <i class="fas fa-check mr-1"></i>Tout présent
     </button>
         <button
-          onclick="markAll('absent')"
+          type="button"
+          id="markAllAbsent"
           class="px-3 py-1 bg-red-100 text-red-800 rounded text-sm hover:bg-red-200"
         >
           <i class="fas fa-times mr-1"></i>Tout absent
     </button>
         <button
-          onclick="markAll('late')"
+          type="button"
+          id="markAllLate"
           class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm hover:bg-yellow-200"
         >
           <i class="fas fa-clock mr-1"></i>Tout retard
@@ -100,29 +103,46 @@
       let studentsList = [];
 
       let existingAttendance = {};
+      let existingReasons = {};
       // Charger les élèves
 
-      classSelect.addEventListener("change", async () => {
+      classSelect.addEventListener("change", loadSelectedClass);
+
+      async function loadSelectedClass() {
         const classId = classSelect.value;
         const date = attendanceDate.value;
         const period = periodSelect.value;
         if (!classId) return;
         // Charger les élèves
+        attendanceGrid.innerHTML = '<div class="text-center py-8 text-gray-500">Chargement des élèves...</div>';
+        try {
         const studentsRes = await fetch(`/api/teacher/classes/${classId}/students`);
+        if (!studentsRes.ok) {
+          const errorText = await studentsRes.text();
+          throw new Error(errorText || "Impossible de charger les élèves de cette classe");
+        }
         const studentsData = await studentsRes.json();
         studentsList = studentsData.students || [];
         // Charger les présences existantes
         const attendanceRes = await fetch(`/api/teacher/attendance/class/${classId}?date=${date}&period=${period}`);
+        if (!attendanceRes.ok) throw new Error("Impossible de charger les présences existantes");
         const attendanceData = await attendanceRes.json();
         existingAttendance = {};
+        existingReasons = {};
         if (attendanceData.attendances) {
           attendanceData.attendances.forEach(att => {
             existingAttendance[att.studentId] = att.status;
+            existingReasons[att.studentId] = att.reason || "";
           });
         }
         renderAttendanceForm();
         actionButtons.style.display = "flex";
-      });
+        } catch (error) {
+          studentsList = [];
+          attendanceGrid.innerHTML = `<div class="text-center py-8 text-red-500">${error.message}</div>`;
+          actionButtons.style.display = "none";
+        }
+      }
 
       attendanceDate.addEventListener("change", () => {
         if (classSelect.value) {
@@ -132,7 +152,7 @@
 
       periodSelect.addEventListener("change", () => {
         if (classSelect.value) {
-          loadAttendance();
+          loadSelectedClass();
         }
       });
 
@@ -143,9 +163,11 @@
         const res = await fetch(`/api/teacher/attendance/class/${classId}?date=${date}&period=${period}`);
         const data = await res.json();
         existingAttendance = {};
+        existingReasons = {};
         if (data.attendances) {
           data.attendances.forEach(att => {
             existingAttendance[att.studentId] = att.status;
+            existingReasons[att.studentId] = att.reason || "";
           });
         }
         updateAttendanceForm();
@@ -171,7 +193,7 @@
               `;
         studentsList.forEach(student => {
           const existingStatus = existingAttendance[student.id] || "present";
-          const existingReason = existingAttendance[student.reason] || "";
+          const existingReason = existingReasons[student.id] || "";
           html += `
                   <tr class="border-b dark:border-gray-700">
                     <td class="px-4 py-3 font-mono text-sm">${student.registrationNumber}</td>
@@ -208,17 +230,31 @@
           const statusSelect = document.querySelector(`.status-select[data-student-id="${student.id}"]`);
           const reasonInput = document.querySelector(`.reason-input[data-student-id="${student.id}"]`);
           const existingStatus = existingAttendance[student.id] || "present";
-          const existingReason = existingAttendance[`${student.id}_reason`] || "";
+          const existingReason = existingReasons[student.id] || "";
           if (statusSelect) statusSelect.value = existingStatus;
           if (reasonInput) reasonInput.value = existingReason;
         });
       }
 
-      function markAll(status) {
-        document.querySelectorAll(".status-select").forEach(select => {
+      async function markAll(status) {
+        let statusSelects = document.querySelectorAll(".status-select");
+        if (!statusSelects.length && classSelect.value) {
+          await loadSelectedClass();
+          statusSelects = document.querySelectorAll(".status-select");
+        }
+
+        if (!statusSelects.length) {
+          alert("Veuillez d'abord sélectionner une classe avec des élèves");
+          return;
+        }
+
+        statusSelects.forEach(select => {
           select.value = status;
+          existingAttendance[select.dataset.studentId] = status;
         });
       }
+
+      window.markAll = markAll;
 
       async function saveAttendance() {
         const classId = classSelect.value;
@@ -248,7 +284,7 @@
         loading.className = "fixed inset-0 bg-black/50 flex items-center justify-center z-50";
         loading.innerHTML = '<div class="spinner"></div>';
         document.body.appendChild(loading);
-        const res = await fetch("/api/teacher/attendance/save", {
+        const res = await fetch("/api/teacher/attendance", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -258,7 +294,7 @@
             classId: classId,
             date: date,
             period: period,
-            attendances: attendances
+            students: attendances
           })
         });
         loading.remove();
@@ -273,9 +309,15 @@
       }
 
       document.getElementById("saveAttendance")?.addEventListener("click", saveAttendance);
+      document.getElementById("markAllPresent")?.addEventListener("click", () => markAll("present"));
+      document.getElementById("markAllAbsent")?.addEventListener("click", () => markAll("absent"));
+      document.getElementById("markAllLate")?.addEventListener("click", () => markAll("late"));
       // Date par défaut
 
       attendanceDate.value = new Date().toISOString().split("T")[0];
+      if (classSelect.value) {
+        loadSelectedClass();
+      }
     </script>
 
     <style>

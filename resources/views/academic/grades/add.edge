@@ -22,7 +22,7 @@
               Sélectionner
             </option>
             @each(classObj in classes)
-              <option value="{{ classObj.id }}">
+              <option value="{{ classObj.id }}" {{ selectedClassId === classObj.id ? 'selected' : '' }}>
                 {{ classObj.name }}
               </option>
             @end

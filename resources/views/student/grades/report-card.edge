@@ -3,14 +3,16 @@
   @section('title')
     Bulletin scolaire - {{ student.name }} - {{ school.name }}
   @endsection
+
+  @section('content')
   <div class="report-card">
-    <!-- En-tÃªte officiel -->
+    <!-- En-tête officiel -->
     <div class="text-center mb-6">
       <h1 class="text-2xl font-bold">
-        RÃ‰PUBLIQUE DÃ‰MOCRATIQUE DU CONGO
+        RÉPUBLIQUE DÉMOCRATIQUE DU CONGO
       </h1>
       <h2 class="text-xl">
-        MinistÃ¨re de l'Enseignement Primaire, Secondaire et Technique
+        Ministère de l'Enseignement Primaire, Secondaire et Technique
       </h2>
       <div class="my-3">
         <h3 class="text-lg font-bold">
@@ -27,11 +29,11 @@
       </p>
     </div>
 
-    <!-- IdentitÃ© Ã©lÃ¨ve -->
+    <!-- Identité élève -->
     <div class="identity-box p-3 bg-gray-50 border mb-6">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
         <div>
-          <strong>Nom et prÃ©nom:</strong>{{ student.name }}
+          <strong>Nom et prénom:</strong>{{ student.name }}
         </div>
         <div>
           <strong>Matricule:</strong>{{ student.registrationNumber }}
@@ -63,7 +65,7 @@
               POINTS
             </th>
             <th class="border p-2 text-left">
-              APPRÃ‰CIATIONS
+              APPRÉCIATIONS
             </th>
           </tr>
         </thead>
@@ -110,11 +112,11 @@
       </table>
     </div>
 
-    <!-- Moyenne et dÃ©cision -->
+    <!-- Moyenne et décision -->
     <div class="results-section grid grid-cols-3 gap-4 mb-6 text-center">
       <div class="p-3 border">
         <p class="font-bold">
-          MOYENNE GÃ‰NÃ‰RALE
+          MOYENNE GÉNÉRALE
         </p>
         <p
           class="text-3xl font-bold {{ overallAverage >= 15 ? 'text-green-600' : (overallAverage >= 10 ? 'text-dark' : 'text-red-600') }}"
@@ -132,7 +134,7 @@
       </div>
       <div class="p-3 border">
         <p class="font-bold">
-          DÃ‰CISION
+          DÉCISION
         </p>
         <p
           class="text-xl font-bold {{ decision === 'Admis' ? 'text-green-600' : (decision === 'Admis avec mention' ? 'text-blue-600' : 'text-red-600') }}"
@@ -142,7 +144,7 @@
       </div>
     </div>
 
-    <!-- Comportement et assiduitÃ© -->
+    <!-- Comportement et assiduité -->
     <div class="grid grid-cols-2 gap-4 mb-6">
       <div class="p-3 border">
         <p class="font-bold">
@@ -153,16 +155,16 @@
         </p>
         <div class="flex gap-1 mt-1">
           @for(i = 1; i <= 5; i++)
-            <span class=text-lg {{ i <= (behavior.rating || 3) ? 'â˜…' : 'â˜†' }}>            @endfor
-          </span>
+            <span class="text-lg">{{ i <= (behavior.rating || 3) ? '*' : '-' }}</span>
+          @endfor
         </div>
       </div>
       <div class="p-3 border">
         <p class="font-bold">
-          ASSIDUITÃ‰
+          ASSIDUITÉ
         </p>
         <p>
-          {{ attendance.rate }}% de prÃ©sence
+          {{ attendance.rate }}% de présence
         </p>
         <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
           <div class="bg-green-500 rounded-full h-2" style="width: {{ attendance.rate }}%">
@@ -174,13 +176,13 @@
       </div>
     </div>
 
-    <!-- ApprÃ©ciation gÃ©nÃ©rale -->
+    <!-- Appréciation générale -->
     <div class="appreciation-box mb-6 p-3 border-l-4 border-primary bg-gray-50">
       <p class="font-bold">
-        APPRÃ‰CIATION GÃ‰NÃ‰RALE
+        APPRÉCIATION GÉNÉRALE
       </p>
       <p class="mt-1">
-        {{ appreciation || 'FÃ©licitations pour vos efforts ! Continuez ainsi.' }}
+        {{ appreciation || 'Félicitations pour vos efforts ! Continuez ainsi.' }}
       </p>
     </div>
 
@@ -198,7 +200,7 @@
     <div class="signatures grid grid-cols-3 gap-4 mt-8 pt-4 border-t text-center">
       <div>
         <p>
-          L'Ã‰lÃ¨ve
+          L'Élève
         </p>
         <div class="mt-12">
           _______________
@@ -214,7 +216,7 @@
       </div>
       <div>
         <p>
-          Le Chef d'Ã‰tablissement
+          Le Chef d'Établissement
         </p>
         <div class="mt-12">
           _______________
@@ -226,7 +228,7 @@
     </div>
 
     <div class="text-right text-sm text-gray-500 mt-6 pt-4 border-t">
-      Fait Ã  {{ school.city }}, le {{ generationDate }}
+      Fait à {{ school.city }}, le {{ generationDate }}
     </div>
   </div>
 
@@ -271,4 +273,4 @@
       }
     }
   </style>
-
+  @endsection

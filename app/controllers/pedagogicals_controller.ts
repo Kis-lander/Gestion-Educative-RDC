@@ -5,7 +5,6 @@ import Student from '#models/student'
 import Grade from '#models/grade'
 import School from '#models/school'
 import {
-  createTimetableValidator,
   generateReportCardValidator,
   publishGradesValidator,
   createAcademicCalendarValidator,
@@ -18,8 +17,15 @@ export default class PedagogicalController {
   /**
    * Créer l'emploi du temps d'une classe
    */
-  public async createTimetable({ request, auth, response }: HttpContext) {
-    const payload = await request.validateUsing(createTimetableValidator)
+  public async createTimetable({ request, auth, response, session }: HttpContext) {
+    const rawPayload = request.all()
+    const payload = {
+      classId: rawPayload.classId,
+      academicYear: String(rawPayload.academicYear || DateTime.now().year),
+      term: String(rawPayload.term || 'T1'),
+      shift: String(rawPayload.shift || ''),
+      schedule: this.normalizeTimetableSchedule(rawPayload.schedule),
+    }
 
     // Vérifier que la classe appartient à l'école
     await Class.query()
@@ -27,19 +33,37 @@ export default class PedagogicalController {
       .where('school_id', auth.user!.schoolId)
       .firstOrFail()
 
+    if (payload.schedule.length === 0) {
+      if (request.header('accept')?.includes('text/html')) {
+        session.flash('error', 'Ajoutez au moins une plage horaire avant d’enregistrer.')
+        return response.redirect().back()
+      }
+
+      return response.badRequest({
+        success: false,
+        message: 'Ajoutez au moins une plage horaire avant d’enregistrer.',
+      })
+    }
+
     // Utilisation d'une transaction pour la suppression/insertion groupée
     const timetableEntries = await db.transaction(async (trx) => {
-      await trx
+      const deleteQuery = trx
         .from('timetables')
         .where('class_id', payload.classId)
         .where('academic_year', payload.academicYear)
         .where('term', payload.term)
-        .delete()
+
+      if (payload.shift) {
+        deleteQuery.where('shift', payload.shift)
+      }
+
+      await deleteQuery.delete()
 
       const entries = payload.schedule.map((schedule) => ({
         class_id: payload.classId,
         academic_year: payload.academicYear,
         term: payload.term,
+        shift: payload.shift || null,
         day_of_week: schedule.dayOfWeek,
         start_time: schedule.startTime,
         end_time: schedule.endTime,
@@ -52,6 +76,11 @@ export default class PedagogicalController {
       return await trx.table('timetables').insert(entries).returning('*')
     })
 
+    if (request.header('accept')?.includes('text/html')) {
+      session.flash('success', 'Emploi du temps enregistré avec succès.')
+      return response.redirect(`/schools/timetable?class_id=${payload.classId}`)
+    }
+
     return response.created({
       success: true,
       message: 'Emploi du temps mis à jour avec succès',
@@ -63,28 +92,120 @@ export default class PedagogicalController {
    * Obtenir l'emploi du temps d'une classe
    */
   public async getClassTimetable({ params, request, response }: HttpContext) {
-    const academicYear = request.input('academic_year')
+    const academicYear = request.input('academic_year', request.input('year'))
     const term = request.input('term')
+    const shift = request.input('shift')
 
-    const query = db
-      .from('timetables')
-      .where('class_id', params.classId)
-      .join('subjects', 'timetables.subject_id', 'subjects.id')
-      .join('teachers', 'timetables.teacher_id', 'teachers.id')
-      .join('users', 'teachers.user_id', 'users.id')
-      .select(
-        'timetables.*',
-        'subjects.name as subject_name',
-        'subjects.code as subject_code',
-        'users.first_name as teacher_first_name',
-        'users.last_name as teacher_last_name'
-      )
+    try {
+      const query = db
+        .from('timetables')
+        .where('class_id', params.classId)
+        .join('subjects', 'timetables.subject_id', 'subjects.id')
+        .join('teachers', 'timetables.teacher_id', 'teachers.id')
+        .join('users', 'teachers.user_id', 'users.id')
+        .select(
+          'timetables.*',
+          'subjects.name as subject_name',
+          'subjects.code as subject_code',
+          'users.first_name as teacher_first_name',
+          'users.last_name as teacher_last_name'
+        )
 
-    if (academicYear) query.where('academic_year', academicYear)
-    if (term) query.where('term', term)
+      if (academicYear) query.where('academic_year', academicYear)
+      if (term) query.where('term', term)
+      if (shift) query.where('shift', shift)
 
-    const timetable = await query.orderBy('day_of_week').orderBy('start_time')
+      const timetable = await query.orderBy('day_of_week').orderBy('start_time')
+      const subjects = new Set(timetable.map((entry) => entry.subject_id))
+      const teachers = new Set(timetable.map((entry) => entry.teacher_id))
 
+      return response.ok({
+        success: true,
+        timetable: this.organizeTimetable(timetable),
+        summary: {
+          totalHours: timetable.length,
+          subjectsCount: subjects.size,
+          teachersCount: teachers.size,
+          occupancyRate: Math.round((timetable.length / 48) * 100),
+        },
+      })
+    } catch (error) {
+      return response.ok({
+        success: true,
+        timetable: this.emptyTimetable(),
+        summary: null,
+        message: 'Aucun emploi du temps disponible pour cette classe.',
+      })
+    }
+  }
+
+  private normalizeTimetableSchedule(schedule: any) {
+    if (Array.isArray(schedule)) {
+      return schedule
+        .filter((slot) => slot.subjectId && slot.teacherId)
+        .map((slot) => ({
+          dayOfWeek: Number(slot.dayOfWeek),
+          startTime: String(slot.startTime),
+          endTime: String(slot.endTime),
+          subjectId: String(slot.subjectId),
+          teacherId: String(slot.teacherId),
+          room: slot.room ? String(slot.room) : null,
+        }))
+    }
+
+    const dayNumbers: Record<string, number> = {
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
+      sunday: 7,
+    }
+    const slots = [
+      { start: '08:00', end: '09:00' },
+      { start: '09:00', end: '10:00' },
+      { start: '10:00', end: '11:00' },
+      { start: '11:00', end: '12:00' },
+      { start: '13:00', end: '14:00' },
+      { start: '14:00', end: '15:00' },
+      { start: '15:00', end: '16:00' },
+      { start: '16:00', end: '17:00' },
+    ]
+    const entries: any[] = []
+
+    for (const [day, daySchedule] of Object.entries(schedule || {})) {
+      for (const [slotIndex, slot] of Object.entries(daySchedule as Record<string, any>)) {
+        if (!slot.subjectId || !slot.teacherId) continue
+        const timeSlot = slots[Number(slotIndex)]
+        if (!timeSlot) continue
+
+        entries.push({
+          dayOfWeek: dayNumbers[day] || 1,
+          startTime: timeSlot.start,
+          endTime: timeSlot.end,
+          subjectId: String(slot.subjectId),
+          teacherId: String(slot.teacherId),
+          room: slot.room ? String(slot.room) : null,
+        })
+      }
+    }
+
+    return entries
+  }
+
+  private emptyTimetable() {
+    return {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+      saturday: [],
+    }
+  }
+
+  private organizeTimetable(timetable: any[]) {
     const dayMap: Record<number, string> = {
       1: 'monday',
       2: 'tuesday',
@@ -94,22 +215,22 @@ export default class PedagogicalController {
       6: 'saturday',
       7: 'sunday',
     }
-
-    const organizedTimetable: Record<string, any[]> = {
-      monday: [],
-      tuesday: [],
-      wednesday: [],
-      thursday: [],
-      friday: [],
-      saturday: [],
-    }
+    const organizedTimetable: Record<string, any[]> = this.emptyTimetable()
 
     for (const entry of timetable) {
       const dayKey = dayMap[entry.day_of_week] || 'monday'
-      if (organizedTimetable[dayKey]) organizedTimetable[dayKey].push(entry)
+      if (!organizedTimetable[dayKey]) continue
+
+      organizedTimetable[dayKey].push({
+        ...entry,
+        time: `${String(entry.start_time).slice(0, 5)}-${String(entry.end_time).slice(0, 5)}`,
+        subject: entry.subject_name,
+        teacher: `${entry.teacher_first_name} ${entry.teacher_last_name}`,
+        room: entry.room || '-',
+      })
     }
 
-    return response.ok({ success: true, timetable: organizedTimetable })
+    return organizedTimetable
   }
 
   /**

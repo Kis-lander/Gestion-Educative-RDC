@@ -165,11 +165,19 @@
         </h3>
         @if(director)
           <div class="flex items-center gap-3 mb-4">
-            <div
-              class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
-            >
-              {{ director.firstName?.charAt(0) }}{{ director.lastName?.charAt(0) }}
-            </div>
+            @if(director.avatarUrl)
+              <img
+                src="{{ director.avatarUrl }}"
+                alt="Photo de profil de {{ director.firstName }} {{ director.lastName }}"
+                class="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+              />
+            @else
+              <div
+                class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
+              >
+                {{ director.firstName?.charAt(0) }}{{ director.lastName?.charAt(0) }}
+              </div>
+            @endif
             <div>
               <p class="font-semibold">
                 {{ director.firstName }} {{ director.lastName }}
@@ -206,6 +214,32 @@
             Aucun directeur associé
           </p>
         @endif
+      </div>
+    </div>
+
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <h3 class="font-semibold text-lg border-b pb-2 mb-4">
+        Infrastructure
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="flex items-center justify-between p-3 border dark:border-gray-700 rounded-lg">
+          <span>Électricité</span>
+          <span class="{{ school.hasElectricity ? 'text-green-600' : 'text-gray-400' }}">
+            {{ school.hasElectricity ? 'Oui' : 'Non' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between p-3 border dark:border-gray-700 rounded-lg">
+          <span>Internet</span>
+          <span class="{{ school.hasInternet ? 'text-green-600' : 'text-gray-400' }}">
+            {{ school.hasInternet ? 'Oui' : 'Non' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between p-3 border dark:border-gray-700 rounded-lg">
+          <span>Bibliothèque</span>
+          <span class="{{ school.hasLibrary ? 'text-green-600' : 'text-gray-400' }}">
+            {{ school.hasLibrary ? 'Oui' : 'Non' }}
+          </span>
+        </div>
       </div>
     </div>
 

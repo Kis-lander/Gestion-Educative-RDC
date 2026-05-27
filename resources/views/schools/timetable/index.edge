@@ -5,10 +5,10 @@
   @endsection
   
   @section('dashboardTitle')
-    Emploi du temps gÃ©nÃ©ral
+    Emploi du temps général
   @endsection
   @section('dashboardSubtitle')
-    GÃ©rez les emplois du temps des classes
+    Gérez les emplois du temps des classes
   @endsection
   
   @section('actions')
@@ -36,14 +36,14 @@
               Toutes les classes
             </option>
             @each(classObj in classes)
-              <option value="{{ classObj.id }}">
+              <option value="{{ classObj.id }}" {{ selectedClassId === classObj.id ? 'selected' : '' }}>
                 {{ classObj.name }}
               </option>
             @end
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">PÃ©riode</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
           <select id="shiftSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">
               Toutes
@@ -52,7 +52,7 @@
               Matin
             </option>
             <option value="afternoon">
-              AprÃ¨s-midi
+              Après-midi
             </option>
             <option value="evening">
               Soir
@@ -78,11 +78,11 @@
       </div>
     </div>
 
-    <!-- Vue par classe sÃ©lectionnÃ©e -->
+    <!-- Vue par classe sélectionnée -->
     <div id="timetableView" class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center">
         <h3 class="font-semibold" id="selectedClassName">
-          SÃ©lectionnez une classe
+          Sélectionnez une classe
         </h3>
         <div class="flex gap-2">
           <button onclick="previousWeek()" class="px-2 py-1 border rounded text-sm hover:bg-gray-50">
@@ -99,7 +99,7 @@
         <div class="text-center py-12 text-gray-500">
           <i class="fas fa-calendar-alt text-4xl mb-3 block"></i>
           <p>
-            SÃ©lectionnez une classe pour afficher son emploi du temps
+            Sélectionnez une classe pour afficher son emploi du temps
           </p>
         </div>
       </div>
@@ -148,10 +148,10 @@
           timetableContent.innerHTML = `
                   <div class="text-center py-12 text-gray-500">
                     <i class="fas fa-calendar-alt text-4xl mb-3 block"></i>
-                    <p>Veuillez sÃ©lectionner une classe</p>
+                    <p>Veuillez sélectionner une classe</p>
                   </div>
                 `;
-          selectedClassName.textContent = "SÃ©lectionnez une classe";
+          selectedClassName.textContent = "Sélectionnez une classe";
           return;
         }
         const className = classSelect.options[classSelect.selectedIndex]?.text || "";
@@ -173,9 +173,9 @@
           timetableContent.innerHTML = `
                   <div class="text-center py-12 text-gray-500">
                     <i class="fas fa-clock text-4xl mb-3 block"></i>
-                    <p>Aucun emploi du temps dÃ©fini pour cette classe</p>
+                    <p>Aucun emploi du temps défini pour cette classe</p>
                     <a href="/schools/timetable/create?class_id=${classId}" class="mt-3 inline-block text-primary hover:underline">
-                      CrÃ©er un emploi du temps
+                      Créer un emploi du temps
                     </a>
                   </div>
                 `;
@@ -231,7 +231,7 @@
                 ${summary ? `
                 <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-sm">
                   <div><span class="text-gray-500">Total heures:</span> <span class="font-bold">${summary.totalHours || 0}h</span></div>
-                  <div><span class="text-gray-500">MatiÃ¨res:</span> <span class="font-bold">${summary.subjectsCount || 0}</span></div>
+                  <div><span class="text-gray-500">Matières:</span> <span class="font-bold">${summary.subjectsCount || 0}</span></div>
                   <div><span class="text-gray-500">Enseignants:</span> <span class="font-bold">${summary.teachersCount || 0}</span></div>
                   <div><span class="text-gray-500">Taux occupation:</span> <span class="font-bold">${summary.occupancyRate || 0}%</span></div>
                 </div>
@@ -255,7 +255,7 @@
         if (classId) {
           window.open(`/schools/timetable/print?class_id=${classId}&week=${currentWeek}`, "_blank");
         } else {
-          alert("Veuillez sÃ©lectionner une classe");
+          alert("Veuillez sélectionner une classe");
         }
       }
 
@@ -266,6 +266,9 @@
       // Initialisation
 
       currentWeek = getWeekNumber(new Date());
+      if (classSelect.value) {
+        loadTimetable();
+      }
     </script>
   @endsection
   

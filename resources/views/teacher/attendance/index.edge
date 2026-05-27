@@ -73,7 +73,7 @@
               Toutes
             </option>
             @each(classObj in classes)
-              <option value="{{ classObj.id }}">
+              <option value="{{ classObj.id }}" {{ selectedClassId === classObj.id ? 'selected' : '' }}>
                 {{ classObj.name }}
               </option>
             @end
@@ -81,11 +81,11 @@
         </div>
         <div>
           <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date début</label>
-          <input type="date" id="startDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+          <input type="date" id="startDate" value="{{ selectedStartDate }}" class="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
         <div>
           <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Date fin</label>
-          <input type="date" id="endDate" class="w-full px-3 py-2 border rounded-lg text-sm" />
+          <input type="date" id="endDate" value="{{ selectedEndDate }}" class="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
         <div class="flex items-end gap-2">
           <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
@@ -231,6 +231,7 @@
       const resetBtn = document.getElementById("resetFilters");
       // Dates par défaut (ce mois)
 
+      /*
       const today = new Date();
 
       const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -238,6 +239,7 @@
       startDate.value = firstDay.toISOString().split("T")[0];
 
       endDate.value = today.toISOString().split("T")[0];
+      */
 
       applyBtn.addEventListener("click", () => {
         const params = new URLSearchParams();

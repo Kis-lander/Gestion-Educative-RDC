@@ -1,7 +1,7 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    DÃ©tails classe - {{ classObj.name }}
+    Détails classe - {{ classObj.name }}
   @endsection
   
   @section('dashboardTitle')
@@ -17,7 +17,7 @@
         href="/teacher/attendance/mark?class_id={{ classObj.id }}"
         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
       >
-        <i class="fas fa-calendar-check mr-2"></i>PrÃ©sences
+        <i class="fas fa-calendar-check mr-2"></i>Présences
   </a>
       <a
         href="/academic/grades/add?class_id={{ classObj.id }}"
@@ -41,7 +41,7 @@
           {{ stats.studentsCount || 0 }}/{{ classObj.maxCapacity }}
         </p>
         <p class="text-sm text-gray-500">
-          Ã‰lÃ¨ves
+          Élèves
         </p>
         <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
           <div
@@ -64,7 +64,7 @@
           {{ stats.attendanceRate || 0 }}%
         </p>
         <p class="text-sm text-gray-500">
-          Taux prÃ©sence
+          Taux présence
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -80,7 +80,7 @@
   
   @section('content')
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Informations gÃ©nÃ©rales -->
+      <!-- Informations générales -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
         <h3 class="font-semibold text-lg border-b pb-2 mb-3">
           Informations
@@ -88,27 +88,27 @@
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
             <span class="text-gray-500">Niveau</span>
-            <span>{{ classObj.level }} ({{ classObj.gradeLevel }}Ã¨me)</span>
+            <span>{{ classObj.level }} ({{ classObj.gradeLevel }}ème)</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-500">PÃ©riode</span>
-            <span>{{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'AprÃ¨s-midi' : 'Soir') }}</span>
+            <span class="text-gray-500">Période</span>
+            <span>{{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'Après-midi' : 'Soir') }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Année scolaire</span>
             <span>{{ classObj.academicYear }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-500">CapacitÃ©</span>
+            <span class="text-gray-500">Capacité</span>
             <span>{{ stats.studentsCount }}/{{ classObj.maxCapacity }}</span>
           </div>
         </div>
       </div>
 
-      <!-- MatiÃ¨res enseignÃ©es -->
+      <!-- Matières enseignées -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
         <h3 class="font-semibold text-lg border-b pb-2 mb-3">
-          MatiÃ¨res enseignÃ©es
+          Matières enseignées
         </h3>
         <div class="space-y-2">
           @each(subject in subjects)
@@ -125,7 +125,7 @@
             </div>
             @else
             <p class="text-gray-500 text-center py-4">
-              Aucune matiÃ¨re assignÃ©e
+              Aucune matière assignée
             </p>
           @end
         </div>
@@ -156,7 +156,7 @@
             </div>
             @else
             <p class="text-gray-500 text-center py-4">
-              Aucun cours programmÃ© aujourd'hui
+              Aucun cours programmé aujourd'hui
             </p>
           @end
         </div>
@@ -171,11 +171,11 @@
       </div>
     </div>
 
-    <!-- Liste rapide des Ã©lÃ¨ves -->
+    <!-- Liste rapide des élèves -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
         <h3 class="font-semibold">
-          Derniers Ã©lÃ¨ves inscrits
+          Derniers élèves inscrits
         </h3>
         <a href="/teacher/classes/{{ classObj.id }}/students" class="text-primary text-sm hover:underline">
           Voir tous ({{ stats.studentsCount }})
@@ -195,7 +195,7 @@
                 Moyenne
               </th>
               <th class="px-4 py-2 text-center">
-                PrÃ©sences
+                Présences
               </th>
               <th class="px-4 py-2 text-center">
                 Actions
@@ -212,11 +212,10 @@
                   {{ student.name }}
                 </td>
                 <td class="px-4 py-2 text-center">
-                  <span :class='text-green-600' : {{ student.averageGrade }}>= 15,
-              'text-yellow-600': {{ student.averageGrade }} >= 10 && {{ student.averageGrade }}
-                    <text-red-600 : {{ student.averageGrade }}>
-                      {{ student.averageGrade || '-' }}/20</span>
-                  </td>
+                  <span class="font-bold {{ student.averageGrade === '-' ? 'text-gray-500' : (student.averageGrade >= 15 ? 'text-green-600' : (student.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600')) }}">
+                    {{ student.averageGrade || '-' }}/20
+                  </span>
+                </td>
                   <td class="px-4 py-2 text-center">
                     {{ student.attendanceRate || 0 }}%
                   </td>
@@ -233,7 +232,7 @@
                 @else
                 <tr>
                   <td colspan="5" class="text-center py-6">
-                    Aucun Ã©lÃ¨ve inscrit
+                    Aucun élève inscrit
                   </td>
                 </tr>
               @end
@@ -242,11 +241,11 @@
         </div>
       </div>
 
-      <!-- Devoirs rÃ©cents -->
+      <!-- Devoirs récents -->
       <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
         <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
           <h3 class="font-semibold">
-            Devoirs rÃ©cents
+            Devoirs récents
           </h3>
           <a
             href="/teacher/assignments/create?class_id={{ classObj.id }}"
@@ -264,7 +263,7 @@
                     {{ assignment.title }}
                   </p>
                   <p class="text-xs text-gray-500">
-                    MatiÃ¨re: {{ assignment.subjectName }}
+                    Matière: {{ assignment.subjectName }}
                   </p>
                 </div>
                 <div class="text-right">
@@ -279,7 +278,7 @@
             </div>
             @else
             <div class="p-6 text-center text-gray-500">
-              Aucun devoir publiÃ©
+              Aucun devoir publié
             </div>
           @end
         </div>

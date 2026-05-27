@@ -8,7 +8,7 @@
     Publication des notes
   @endsection
   @section('dashboardSubtitle')
-    Publiez les notes pour les parents et Ã©lÃ¨ves
+    Publiez les notes pour les parents et élèves
   @endsection
   
   @section('content')
@@ -28,7 +28,7 @@
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe *</label>
               <select name="classId" required class="w-full px-3 py-2 border rounded-lg">
                 <option value="">
-                  SÃ©lectionner une classe
+                  Sélectionner une classe
                 </option>
                 @each(classObj in classes)
                   <option value="{{ classObj.id }}">
@@ -72,7 +72,7 @@
               </label>
               <label class="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" name="notifyStudents" class="w-4 h-4" />
-                <span>Notifier les Ã©lÃ¨ves</span>
+                <span>Notifier les élèves</span>
               </label>
             </div>
           </div>
@@ -91,11 +91,11 @@
         </form>
       </div>
 
-      <!-- AperÃ§u et informations -->
+      <!-- Aperçu et informations -->
       <div class="space-y-6">
         <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
           <h3 class="font-semibold mb-2">
-            Que se passe-t-il aprÃ¨s publication ?
+            Que se passe-t-il après publication ?
           </h3>
           <ul class="text-sm space-y-2">
             <li class="flex gap-2">
@@ -104,11 +104,11 @@
             </li>
             <li class="flex gap-2">
               <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-              <span>Les Ã©lÃ¨ves verront leurs rÃ©sultats</span>
+              <span>Les élèves verront leurs résultats</span>
             </li>
             <li class="flex gap-2">
               <i class="fas fa-envelope text-blue-500 mt-0.5"></i>
-              <span>Un rÃ©capitulatif sera envoyÃ© par email</span>
+              <span>Un récapitulatif sera envoyé par email</span>
             </li>
             <li class="flex gap-2">
               <i class="fas fa-star text-yellow-500 mt-0.5"></i>
@@ -120,13 +120,13 @@
         <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
           <p class="text-sm flex gap-2">
             <i class="fas fa-exclamation-triangle text-yellow-600"></i>
-            <span>Attention : Une fois publiÃ©es, les notes sont visibles par tous et ne peuvent plus Ãªtre modifiÃ©es sans justification.</span>
+            <span>Attention : Une fois publiées, les notes sont visibles par tous et ne peuvent plus être modifiées sans justification.</span>
           </p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
           <h3 class="font-semibold mb-2">
-            Notes prÃªtes Ã  Ãªtre publiÃ©es
+            Notes prêtes à être publiées
           </h3>
           <div class="space-y-2 text-sm" id="pendingStats">
             <div class="flex justify-between">
@@ -134,11 +134,11 @@
               <span class="font-bold">{{ pending.classes || 0 }}</span>
             </div>
             <div class="flex justify-between">
-              <span>Notes non publiÃ©es</span>
+              <span>Notes non publiées</span>
               <span class="font-bold text-yellow-600">{{ pending.grades || 0 }}</span>
             </div>
             <div class="flex justify-between">
-              <span>Ã‰lÃ¨ves concernÃ©s</span>
+              <span>Élèves concernés</span>
               <span class="font-bold">{{ pending.students || 0 }}</span>
             </div>
           </div>
@@ -146,11 +146,11 @@
       </div>
     </div>
 
-    <!-- RÃ©capitulatif des notes Ã  publier par classe -->
+    <!-- Récapitulatif des notes à publier par classe -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="px-4 py-3 border-b dark:border-gray-700">
         <h3 class="font-semibold">
-          RÃ©capitulatif par classe
+          Récapitulatif par classe
         </h3>
       </div>
       <div class="table-responsive">
@@ -164,7 +164,7 @@
                 Notes saisies
               </th>
               <th class="px-4 py-3 text-center">
-                PubliÃ©es
+                Publiées
               </th>
               <th class="px-4 py-3 text-center">
                 En attente
@@ -195,7 +195,7 @@
                       Publier
             </button>
                   @else
-                    <span class="text-green-600">âœ“ PubliÃ©</span>
+                    <span class="text-green-600">✓ Publié</span>
                   @endif
                 </td>
               </tr>
@@ -221,7 +221,7 @@
             })
           }).then(res => res.json()).then(data => {
             if (data.success) {
-              alert("Notes publiÃ©es avec succÃ¨s");
+              alert("Notes publiées avec succès");
               location.reload();
             } else {
               alert("Erreur: " + data.message);

@@ -11,15 +11,32 @@
     Envoyer un message à toutes les écoles ou groupes spécifiques
   @endsection
   
+  @section('actions')
+    <div class="flex flex-wrap gap-3">
+      <a
+        href="/inspection/communications/school"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-school mr-2"></i>Communication école
+      </a>
+      <a
+        href="/inspection/communications/history"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-history mr-2"></i>Historique
+      </a>
+    </div>
+  @endsection
+
   @section('content')
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" x-data="{ loading: false, preview: false, confirmed: false, subject: '', content: '', targetRole: 'all', targetProvince: '', urgent: false }">
       <!-- Formulaire de communication -->
       <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
         <form
+          x-ref="form"
           method="POST"
           action="/inspection/communications/global"
-          x-data="{ loading: false, preview: false }"
-          @submit="loading = true"
+          @submit.prevent="preview = true"
         >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
@@ -28,6 +45,7 @@
             <input
               type="text"
               name="subject"
+              x-model="subject"
               required
               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
               placeholder="Ex: Réunion des directeurs d'école"
@@ -38,6 +56,7 @@
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu du message *</label>
             <textarea
               name="content"
+              x-model="content"
               rows="6"
               required
               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
@@ -49,19 +68,19 @@
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Cibles</label>
             <div class="grid grid-cols-2 gap-3">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="targetRole" value="all" checked class="w-4 h-4" />
+                <input type="radio" name="targetRole" value="all" x-model="targetRole" checked class="w-4 h-4" />
                 <span>Tous les utilisateurs</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="targetRole" value="director" class="w-4 h-4" />
+                <input type="radio" name="targetRole" value="director" x-model="targetRole" class="w-4 h-4" />
                 <span>Directeurs uniquement</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="targetRole" value="teacher" class="w-4 h-4" />
+                <input type="radio" name="targetRole" value="teacher" x-model="targetRole" class="w-4 h-4" />
                 <span>Enseignants uniquement</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="targetRole" value="parent" class="w-4 h-4" />
+                <input type="radio" name="targetRole" value="parent" x-model="targetRole" class="w-4 h-4" />
                 <span>Parents uniquement</span>
               </label>
             </div>
@@ -69,7 +88,7 @@
 
           <div class="mb-4">
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Filtrer par province (optionnel)</label>
-            <select name="targetProvince" class="w-full px-3 py-2 border rounded-lg">
+            <select name="targetProvince" x-model="targetProvince" class="w-full px-3 py-2 border rounded-lg">
               <option value="">
                 Toutes les provinces
               </option>
@@ -153,7 +172,7 @@
 
           <div class="mb-4">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name="urgent" class="w-4 h-4" />
+              <input type="checkbox" name="urgent" x-model="urgent" class="w-4 h-4" />
               <span class="text-red-600 font-medium">Marquer comme urgent</span>
             </label>
           </div>
@@ -192,17 +211,42 @@
             </div>
             <div
               class="font-bold text-gray-800 dark:text-white mb-2"
-              x-text="document.querySelector('[name=subject]')?.value || 'Objet'"
+              x-text="subject || 'Objet'"
             >
             </div>
             <div
               class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap"
-              x-text="document.querySelector('[name=content]')?.value || 'Contenu du message...'"
+              x-text="content || 'Contenu du message...'"
             >
             </div>
             <div class="mt-3 pt-2 border-t text-xs text-gray-400">
               <i class="fas fa-users mr-1"></i>
-              Destinataires: <span x-text="getTargetLabel()"></span>
+              Destinataires:
+              <span
+                x-text="({
+                  all: 'Tous les utilisateurs',
+                  director: 'Directeurs uniquement',
+                  teacher: 'Enseignants uniquement',
+                  parent: 'Parents uniquement'
+                }[targetRole] || 'Tous les utilisateurs') + (targetProvince ? ' - Province: ' + targetProvince : ' - Toutes les provinces')"
+              ></span>
+            </div>
+            <div x-show="urgent" class="mt-3 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+              Message marqué comme urgent
+            </div>
+            <div class="mt-4 flex gap-2">
+              <button type="button" @click="preview = false; confirmed = false" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600">
+                Modifier
+              </button>
+              <button
+                type="button"
+                @click="submitGlobalCommunication($refs.form, $data)"
+                :disabled="loading"
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+              >
+                <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                Confirmer l'envoi
+              </button>
             </div>
           </div>
         </div>
@@ -348,6 +392,52 @@
 
       function viewCommunication(id) {
         window.location.href = `/inspection/communications/${id}`;
+      }
+
+      async function submitGlobalCommunication(form, state) {
+        state.loading = true;
+
+        try {
+          const res = await fetch(form.action, {
+            method: form.method,
+            body: new FormData(form),
+            headers: {
+              Accept: "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            throw new Error(data.message || "Impossible d'envoyer la communication.");
+          }
+
+          window.dispatchEvent(new CustomEvent("show-toast", {
+            detail: {
+              message: data.message,
+              type: "success"
+            }
+          }));
+
+          form.reset();
+          state.preview = false;
+          state.confirmed = false;
+          state.subject = "";
+          state.content = "";
+          state.targetRole = "all";
+          state.targetProvince = "";
+          state.urgent = false;
+          loadUserStats();
+        } catch (error) {
+          window.dispatchEvent(new CustomEvent("show-toast", {
+            detail: {
+              message: error.message || "Une erreur est survenue pendant l'envoi.",
+              type: "error"
+            }
+          }));
+        } finally {
+          state.loading = false;
+        }
       }
       // Écouter les changements de sélection
 

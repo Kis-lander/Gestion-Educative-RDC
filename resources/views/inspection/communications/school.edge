@@ -11,21 +11,44 @@
     Envoyer un message à une école spécifique
   @endsection
   
+  @section('actions')
+    <div class="flex flex-wrap gap-3">
+      <a
+        href="/inspection/communications/global"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-bullhorn mr-2"></i>Communication globale
+      </a>
+      <a
+        href="/inspection/communications/history"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-history mr-2"></i>Historique
+      </a>
+    </div>
+  @endsection
+
   @section('content')
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" x-data="{ loading: false, preview: false, confirmed: false, selectedSchool: null, selectedSchoolLabel: '', subject: '', content: '', targetRole: 'all', requireAcknowledgment: false }">
       <!-- Formulaire de communication -->
       <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
         <form
+          x-ref="form"
           method="POST"
           action="/inspection/communications/school"
-          x-data="{ loading: false, preview: false, selectedSchool: null }"
-          @submit="loading = true"
+          @submit.prevent="if (!confirmed) { preview = true; return } loading = true; $el.submit()"
         >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
           <div class="mb-4">
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Sélectionner l'école *</label>
-            <select name="schoolId" required class="w-full px-3 py-2 border rounded-lg" x-model="selectedSchool">
+            <select
+              name="schoolId"
+              required
+              class="w-full px-3 py-2 border rounded-lg"
+              x-model="selectedSchool"
+              @change="selectedSchoolLabel = $event.target.selectedOptions[0]?.text.trim() || ''"
+            >
               <option value="">
                 -- Choisir une école --
               </option>
@@ -43,6 +66,7 @@
               <input
                 type="text"
                 name="subject"
+                x-model="subject"
                 required
                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
                 placeholder="Ex: Prochaine inspection"
@@ -53,6 +77,7 @@
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Contenu du message *</label>
               <textarea
                 name="content"
+                x-model="content"
                 rows="8"
                 required
                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
@@ -64,19 +89,19 @@
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataires spécifiques (optionnel)</label>
               <div class="grid grid-cols-2 gap-3">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="targetRole" value="all" checked class="w-4 h-4" />
+                  <input type="radio" name="targetRole" value="all" x-model="targetRole" checked class="w-4 h-4" />
                   <span>Tous les utilisateurs de l'école</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="targetRole" value="director" class="w-4 h-4" />
+                  <input type="radio" name="targetRole" value="director" x-model="targetRole" class="w-4 h-4" />
                   <span>Directeur uniquement</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="targetRole" value="teacher" class="w-4 h-4" />
+                  <input type="radio" name="targetRole" value="teacher" x-model="targetRole" class="w-4 h-4" />
                   <span>Enseignants uniquement</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="targetRole" value="parent" class="w-4 h-4" />
+                  <input type="radio" name="targetRole" value="parent" x-model="targetRole" class="w-4 h-4" />
                   <span>Parents uniquement</span>
                 </label>
               </div>
@@ -84,7 +109,7 @@
 
             <div class="mb-4">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="requireAcknowledgment" class="w-4 h-4" />
+                <input type="checkbox" name="requireAcknowledgment" x-model="requireAcknowledgment" class="w-4 h-4" />
                 <span>Exiger un accusé de réception</span>
               </label>
             </div>
@@ -124,13 +149,44 @@
             </div>
             <div
               class="font-bold text-gray-800 dark:text-white mb-2"
-              x-text="document.querySelector('[name=subject]')?.value || 'Objet'"
+              x-text="subject || 'Objet'"
             >
             </div>
             <div
               class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap"
-              x-text="document.querySelector('[name=content]')?.value || 'Contenu du message...'"
+              x-text="content || 'Contenu du message...'"
             >
+            </div>
+            <div class="mt-3 pt-2 border-t text-xs text-gray-400">
+              Ecole: <span x-text="selectedSchoolLabel || 'Aucune ecole selectionnee'"></span>
+            </div>
+            <div class="mt-2 text-xs text-gray-400">
+              Destinataires:
+              <span
+                x-text="({
+                  all: 'Tous les utilisateurs de cette ecole',
+                  director: 'Directeur uniquement',
+                  teacher: 'Enseignants uniquement',
+                  parent: 'Parents uniquement'
+                }[targetRole] || 'Tous les utilisateurs de cette ecole')"
+              ></span>
+            </div>
+            <div x-show="requireAcknowledgment" class="mt-3 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              Accuse de reception requis
+            </div>
+            <div class="mt-4 flex gap-2">
+              <button type="button" @click="preview = false; confirmed = false" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600">
+                Modifier
+              </button>
+              <button
+                type="button"
+                @click="confirmed = true; $nextTick(() => $refs.form.requestSubmit())"
+                :disabled="loading"
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+              >
+                <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                Confirmer l'envoi
+              </button>
             </div>
           </div>
         </div>
@@ -185,8 +241,22 @@
     <script>
       // Charger les informations de l'école
       async function loadSchoolInfo(schoolId) {
-        if (!schoolId) return;
+        if (!schoolId) {
+          document.getElementById("schoolInfo").innerHTML = "SÃ©lectionnez une Ã©cole pour voir ses informations";
+          document.getElementById("historyContainer").innerHTML = `
+                  <div class="p-8 text-center text-gray-500">
+                    SÃ©lectionnez une Ã©cole pour voir l'historique des communications
+                  </div>
+                `;
+          return;
+        }
+        const infoContainer = document.getElementById("schoolInfo");
+        infoContainer.innerHTML = '<div class="text-center py-4">Chargement...</div>';
         const res = await fetch(`/api/schools/${schoolId}/info`);
+        if (!res.ok) {
+          infoContainer.innerHTML = '<div class="text-red-500 text-center py-4">Impossible de charger les informations de cette Ã©cole</div>';
+          return;
+        }
         const data = await res.json();
         const infoHtml = `
                 <div class="space-y-2 text-sm">
@@ -216,14 +286,24 @@
                   </div>
                 </div>
               `;
-        document.getElementById("schoolInfo").innerHTML = infoHtml;
+        infoContainer.innerHTML = infoHtml;
         // Charger l'historique
         loadHistory(schoolId);
       }
       // Charger l'historique des communications
 
       async function loadHistory(schoolId) {
+        const container = document.getElementById("historyContainer");
+        container.innerHTML = '<div class="p-8 text-center text-gray-500">Chargement de l historique...</div>';
         const res = await fetch(`/api/schools/${schoolId}/communications`);
+        if (!res.ok) {
+          container.innerHTML = `
+                  <div class="p-8 text-center text-red-500">
+                    Impossible de charger l'historique des communications
+                  </div>
+                `;
+          return;
+        }
         const data = await res.json();
         if (data.communications && data.communications.length > 0) {
           let historyHtml = "";
@@ -236,7 +316,7 @@
                             <p class="font-medium">${comm.subject}</p>
                             ${comm.urgent ? '<span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Urgent</span>' : ""}
                           </div>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${comm.content.substring(0, 150)}${comm.content.length > 150 ? "..." : ""}</p>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${(comm.content || "").substring(0, 150)}${(comm.content || "").length > 150 ? "..." : ""}</p>
                           <div class="flex gap-3 mt-2 text-xs text-gray-400">
                             <span><i class="fas fa-calendar mr-1"></i> ${formatDate(comm.createdAt)}</span>
                             <span><i class="fas fa-envelope mr-1"></i> Destinataires: ${comm.recipientType === "all" ? "Tous" : comm.recipientType}</span>
@@ -248,9 +328,9 @@
                     </div>
                   `;
           }
-          document.getElementById("historyContainer").innerHTML = historyHtml;
+          container.innerHTML = historyHtml;
         } else {
-          document.getElementById("historyContainer").innerHTML = `
+          container.innerHTML = `
                   <div class="p-8 text-center text-gray-500">
                     <i class="fas fa-history text-3xl mb-2 block"></i>
                     Aucune communication antérieure avec cette école
@@ -262,10 +342,13 @@
 
       document.querySelector("[name=schoolId]").addEventListener("change", e => {
         const schoolId = e.target.value;
-        if (schoolId) {
-          loadSchoolInfo(schoolId);
-        }
+        loadSchoolInfo(schoolId);
       });
+
+      const initialSchoolId = document.querySelector("[name=schoolId]")?.value;
+      if (initialSchoolId) {
+        loadSchoolInfo(initialSchoolId);
+      }
 
       function viewCommunication(id) {
         window.location.href = `/inspection/communications/${id}`;

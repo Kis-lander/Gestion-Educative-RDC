@@ -3,6 +3,8 @@
   @section('title')
     Rapport d'inspection - {{ school.name }}
   @endsection
+
+  @section('content')
   <div class="inspection-report">
     <!-- En-tête -->
     <div class="text-center mb-6">
@@ -126,7 +128,7 @@
           </tr>
           <tr>
             <td>
-              Résultats académiques
+              Résultats scolaires
             </td>
             <td class="text-center">
               {{ scores.results || '-' }}
@@ -338,4 +340,4 @@
       background-color: #f3f4f6;
     }
   </style>
-
+  @endsection

@@ -191,13 +191,15 @@
               class="w-8 h-8 rounded-full 
         {{ activity.type === 'login' ? 'bg-green-100 text-green-600' : 
            (activity.type === 'message' ? 'bg-blue-100 text-blue-600' : 
-           (activity.type === 'document' ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-600')) }} 
+           (activity.type === 'document' ? 'bg-yellow-100 text-yellow-600' :
+           (activity.type === 'attendance' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-600'))) }}
         flex items-center justify-center"
             >
               <i
                 class="fas {{ activity.type === 'login' ? 'fa-sign-in-alt' : 
                          (activity.type === 'message' ? 'fa-envelope' : 
-                         (activity.type === 'document' ? 'fa-file-alt' : 'fa-bell')) }} text-sm"
+                         (activity.type === 'document' ? 'fa-file-alt' :
+                         (activity.type === 'attendance' ? 'fa-calendar-check' : 'fa-bell'))) }} text-sm"
               ></i>
             </div>
             <div class="flex-1">

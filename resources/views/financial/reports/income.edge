@@ -69,6 +69,11 @@
             <option value="">
               Tous
             </option>
+            @each(feeType in feeTypes)
+              <option value="{{ feeType }}">
+                {{ feeType }}
+              </option>
+            @end
             <option value="Inscription">
               Inscription
             </option>

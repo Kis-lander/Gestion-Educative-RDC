@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    CrÃ©er un emploi du temps - {{ school.name }}
+    Créer un emploi du temps - {{ school.name }}
   @endsection
   
   @section('dashboardTitle')
     Nouvel emploi du temps
   @endsection
   @section('dashboardSubtitle')
-    DÃ©finissez l'emploi du temps d'une classe
+    Définissez l'emploi du temps d'une classe
   @endsection
   
   @section('content')
@@ -34,10 +34,10 @@
                 @change="loadSubjects"
               >
                 <option value="">
-                  SÃ©lectionner
+                  Sélectionner
                 </option>
                 @each(classObj in classes)
-                  <option value="{{ classObj.id }}">
+                  <option value="{{ classObj.id }}" {{ selectedClassId === classObj.id ? 'selected' : '' }}>
                     {{ classObj.name }}
                   </option>
                 @end
@@ -69,13 +69,13 @@
               </select>
             </div>
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">PÃ©riode</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Période</label>
               <select name="shift" class="w-full px-3 py-2 border rounded-lg">
                 <option value="morning">
                   Matin (8h-12h)
                 </option>
                 <option value="afternoon">
-                  AprÃ¨s-midi (13h-17h)
+                  Après-midi (13h-17h)
                 </option>
                 <option value="evening">
                   Soir (17h-21h)
@@ -129,7 +129,7 @@
               class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
             >
               <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              CrÃ©er l'emploi du temps
+              Créer l'emploi du temps
         </button>
             <a href="/schools/timetable" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
               Annuler
@@ -147,11 +147,11 @@
           <ul class="text-sm space-y-2">
             <li class="flex gap-2">
               <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-              <span>Chaque case reprÃ©sente une heure de cours</span>
+              <span>Chaque case représente une heure de cours</span>
             </li>
             <li class="flex gap-2">
               <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-              <span>SÃ©lectionnez la matiÃ¨re, l'enseignant et la salle</span>
+              <span>Sélectionnez la matière, l'enseignant et la salle</span>
             </li>
             <li class="flex gap-2">
               <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
@@ -177,7 +177,7 @@
               onclick="copyDay('monday', 'tuesday')"
               class="w-full text-left px-3 py-1 border rounded hover:bg-gray-50"
             >
-              <i class="fas fa-copy mr-2"></i>Copier Lundi â†’ Mardi
+              <i class="fas fa-copy mr-2"></i>Copier Lundi → Mardi
         </button>
           </div>
         </div>
@@ -250,7 +250,7 @@
             html += `
                     <td class="px-1 py-1">
                       <select name="schedule[${day}][${slotIndex}][subjectId]" class="w-full px-1 py-1 border rounded text-xs mb-1">
-                        <option value="">-- MatiÃ¨re --</option>
+                        <option value="">-- Matière --</option>
                         ${subjects.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join("")}
                       </select>
                       <select name="schedule[${day}][${slotIndex}][teacherId]" class="w-full px-1 py-1 border rounded text-xs mb-1">
@@ -298,6 +298,9 @@
       // Observer le changement de classe
 
       document.querySelector("[name=classId]").addEventListener("change", loadSubjects);
+      if (document.querySelector("[name=classId]").value) {
+        loadSubjects();
+      }
     </script>
   @endsection
   

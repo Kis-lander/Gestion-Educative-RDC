@@ -37,6 +37,15 @@ export default class School extends SchoolSchema {
   declare logoUrl: string
 
   @column()
+  declare hasElectricity: boolean
+
+  @column()
+  declare hasInternet: boolean
+
+  @column()
+  declare hasLibrary: boolean
+
+  @column()
   declare status: 'active' | 'suspended' | 'pending'
 
   @column.dateTime()

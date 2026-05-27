@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Performance acadÃ©mique - {{ school.name }}
+    Performance scolaire - {{ school.name }}
   @endsection
   
   @section('dashboardTitle')
-    Performance acadÃ©mique
+    Performance scolaire
   @endsection
   @section('dashboardSubtitle')
-    Analyse des rÃ©sultats scolaires
+    Analyse des résultats scolaires
   @endsection
   
   @section('actions')
@@ -80,7 +80,7 @@
               Aucune
             </option>
             <option value="{{ currentYear - 1 }}">
-              AnnÃ©e prÃ©cÃ©dente
+              Année précédente
             </option>
             <option value="{{ currentYear - 2 }}">
               2 ans auparavant
@@ -89,17 +89,17 @@
         </div>
         <div class="flex items-end gap-2">
           <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-            <i class="fas fa-chart-line mr-2"></i>GÃ©nÃ©rer
+            <i class="fas fa-chart-line mr-2"></i>Générer
       </button>
         </div>
       </div>
     </div>
 
-    <!-- Indicateurs clÃ©s -->
+    <!-- Indicateurs clés -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Moyenne gÃ©nÃ©rale
+          Moyenne générale
         </p>
         <p class="text-3xl font-bold" id="avgGrade">
           0.0/20
@@ -109,7 +109,7 @@
       </div>
       <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Taux rÃ©ussite
+          Taux réussite
         </p>
         <p class="text-3xl font-bold" id="successRate">
           0%
@@ -125,7 +125,7 @@
       </div>
       <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          En difficultÃ©
+          En difficulté
         </p>
         <p class="text-3xl font-bold" id="difficultCount">
           0
@@ -137,7 +137,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          Ã‰volution des performances
+          Évolution des performances
         </h3>
         <canvas id="performanceTrendChart" height="250">
         </canvas>
@@ -151,20 +151,20 @@
       </div>
     </div>
 
-    <!-- Performance par matiÃ¨re -->
+    <!-- Performance par matière -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <h3 class="font-semibold mb-3">
-        Performance par matiÃ¨re
+        Performance par matière
       </h3>
       <canvas id="subjectPerformanceChart" height="250">
       </canvas>
     </div>
 
-    <!-- Tableau dÃ©taillÃ© par classe -->
+    <!-- Tableau détaillé par classe -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="px-4 py-3 border-b dark:border-gray-700">
         <h3 class="font-semibold">
-          DÃ©tail par classe
+          Détail par classe
         </h3>
       </div>
       <div class="table-responsive">
@@ -181,7 +181,7 @@
                 Moyenne
               </th>
               <th class="px-4 py-2 text-center">
-                Taux rÃ©ussite
+                Taux réussite
               </th>
               <th class="px-4 py-2 text-center">
                 TB
@@ -233,7 +233,7 @@
         if (compareYear) params.append("compare_year", compareYear);
         const res = await fetch(`/api/reports/academic/performance?${params.toString()}`);
         const data = await res.json();
-        // Mise Ã  jour indicateurs
+        // Mise à jour indicateurs
         document.getElementById("avgGrade").textContent = `${data.summary.average}/20`;
         document.getElementById("successRate").textContent = `${data.summary.successRate}%`;
         document.getElementById("excellentCount").textContent = data.summary.excellentCount || 0;
@@ -255,7 +255,7 @@
               tension: .4,
               fill: false
             }, {
-              label: "AnnÃ©e prÃ©cÃ©dente",
+              label: "Année précédente",
               data: data.trend.previous,
               borderColor: "#9ca3af",
               borderDash: [ 5, 5 ],
@@ -297,7 +297,7 @@
             }
           }
         });
-        // Graphique par matiÃ¨re
+        // Graphique par matière
         if (subjectChart) subjectChart.destroy();
         const subjectCtx = document.getElementById("subjectPerformanceChart").getContext("2d");
         subjectChart = new Chart(subjectCtx, {
@@ -342,7 +342,7 @@
                 <div class="mb-2">
                   <div class="flex justify-between text-xs mb-1">
                     <span>${d.range}</span>
-                    <span>${d.count} Ã©lÃ¨ves (${d.percentage}%)</span>
+                    <span>${d.count} élèves (${d.percentage}%)</span>
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-2">
                     <div class="bg-${d.color}-500 rounded-full h-2" style="width: ${d.percentage}%"></div>

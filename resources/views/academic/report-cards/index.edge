@@ -8,7 +8,7 @@
     Bulletins scolaires
   @endsection
   @section('dashboardSubtitle')
-    Consultez et gÃ©rez les bulletins des Ã©lÃ¨ves
+    Consultez et gérez les bulletins des élèves
   @endsection
   
   @section('actions')
@@ -17,7 +17,7 @@
         href="/academic/report-cards/generate"
         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
       >
-        <i class="fas fa-plus mr-2"></i>GÃ©nÃ©rer un bulletin
+        <i class="fas fa-plus mr-2"></i>Générer un bulletin
   </a>
       <button onclick="exportAll()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
         <i class="fas fa-download mr-2"></i>Exporter tous
@@ -32,7 +32,7 @@
           {{ stats.total || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          Bulletins gÃ©nÃ©rÃ©s
+          Bulletins générés
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -40,7 +40,7 @@
           {{ stats.published || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          PubliÃ©s
+          Publiés
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -56,7 +56,7 @@
           {{ stats.average || '0.0' }}/20
         </p>
         <p class="text-sm text-gray-500">
-          Moyenne gÃ©nÃ©rale
+          Moyenne générale
         </p>
       </div>
     </div>
@@ -80,7 +80,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Ã‰lÃ¨ve</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Élève</label>
           <input
             type="text"
             id="filterStudent"
@@ -137,7 +137,7 @@
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th class="px-4 py-3 text-left">
-                Ã‰lÃ¨ve
+                Élève
               </th>
               <th class="px-4 py-3 text-left">
                 Classe
@@ -149,13 +149,13 @@
                 Trimestre
               </th>
               <th class="px-4 py-3 text-center">
-                AnnÃ©e
+                Année
               </th>
               <th class="px-4 py-3 text-center">
                 Statut
               </th>
               <th class="px-4 py-3 text-center">
-                Date gÃ©nÃ©ration
+                Date génération
               </th>
               <th class="px-4 py-3 text-center">
                 Actions
@@ -186,7 +186,7 @@
                   <span
                     class="px-2 py-1 rounded-full text-xs {{ report.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}"
                   >
-                    {{ report.status === 'published' ? 'PubliÃ©' : 'Brouillon' }}
+                    {{ report.status === 'published' ? 'Publié' : 'Brouillon' }}
             </span>
                 </td>
                 <td class="px-4 py-3 text-center">
@@ -223,10 +223,10 @@
               <tr>
                 <td colspan="8" class="text-center py-12 text-gray-500">
                   <i class="fas fa-file-alt text-4xl mb-3 block"></i>
-                  Aucun bulletin trouvÃ©
+                  Aucun bulletin trouvé
                   <div class="mt-3">
                     <a href="/academic/report-cards/generate" class="text-primary hover:underline">
-                      GÃ©nÃ©rer le premier bulletin
+                      Générer le premier bulletin
               </a>
                   </div>
                 </td>
@@ -236,7 +236,7 @@
         </table>
       </div>
 
-      @include('partials/pagination', { pagination: pagination, url: '/academic/report-cards' })
+      @include('partials/pagination')
     </div>
 
     <script>

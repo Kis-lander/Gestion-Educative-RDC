@@ -59,7 +59,7 @@
             <div>
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Montant *</label>
               <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{{ fee.currency === 'USD' ? '$' : (fee.currency === 'EUR' ? 'â‚¬' : 'FC') }}</span>
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{{ fee.currency === 'USD' ? '$' : (fee.currency === 'EUR' ? '€' : 'FC') }}</span>
                 <input
                   type="number"
                   name="amount"
@@ -81,7 +81,7 @@
                   CDF (FC)
                 </option>
                 <option value="EUR" {{ fee.currency === 'EUR' ? 'selected' : '' }}>
-                  EUR (â‚¬)
+                  EUR (€)
                 </option>
               </select>
             </div>
@@ -119,7 +119,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date d'Ã©chÃ©ance</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date d'échéance</label>
               <input type="date" name="dueDate" value="{{ fee.dueDate }}" class="w-full px-3 py-2 border rounded-lg" />
             </div>
             <div>
@@ -143,7 +143,7 @@
               />
             </div>
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Pourcentage rÃ©duction</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Pourcentage réduction</label>
               <input
                 type="number"
                 name="discountPercentage"
@@ -166,7 +166,7 @@
                 Inactif
               </option>
               <option value="archived" {{ fee.status === 'archived' ? 'selected' : '' }}>
-                ArchivÃ©
+                Archivé
               </option>
             </select>
           </div>
@@ -176,7 +176,7 @@
         <div class="mt-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <div class="grid grid-cols-2 gap-3 text-sm">
             <div>
-              Total payÃ©: <span class="font-bold">{{ formatCurrency(fee.totalCollected || 0, fee.currency) }}</span>
+              Total payé: <span class="font-bold">{{ formatCurrency(fee.totalCollected || 0, fee.currency) }}</span>
             </div>
             <div>
               Taux recouvrement: <span class="font-bold">{{ fee.collectionRate || 0 }}%</span>
@@ -185,7 +185,7 @@
               Nombre de payeurs: <span class="font-bold">{{ fee.payersCount || 0 }}</span>
             </div>
             <div>
-              ImpayÃ©s: <span class="font-bold">{{ fee.outstandingCount || 0 }}</span>
+              Impayés: <span class="font-bold">{{ fee.outstandingCount || 0 }}</span>
             </div>
           </div>
         </div>

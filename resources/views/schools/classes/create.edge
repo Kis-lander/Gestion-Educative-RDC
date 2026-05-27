@@ -18,6 +18,24 @@
 
         <div class="space-y-4">
           <div>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe RDC/DAS</label>
+            <select id="rdcDasClassSelect" class="w-full px-4 py-2 border rounded-lg">
+              <option value="">
+                Saisie manuelle
+              </option>
+              @each(classItem in rdcClassCatalog)
+                <option
+                  value="{{ classItem.name }}"
+                  data-level="{{ classItem.level }}"
+                  data-grade-level="{{ classItem.gradeLevel }}"
+                >
+                  {{ classItem.name }} - {{ classItem.level }}
+                </option>
+              @end
+            </select>
+          </div>
+
+          <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la classe *</label>
             <input
               type="text"
@@ -43,8 +61,11 @@
               <option value="Primaire">
                 Primaire
               </option>
-              <option value="Secondaire">
-                Secondaire
+              <option value="Éducation de base">
+                Éducation de base
+              </option>
+              <option value="Humanités">
+                Humanités
               </option>
             </select>
           </div>
@@ -158,5 +179,21 @@
         </div>
       </div>
     </div>
+
+    <script>
+      const rdcDasClassSelect = document.getElementById("rdcDasClassSelect");
+      const classNameInput = document.querySelector("[name=name]");
+      const levelSelect = document.querySelector("[name=level]");
+      const gradeLevelInput = document.querySelector("[name=gradeLevel]");
+
+      rdcDasClassSelect?.addEventListener("change", () => {
+        const option = rdcDasClassSelect.selectedOptions[0];
+        if (!option?.value) return;
+
+        classNameInput.value = option.value;
+        levelSelect.value = option.dataset.level || "";
+        gradeLevelInput.value = option.dataset.gradeLevel || "";
+      });
+    </script>
   @endsection
   

@@ -56,7 +56,7 @@
       </div>
       <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Taux rÃ©solution
+          Taux résolution
         </p>
         <p class="text-3xl font-bold" id="resolutionRate">
           0%
@@ -64,7 +64,7 @@
       </div>
       <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Ã‰lÃ¨ves concernÃ©s
+          Élèves concernés
         </p>
         <p class="text-3xl font-bold" id="affectedStudents">
           0
@@ -76,14 +76,14 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          Ã‰volution mensuelle
+          Évolution mensuelle
         </h3>
         <canvas id="monthlyTrendChart" height="250">
         </canvas>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          RÃ©partition par type
+          Répartition par type
         </h3>
         <canvas id="typeDistributionChart" height="250">
         </canvas>
@@ -93,14 +93,14 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          RÃ©partition par gravitÃ©
+          Répartition par gravité
         </h3>
         <canvas id="severityDistributionChart" height="250">
         </canvas>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          Sanctions appliquÃ©es
+          Sanctions appliquées
         </h3>
         <canvas id="sanctionsChart" height="250">
         </canvas>
@@ -111,7 +111,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="px-4 py-3 border-b dark:border-gray-700">
         <h3 class="font-semibold">
-          RÃ©capitulatif par classe
+          Récapitulatif par classe
         </h3>
       </div>
       <div class="table-responsive">
@@ -134,7 +134,7 @@
                 Sanctions
               </th>
               <th class="px-4 py-2 text-center">
-                Taux rÃ©solution
+                Taux résolution
               </th>
             </tr>
           </thead>
@@ -201,7 +201,7 @@
             responsive: true
           }
         });
-        // Graphique par gravitÃ©
+        // Graphique par gravité
         if (severityChart) severityChart.destroy();
         const severityCtx = document.getElementById("severityDistributionChart").getContext("2d");
         severityChart = new Chart(severityCtx, {
@@ -259,7 +259,7 @@
               backgroundColor: "#dc2626",
               borderRadius: 8
             }, {
-              label: "RÃ©solus",
+              label: "Résolus",
               data: data.quarterly.resolved,
               backgroundColor: "#16a34a",
               borderRadius: 8

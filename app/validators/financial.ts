@@ -39,7 +39,7 @@ export const recordPaymentValidator = vine.create(
     feeId: vine.string().exists({ table: 'school_fees', column: 'id' }),
     amountPaid: vine.number().range([0.01, 999999.99]),
     paymentDate: vine.date({ formats: ['YYYY-MM-DD'] }),
-    paymentMethod: vine.enum(['cash', 'bank_transfer', 'mobile_money', 'check']),
+    paymentMethod: vine.enum(['cash', 'bank_transfer', 'mobile_money', 'check', 'card']),
     referenceNumber: vine.string().trim().optional(),
     notes: vine.string().trim().optional(),
   })
@@ -50,7 +50,10 @@ export const recordPaymentValidator = vine.create(
  */
 export const updateFeesValidator = vine.create(
   vine.object({
+    feeType: vine.string().trim().optional(),
     amount: vine.number().min(0).optional(),
+    currency: vine.enum(['USD', 'CDF', 'EUR']).optional(),
+    term: vine.string().trim().optional(),
     isMandatory: vine.boolean().optional(),
     description: vine.string().trim().optional(),
   })

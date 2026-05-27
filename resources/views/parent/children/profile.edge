@@ -5,7 +5,7 @@
   @endsection
   
   @section('dashboardTitle')
-    Profil de l'Ã©lÃ¨ve
+    Profil de l'élève
   @endsection
   @section('dashboardSubtitle')
     {{ child.name }}
@@ -20,14 +20,14 @@
         href="/parent/report-card/child/{{ child.id }}"
         class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
       >
-        <i class="fas fa-file-pdf mr-2"></i>TÃ©lÃ©charger bulletin
+        <i class="fas fa-file-pdf mr-2"></i>Télécharger bulletin
   </a>
     </div>
   @endsection
   
   @section('content')
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <!-- En-tÃªte avec photo -->
+      <!-- En-tête avec photo -->
       <div class="bg-gradient-to-r from-primary to-blue-700 px-6 py-4">
         <div class="flex items-center gap-4">
           <div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
@@ -69,12 +69,12 @@
                 <span>{{ child.birthPlace || '-' }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-500">NationalitÃ©</span>
+                <span class="text-gray-500">Nationalité</span>
                 <span>{{ child.nationality || 'Congolaise' }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500">Genre</span>
-                <span>{{ child.gender === 'male' ? 'Masculin' : 'FÃ©minin' }}</span>
+                <span>{{ child.gender === 'male' ? 'Masculin' : 'Féminin' }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500">Adresse</span>
@@ -90,7 +90,7 @@
             </h3>
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
-                <span class="text-gray-500">Ã‰tablissement</span>
+                <span class="text-gray-500">Établissement</span>
                 <span>{{ school.name }}</span>
               </div>
               <div class="flex justify-between">
@@ -106,7 +106,7 @@
                 <span>{{ child.enrollmentDate || '-' }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-500">Statut acadÃ©mique</span>
+                <span class="text-gray-500">Statut académique</span>
                 <span
                   class="px-2 py-0.5 rounded-full text-xs {{ child.academicStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}"
                 >
@@ -117,11 +117,11 @@
           </div>
         </div>
 
-        <!-- Informations mÃ©dicales -->
+        <!-- Informations médicales -->
         @if(child.medicalInfo)
           <div class="mt-6">
             <h3 class="font-semibold text-lg border-b pb-2 mb-3">
-              Informations mÃ©dicales
+              Informations médicales
             </h3>
             <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <p class="text-sm">
@@ -145,7 +145,7 @@
                 {{ parent.name || '-' }}
               </p>
               <p class="text-sm">
-                TÃ©l: {{ parent.phone || '-' }}
+                Tél: {{ parent.phone || '-' }}
               </p>
               <p class="text-sm">
                 Email: {{ parent.email || '-' }}
@@ -177,7 +177,7 @@
             <i class="fas fa-calendar-plus mr-2"></i>Demander rendez-vous
       </button>
           <button onclick="reportIssue()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-            <i class="fas fa-flag mr-2"></i>Signaler un problÃ¨me
+            <i class="fas fa-flag mr-2"></i>Signaler un problème
       </button>
         </div>
       </div>

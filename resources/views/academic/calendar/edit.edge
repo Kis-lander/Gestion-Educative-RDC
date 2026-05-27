@@ -1,11 +1,11 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Modifier Ã©vÃ©nement - {{ event.title }}
+    Modifier événement - {{ event.title }}
   @endsection
   
   @section('dashboardTitle')
-    Modifier l'Ã©vÃ©nement
+    Modifier l'événement
   @endsection
   @section('dashboardSubtitle')
     {{ event.title }}
@@ -13,7 +13,7 @@
   
   @section('actions')
     <button onclick="deleteEvent()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-      <i class="fas fa-trash mr-2"></i>Supprimer l'Ã©vÃ©nement
+      <i class="fas fa-trash mr-2"></i>Supprimer l'événement
 </button>
   @endsection
   
@@ -30,19 +30,19 @@
 
         <div class="space-y-4">
           <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'Ã©vÃ©nement *</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Type d'événement *</label>
             <select name="type" required x-model="eventType" class="w-full px-3 py-2 border rounded-lg">
               <option value="event" {{ event.type === 'event' ? 'selected' : '' }}>
-                Ã‰vÃ©nement spÃ©cial
+                Événement spécial
               </option>
               <option value="holiday" {{ event.type === 'holiday' ? 'selected' : '' }}>
-                Vacances / CongÃ©
+                Vacances / Congé
               </option>
               <option value="exam" {{ event.type === 'exam' ? 'selected' : '' }}>
                 Examen
               </option>
               <option value="meeting" {{ event.type === 'meeting' ? 'selected' : '' }}>
-                RÃ©union
+                Réunion
               </option>
               <option value="deadline" {{ event.type === 'deadline' ? 'selected' : '' }}>
                 Date limite
@@ -68,7 +68,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date dÃ©but *</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date début *</label>
               <input
                 type="date"
                 name="startDate"
@@ -78,7 +78,7 @@
               />
             </div>
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure dÃ©but</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Heure début</label>
               <input
                 type="time"
                 name="startTime"
@@ -126,7 +126,7 @@
                 Tous
               </option>
               <option value="students" {{ event.target_audience === 'students' ? 'selected' : '' }}>
-                Ã‰lÃ¨ves uniquement
+                Élèves uniquement
               </option>
               <option value="teachers" {{ event.target_audience === 'teachers' ? 'selected' : '' }}>
                 Enseignants uniquement
@@ -178,7 +178,7 @@
 
     <script>
       function deleteEvent() {
-        if (confirm("Supprimer dÃ©finitivement cet Ã©vÃ©nement ? Cette action est irrÃ©versible.")) {
+        if (confirm("Supprimer définitivement cet événement ? Cette action est irréversible.")) {
           fetch("/academic/calendar/{{ event.id }}", {
             method: "DELETE",
             headers: {

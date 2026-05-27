@@ -16,6 +16,45 @@ export interface ApiDefinition {
     register: typeof routes['schools.register'] & {
       create: typeof routes['schools.register.create']
     }
+    accounts: {
+      index: typeof routes['schools.accounts.index']
+      create: typeof routes['schools.accounts.create']
+      store: typeof routes['schools.accounts.store']
+      edit: typeof routes['schools.accounts.edit']
+      update: typeof routes['schools.accounts.update']
+    }
+    classes: {
+      index: typeof routes['schools.classes.index']
+      create: typeof routes['schools.classes.create']
+      seedRdcDas: typeof routes['schools.classes.seed_rdc_das']
+      store: typeof routes['schools.classes.store']
+      students: typeof routes['schools.classes.students']
+      edit: typeof routes['schools.classes.edit']
+      show: typeof routes['schools.classes.show']
+      update: typeof routes['schools.classes.update'] & {
+        post: typeof routes['schools.classes.update.post']
+      }
+      destroy: typeof routes['schools.classes.destroy']
+    }
+    timetable: {
+      index: typeof routes['schools.timetable.index']
+      create: typeof routes['schools.timetable.create']
+    }
+    teachers: {
+      index: typeof routes['schools.teachers.index']
+      create: typeof routes['schools.teachers.create']
+      store: typeof routes['schools.teachers.store']
+      show: typeof routes['schools.teachers.show']
+      edit: typeof routes['schools.teachers.edit']
+      schedule: typeof routes['schools.teachers.schedule']
+      update: typeof routes['schools.teachers.update']
+      destroy: typeof routes['schools.teachers.destroy']
+    }
+    profile: {
+      update: {
+        web: typeof routes['schools.profile.update.web']
+      }
+    }
     registerSchool: typeof routes['schools.register_school']
     dashboard: typeof routes['schools.dashboard']
     updateSchoolProfile: typeof routes['schools.update_school_profile']
@@ -44,6 +83,9 @@ export interface ApiDefinition {
       global: {
         store: typeof routes['inspection.communications.global.store']
       }
+      details: {
+        json: typeof routes['inspection.communications.details.json']
+      }
     }
     settings: {
       general: {
@@ -62,10 +104,15 @@ export interface ApiDefinition {
         store: typeof routes['inspection.settings.security.store']
       }
     }
-    teachers: typeof routes['inspection.teachers']
     messages: typeof routes['inspection.messages']
     users: {
       stats: typeof routes['inspection.users.stats']
+    }
+    schools: {
+      communication: {
+        info: typeof routes['inspection.schools.communication.info']
+        history: typeof routes['inspection.schools.communication.history']
+      }
     }
     sendSchoolCommunication: typeof routes['inspection.send_school_communication']
   }
@@ -95,6 +142,9 @@ export interface ApiDefinition {
     performanceReportData: typeof routes['inspections.performance_report_data']
     statisticsReportData: typeof routes['inspections.statistics_report_data']
     transfersReportData: typeof routes['inspections.transfers_report_data']
+    exportTransfersReport: typeof routes['inspections.export_transfers_report']
+    triggerBackup: typeof routes['inspections.trigger_backup']
+    downloadBackup: typeof routes['inspections.download_backup']
     logs: typeof routes['inspections.logs']
     exportLogs: typeof routes['inspections.export_logs']
     getAllSchools: typeof routes['inspections.get_all_schools']
@@ -115,18 +165,82 @@ export interface ApiDefinition {
     getConversation: typeof routes['messages.get_conversation']
   }
   dashboard: typeof routes['dashboard']
-  settings: typeof routes['settings']
+  settings: typeof routes['settings'] & {
+    general: typeof routes['settings.general'] & {
+      store: typeof routes['settings.general.store']
+    }
+  }
+  teachers: {
+    index: typeof routes['teachers.index']
+    create: typeof routes['teachers.create']
+    attendanceIndexPage: typeof routes['teachers.attendance_index_page']
+    attendanceMarkPage: typeof routes['teachers.attendance_mark_page']
+    getMyClasses: typeof routes['teachers.get_my_classes']
+    getAssignments: typeof routes['teachers.get_assignments']
+    createAssignment: typeof routes['teachers.create_assignment']
+    gradeSubmission: typeof routes['teachers.grade_submission']
+    createForumTopic: typeof routes['teachers.create_forum_topic']
+    getClassStudentsForAttendance: typeof routes['teachers.get_class_students_for_attendance']
+    getClassAttendance: typeof routes['teachers.get_class_attendance']
+    markAttendance: typeof routes['teachers.mark_attendance']
+  }
+  communication: {
+    messages: {
+      compose: typeof routes['communication.messages.compose']
+      sent: typeof routes['communication.messages.sent']
+      inbox: typeof routes['communication.messages.inbox']
+      read: typeof routes['communication.messages.read']
+      edit: typeof routes['communication.messages.edit']
+      update: typeof routes['communication.messages.update']
+      markAllRead: typeof routes['communication.messages.mark_all_read']
+      delete: typeof routes['communication.messages.delete']
+      send: typeof routes['communication.messages.send'] & {
+        redirect: typeof routes['communication.messages.send.redirect']
+      }
+    }
+    notifications: {
+      index: typeof routes['communication.notifications.index']
+    }
+    sendGlobalCommunication: typeof routes['communication.send_global_communication']
+    sendSchoolCommunication: typeof routes['communication.send_school_communication']
+  }
+  api: {
+    notifications: {
+      index: typeof routes['api.notifications.index']
+      read: typeof routes['api.notifications.read'] & {
+        put: typeof routes['api.notifications.read.put']
+      }
+      markAllRead: typeof routes['api.notifications.mark_all_read']
+      readAll: typeof routes['api.notifications.read_all']
+      deleteAll: typeof routes['api.notifications.delete_all']
+    }
+    teacher: {
+      attendance: {
+        classes: {
+          students: typeof routes['api.teacher.attendance.classes.students']
+        }
+        class: typeof routes['api.teacher.attendance.class']
+        store: typeof routes['api.teacher.attendance.store']
+      }
+    }
+  }
   profile: typeof routes['profile'] & {
     edit: typeof routes['profile.edit']
     security: typeof routes['profile.security']
-    preferences: typeof routes['profile.preferences']
+    preferences: typeof routes['profile.preferences'] & {
+      save: typeof routes['profile.preferences.save']
+    }
     activity: typeof routes['profile.activity']
     avatar: {
       update: typeof routes['profile.avatar.update']
     }
   }
   auth: {
+    saveLanguage: typeof routes['auth.save_language']
+    saveRegional: typeof routes['auth.save_regional']
     login: typeof routes['auth.login']
+    requestOtp: typeof routes['auth.request_otp']
+    verifyOtp: typeof routes['auth.verify_otp']
     forgotPassword: typeof routes['auth.forgot_password']
     resetPassword: typeof routes['auth.reset_password']
     logout: typeof routes['auth.logout']
@@ -134,6 +248,121 @@ export interface ApiDefinition {
     getProfile: typeof routes['auth.get_profile']
     updateProfile: typeof routes['auth.update_profile']
     generateSchoolCredentials: typeof routes['auth.generate_school_credentials']
+  }
+  academic: {
+    classes: {
+      index: typeof routes['academic.classes.index']
+      create: typeof routes['academic.classes.create']
+      seedRdcDas: typeof routes['academic.classes.seed_rdc_das']
+      store: typeof routes['academic.classes.store']
+      show: typeof routes['academic.classes.show']
+      edit: typeof routes['academic.classes.edit']
+      update: typeof routes['academic.classes.update'] & {
+        post: typeof routes['academic.classes.update.post']
+      }
+      destroy: typeof routes['academic.classes.destroy']
+      students: typeof routes['academic.classes.students']
+      subjects: typeof routes['academic.classes.subjects']
+    }
+    grades: {
+      index: typeof routes['academic.grades.index']
+      add: typeof routes['academic.grades.add']
+      store: typeof routes['academic.grades.store']
+      publish: typeof routes['academic.grades.publish']
+      class: typeof routes['academic.grades.class']
+    }
+    timetable: {
+      create: typeof routes['academic.timetable.create']
+      class: typeof routes['academic.timetable.class']
+    }
+    calendar: typeof routes['academic.calendar']
+  }
+  legacy: {
+    api: {
+      classes: {
+        students: typeof routes['legacy.api.classes.students']
+        subjects: typeof routes['legacy.api.classes.subjects']
+      }
+      grades: {
+        class: typeof routes['legacy.api.grades.class']
+      }
+      timetable: {
+        class: typeof routes['legacy.api.timetable.class']
+        create: typeof routes['legacy.api.timetable.create']
+      }
+      students: {
+        financialStatus: typeof routes['legacy.api.students.financial_status']
+      }
+    }
+  }
+  students: {
+    index: typeof routes['students.index']
+    create: typeof routes['students.create']
+    store: typeof routes['students.store']
+    getMyProfile: typeof routes['students.get_my_profile']
+    getMyGrades: typeof routes['students.get_my_grades']
+    getMyReportCard: typeof routes['students.get_my_report_card']
+    getMyDiscipline: typeof routes['students.get_my_discipline']
+    getAssignments: typeof routes['students.get_assignments']
+    submitAssignment: typeof routes['students.submit_assignment']
+    getMyForumQuestions: typeof routes['students.get_my_forum_questions']
+    postForumQuestion: typeof routes['students.post_forum_question']
+    sendMessageToTeacher: typeof routes['students.send_message_to_teacher']
+    getMyTimetable: typeof routes['students.get_my_timetable']
+    getMyAttendance: typeof routes['students.get_my_attendance']
+    requestTransfer: typeof routes['students.request_transfer']
+  }
+  discipline: {
+    dashboard: typeof routes['discipline.dashboard']
+    incidents: {
+      index: typeof routes['discipline.incidents.index']
+      report: typeof routes['discipline.incidents.report']
+      store: typeof routes['discipline.incidents.store']
+      show: typeof routes['discipline.incidents.show']
+      edit: typeof routes['discipline.incidents.edit']
+      update: typeof routes['discipline.incidents.update'] & {
+        post: typeof routes['discipline.incidents.update.post']
+      }
+      destroy: typeof routes['discipline.incidents.destroy']
+    }
+    students: {
+      index: typeof routes['discipline.students.index']
+      show: typeof routes['discipline.students.show']
+    }
+    sanctions: {
+      apply: typeof routes['discipline.sanctions.apply'] & {
+        store: typeof routes['discipline.sanctions.apply.store']
+      }
+    }
+  }
+  financial: {
+    index: typeof routes['financial.index']
+    fees: {
+      index: typeof routes['financial.fees.index']
+      create: typeof routes['financial.fees.create']
+      store: typeof routes['financial.fees.store']
+      structure: typeof routes['financial.fees.structure']
+      edit: typeof routes['financial.fees.edit']
+      update: typeof routes['financial.fees.update'] & {
+        post: typeof routes['financial.fees.update.post']
+      }
+      toggleStatus: typeof routes['financial.fees.toggle_status']
+      destroy: typeof routes['financial.fees.destroy']
+    }
+    payments: {
+      index: typeof routes['financial.payments.index']
+      record: typeof routes['financial.payments.record']
+      store: typeof routes['financial.payments.store']
+      receipt: typeof routes['financial.payments.receipt']
+      print: typeof routes['financial.payments.print']
+      destroy: typeof routes['financial.payments.destroy']
+    }
+    reports: {
+      income: typeof routes['financial.reports.income']
+      outstanding: typeof routes['financial.reports.outstanding']
+      statistics: typeof routes['financial.reports.statistics']
+      export: typeof routes['financial.reports.export']
+    }
   }
   transfers: {
     verifyAuthorization: typeof routes['transfers.verify_authorization']
@@ -184,34 +413,12 @@ export interface ApiDefinition {
     getIncomeReport: typeof routes['financials.get_income_report']
     getFinancialStats: typeof routes['financials.get_financial_stats']
   }
-  teachers: {
-    getMyClasses: typeof routes['teachers.get_my_classes']
-    getAssignments: typeof routes['teachers.get_assignments']
-    createAssignment: typeof routes['teachers.create_assignment']
-    gradeSubmission: typeof routes['teachers.grade_submission']
-    createForumTopic: typeof routes['teachers.create_forum_topic']
-    markAttendance: typeof routes['teachers.mark_attendance']
-  }
   parents: {
     getChildren: typeof routes['parents.get_children']
     getChildGrades: typeof routes['parents.get_child_grades']
     sendMessageToTeacher: typeof routes['parents.send_message_to_teacher']
     getChildPayments: typeof routes['parents.get_child_payments']
     justifyAbsence: typeof routes['parents.justify_absence']
-  }
-  students: {
-    getMyProfile: typeof routes['students.get_my_profile']
-    getMyGrades: typeof routes['students.get_my_grades']
-    getMyReportCard: typeof routes['students.get_my_report_card']
-    getMyDiscipline: typeof routes['students.get_my_discipline']
-    getAssignments: typeof routes['students.get_assignments']
-    submitAssignment: typeof routes['students.submit_assignment']
-    getMyForumQuestions: typeof routes['students.get_my_forum_questions']
-    postForumQuestion: typeof routes['students.post_forum_question']
-    sendMessageToTeacher: typeof routes['students.send_message_to_teacher']
-    getMyTimetable: typeof routes['students.get_my_timetable']
-    getMyAttendance: typeof routes['students.get_my_attendance']
-    requestTransfer: typeof routes['students.request_transfer']
   }
   disciplines: {
     getStudents: typeof routes['disciplines.get_students']
@@ -220,10 +427,6 @@ export interface ApiDefinition {
     deleteIncident: typeof routes['disciplines.delete_incident']
     applySanction: typeof routes['disciplines.apply_sanction']
     notifyParent: typeof routes['disciplines.notify_parent']
-  }
-  communication: {
-    sendGlobalCommunication: typeof routes['communication.send_global_communication']
-    sendSchoolCommunication: typeof routes['communication.send_school_communication']
   }
   interSchools: {
     searchSchools: typeof routes['inter_schools.search_schools']

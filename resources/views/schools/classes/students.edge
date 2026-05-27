@@ -167,11 +167,10 @@
                   {{ student.gender === 'male' ? 'Masculin' : 'Féminin' }}
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span class="font-bold" :class='text-green-600' : {{ student.averageGrade || 0 }}>= 15,
-              'text-yellow-600': {{ student.averageGrade || 0 }} >= 10 && {{ student.averageGrade || 0 }}
-                    <text-red-600 : {{ student.averageGrade || 0 }}>
-                      {{ student.averageGrade || '-' }}/20</span>
-                  </td>
+                  <span class="font-bold {{ student.averageGrade === '-' ? 'text-gray-500' : (student.averageGrade >= 15 ? 'text-green-600' : (student.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600')) }}">
+                    {{ student.averageGrade || '-' }}/20
+                  </span>
+                </td>
                   <td class="px-4 py-3 text-center">
                     <div class="flex items-center justify-center gap-1">
                       <div class="w-16 bg-gray-200 rounded-full h-1.5">
@@ -232,7 +231,7 @@
           </table>
         </div>
 
-        @include('partials/pagination', { pagination: pagination, url: '/schools/classes/' + classObj.id + '/students' })
+        @include('partials/pagination')
       </div>
 
       <script>

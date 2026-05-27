@@ -12,12 +12,20 @@
   @endsection
   
   @section('actions')
-    <a
-      href="/inspection/communications/global"
-      class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
-    >
-      <i class="fas fa-plus mr-2"></i>Nouvelle communication
-</a>
+    <div class="flex flex-wrap gap-3">
+      <a
+        href="/inspection/communications/global"
+        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-bullhorn mr-2"></i>Communication globale
+      </a>
+      <a
+        href="/inspection/communications/school"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-school mr-2"></i>Communication école
+      </a>
+    </div>
   @endsection
   
   @section('stats')
@@ -241,16 +249,21 @@
       function viewDetails(id) {
         currentCommunicationId = id;
         fetch(`/api/communications/${id}`).then(res => res.json()).then(data => {
+          const communication = data.communication || data;
           const modal = document.getElementById("detailsModal");
           const content = document.getElementById("modalContent");
-          document.getElementById("modalTitle").textContent = data.subject;
+          document.getElementById("modalTitle").textContent = communication.subject || "Détails communication";
+          const recipientCount = communication.recipientCount || (communication.receiverId ? 1 : 0);
+          const readCount = communication.acknowledgedCount ?? (communication.isRead ? 1 : 0);
+          const readRate = communication.readRate ?? (recipientCount ? Math.round((readCount / recipientCount) * 100) : 0);
+          const acknowledgedRate = communication.acknowledgedRate ?? readRate;
           let recipientsHtml = "";
-          if (data.recipients && data.recipients.length > 0) {
+          if (communication.recipients && communication.recipients.length > 0) {
             recipientsHtml = `
                       <div class="mt-4">
-                        <h4 class="font-semibold mb-2">Destinataires (${data.recipients.length})</h4>
+                        <h4 class="font-semibold mb-2">Destinataires (${communication.recipients.length})</h4>
                         <div class="max-h-60 overflow-y-auto space-y-2">
-                          ${data.recipients.map(r => `
+                          ${communication.recipients.map(r => `
                             <div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
                               <div>
                                 <p class="font-medium">${r.name}</p>
@@ -268,18 +281,19 @@
           }
           content.innerHTML = `
                     <div class="mb-4">
-                      <p class="text-gray-500 text-sm">Envoyé le ${formatDate(data.createdAt)} par ${data.senderName}</p>
+                      <p class="text-gray-500 text-sm">Envoyé le ${formatDate(communication.createdAt)} par ${communication.senderName || "Inspection"}</p>
+                      <p class="text-gray-500 text-sm mt-1">École concernée : ${communication.schoolName || "-"}</p>
                       <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mt-3">
-                        <div class="whitespace-pre-wrap">${data.content}</div>
+                        <div class="whitespace-pre-wrap">${communication.content || "-"}</div>
                       </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-4">
                       <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded text-center">
-                        <p class="text-2xl font-bold text-green-600">${data.readRate || 0}%</p>
+                        <p class="text-2xl font-bold text-green-600">${readRate}%</p>
                         <p class="text-xs text-gray-500">Taux de lecture</p>
                       </div>
                       <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded text-center">
-                        <p class="text-2xl font-bold text-blue-600">${data.acknowledgedRate || 0}%</p>
+                        <p class="text-2xl font-bold text-blue-600">${acknowledgedRate}%</p>
                         <p class="text-xs text-gray-500">Accusés reçus</p>
                       </div>
                     </div>
@@ -298,6 +312,7 @@
       }
 
       function formatDate(date) {
+        if (!date) return "-";
         return new Date(date).toLocaleDateString("fr-FR", {
           day: "2-digit",
           month: "2-digit",

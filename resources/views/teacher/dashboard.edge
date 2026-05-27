@@ -189,9 +189,14 @@
         <h3 class="font-semibold text-gray-800 dark:text-white">
           Présences du jour
         </h3>
-        <a href="/teacher/attendance/mark" class="text-primary text-sm hover:underline">
-          <i class="fas fa-plus mr-1"></i>Marquer
-    </a>
+        <div class="flex gap-3">
+          <a href="/teacher/attendance" class="text-primary text-sm hover:underline">
+            <i class="fas fa-history mr-1"></i>Historique
+      </a>
+          <a href="/teacher/attendance/mark" class="text-primary text-sm hover:underline">
+            <i class="fas fa-plus mr-1"></i>Marquer
+      </a>
+        </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         @each(classAttendance in todayAttendance)

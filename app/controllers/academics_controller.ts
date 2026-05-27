@@ -16,6 +16,164 @@ import {
 import { DateTime } from 'luxon'
 
 export default class AcademicController {
+  private getPaginationMeta(paginator: { toJSON: () => any }) {
+    const meta = paginator.toJSON().meta
+
+    return {
+      total: meta.total,
+      perPage: meta.perPage,
+      currentPage: meta.currentPage,
+      lastPage: meta.lastPage,
+      from: meta.total ? (meta.currentPage - 1) * meta.perPage + 1 : 0,
+      to: Math.min(meta.currentPage * meta.perPage, meta.total),
+    }
+  }
+
+  private getFallbackSchool(user: { schoolId?: string | null }) {
+    return {
+      id: user.schoolId,
+      name: 'Gestion Éducative RDC',
+    }
+  }
+
+  private getRdcDasClassCatalog() {
+    return [
+      { name: '1ère Maternelle', level: 'Maternelle', gradeLevel: 1 },
+      { name: '2ème Maternelle', level: 'Maternelle', gradeLevel: 2 },
+      { name: '3ème Maternelle', level: 'Maternelle', gradeLevel: 3 },
+      { name: '1ère Primaire', level: 'Primaire', gradeLevel: 1 },
+      { name: '2ème Primaire', level: 'Primaire', gradeLevel: 2 },
+      { name: '3ème Primaire', level: 'Primaire', gradeLevel: 3 },
+      { name: '4ème Primaire', level: 'Primaire', gradeLevel: 4 },
+      { name: '5ème Primaire', level: 'Primaire', gradeLevel: 5 },
+      { name: '6ème Primaire', level: 'Primaire', gradeLevel: 6 },
+      { name: '7ème Éducation de base', level: 'Éducation de base', gradeLevel: 7 },
+      { name: '8ème Éducation de base', level: 'Éducation de base', gradeLevel: 8 },
+      { name: '1ère Humanités', level: 'Humanités', gradeLevel: 9 },
+      { name: '2ème Humanités', level: 'Humanités', gradeLevel: 10 },
+      { name: '3ème Humanités', level: 'Humanités', gradeLevel: 11 },
+      { name: '4ème Humanités', level: 'Humanités', gradeLevel: 12 },
+    ]
+  }
+
+  public async gradesPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const page = Number(request.input('page', 1))
+    const classId = request.input('class_id')
+    const subjectId = request.input('subject_id')
+    const term = request.input('term')
+    const published = request.input('published')
+
+    const gradesQuery = Grade.query()
+      .whereHas('class', (classQuery) => classQuery.where('schoolId', user.schoolId))
+      .preload('student', (studentQuery) => studentQuery.preload('user'))
+      .preload('class')
+      .preload('subject')
+      .if(classId, (query) => query.where('classId', classId))
+      .if(subjectId, (query) => query.where('subjectId', subjectId))
+      .if(term, (query) => query.where('term', term))
+      .if(published === 'true', (query) => query.where('published', true))
+      .if(published === 'false', (query) => query.where('published', false))
+      .orderBy('examDate', 'desc')
+
+    const paginator = await gradesQuery.paginate(page, 20)
+    const classes = await Class.query().where('schoolId', user.schoolId).orderBy('name', 'asc')
+    const subjects = await Subject.query().orderBy('name', 'asc')
+    const stats = await db
+      .from('grades')
+      .join('classes', 'grades.class_id', 'classes.id')
+      .where('classes.school_id', user.schoolId)
+      .select(
+        db.raw('count(*) as total_grades'),
+        db.raw('count(*) filter (where grades.published = true) as published'),
+        db.raw('coalesce(avg(grades.score), 0) as average'),
+        db.raw('count(distinct grades.student_id) as students_concerned')
+      )
+      .first()
+
+    return view.render('academic/grades/index', {
+      school: this.getFallbackSchool(user),
+      classes,
+      subjects,
+      grades: paginator.all().map((grade) => ({
+        id: grade.id,
+        examDate: grade.examDate,
+        studentName: grade.student?.user?.fullName || 'Élève inconnu',
+        className: grade.class?.name || '-',
+        subjectName: grade.subject?.name || '-',
+        examType: grade.examType,
+        score: grade.score ?? 0,
+        maxScore: grade.maxScore,
+        term: grade.term,
+        published: grade.published,
+      })),
+      stats: {
+        totalGrades: Number(stats?.total_grades || 0),
+        published: Number(stats?.published || 0),
+        average: Number(stats?.average || 0).toFixed(1),
+        studentsConcerned: Number(stats?.students_concerned || 0),
+      },
+      pagination: this.getPaginationMeta(paginator),
+      url: '/academic/grades',
+    })
+  }
+
+  public async addGradesPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const classes = await Class.query().where('schoolId', user.schoolId).orderBy('name', 'asc')
+
+    return view.render('academic/grades/add', {
+      school: this.getFallbackSchool(user),
+      classes,
+      selectedClassId: request.input('class_id', ''),
+    })
+  }
+
+  public async timetablePage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const currentYear = DateTime.now().year
+    const classes = await Class.query()
+      .where('schoolId', user.schoolId)
+      .orderBy('gradeLevel', 'asc')
+      .orderBy('name', 'asc')
+
+    return view.render('schools/timetable/index', {
+      school: this.getFallbackSchool(user),
+      classes,
+      currentYear,
+      selectedClassId: request.input('class_id', ''),
+    })
+  }
+
+  public async createTimetablePage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const currentYear = DateTime.now().year
+
+    const [classes, teachers] = await Promise.all([
+      Class.query()
+        .where('schoolId', user.schoolId)
+        .orderBy('gradeLevel', 'asc')
+        .orderBy('name', 'asc'),
+      Teacher.query()
+        .where('schoolId', user.schoolId)
+        .where('status', 'active')
+        .preload('user')
+        .orderBy('createdAt', 'desc'),
+    ])
+
+    return view.render('schools/timetable/create', {
+      school: this.getFallbackSchool(user),
+      classes,
+      teachers,
+      currentYear,
+      selectedClassId: request.input('class_id', ''),
+    })
+  }
+
+  public async classTimetablePage({ params, response }: HttpContext) {
+    return response.redirect(`/schools/timetable?class_id=${params.classId}`)
+  }
+
   /**
    * ==================== GESTION DES CLASSES ====================
    */
@@ -23,6 +181,218 @@ export default class AcademicController {
   /**
    * Obtenir toutes les classes de l'école
    */
+  public async classesPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const page = Number(request.input('page', 1))
+    const level = request.input('level')
+    const shift = request.input('shift')
+    const search = String(request.input('search', '')).trim()
+
+    const query = Class.query()
+      .where('schoolId', user.schoolId)
+      .preload('teacher', (teacherQuery) => teacherQuery.preload('user'))
+      .if(level, (classQuery) => classQuery.where('level', level))
+      .if(shift, (classQuery) => classQuery.where('shift', shift))
+      .if(search, (classQuery) => classQuery.whereILike('name', `%${search}%`))
+      .orderBy('gradeLevel', 'asc')
+      .orderBy('name', 'asc')
+
+    const paginator = await query.paginate(page, 12)
+    const pageClasses = paginator.all()
+    const classIds = pageClasses.map((classObj) => classObj.id)
+    const studentRows = classIds.length
+      ? await db
+          .from('students')
+          .select('class_id')
+          .count('* as total')
+          .whereIn('class_id', classIds)
+          .where('academic_status', 'active')
+          .groupBy('class_id')
+      : []
+    const studentsByClass = new Map(
+      studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
+    )
+    const allClasses = await Class.query().where('schoolId', user.schoolId)
+    const totalStudentsRow = await Student.query()
+      .where('schoolId', user.schoolId)
+      .where('academicStatus', 'active')
+      .count('* as total')
+      .first()
+    const totalStudents = Number(totalStudentsRow?.$extras.total || 0)
+    const totalCapacity = allClasses.reduce(
+      (sum, classObj) => sum + Number(classObj.maxCapacity || 0),
+      0
+    )
+    const levels = [
+      ...new Set([
+        ...this.getRdcDasClassCatalog().map((classObj) => classObj.level),
+        ...allClasses.map((classObj) => classObj.level).filter(Boolean),
+      ]),
+    ].sort()
+
+    return view.render('schools/classes/index', {
+      school: this.getFallbackSchool(user),
+      classes: pageClasses.map((classObj) => {
+        const studentsCount = studentsByClass.get(classObj.id) || 0
+
+        return {
+          id: classObj.id,
+          name: classObj.name,
+          level: classObj.level,
+          gradeLevel: classObj.gradeLevel,
+          shift: classObj.shift,
+          maxCapacity: classObj.maxCapacity,
+          studentsCount,
+          teacherName: classObj.teacher?.user?.fullName || null,
+          occupancyRate: classObj.maxCapacity
+            ? Math.min(100, Math.round((studentsCount / classObj.maxCapacity) * 100))
+            : 0,
+        }
+      }),
+      stats: {
+        total: allClasses.length,
+        active: allClasses.length,
+        averageSize: allClasses.length ? Math.round(totalStudents / allClasses.length) : 0,
+        occupancyRate: totalCapacity ? Math.round((totalStudents / totalCapacity) * 100) : 0,
+      },
+      levels,
+      rdcClassCatalog: this.getRdcDasClassCatalog(),
+      pagination: this.getPaginationMeta(paginator),
+      url: '/academic/classes',
+    })
+  }
+
+  public async createClassPage({ auth, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teachers = await Teacher.query()
+      .where('schoolId', user.schoolId)
+      .where('status', 'active')
+      .preload('user')
+      .orderBy('createdAt', 'desc')
+
+    return view.render('schools/classes/create', {
+      school: this.getFallbackSchool(user),
+      teachers,
+      rdcClassCatalog: this.getRdcDasClassCatalog(),
+    })
+  }
+
+  public async seedRdcDasClasses({ auth, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const currentYear = DateTime.now().year.toString()
+    let created = 0
+
+    for (const classItem of this.getRdcDasClassCatalog()) {
+      const existingClass = await Class.query()
+        .where('schoolId', user.schoolId)
+        .where('name', classItem.name)
+        .where('academicYear', currentYear)
+        .first()
+
+      if (existingClass) continue
+
+      await Class.create({
+        schoolId: user.schoolId,
+        name: classItem.name,
+        level: classItem.level,
+        gradeLevel: classItem.gradeLevel,
+        maxCapacity: 50,
+        currentEnrollment: 0,
+        academicYear: currentYear,
+        shift: 'morning',
+        teacherId: null,
+      })
+      created += 1
+    }
+
+    session.flash(
+      'success',
+      created
+        ? `${created} classe(s) RDC/DAS ajoutée(s).`
+        : 'Les classes RDC/DAS existent déjà pour cette année scolaire.'
+    )
+
+    return response.redirect('/academic/classes')
+  }
+
+  public async showClassPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const classObj = await Class.query()
+      .where('id', params.id)
+      .where('schoolId', user.schoolId)
+      .preload('teacher', (teacherQuery) => teacherQuery.preload('user'))
+      .firstOrFail()
+    const studentsCount = await Student.query()
+      .where('classId', classObj.id)
+      .where('academicStatus', 'active')
+      .count('* as total')
+    const subjects = await db
+      .from('class_subject')
+      .where('class_subject.class_id', classObj.id)
+      .join('subjects', 'class_subject.subject_id', 'subjects.id')
+      .join('teachers', 'class_subject.teacher_id', 'teachers.id')
+      .join('users', 'teachers.user_id', 'users.id')
+      .select(
+        'class_subject.*',
+        'subjects.name as subject_name',
+        'users.first_name as teacher_first_name',
+        'users.last_name as teacher_last_name'
+      )
+
+    return view.render('schools/classes/show', {
+      school: this.getFallbackSchool(user),
+      classObj,
+      subjects,
+      timetable: [],
+      stats: {
+        studentsCount: Number(studentsCount[0].$extras.total || 0),
+        averageGrade: await this.getClassAverage(classObj.id),
+        attendanceRate: await this.getClassAttendance(classObj.id),
+      },
+    })
+  }
+
+  public async editClassPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const [classObj, teachers] = await Promise.all([
+      Class.query().where('id', params.id).where('schoolId', user.schoolId).firstOrFail(),
+      Teacher.query().where('schoolId', user.schoolId).where('status', 'active').preload('user'),
+    ])
+
+    return view.render('schools/classes/edit', {
+      school: this.getFallbackSchool(user),
+      classObj,
+      teachers,
+    })
+  }
+
+  public async classStudentsPage({ auth, params, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const page = Number(request.input('page', 1))
+    const classObj = await Class.query()
+      .where('id', params.id)
+      .where('schoolId', user.schoolId)
+      .firstOrFail()
+    const paginator = await Student.query()
+      .where('classId', classObj.id)
+      .preload('user')
+      .orderBy('createdAt', 'desc')
+      .paginate(page, 20)
+
+    return view.render('schools/classes/students', {
+      school: this.getFallbackSchool(user),
+      classObj,
+      students: paginator.all().map((student) => ({
+        ...student.serialize(),
+        user: student.user,
+        averageGrade: 0,
+        attendanceRate: 0,
+      })),
+      pagination: this.getPaginationMeta(paginator),
+      url: `/schools/classes/${classObj.id}/students`,
+    })
+  }
+
   public async getClasses({ auth, request, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const academicYear = request.input('academic_year')
@@ -143,6 +513,10 @@ export default class AcademicController {
 
     await classObj.save()
 
+    if (request.header('accept')?.includes('text/html')) {
+      return response.redirect('/academic/classes')
+    }
+
     return response.created({
       success: true,
       message: 'Classe créée avec succès',
@@ -164,6 +538,10 @@ export default class AcademicController {
 
     classObj.merge(payload)
     await classObj.save()
+
+    if (request.header('accept')?.includes('text/html')) {
+      return response.redirect(`/academic/classes/${classObj.id}`)
+    }
 
     return response.ok({
       success: true,
@@ -619,7 +997,7 @@ export default class AcademicController {
       vine.object({
         classId: vine.string().exists({ table: 'classes', column: 'id' }),
         term: vine.string().trim(),
-        academicYear: vine.string().trim(),
+        academicYear: vine.string().trim().optional(),
         notifyParents: vine.boolean().optional(),
       })
     )
@@ -628,7 +1006,6 @@ export default class AcademicController {
     const updatedRows = await Grade.query()
       .where('classId', payload.classId)
       .where('term', payload.term)
-      .where('academicYear', payload.academicYear)
       .update({
         published: true,
         publishedAt: DateTime.now().toSQL(),
@@ -691,23 +1068,27 @@ export default class AcademicController {
    * Calculer le taux de présence d'une classe
    */
   private async getClassAttendance(classId: string): Promise<number> {
-    const result = await db
-      .from('attendances')
-      .where('class_id', classId)
-      .where('status', 'present')
-      .count('*', 'present')
-      .first()
+    try {
+      const result = await db
+        .from('attendances')
+        .where('class_id', classId)
+        .where('status', 'present')
+        .count('*', 'present')
+        .first()
 
-    const totalResult = await db
-      .from('attendances')
-      .where('class_id', classId)
-      .count('*', 'total')
-      .first()
+      const totalResult = await db
+        .from('attendances')
+        .where('class_id', classId)
+        .count('*', 'total')
+        .first()
 
-    const total = Number(totalResult?.total || 0)
-    if (total === 0) return 0
+      const total = Number(totalResult?.total || 0)
+      if (total === 0) return 0
 
-    return (Number(result?.present || 0) / total) * 100
+      return (Number(result?.present || 0) / total) * 100
+    } catch (error) {
+      return 0
+    }
   }
 
   /**

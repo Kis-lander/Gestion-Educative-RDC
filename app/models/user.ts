@@ -26,6 +26,9 @@ export default class User extends UserSchema {
   declare firstName: string
 
   @column()
+  declare postnom: string | null
+
+  @column()
   declare lastName: string
 
   @column()
@@ -90,7 +93,7 @@ export default class User extends UserSchema {
    * GETTERS & METHODS
    */
   public get fullName(): string {
-    return `${this.firstName} ${this.lastName}`
+    return [this.firstName, this.postnom, this.lastName].filter(Boolean).join(' ')
   }
 
   public hasRole(role: string | string[]): boolean {

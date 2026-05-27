@@ -63,6 +63,15 @@
   @endsection
   
   @section('content')
+    <div class="flex gap-2 mb-4">
+      <a href="/communication/messages/inbox" class="px-4 py-2 bg-primary text-white rounded-lg">
+        <i class="fas fa-inbox mr-2"></i>Reçus
+      </a>
+      <a href="/communication/messages/sent" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+        <i class="fas fa-paper-plane mr-2"></i>Envoyés
+      </a>
+    </div>
+
     <!-- Filtres -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -159,13 +168,21 @@
                   {{ message.preview }}
                 </p>
               </div>
-              <div class="text-right text-xs text-gray-400">
+              <div class="text-right text-xs text-gray-400 flex flex-col items-end gap-2">
                 <p>
                   {{ message.time }}
                 </p>
                 @if(message.hasAttachment)
                   <i class="fas fa-paperclip mt-1 inline-block"></i>
                 @endif
+                <button
+                  type="button"
+                  onclick="event.stopPropagation(); deleteMessage('{{ message.id }}')"
+                  class="px-2 py-1 border border-red-300 text-red-600 rounded hover:bg-red-50"
+                  title="Supprimer"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -179,7 +196,7 @@
         @end
       </div>
 
-      @include('partials/pagination', { pagination: pagination, url: '/communication/messages/inbox' })
+      @include('partials/pagination')
     </div>
 
     <script>
@@ -196,7 +213,7 @@
       applyBtn.addEventListener("click", () => {
         const params = new URLSearchParams();
         if (filterType.value) params.set("type", filterType.value);
-        if (filterStatus.value) params.set("status", filterStatus.value);
+        if (filterStatus.value) params.set("read_status", filterStatus.value);
         if (searchInput.value) params.set("search", searchInput.value);
         window.location.href = `/communication/messages/inbox?${params.toString()}`;
       });
@@ -206,12 +223,29 @@
       });
 
       function markAllAsRead() {
-        fetch("/api/messages/mark-all-read", {
+        fetch("/communication/messages/mark-all-read", {
           method: "POST",
           headers: {
             "X-CSRF-TOKEN": "{{ csrfToken }}"
           }
         }).then(() => location.reload());
+      }
+
+      async function deleteMessage(messageId) {
+        if (!confirm("Supprimer ce message ?")) return;
+
+        const res = await fetch(`/communication/messages/${messageId}/delete`, {
+          method: "DELETE",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          location.reload();
+        } else {
+          alert(data.message || "Impossible de supprimer ce message.");
+        }
       }
     </script>
   @endsection

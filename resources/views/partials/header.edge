@@ -28,13 +28,58 @@
       </button>
 
       <!-- Notifications -->
-      <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative">
+      <div
+        class="relative"
+        x-data="{
+          open: false,
+          notifications: [],
+          unreadCount: 0,
+          async fetchNotifications() {
+            const res = await fetch('/api/notifications', { headers: { Accept: 'application/json' } })
+            const data = await res.json()
+            if (data.success) {
+              this.notifications = data.notifications
+              this.unreadCount = data.unreadCount
+            }
+          },
+          async markAsRead(notification) {
+            const wasUnread = !notification.read
+
+            await fetch(`/api/notifications/${notification.id}/read`, {
+              method: 'POST',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrfToken }}',
+                Accept: 'application/json'
+              }
+            })
+            notification.read = true
+            notification.isRead = true
+            if (wasUnread) {
+              this.unreadCount = Math.max(0, this.unreadCount - 1)
+            }
+            this.notifications = this.notifications.filter((item) => item.id !== notification.id)
+            if (notification.link) window.location.href = notification.link
+          },
+          async markAllAsRead() {
+            await fetch('/api/notifications/mark-all-read', {
+              method: 'POST',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrfToken }}',
+                Accept: 'application/json'
+              }
+            })
+            await this.fetchNotifications()
+            this.notifications = []
+          }
+        }"
+        x-init="fetchNotifications(); setInterval(() => fetchNotifications(), 30000)"
+      >
+        <button @click="open = !open; fetchNotifications()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative">
           <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
           <span
-            x-show="notifications.filter(n => !n.read).length > 0"
-            x-text="notifications.filter(n => !n.read).length"
-            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5"
+            x-show="unreadCount > 0"
+            x-text="unreadCount"
+            class="absolute -top-1 -right-1 min-w-[1.25rem] h-5 inline-flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full px-1.5"
           ></span>
         </button>
 
@@ -44,17 +89,28 @@
           x-cloak
           class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border dark:border-gray-700"
         >
-          <div class="p-3 border-b dark:border-gray-700">
+          <div class="p-3 border-b dark:border-gray-700 flex items-center justify-between">
             <h3 class="font-semibold text-gray-800 dark:text-white">
               Notifications
             </h3>
+            <button
+              type="button"
+              x-show="unreadCount > 0"
+              @click="markAllAsRead()"
+              class="text-xs text-primary hover:underline"
+            >
+              Tout lire
+            </button>
           </div>
           <div class="max-h-96 overflow-y-auto">
             <template x-for="notif in notifications" :key="notif.id">
               <div
                 class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700 cursor-pointer"
                 :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }"
+                @click="markAsRead(notif)"
               >
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" x-text="notif.title">
+                </p>
                 <p class="text-sm text-gray-800 dark:text-gray-200" x-text="notif.message">
                 </p>
                 <p class="text-xs text-gray-500 mt-1" x-text="notif.time">
@@ -74,11 +130,19 @@
           @click="open = !open"
           class="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          <div
-            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold"
-          >
-            {{ auth?.user?.firstName?.charAt(0) || 'U' }}{{ auth?.user?.lastName?.charAt(0) || '' }}
-          </div>
+          @if(auth?.user?.avatarUrl)
+            <img
+              src="{{ auth.user.avatarUrl }}"
+              alt="Photo de profil"
+              class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+            />
+          @else
+            <div
+              class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold"
+            >
+              {{ auth?.user?.firstName?.charAt(0) || 'U' }}{{ auth?.user?.lastName?.charAt(0) || '' }}
+            </div>
+          @endif
           <span class="hidden md:inline text-gray-700 dark:text-gray-300 text-sm">
             {{ auth?.user?.firstName }} {{ auth?.user?.lastName }}
           </span>

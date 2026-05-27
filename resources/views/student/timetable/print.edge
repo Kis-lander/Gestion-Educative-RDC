@@ -3,6 +3,8 @@
   @section('title')
     Emploi du temps - {{ student.name }} - {{ school.name }}
   @endsection
+
+  @section('content')
   <div class="timetable-print">
     <div class="text-center mb-6">
       <h1 class="text-2xl font-bold">
@@ -15,7 +17,7 @@
         Classe: {{ student.className }}
       </p>
       <p class="text-md">
-        Ã‰lÃ¨ve: {{ student.name }}
+        Élève: {{ student.name }}
       </p>
       <p class="text-sm">
         Année scolaire {{ academicYear }} - {{ shiftLabel }}
@@ -142,18 +144,18 @@
       </table>
     </div>
 
-    <!-- RÃ©capitulatif -->
+    <!-- Récapitulatif -->
     <div class="mt-6 grid grid-cols-2 gap-4">
       <div class="border rounded p-3">
         <h3 class="font-bold">
-          RÃ©capitulatif des heures
+          Récapitulatif des heures
         </h3>
         <div class="text-sm mt-2">
           <div class="flex justify-between">
             <span>Total heures de cours:</span>            <span class="font-bold">{{ totalHours }}h</span>
           </div>
           <div class="flex justify-between mt-1">
-            <span>Nombre de matiÃ¨res:</span>            <span>{{ subjectsCount }}</span>
+            <span>Nombre de matières:</span>            <span>{{ subjectsCount }}</span>
           </div>
           <div class="flex justify-between mt-1">
             <span>Enseignants:</span>            <span>{{ teachersCount }}</span>
@@ -205,7 +207,7 @@
     <div class="grid grid-cols-2 gap-4 mt-8 pt-4 border-t">
       <div class="text-center">
         <p>
-          L'Ã‰lÃ¨ve
+          L'Élève
         </p>
         <div class="mt-12">
           _______________
@@ -213,7 +215,7 @@
       </div>
       <div class="text-center">
         <p>
-          Le Chef d'Ã‰tablissement
+          Le Chef d'Établissement
         </p>
         <div class="mt-12">
           _______________
@@ -223,7 +225,7 @@
 
     <div class="text-center text-xs text-gray-400 mt-6 pt-4 border-t">
       <p>
-        GÃ©nÃ©rÃ© le {{ generationDate }} - Gestion Ã‰ducative RDC
+        Généré le {{ generationDate }} - Gestion Éducative RDC
       </p>
     </div>
   </div>
@@ -260,4 +262,4 @@
       }
     }
   </style>
-
+  @endsection

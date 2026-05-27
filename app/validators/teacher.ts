@@ -77,6 +77,7 @@ export const markAttendanceValidator = vine.create(
   vine.object({
     classId: vine.string().exists({ table: 'classes', column: 'id' }),
     date: vine.date({ formats: ['YYYY-MM-DD'] }),
+    period: vine.enum(['morning', 'afternoon', 'full']).optional(),
     students: vine.array(
       vine.object({
         studentId: vine.string().exists({ table: 'students', column: 'id' }),

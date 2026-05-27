@@ -1,0 +1,207 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Modifier {{ account.fullName }} - {{ school.name }}
+  @endsection
+
+  @section('dashboardTitle')
+    Modifier le compte
+  @endsection
+  @section('dashboardSubtitle')
+    {{ roleLabel }}
+  @endsection
+
+  @section('content')
+    <form
+      method="POST"
+      action="/schools/accounts/{{ account.id }}/edit"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6"
+      x-data="{
+        childSearch: '',
+        selectedChildrenCount: 0,
+        refreshChildrenCount() {
+          this.selectedChildrenCount = this.$el.querySelectorAll('[data-child-checkbox]:checked').length
+        }
+      }"
+      x-init="refreshChildrenCount()"
+    >
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Prénom *</span>
+          <input name="firstName" value="{{ account.firstName }}" required class="w-full px-3 py-2 border rounded-lg" />
+        </label>
+
+        @if(account.role === 'student')
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Postnom</span>
+            <input name="postnom" value="{{ account.postnom || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+        @endif
+
+        <label class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Nom *</span>
+          <input name="lastName" value="{{ account.lastName }}" required class="w-full px-3 py-2 border rounded-lg" />
+        </label>
+
+        <label class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Email *</span>
+          <input type="email" name="email" value="{{ account.email }}" required class="w-full px-3 py-2 border rounded-lg" />
+        </label>
+
+        <label class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone</span>
+          <input type="tel" name="phone" value="{{ account.phone || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+        </label>
+
+        <label class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Statut</span>
+          <select name="status" class="w-full px-3 py-2 border rounded-lg">
+            <option value="active" {{ account.status === 'active' ? 'selected' : '' }}>Actif</option>
+            <option value="inactive" {{ account.status === 'inactive' ? 'selected' : '' }}>Inactif</option>
+            <option value="suspended" {{ account.status === 'suspended' ? 'selected' : '' }}>Suspendu</option>
+            <option value="pending" {{ account.status === 'pending' ? 'selected' : '' }}>En attente</option>
+          </select>
+        </label>
+
+        <div class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Rôle</span>
+          <p class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700">{{ roleLabel }}</p>
+        </div>
+      </div>
+
+      @if(account.role === 'teacher')
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Qualification</span>
+            <input name="qualification" value="{{ teacher?.qualification || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Spécialisation</span>
+            <input name="specialization" value="{{ teacher?.specialization || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+        </div>
+      @endif
+
+      @if(account.role === 'student')
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe</span>
+            <select name="classId" class="w-full px-3 py-2 border rounded-lg">
+              <option value="">Non affecté</option>
+              @each(classObj in classes)
+                <option value="{{ classObj.id }}" {{ student?.classId === classObj.id ? 'selected' : '' }}>{{ classObj.name }}</option>
+              @end
+            </select>
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Sexe</span>
+            <select name="gender" class="w-full px-3 py-2 border rounded-lg">
+              <option value="">Sélectionner</option>
+              <option value="male" {{ student?.gender === 'male' ? 'selected' : '' }}>Masculin</option>
+              <option value="female" {{ student?.gender === 'female' ? 'selected' : '' }}>Féminin</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Date de naissance</span>
+            <input type="date" name="birthDate" value="{{ student?.birthDate ? student.birthDate.toFormat('yyyy-MM-dd') : '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone parent</span>
+            <input type="tel" name="parentPhone" value="{{ student?.parentPhone || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Lieu de naissance</span>
+            <input name="birthPlace" value="{{ student?.birthPlace || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Nationalité</span>
+            <input name="nationality" value="{{ student?.nationality || 'Congolaise' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <label class="block md:col-span-2">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Adresse</span>
+            <textarea name="address" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ student?.address || '' }}</textarea>
+          </label>
+          <label class="block md:col-span-2">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Informations médicales</span>
+            <textarea name="medicalInfo" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ student?.medicalInfo || '' }}</textarea>
+          </label>
+        </div>
+      @endif
+
+      @if(account.role === 'parent')
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Lien de parenté</span>
+            <input name="relationship" value="{{ parent?.relationship || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone d'urgence</span>
+            <input type="tel" name="emergencyPhone" value="{{ parent?.emergencyPhone || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <label class="block">
+            <span class="block text-gray-700 dark:text-gray-300 mb-2">Profession</span>
+            <input name="profession" value="{{ parent?.profession || '' }}" class="w-full px-3 py-2 border rounded-lg" />
+          </label>
+          <div class="md:col-span-2 rounded-lg border dark:border-gray-700 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div>
+                <h3 class="font-semibold text-gray-800 dark:text-white">Rattachement parent-élève</h3>
+                <p class="text-sm text-gray-500">Cochez les élèves rattachés à ce parent.</p>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+                <span x-text="selectedChildrenCount"></span> sélectionné(s)
+              </span>
+            </div>
+
+            <input
+              type="search"
+              x-model="childSearch"
+              placeholder="Rechercher par nom, matricule ou classe"
+              class="w-full px-3 py-2 border rounded-lg mb-3"
+            />
+
+            <div class="max-h-72 overflow-y-auto divide-y dark:divide-gray-700 border dark:border-gray-700 rounded-lg">
+              @each(child in students)
+                <label
+                  class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  data-search="{{ (child.user.firstName + ' ' + child.user.lastName + ' ' + child.registrationNumber + ' ' + (child.class ? child.class.name : '')).toLowerCase() }}"
+                  x-show="$el.dataset.search.includes(childSearch.toLowerCase())"
+                >
+                  <input
+                    type="checkbox"
+                    name="childrenIds[]"
+                    value="{{ child.id }}"
+                    {{ selectedChildrenIds.includes(child.id) ? 'checked' : '' }}
+                    data-child-checkbox
+                    @change="refreshChildrenCount()"
+                    class="mt-1 w-4 h-4"
+                  />
+                  <span class="flex-1">
+                    <span class="block font-medium text-gray-800 dark:text-white">
+                      {{ child.user.firstName }} {{ child.user.lastName }}
+                    </span>
+                    <span class="block text-xs text-gray-500">
+                      Matricule: {{ child.registrationNumber }}{{ child.class ? ' - Classe: ' + child.class.name : ' - Classe non affectée' }}
+                    </span>
+                  </span>
+                </label>
+                @else
+                <p class="p-4 text-center text-gray-500">Aucun élève disponible dans cette école.</p>
+              @end
+            </div>
+          </div>
+        </div>
+      @endif
+
+      <div class="flex gap-3 pt-4 border-t">
+        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+          <i class="fas fa-save mr-2"></i>Enregistrer
+        </button>
+        <a href="/schools/accounts" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+          Annuler
+        </a>
+      </div>
+    </form>
+  @endsection

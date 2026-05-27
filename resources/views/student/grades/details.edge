@@ -191,10 +191,9 @@
       </div>
       <div class="mt-3 text-center">
         <span class="text-sm">Évolution: 
-      <span class=trend>0 ? 'text-green-600' : (trend
-            <text-red-600 : text-gray-500>
-              {{ trend > 0 ? '+' : '' }}{{ trend }} points
-      </span>
+          <span class="{{ trend > 0 ? 'text-green-600' : (trend < 0 ? 'text-red-600' : 'text-gray-500') }}">
+            {{ trend > 0 ? '+' : '' }}{{ trend }} points
+          </span>
           </span>
         </div>
       </div>

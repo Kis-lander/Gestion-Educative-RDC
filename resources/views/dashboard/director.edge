@@ -104,6 +104,13 @@
             <span class="text-gray-700 dark:text-gray-300">Inscrire élève</span>
           </a>
           <a
+            href="/teacher/attendance"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            <i class="fas fa-history text-blue-600 w-5"></i>
+            <span class="text-gray-700 dark:text-gray-300">Historique des présences</span>
+          </a>
+          <a
             href="/academic/grades/add"
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
@@ -191,7 +198,7 @@
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
       <div class="flex justify-between items-center mb-4">
         <h3 class="font-semibold text-gray-800 dark:text-white">
-          Performance académique
+          Performance scolaire
         </h3>
         <select id="classSelect" class="text-sm border rounded-lg px-2 py-1">
           <option value="">
@@ -235,10 +242,11 @@
                   {{ classPerf.studentsCount }}
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <span :class='text-green-600 font-bold' : {{ classPerf.averageGrade }}>= 15,
-              'text-yellow-600': {{ classPerf.averageGrade }} >= 10 && {{ classPerf.averageGrade }}
-                    <text-red-600 : {{ classPerf.averageGrade }}>
-                      {{ classPerf.averageGrade || '-' }}/20</span>
+                  <span
+                    class="font-bold {{ classPerf.averageGrade === '-' ? 'text-gray-500' : (classPerf.averageGrade >= 15 ? 'text-green-600' : (classPerf.averageGrade >= 10 ? 'text-yellow-600' : 'text-red-600')) }}"
+                  >
+                    {{ classPerf.averageGrade || '-' }}/20
+                  </span>
                   </td>
                   <td class="px-3 py-2 text-center">
                     <div class="flex items-center justify-center gap-2">

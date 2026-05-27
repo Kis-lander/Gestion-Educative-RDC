@@ -3,6 +3,12 @@ import db from '@adonisjs/lucid/services/db'
 import Student from '#models/student'
 import User from '#models/user'
 import School from '#models/school'
+import Class from '#models/class'
+import Teacher from '#models/teacher'
+import Message from '#models/message'
+import Grade from '#models/grade'
+import Assignment from '#models/assignment'
+import Parent from '#models/parent'
 import { DateTime } from 'luxon'
 import {
   getAcademicStatsValidator,
@@ -11,12 +17,19 @@ import {
 } from '#validators/dashboard'
 
 export default class DashboardController {
-  public async workspace({ auth, response, view }: HttpContext) {
+  public async workspace({ auth, request, response, view }: HttpContext) {
     const user = auth.getUserOrFail()
 
     if (user.role === 'inspection') {
       return response.redirect('/inspection/dashboard')
     }
+
+    if (user.role === 'director') return this.directorDashboardPage({ auth, view })
+    if (user.role === 'teacher') return this.teacherDashboardPage({ auth, view })
+    if (user.role === 'parent') return this.parentDashboardPage({ auth, view })
+    if (user.role === 'student') return this.studentDashboardPage({ auth, view })
+    if (user.role === 'finance_director') return this.financeDashboardPage({ auth, request, view })
+    if (user.role === 'discipline_director') return response.redirect('/discipline')
 
     const roleLabels: Record<string, string> = {
       director: "Direction d'école",
@@ -45,11 +58,218 @@ export default class DashboardController {
     })
   }
 
+  private getFallbackSchool(user: User) {
+    return {
+      id: user.schoolId,
+      name: 'Gestion Éducative RDC',
+    }
+  }
+
+  private async directorDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
+    const user = auth.getUserOrFail()
+    const schoolId = user.schoolId
+    const school = schoolId ? await School.find(schoolId) : null
+    const monthStart = DateTime.now().startOf('month').toSQLDate()
+    const [students, newStudents, teachers, classes] = await Promise.all([
+      Student.query().where('schoolId', schoolId).where('academicStatus', 'active').count('* as total').first(),
+      Student.query().where('schoolId', schoolId).where('createdAt', '>=', monthStart).count('* as total').first(),
+      User.query().where('schoolId', schoolId).where('role', 'teacher').where('status', 'active').count('* as total').first(),
+      Class.query().where('schoolId', schoolId).orderBy('gradeLevel', 'asc').orderBy('name', 'asc'),
+    ])
+    const classIds = classes.map((classObj) => classObj.id)
+    const studentRows = classIds.length
+      ? await db
+          .from('students')
+          .select('class_id')
+          .count('* as total')
+          .whereIn('class_id', classIds)
+          .where('academic_status', 'active')
+          .groupBy('class_id')
+      : []
+    const studentsByClass = new Map(
+      studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
+    )
+
+    return view.render('dashboard/director', {
+      school: school || this.getFallbackSchool(user),
+      stats: {
+        students: Number(students?.$extras.total || 0),
+        newStudents: Number(newStudents?.$extras.total || 0),
+        teachers: Number(teachers?.$extras.total || 0),
+        classes: classes.length,
+        attendanceRate: this.calculateAttendanceRate(null),
+      },
+      alerts: [],
+      upcomingEvents: [],
+      classes,
+      classPerformance: classes.map((classObj) => ({
+        id: classObj.id,
+        name: classObj.name,
+        studentsCount: studentsByClass.get(classObj.id) || 0,
+        averageGrade: '-',
+        attendanceRate: 0,
+      })),
+    })
+  }
+
+  private async teacherDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
+    const user = auth.getUserOrFail()
+    const teacher = await Teacher.query().where('userId', user.id).first()
+    const classes = teacher ? await Class.query().where('teacherId', teacher.id).orderBy('name', 'asc') : []
+    const classIds = classes.map((classObj) => classObj.id)
+    const [assignments, studentRows] = await Promise.all([
+      classIds.length
+        ? Assignment.query().whereIn('classId', classIds).orderBy('createdAt', 'desc').limit(5)
+        : [],
+      classIds.length
+        ? db
+            .from('students')
+            .select('class_id')
+            .count('* as total')
+            .whereIn('class_id', classIds)
+            .where('academic_status', 'active')
+            .groupBy('class_id')
+        : [],
+    ])
+    const studentsByClass = new Map(
+      studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
+    )
+
+    return view.render('dashboard/teacher', {
+      stats: {
+        myClasses: classes.length,
+        myStudents: classes.reduce(
+          (sum, classObj) => sum + (studentsByClass.get(classObj.id) || 0),
+          0
+        ),
+        assignments: assignments.length,
+        pendingSubmissions: 0,
+      },
+      myClasses: classes.map((classObj) => ({
+        id: classObj.id,
+        name: classObj.name,
+        studentsCount: studentsByClass.get(classObj.id) || 0,
+      })),
+      recentAssignments: assignments.map((assignment) => ({
+        id: assignment.id,
+        title: assignment.title,
+        className: classes.find((classObj) => classObj.id === assignment.classId)?.name || '-',
+        subjectName: '-',
+        dueDate: assignment.dueDate?.toFormat('dd/MM/yyyy') || '-',
+        submissionsCount: 0,
+        totalStudents: 0,
+      })),
+      todayAttendance: classes.map((classObj) => ({
+        className: classObj.name,
+        presentCount: 0,
+        totalStudents: studentsByClass.get(classObj.id) || 0,
+        rate: 0,
+      })),
+    })
+  }
+
+  private async parentDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
+    const user = auth.getUserOrFail()
+    const parent = await Parent.query().where('userId', user.id).first()
+    const children = parent
+      ? await Student.query()
+          .whereIn('id', db.from('parent_student').select('student_id').where('parent_id', parent.id))
+          .preload('user')
+          .preload('class')
+      : []
+    const messages = await Message.query()
+      .where('receiverId', user.id)
+      .preload('sender')
+      .orderBy('createdAt', 'desc')
+      .limit(5)
+
+    return view.render('dashboard/parent', {
+      stats: {
+        childrenCount: children.length,
+        averageGrade: '-',
+        unreadMessages: messages.filter((message) => !message.isRead).length,
+        pendingPayments: 0,
+      },
+      children: children.map((child) => ({
+        ...child,
+        user: child.user,
+        class: child.class || { name: 'Non affecté' },
+        averageGrade: '-',
+      })),
+      recentMessages: messages.map((message) => ({
+        id: message.id,
+        senderName: message.sender?.fullName || 'Expéditeur',
+        subject: message.subject,
+      })),
+    })
+  }
+
+  private async studentDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
+    const user = auth.getUserOrFail()
+    const studentProfile = await Student.query()
+      .where('userId', user.id)
+      .preload('class')
+      .preload('school')
+      .first()
+    const grades = studentProfile
+      ? await Grade.query().where('studentId', studentProfile.id).preload('subject').orderBy('examDate', 'desc').limit(5)
+      : []
+    const averageGrade = grades.length
+      ? (grades.reduce((sum, grade) => sum + Number(grade.score || 0), 0) / grades.length).toFixed(1)
+      : '-'
+
+    return view.render('dashboard/student', {
+      stats: {
+        averageGrade,
+        rank: '-',
+        totalStudents: 0,
+        pendingAssignments: 0,
+        attendanceRate: 0,
+      },
+      student: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        className: studentProfile?.class?.name || 'Non affecté',
+        schoolName: studentProfile?.school?.name || 'Gestion Éducative RDC',
+        registrationNumber: studentProfile?.registrationNumber || '-',
+        birthDate: studentProfile?.birthDate?.toFormat('dd/MM/yyyy') || '-',
+        parentName: '-',
+      },
+      recentGrades: grades.map((grade) => ({
+        subjectName: grade.subject?.name || '-',
+        examType: grade.examType,
+        date: grade.examDate?.toFormat('dd/MM/yyyy') || '-',
+        score: Number(grade.score || 0),
+      })),
+      pendingAssignments: [],
+      timetable: [],
+      forumTopics: [],
+    })
+  }
+
+  private async financeDashboardPage({ auth, request, view }: Pick<HttpContext, 'auth' | 'request' | 'view'>) {
+    auth.getUserOrFail()
+    const currentYear = Number(request.input('year', DateTime.now().year))
+
+    return view.render('dashboard/finance', {
+      stats: {
+        totalCollected: 0,
+        monthlyCollected: 0,
+        totalExpected: 0,
+        outstanding: 0,
+        recoveryRate: 0,
+      },
+      currentYear,
+      debtors: [],
+      recentPayments: [],
+    })
+  }
+
   /**
    * Page dashboard Inspection
    */
   public async inspection({ view }: HttpContext) {
-    const [schoolStats, studentCount, teacherCount, schoolsByProvince, pendingSchools] =
+    const [schoolStats, studentCount, teacherCount, schoolsByProvince, pendingSchools, activeSchools] =
       await Promise.all([
         School.query()
           .select(
@@ -62,6 +282,7 @@ export default class DashboardController {
         User.query().where('role', 'teacher').count('* as total').first(),
         db.from('schools').select('province').count('* as total').groupBy('province'),
         School.query().where('status', 'pending').orderBy('created_at', 'desc').limit(5),
+        School.query().where('status', 'active').orderBy('updated_at', 'desc').limit(5),
       ])
 
     const totalSchools = Number(schoolStats?.$extras.total || 0)
@@ -89,6 +310,7 @@ export default class DashboardController {
         schoolsByProvince: provinceRows,
       },
       pendingSchools,
+      activeSchools,
       systemAlerts: [],
     })
   }
@@ -157,7 +379,7 @@ export default class DashboardController {
   private async getDirectorDashboard({ auth, response }: HttpContext) {
     const schoolId = auth.user!.schoolId
 
-    const [students, teachers, classes, attendance, performance] = await Promise.all([
+    const [students, teachers, classes, performance] = await Promise.all([
       Student.query()
         .where('school_id', schoolId!)
         .where('academic_status', 'active')
@@ -170,7 +392,6 @@ export default class DashboardController {
         .count('* as total')
         .first(),
       db.from('classes').where('school_id', schoolId!).count('* as total').first(),
-      db.from('attendances').where('school_id', schoolId!).avg('attendance_rate as rate').first(),
       db
         .from('grades')
         .innerJoin('students', 'grades.student_id', 'students.id')
@@ -185,7 +406,7 @@ export default class DashboardController {
         students: Number(students?.$extras.total || 0),
         teachers: Number(teachers?.$extras.total || 0),
         classes: Number(classes?.total || 0),
-        attendanceRate: Number(attendance?.rate || 0),
+        attendanceRate: 0,
         averageGrade: Number(performance?.average || 0),
       },
     })
@@ -273,7 +494,7 @@ export default class DashboardController {
       return response.notFound({ success: false, message: 'Profil étudiant non trouvé' })
     }
 
-    const [grades, assignments, completed, attendance] = await Promise.all([
+    const [grades, assignments, completed] = await Promise.all([
       db.from('grades').where('student_id', student.id).avg('score as average').first(),
       db
         .from('assignments')
@@ -287,12 +508,6 @@ export default class DashboardController {
         .where('status', 'submitted')
         .count('* as total')
         .first(),
-      db
-        .from('attendances')
-        .where('student_id', student.id)
-        .where('date', '>=', DateTime.now().minus({ days: 30 }).toSQLDate()!)
-        .avg('status as rate')
-        .first(),
     ])
 
     return response.ok({
@@ -301,7 +516,7 @@ export default class DashboardController {
         averageGrade: Number(grades?.average || 0),
         assignments: Number(assignments?.total || 0),
         completedAssignments: Number(completed?.total || 0),
-        attendanceRate: this.calculateAttendanceRate(attendance?.rate),
+        attendanceRate: 0,
       },
     })
   }

@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Mes prÃ©sences - {{ student.name }}
+    Mes présences - {{ student.name }}
   @endsection
   
   @section('dashboardTitle')
-    Mes prÃ©sences
+    Mes présences
   @endsection
   @section('dashboardSubtitle')
-    Suivi de mon assiduitÃ©
+    Suivi de mon assiduité
   @endsection
   
   @section('actions')
@@ -17,7 +17,7 @@
         <i class="fas fa-download mr-2"></i>Exporter
   </button>
       <a href="/student/attendance/report" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-chart-line mr-2"></i>Rapport dÃ©taillÃ©
+        <i class="fas fa-chart-line mr-2"></i>Rapport détaillé
   </a>
     </div>
   @endsection
@@ -26,7 +26,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Taux prÃ©sence
+          Taux présence
         </p>
         <p class="text-3xl font-bold">
           {{ stats.presentRate }}%
@@ -64,7 +64,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">PÃ©riode</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Période</label>
           <select id="periodSelect" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="month">
               Ce mois
@@ -107,7 +107,7 @@
       <div class="px-4 py-3 border-b dark:border-gray-700">
         <div class="flex justify-between items-center">
           <h3 class="font-semibold">
-            Calendrier des prÃ©sences
+            Calendrier des présences
           </h3>
           <div class="flex gap-2">
             <button onclick="previousMonth()" class="px-3 py-1 border rounded hover:bg-gray-50">
@@ -145,25 +145,25 @@
           </div>
         </div>
         <div id="calendarGrid" class="grid grid-cols-7 gap-1">
-          <!-- GÃ©nÃ©rÃ© par JS -->
+          <!-- Généré par JS -->
         </div>
       </div>
     </div>
 
-    <!-- Graphique d'Ã©volution -->
+    <!-- Graphique d'évolution -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <h3 class="font-semibold mb-3">
-        Ã‰volution mensuelle des prÃ©sences
+        Évolution mensuelle des présences
       </h3>
       <canvas id="attendanceChart" height="200">
       </canvas>
     </div>
 
-    <!-- DÃ©tail des absences -->
+    <!-- Détail des absences -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="px-4 py-3 border-b dark:border-gray-700">
         <h3 class="font-semibold">
-          DÃ©tail des absences et retards
+          Détail des absences et retards
         </h3>
       </div>
       <div class="table-responsive">
@@ -174,7 +174,7 @@
                 Date
               </th>
               <th class="px-4 py-2">
-                PÃ©riode
+                Période
               </th>
               <th class="px-4 py-2">
                 Statut
@@ -188,11 +188,11 @@
             </tr>
           </thead>
           <tbody id="attendanceTableBody">
-            <!-- GÃ©nÃ©rÃ© par JS -->
+            <!-- Généré par JS -->
           </tbody>
         </table>
       </div>
-      @include('partials/pagination', { pagination: pagination, url: '/student/attendance' })
+      @include('partials/pagination')
     </div>
 
     <!-- Message d'encouragement -->
@@ -204,13 +204,13 @@
             Objectif du mois
           </h4>
           <p class="text-sm text-gray-700 dark:text-gray-300">
-            Votre objectif : atteindre plus de 90% de prÃ©sence ce trimestre.
+            Votre objectif : atteindre plus de 90% de présence ce trimestre.
             @if(stats.presentRate >= 90)
-              <span class="text-green-600 font-medium">âœ“ Objectif atteint ! FÃ©licitations !</span>
+              <span class="text-green-600 font-medium">✓ Objectif atteint ! Félicitations !</span>
             @elseif(stats.presentRate >= 75)
               <span class="text-yellow-600">En bonne voie, continuez ainsi !</span>
             @else
-              <span class="text-red-600">Attention : redoublez d'efforts pour amÃ©liorer votre assiduitÃ©.</span>
+              <span class="text-red-600">Attention : redoublez d'efforts pour améliorer votre assiduité.</span>
             @endif
           </p>
         </div>
@@ -230,7 +230,7 @@
         const year = document.getElementById("yearSelect").value;
         const res = await fetch(`/api/student/attendance?period=${period}&year=${year}&month=${currentMonth.getMonth() + 1}`);
         const data = await res.json();
-        // Mettre Ã  jour les stats
+        // Mettre à jour les stats
         document.querySelector(".bg-green-500 .text-3xl").textContent = `${data.stats.presentRate}%`;
         document.querySelector(".bg-red-500 .text-3xl").textContent = data.stats.absentCount;
         document.querySelector(".bg-yellow-500 .text-3xl").textContent = data.stats.lateCount;
@@ -242,7 +242,7 @@
       }
 
       function renderCalendar() {
-        const monthNames = [ "Janvier", "FÃ©vrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "AoÃ»t", "Septembre", "Octobre", "Novembre", "DÃ©cembre" ];
+        const monthNames = [ "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" ];
         document.getElementById("calendarMonth").textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
         const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
         const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
@@ -270,7 +270,7 @@
                   ${data.status ? `<div class="text-xs mt-1 text-center">
                     <i class="fas ${data.status === "present" ? "fa-check-circle text-green-500" : data.status === "absent" ? "fa-times-circle text-red-500" : data.status === "late" ? "fa-clock text-yellow-500" : "fa-check text-blue-500"}"></i>
                   </div>` : ""}
-                  ${data.status ? `<div class="text-xs text-center mt-1">${data.status === "present" ? "PrÃ©sent" : data.status === "absent" ? "Absent" : data.status === "late" ? "Retard" : "ExcusÃ©"}</div>` : ""}
+                  ${data.status ? `<div class="text-xs text-center mt-1">${data.status === "present" ? "Présent" : data.status === "absent" ? "Absent" : data.status === "late" ? "Retard" : "Excusé"}</div>` : ""}
                 `;
           calendarGrid.appendChild(dayDiv);
         }
@@ -284,7 +284,7 @@
           data: {
             labels: labels,
             datasets: [ {
-              label: "PrÃ©sences (%)",
+              label: "Présences (%)",
               data: values.present,
               borderColor: "#16a34a",
               backgroundColor: "rgba(22, 163, 74, 0.1)",
@@ -322,21 +322,21 @@
           tbody.innerHTML = records.map(record => `
                   <tr class="border-b dark:border-gray-700">
                     <td class="px-4 py-2">{{ formatDate(record.date) }}</td>
-                    <td class="px-4 py-2">${record.periodLabel || "JournÃ©e"}</td>
+                    <td class="px-4 py-2">${record.periodLabel || "Journée"}</td>
                     <td class="px-4 py-2">
                       <span class="px-2 py-1 rounded-full text-xs
                         ${record.status === "present" ? "bg-green-100 text-green-800" : record.status === "absent" ? "bg-red-100 text-red-800" : record.status === "late" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}">
-                        ${record.status === "present" ? "PrÃ©sent" : record.status === "absent" ? "Absent" : record.status === "late" ? "Retard" : "ExcusÃ©"}
+                        ${record.status === "present" ? "Présent" : record.status === "absent" ? "Absent" : record.status === "late" ? "Retard" : "Excusé"}
                       </span>
                     </td>
                     <td class="px-4 py-2">${record.reason || "-"}</td>
                     <td class="px-4 py-2 text-center">
-                      ${record.status !== "present" ? record.justified ? '<span class="text-green-600"><i class="fas fa-check-circle"></i> JustifiÃ©e</span>' : record.status === "absent" ? '<span class="text-red-600"><i class="fas fa-clock"></i> Non justifiÃ©e</span>' : "-" : "-"}
+                      ${record.status !== "present" ? record.justified ? '<span class="text-green-600"><i class="fas fa-check-circle"></i> Justifiée</span>' : record.status === "absent" ? '<span class="text-red-600"><i class="fas fa-clock"></i> Non justifiée</span>' : "-" : "-"}
                     </td>
                   </tr>
                 `).join("");
         } else {
-          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Aucun enregistrement pour cette pÃ©riode</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Aucun enregistrement pour cette période</td></tr>';
         }
       }
 

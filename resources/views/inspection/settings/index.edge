@@ -755,7 +755,8 @@
       });
       // Initialisation: afficher l'onglet général par défaut
 
-      showTab("general");
+      const initialTab = window.location.hash?.replace("#", "") || "general";
+      showTab(document.getElementById(`panel-${initialTab}`) ? initialTab : "general");
     </script>
 
     <style>

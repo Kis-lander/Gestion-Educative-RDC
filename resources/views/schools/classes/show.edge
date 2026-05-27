@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    DÃ©tails - {{ classObj.name }}
+    Détails - {{ classObj.name }}
   @endsection
   
   @section('dashboardTitle')
     {{ classObj.name }}
   @endsection
   @section('dashboardSubtitle')
-    Classe de {{ classObj.level }} - {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'AprÃ¨s-midi' : 'Soir') }}
+    Classe de {{ classObj.level }} - {{ classObj.shift === 'morning' ? 'Matin' : (classObj.shift === 'afternoon' ? 'Après-midi' : 'Soir') }}
   @endsection
   
   @section('actions')
@@ -32,7 +32,7 @@
           {{ stats.studentsCount || 0 }}/{{ classObj.maxCapacity }}
         </p>
         <p class="text-sm text-gray-500">
-          Ã‰lÃ¨ves
+          Élèves
         </p>
         <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
           <div
@@ -55,7 +55,7 @@
           {{ stats.attendanceRate || 0 }}%
         </p>
         <p class="text-sm text-gray-500">
-          Taux prÃ©sence
+          Taux présence
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -63,7 +63,7 @@
           {{ subjects.length || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          MatiÃ¨res
+          Matières
         </p>
       </div>
     </div>
@@ -71,7 +71,7 @@
   
   @section('content')
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Informations gÃ©nÃ©rales -->
+      <!-- Informations générales -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
         <h3 class="font-semibold text-lg border-b pb-2 mb-3">
           Informations
@@ -83,11 +83,11 @@
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Niveau</span>
-            <span>{{ classObj.level }} ({{ classObj.gradeLevel }}Ã¨me)</span>
+            <span>{{ classObj.level }} ({{ classObj.gradeLevel }}ème)</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-500">PÃ©riode</span>
-            <span>{{ classObj.shift === 'morning' ? 'Matin (8h-12h)' : (classObj.shift === 'afternoon' ? 'AprÃ¨s-midi (13h-17h)' : 'Soir (17h-21h)') }}</span>
+            <span class="text-gray-500">Période</span>
+            <span>{{ classObj.shift === 'morning' ? 'Matin (8h-12h)' : (classObj.shift === 'afternoon' ? 'Après-midi (13h-17h)' : 'Soir (17h-21h)') }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Année scolaire</span>
@@ -95,20 +95,20 @@
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Enseignant principal</span>
-            <span>{{ classObj.teacher?.user?.firstName }} {{ classObj.teacher?.user?.lastName || 'Non assignÃ©' }}</span>
+            <span>{{ classObj.teacher?.user?.firstName }} {{ classObj.teacher?.user?.lastName || 'Non assigné' }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-500">Date crÃ©ation</span>
+            <span class="text-gray-500">Date création</span>
             <span>{{ formatDate(classObj.createdAt) }}</span>
           </div>
         </div>
       </div>
 
-      <!-- MatiÃ¨res enseignÃ©es -->
+      <!-- Matières enseignées -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
         <div class="flex justify-between items-center mb-3">
           <h3 class="font-semibold text-lg">
-            MatiÃ¨res
+            Matières
           </h3>
           <button onclick="addSubject()" class="text-primary text-sm hover:underline">
             <i class="fas fa-plus mr-1"></i>Ajouter
@@ -134,7 +134,7 @@
             </div>
             @else
             <p class="text-gray-500 text-center py-6">
-              Aucune matiÃ¨re assignÃ©e
+              Aucune matière assignée
             </p>
           @end
         </div>
@@ -151,7 +151,7 @@
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <i class="fas fa-user-plus text-green-600 w-5"></i>
-            <span>Ajouter un Ã©lÃ¨ve</span>
+            <span>Ajouter un élève</span>
           </a>
           <a
             href="/academic/grades/add?class_id={{ classObj.id }}"
@@ -165,34 +165,34 @@
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <i class="fas fa-calendar-check text-blue-600 w-5"></i>
-            <span>Marquer les prÃ©sences</span>
+            <span>Marquer les présences</span>
           </a>
           <a
             href="/academic/timetable/create?class_id={{ classObj.id }}"
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <i class="fas fa-clock text-purple-600 w-5"></i>
-            <span>CrÃ©er emploi du temps</span>
+            <span>Créer emploi du temps</span>
           </a>
           <a
             href="/schools/classes/{{ classObj.id }}/students"
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <i class="fas fa-users w-5 text-gray-500"></i>
-            <span>Liste des Ã©lÃ¨ves</span>
+            <span>Liste des élèves</span>
           </a>
         </div>
       </div>
     </div>
 
-    <!-- Emploi du temps simplifiÃ© -->
+    <!-- Emploi du temps simplifié -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
       <div class="flex justify-between items-center mb-4">
         <h3 class="font-semibold">
           Emploi du temps
         </h3>
         <a href="/academic/timetable/class/{{ classObj.id }}" class="text-primary text-sm hover:underline">
-          Voir dÃ©tail
+          Voir détail
     </a>
       </div>
       <div class="table-responsive">
@@ -244,7 +244,7 @@
               @else
               <tr>
                 <td colspan="6" class="text-center py-6 text-gray-500">
-                  Aucun emploi du temps dÃ©fini
+                  Aucun emploi du temps défini
                 </td>
               </tr>
             @end
@@ -258,10 +258,10 @@
         const modalHtml = `
                 <div id="subjectModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                   <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
-                    <h3 class="font-bold text-lg mb-4">Ajouter une matiÃ¨re</h3>
+                    <h3 class="font-bold text-lg mb-4">Ajouter une matière</h3>
                     <form id="addSubjectForm" onsubmit="event.preventDefault(); submitAddSubject()">
                       <select name="subjectId" class="w-full px-3 py-2 border rounded-lg mb-3" required>
-                        <option value="">SÃ©lectionner une matiÃ¨re</option>
+                        <option value="">Sélectionner une matière</option>
                         @each(matiere in availableSubjects)
         <option value="{{ matiere.id }}">
           {{ matiere.name }}
@@ -272,7 +272,7 @@
 
                       </select>
                       <select name="teacherId" class="w-full px-3 py-2 border rounded-lg mb-3" required>
-                        <option value="">SÃ©lectionner un enseignant</option>
+                        <option value="">Sélectionner un enseignant</option>
                         @each(enseignant in teachers)
         <option value="{{ enseignant.id }}">
           {{ enseignant.user.firstName }} {{ enseignant.user.lastName }}
@@ -319,7 +319,7 @@
       }
 
       function removeSubject(subjectId) {
-        if (confirm("Retirer cette matiÃ¨re de la classe ?")) {
+        if (confirm("Retirer cette matière de la classe ?")) {
           fetch(`/api/classes/{{ classObj.id }}/subject/${subjectId}`, {
             method: "DELETE",
             headers: {

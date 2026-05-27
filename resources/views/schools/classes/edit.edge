@@ -34,7 +34,7 @@
           </div>
 
           <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">CapacitÃ© maximale</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Capacité maximale</label>
             <input
               type="number"
               name="maxCapacity"
@@ -46,13 +46,13 @@
           </div>
 
           <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">PÃ©riode</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">Période</label>
             <select name="shift" class="w-full px-4 py-2 border rounded-lg">
               <option value="morning" {{ classObj.shift === 'morning' ? 'selected' : '' }}>
                 Matin (8h - 12h)
               </option>
               <option value="afternoon" {{ classObj.shift === 'afternoon' ? 'selected' : '' }}>
-                AprÃ¨s-midi (13h - 17h)
+                Après-midi (13h - 17h)
               </option>
               <option value="evening" {{ classObj.shift === 'evening' ? 'selected' : '' }}>
                 Soir (17h - 21h)
@@ -74,10 +74,10 @@
             </select>
           </div>
 
-          <!-- Informations supplÃ©mentaires (non modifiables) -->
+          <!-- Informations supplémentaires (non modifiables) -->
           <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm">
             <p class="text-gray-500 mb-1">
-              Informations systÃ¨me :
+              Informations système :
             </p>
             <div class="grid grid-cols-2 gap-2">
               <div>
@@ -90,7 +90,7 @@
                 <span class="text-gray-400">Année scolaire:</span>{{ classObj.academicYear }}
               </div>
               <div>
-                <span class="text-gray-400">CrÃ©Ã©e le:</span>{{ formatDate(classObj.createdAt) }}
+                <span class="text-gray-400">Créée le:</span>{{ formatDate(classObj.createdAt) }}
               </div>
             </div>
           </div>
@@ -139,8 +139,8 @@
                 Supprimer la classe
               </h3>
               <p class="text-gray-600 dark:text-gray-400 mb-4">
-                ÃŠtes-vous sÃ»r de vouloir supprimer la classe <strong>{{ classObj.name }}</strong>?
-            Cette action est irrÃ©versible.
+                Êtes-vous sûr de vouloir supprimer la classe <strong>{{ classObj.name }}</strong>?
+            Cette action est irréversible.
               </p>
               <div class="flex gap-3">
                 <button @click="showDeleteConfirm = false" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">

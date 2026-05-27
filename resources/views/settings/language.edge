@@ -23,14 +23,12 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label
               class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
-              :class="selectedLanguage === 'fr' ? 'border-primary bg-blue-50' : ''"
             >
               <input
                 type="radio"
                 name="language"
                 value="fr"
                 class="w-4 h-4"
-                {{ language.language === 'fr' ? 'checked' : '' }}
               />
               <div>
                 <span class="font-medium">Français</span>
@@ -42,14 +40,12 @@
 
             <label
               class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
-              :class="selectedLanguage === 'en' ? 'border-primary bg-blue-50' : ''"
             >
               <input
                 type="radio"
                 name="language"
                 value="en"
                 class="w-4 h-4"
-                {{ language.language === 'en' ? 'checked' : '' }}
               />
               <div>
                 <span class="font-medium">English</span>
@@ -61,14 +57,12 @@
 
             <label
               class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
-              :class="selectedLanguage === 'ln' ? 'border-primary bg-blue-50' : ''"
             >
               <input
                 type="radio"
                 name="language"
                 value="ln"
                 class="w-4 h-4"
-                {{ language.language === 'ln' ? 'checked' : '' }}
               />
               <div>
                 <span class="font-medium">Lingala</span>
@@ -80,14 +74,12 @@
 
             <label
               class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
-              :class="selectedLanguage === 'sw' ? 'border-primary bg-blue-50' : ''"
             >
               <input
                 type="radio"
                 name="language"
                 value="sw"
                 class="w-4 h-4"
-                {{ language.language === 'sw' ? 'checked' : '' }}
               />
               <div>
                 <span class="font-medium">Swahili</span>
@@ -119,13 +111,13 @@
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
             <select id="timezone" class="w-full px-3 py-2 border rounded-lg">
-              <option value="Africa/Kinshasa" {{ language.timezone === 'Africa/Kinshasa' ? 'selected' : '' }}>
+              <option value="Africa/Kinshasa">
                 Afrique/Kinshasa
               </option>
-              <option value="Africa/Lubumbashi" {{ language.timezone === 'Africa/Lubumbashi' ? 'selected' : '' }}>
+              <option value="Africa/Lubumbashi">
                 Afrique/Lubumbashi
               </option>
-              <option value="UTC" {{ language.timezone === 'UTC' ? 'selected' : '' }}>
+              <option value="UTC">
                 UTC
               </option>
             </select>
@@ -134,13 +126,13 @@
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Devise</label>
             <select id="currency" class="w-full px-3 py-2 border rounded-lg">
-              <option value="USD" {{ language.currency === 'USD' ? 'selected' : '' }}>
+              <option value="USD">
                 Dollar américain (USD)
               </option>
-              <option value="CDF" {{ language.currency === 'CDF' ? 'selected' : '' }}>
+              <option value="CDF">
                 Franc congolais (CDF)
               </option>
-              <option value="EUR" {{ language.currency === 'EUR' ? 'selected' : '' }}>
+              <option value="EUR">
                 Euro (EUR)
               </option>
             </select>
@@ -149,10 +141,10 @@
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Premier jour de la semaine</label>
             <select id="firstDayOfWeek" class="w-full px-3 py-2 border rounded-lg">
-              <option value="monday" {{ language.firstDayOfWeek === 'monday' ? 'selected' : '' }}>
+              <option value="monday">
                 Lundi
               </option>
-              <option value="sunday" {{ language.firstDayOfWeek === 'sunday' ? 'selected' : '' }}>
+              <option value="sunday">
                 Dimanche
               </option>
             </select>
@@ -198,7 +190,7 @@
             Monnaie
           </p>
           <p class="font-medium" id="previewCurrency">
-            100 {{ language.currency === 'USD' ? '$' : (language.currency === 'CDF' ? 'FC' : '€') }}
+            100 FC
           </p>
         </div>
         <div class="p-3 bg-gray-50 rounded">

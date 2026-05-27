@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Statistiques financiÃ¨res - {{ school.name }}
+    Statistiques financières - {{ school.name }}
   @endsection
   
   @section('dashboardTitle')
-    Statistiques financiÃ¨res
+    Statistiques financières
   @endsection
   @section('dashboardSubtitle')
-    Analyse globale de la santÃ© financiÃ¨re
+    Analyse globale de la santé financière
   @endsection
   
   @section('actions')
@@ -20,7 +20,7 @@
   @endsection
   
   @section('content')
-    <!-- Filtre annÃ©e -->
+    <!-- Filtre année -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="flex gap-3 items-center">
         <label class="text-gray-700">Année scolaire:</label>
@@ -52,7 +52,7 @@
       </div>
       <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Total encaissÃ©
+          Total encaissé
         </p>
         <p class="text-3xl font-bold" id="totalCollected">
           0 $
@@ -60,7 +60,7 @@
       </div>
       <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
         <p class="text-sm opacity-90">
-          Total impayÃ©s
+          Total impayés
         </p>
         <p class="text-3xl font-bold" id="totalOutstanding">
           0 $
@@ -87,7 +87,7 @@
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          RÃ©partition des impayÃ©s par classe
+          Répartition des impayés par classe
         </h3>
         <canvas id="outstandingByClassChart" height="250">
         </canvas>
@@ -97,7 +97,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-3">
-          Ã‰volution mensuelle des encaissements
+          Évolution mensuelle des encaissements
         </h3>
         <canvas id="monthlyEvolutionChart" height="250">
         </canvas>
@@ -111,11 +111,11 @@
       </div>
     </div>
 
-    <!-- Tableau rÃ©capitulatif par classe -->
+    <!-- Tableau récapitulatif par classe -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="px-4 py-3 border-b dark:border-gray-700">
         <h3 class="font-semibold">
-          RÃ©capitulatif par classe
+          Récapitulatif par classe
         </h3>
       </div>
       <div class="table-responsive">
@@ -126,19 +126,19 @@
                 Classe
               </th>
               <th class="px-4 py-2 text-right">
-                Total dÃ»
+                Total dû
               </th>
               <th class="px-4 py-2 text-right">
-                Total payÃ©
+                Total payé
               </th>
               <th class="px-4 py-2 text-right">
-                ImpayÃ©s
+                Impayés
               </th>
               <th class="px-4 py-2 text-center">
                 Taux recouvrement
               </th>
               <th class="px-4 py-2 text-center">
-                DÃ©biteurs
+                Débiteurs
               </th>
             </tr>
           </thead>
@@ -185,7 +185,7 @@
             }
           }
         });
-        // Graphique impayÃ©s par classe
+        // Graphique impayés par classe
         if (outstandingChart) outstandingChart.destroy();
         const outstandingCtx = document.getElementById("outstandingByClassChart").getContext("2d");
         outstandingChart = new Chart(outstandingCtx, {
@@ -193,7 +193,7 @@
           data: {
             labels: data.outstandingByClass.labels,
             datasets: [ {
-              label: "ImpayÃ©s ($)",
+              label: "Impayés ($)",
               data: data.outstandingByClass.values,
               backgroundColor: "#dc2626",
               borderRadius: 8
@@ -203,7 +203,7 @@
             responsive: true
           }
         });
-        // Graphique Ã©volution mensuelle
+        // Graphique évolution mensuelle
         if (monthlyChart) monthlyChart.destroy();
         const monthlyCtx = document.getElementById("monthlyEvolutionChart").getContext("2d");
         monthlyChart = new Chart(monthlyCtx, {
