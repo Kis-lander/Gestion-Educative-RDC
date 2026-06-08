@@ -88,6 +88,9 @@
         }
       }
     </style>
+    <script>
+      window.__APP_LANGUAGE__ = "{{ appLanguage || 'fr' }}";
+    </script>
   </head>
   <body>
     <a
@@ -105,6 +108,7 @@
         @endsection
       </div>
     </div>
+    <script src="/js/app-translations.js?v=20260602-6" defer></script>
     @!include('partials/scripts')
   </body>
 </html>

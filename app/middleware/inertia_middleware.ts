@@ -32,6 +32,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
         error,
         success,
       }),
+      csrfToken: ctx.inertia.always(ctx.request.csrfToken),
       locale: ctx.inertia.always(locale),
       user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
     }
@@ -50,4 +51,10 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 declare module '@adonisjs/inertia/types' {
   type MiddlewareSharedProps = InferSharedProps<InertiaMiddleware>
   export interface SharedProps extends MiddlewareSharedProps {}
+}
+
+declare module '@adonisjs/core/http' {
+  interface Request {
+    csrfToken: string
+  }
 }

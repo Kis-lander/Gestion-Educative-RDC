@@ -19,6 +19,7 @@ export const controllers = {
   Pedagogicals: () => import('#controllers/pedagogicals_controller'),
   Schools: () => import('#controllers/schools_controller'),
   Session: () => import('#controllers/session_controller'),
+  Settings: () => import('#controllers/settings_controller'),
   Students: () => import('#controllers/students_controller'),
   Teachers: () => import('#controllers/teachers_controller'),
   Transfers: () => import('#controllers/transfers_controller'),

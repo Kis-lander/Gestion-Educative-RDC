@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Modifier utilisateur - {{ user.firstName }} {{ user.lastName }}
+    Modifier utilisateur - {{ user.fullName }}
   @endsection
   
   @section('dashboardTitle')
     Modifier utilisateur
   @endsection
   @section('dashboardSubtitle')
-    {{ user.firstName }} {{ user.lastName }}
+    {{ user.fullName }}
   @endsection
   
   @section('actions')
@@ -34,13 +34,23 @@
           <input type="hidden" name="_method" value="PUT" />
 
           <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label class="block text-gray-700 dark:text-gray-300 mb-2">Prénom *</label>
                 <input
                   type="text"
                   name="firstName"
                   value="{{ user.firstName }}"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Postnom *</label>
+                <input
+                  type="text"
+                  name="postnom"
+                  value="{{ user.postnom }}"
                   required
                   class="w-full px-3 py-2 border rounded-lg"
                 />

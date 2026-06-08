@@ -5,12 +5,14 @@ import Student from '#models/student'
 import Teacher from '#models/teacher'
 import Subject from '#models/subject'
 import User from '#models/user'
+import { resolveAppLanguage } from '#services/language_service'
 
 export async function edgePageContext(
-  { auth, request }: Pick<HttpContext, 'auth' | 'request'>,
+  { auth, request, session }: Pick<HttpContext, 'auth' | 'request' | 'session'>,
   overrides: Record<string, any> = {}
 ) {
   const user = auth.user
+  const appLanguage = await resolveAppLanguage({ auth, session })
   const school = {
     id: user?.schoolId || null,
     name: 'Gestion Éducative RDC',
@@ -72,6 +74,7 @@ export async function edgePageContext(
   return {
     school,
     currentYear,
+    appLanguage,
     selectedYear: currentYear,
     selectedTerm,
     selectedTermLabel,

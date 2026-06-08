@@ -7,6 +7,7 @@ import { translate } from '~/lib/i18n'
 
 const page = usePage<Data.SharedProps>()
 const locale = computed(() => page.props.locale ?? 'fr')
+const csrfToken = computed(() => page.props.csrfToken)
 const t = (key: Parameters<typeof translate>[1]) => translate(locale.value, key)
 
 const roleOptions = [
@@ -34,6 +35,8 @@ const roleOptions = [
 
     <div>
       <Form route="new_account.store" #default="{ processing, errors }">
+        <input type="hidden" name="_csrf" :value="csrfToken" />
+
         <div>
           <label for="fullName">{{ t('auth.fields.fullName') }}</label>
           <input

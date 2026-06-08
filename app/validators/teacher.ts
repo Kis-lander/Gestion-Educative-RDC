@@ -20,6 +20,7 @@ export const createTeacherValidator = vine.create(
   vine.object({
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
     firstName: vine.string().trim().maxLength(100),
+    postnom: vine.string().trim().maxLength(100),
     lastName: vine.string().trim().maxLength(100),
     phone: vine.string().trim(),
     qualification: vine.string().trim(),
@@ -35,6 +36,7 @@ export const createTeacherValidator = vine.create(
 export const updateTeacherValidator = vine.create(
   vine.object({
     firstName: vine.string().trim().optional(),
+    postnom: vine.string().trim().optional(),
     lastName: vine.string().trim().optional(),
     phone: vine.string().trim().optional(),
     qualification: vine.string().trim().optional(),

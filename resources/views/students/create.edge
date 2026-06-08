@@ -24,7 +24,7 @@
 
         <label class="block">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Postnom</span>
-          <input name="postnom" class="w-full px-3 py-2 border rounded-lg" />
+          <input name="postnom" required class="w-full px-3 py-2 border rounded-lg" />
         </label>
 
         <label class="block">
@@ -44,12 +44,26 @@
 
         <label class="block">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe</span>
-          <select name="classId" class="w-full px-3 py-2 border rounded-lg">
+          <select name="classId" id="studentClassSelect" class="w-full px-3 py-2 border rounded-lg">
             <option value="">Non affecté</option>
             @each(classObj in classes)
-              <option value="{{ classObj.id }}" {{ selectedClassId === classObj.id ? 'selected' : '' }}>
+              <option
+                value="{{ classObj.id }}"
+                data-humanities="{{ classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9 ? 'true' : 'false' }}"
+                {{ selectedClassId === classObj.id ? 'selected' : '' }}
+              >
                 {{ classObj.name }}
               </option>
+            @end
+          </select>
+        </label>
+
+        <label id="studentSchoolOptionField" class="block hidden">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Option *</span>
+          <select name="schoolOption" id="studentSchoolOptionSelect" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Sélectionner une option</option>
+            @each(option in schoolOptions)
+              <option value="{{ option }}">{{ option }}</option>
             @end
           </select>
         </label>
@@ -103,4 +117,23 @@
         </a>
       </div>
     </form>
+
+    <script>
+      const classSelect = document.getElementById("studentClassSelect");
+      const optionField = document.getElementById("studentSchoolOptionField");
+      const optionSelect = document.getElementById("studentSchoolOptionSelect");
+
+      function syncSchoolOptionField() {
+        const selectedOption = classSelect?.selectedOptions?.[0];
+        const isHumanities = selectedOption?.dataset.humanities === "true";
+        optionField?.classList.toggle("hidden", !isHumanities);
+        if (optionSelect) {
+          optionSelect.required = isHumanities;
+          if (!isHumanities) optionSelect.value = "";
+        }
+      }
+
+      classSelect?.addEventListener("change", syncSchoolOptionField);
+      syncSchoolOptionField();
+    </script>
   @endsection

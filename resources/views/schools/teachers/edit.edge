@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Modifier enseignant - {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+    Modifier enseignant - {{ teacher.user.fullName }}
   @endsection
   
   @section('dashboardTitle')
     Modifier l'enseignant
   @endsection
   @section('dashboardSubtitle')
-    {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+    {{ teacher.user.fullName }}
   @endsection
   
   @section('content')
@@ -25,13 +25,23 @@
           <input type="hidden" name="_method" value="PUT" />
 
           <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label class="block text-gray-700 dark:text-gray-300 mb-2">Prénom *</label>
                 <input
                   type="text"
                   name="firstName"
                   value="{{ teacher.user.firstName }}"
+                  required
+                  class="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Postnom *</label>
+                <input
+                  type="text"
+                  name="postnom"
+                  value="{{ teacher.user.postnom }}"
                   required
                   class="w-full px-4 py-2 border rounded-lg"
                 />
@@ -231,7 +241,7 @@
       }
 
       function deleteTeacher() {
-        if (confirm(`⚠️ Supprimer définitivement l'enseignant "${teacher.user.firstName} {{ teacher.user.lastName }}" ?\n\nCette action est irréversible.`)) {
+        if (confirm(`⚠️ Supprimer définitivement l'enseignant "{{ teacher.user.fullName }}" ?\n\nCette action est irréversible.`)) {
           fetch("/schools/teachers/{{ teacher.id }}", {
             method: "DELETE",
             headers: {

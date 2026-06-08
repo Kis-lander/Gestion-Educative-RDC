@@ -341,7 +341,10 @@ export default class DisciplineController {
       .if(classId, (studentQuery) => studentQuery.where('classId', classId))
       .if(search, (studentQuery) => {
         studentQuery.whereHas('user', (userQuery) => {
-          userQuery.whereILike('firstName', `%${search}%`).orWhereILike('lastName', `%${search}%`)
+          userQuery
+            .whereILike('firstName', `%${search}%`)
+            .orWhereILike('postnom', `%${search}%`)
+            .orWhereILike('lastName', `%${search}%`)
         })
       })
       .orderBy('createdAt', 'desc')
@@ -560,7 +563,7 @@ export default class DisciplineController {
       await Message.create({
         senderId: user.id,
         receiverId: p.userId,
-        subject: `Notification disciplinaire - ${student.user.firstName} ${student.user.lastName}`,
+        subject: `Notification disciplinaire - ${student.user.fullName}`,
         content: payload.message,
         type: 'official',
         schoolId: student.schoolId,

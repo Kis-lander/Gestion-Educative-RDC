@@ -166,9 +166,30 @@ export interface ApiDefinition {
   }
   dashboard: typeof routes['dashboard']
   settings: typeof routes['settings'] & {
+    getLanguage: typeof routes['settings.get_language']
+    saveLanguage: typeof routes['settings.save_language']
+    saveRegional: typeof routes['settings.save_regional']
+    resetGeneral: typeof routes['settings.reset_general']
+    updateEmail: typeof routes['settings.update_email']
+    revokeSession: typeof routes['settings.revoke_session']
+    revokeAllSessions: typeof routes['settings.revoke_all_sessions']
+    deactivateAccount: typeof routes['settings.deactivate_account']
+    deleteAccount: typeof routes['settings.delete_account']
+    saveNotificationTypes: typeof routes['settings.save_notification_types']
+    saveQuietHours: typeof routes['settings.save_quiet_hours']
+    saveVisibility: typeof routes['settings.save_visibility']
+    exportData: typeof routes['settings.export_data']
+    deleteData: typeof routes['settings.delete_data']
+    blockUser: typeof routes['settings.block_user']
+    unblockUser: typeof routes['settings.unblock_user']
     general: typeof routes['settings.general'] & {
       store: typeof routes['settings.general.store']
     }
+    accountPage: typeof routes['settings.account_page']
+    languagePage: typeof routes['settings.language_page']
+    notificationsPage: typeof routes['settings.notifications_page']
+    saveNotifications: typeof routes['settings.save_notifications']
+    privacyPage: typeof routes['settings.privacy_page']
   }
   teachers: {
     index: typeof routes['teachers.index']
@@ -223,31 +244,20 @@ export interface ApiDefinition {
         store: typeof routes['api.teacher.attendance.store']
       }
     }
+    teachers: {
+      availableSlots: typeof routes['api.teachers.available_slots']
+    }
   }
   profile: typeof routes['profile'] & {
     edit: typeof routes['profile.edit']
     security: typeof routes['profile.security']
     preferences: typeof routes['profile.preferences'] & {
-      save: typeof routes['profile.preferences.save']
+      update: typeof routes['profile.preferences.update']
     }
     activity: typeof routes['profile.activity']
     avatar: {
       update: typeof routes['profile.avatar.update']
     }
-  }
-  auth: {
-    saveLanguage: typeof routes['auth.save_language']
-    saveRegional: typeof routes['auth.save_regional']
-    login: typeof routes['auth.login']
-    requestOtp: typeof routes['auth.request_otp']
-    verifyOtp: typeof routes['auth.verify_otp']
-    forgotPassword: typeof routes['auth.forgot_password']
-    resetPassword: typeof routes['auth.reset_password']
-    logout: typeof routes['auth.logout']
-    changePassword: typeof routes['auth.change_password']
-    getProfile: typeof routes['auth.get_profile']
-    updateProfile: typeof routes['auth.update_profile']
-    generateSchoolCredentials: typeof routes['auth.generate_school_credentials']
   }
   academic: {
     classes: {
@@ -299,6 +309,7 @@ export interface ApiDefinition {
     index: typeof routes['students.index']
     create: typeof routes['students.create']
     store: typeof routes['students.store']
+    show: typeof routes['students.show']
     getMyProfile: typeof routes['students.get_my_profile']
     getMyGrades: typeof routes['students.get_my_grades']
     getMyReportCard: typeof routes['students.get_my_report_card']
@@ -364,15 +375,8 @@ export interface ApiDefinition {
       export: typeof routes['financial.reports.export']
     }
   }
-  transfers: {
-    verifyAuthorization: typeof routes['transfers.verify_authorization']
-    requestTransfer: typeof routes['transfers.request_transfer']
-    getPendingTransfers: typeof routes['transfers.get_pending_transfers']
-    approveTransfer: typeof routes['transfers.approve_transfer']
-    rejectTransfer: typeof routes['transfers.reject_transfer']
-    completeTransfer: typeof routes['transfers.complete_transfer']
-  }
   academics: {
+    studentGradesPage: typeof routes['academics.student_grades_page']
     getClasses: typeof routes['academics.get_classes']
     createClass: typeof routes['academics.create_class']
     getClassById: typeof routes['academics.get_class_by_id']
@@ -385,6 +389,7 @@ export interface ApiDefinition {
     deleteSubject: typeof routes['academics.delete_subject']
     getClassSubjects: typeof routes['academics.get_class_subjects']
     addSubjectToClass: typeof routes['academics.add_subject_to_class']
+    removeSubjectFromClass: typeof routes['academics.remove_subject_from_class']
     getGradesByClass: typeof routes['academics.get_grades_by_class']
     getGradesByStudent: typeof routes['academics.get_grades_by_student']
     addGrade: typeof routes['academics.add_grade']
@@ -393,6 +398,41 @@ export interface ApiDefinition {
     publishGrades: typeof routes['academics.publish_grades']
     getAcademicStats: typeof routes['academics.get_academic_stats']
     getProgressStats: typeof routes['academics.get_progress_stats']
+  }
+  parents: {
+    childGradesDetailsPage: typeof routes['parents.child_grades_details_page']
+    disciplinePage: typeof routes['parents.discipline_page']
+    attendancePage: typeof routes['parents.attendance_page']
+    paymentsPage: typeof routes['parents.payments_page']
+    appointmentsPage: typeof routes['parents.appointments_page']
+    appointmentRequestPage: typeof routes['parents.appointment_request_page']
+    requestAppointment: typeof routes['parents.request_appointment']
+    getChildren: typeof routes['parents.get_children']
+    getChildGrades: typeof routes['parents.get_child_grades']
+    sendMessageToTeacher: typeof routes['parents.send_message_to_teacher']
+    getChildPayments: typeof routes['parents.get_child_payments']
+    getChildAttendance: typeof routes['parents.get_child_attendance']
+    justifyAbsence: typeof routes['parents.justify_absence']
+  }
+  auth: {
+    login: typeof routes['auth.login']
+    requestOtp: typeof routes['auth.request_otp']
+    verifyOtp: typeof routes['auth.verify_otp']
+    forgotPassword: typeof routes['auth.forgot_password']
+    resetPassword: typeof routes['auth.reset_password']
+    logout: typeof routes['auth.logout']
+    changePassword: typeof routes['auth.change_password']
+    getProfile: typeof routes['auth.get_profile']
+    updateProfile: typeof routes['auth.update_profile']
+    generateSchoolCredentials: typeof routes['auth.generate_school_credentials']
+  }
+  transfers: {
+    verifyAuthorization: typeof routes['transfers.verify_authorization']
+    requestTransfer: typeof routes['transfers.request_transfer']
+    getPendingTransfers: typeof routes['transfers.get_pending_transfers']
+    approveTransfer: typeof routes['transfers.approve_transfer']
+    rejectTransfer: typeof routes['transfers.reject_transfer']
+    completeTransfer: typeof routes['transfers.complete_transfer']
   }
   pedagogicals: {
     generateReportCard: typeof routes['pedagogicals.generate_report_card']
@@ -412,13 +452,6 @@ export interface ApiDefinition {
     getStudentPayments: typeof routes['financials.get_student_payments']
     getIncomeReport: typeof routes['financials.get_income_report']
     getFinancialStats: typeof routes['financials.get_financial_stats']
-  }
-  parents: {
-    getChildren: typeof routes['parents.get_children']
-    getChildGrades: typeof routes['parents.get_child_grades']
-    sendMessageToTeacher: typeof routes['parents.send_message_to_teacher']
-    getChildPayments: typeof routes['parents.get_child_payments']
-    justifyAbsence: typeof routes['parents.justify_absence']
   }
   disciplines: {
     getStudents: typeof routes['disciplines.get_students']

@@ -64,6 +64,17 @@
 </div>
 
 <script>
+  function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || "{{ csrfToken }}";
+  }
+
+  function csrfHeaders() {
+    return {
+      "X-CSRF-TOKEN": getCsrfToken(),
+      Accept: "application/json"
+    };
+  }
+
   function fetchNotifications() {
     fetch("/api/notifications").then(res => res.json()).then(data => {
       if (data.success) {
@@ -76,13 +87,15 @@
 
   function markAsRead(id) {
     fetch(`/api/notifications/${id}/read`, {
-      method: "PUT"
+      method: "PUT",
+      headers: csrfHeaders()
     }).then(() => fetchNotifications());
   }
 
   function markAllAsRead() {
     fetch("/api/notifications/read-all", {
-      method: "PUT"
+      method: "PUT",
+      headers: csrfHeaders()
     }).then(() => fetchNotifications());
   }
 </script>

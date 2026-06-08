@@ -68,7 +68,7 @@
               </option>
               @each(teacher in teachers)
                 <option value="{{ teacher.id }}" {{ classObj.teacherId === teacher.id ? 'selected' : '' }}>
-                  {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+                  {{ teacher.user.fullName }}
                 </option>
               @end
             </select>

@@ -26,13 +26,19 @@
 
               <div class="space-y-4">
                 <div>
-                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom d'affichage</label>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom complet</label>
                   <input
                     type="text"
                     name="display_name"
                     value="{{ settings.displayName }}"
                     class="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Prénom Postnom Nom"
+                    pattern="^\S+\s+\S+\s+.+$"
+                    title="Veuillez saisir trois parties : prénom, postnom et nom."
                   />
+                  <p class="text-xs text-gray-400 mt-1">
+                    Format obligatoire : prénom, postnom et nom.
+                  </p>
                 </div>
 
                 <div>
@@ -41,14 +47,18 @@
                 </div>
 
                 <div>
-                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Site web / Blog</label>
+                  <label class="block text-gray-700 dark:text-gray-300 mb-2">Site web / Blog <span class="text-gray-400 text-sm">(facultatif)</span></label>
                   <input
                     type="url"
                     name="website"
                     value="{{ settings.website }}"
                     class="w-full px-3 py-2 border rounded-lg"
                     placeholder="https://..."
+                    aria-describedby="websiteHelp"
                   />
+                  <p id="websiteHelp" class="text-xs text-gray-400 mt-1">
+                    Laissez vide si vous n'avez pas de site web.
+                  </p>
                 </div>
               </div>
             </div>

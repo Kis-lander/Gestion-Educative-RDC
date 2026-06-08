@@ -23,6 +23,40 @@ import Message from '#models/message'
 import { submitAssignmentValidator, postForumQuestionValidator } from '#validators/student'
 
 export default class StudentController {
+  private getRdcSchoolOptions() {
+    return [
+      'Chimie-biologie',
+      'Commerciale et gestion',
+      'Construction',
+      'Coupe et couture',
+      'Électricité',
+      'Électronique',
+      'Hôtellerie et restauration',
+      'Industrie agricole',
+      'Informatique',
+      'Latin-philo',
+      'Littéraire',
+      'Math-physique',
+      'Mecanique generale',
+      'Mécanique automobile',
+      'Nutrition',
+      'Petrochimie',
+      'Psychopedagogie',
+      'Pédagogie générale',
+      'Pédagogie maternelle',
+      'Pédagogie primaire',
+      'Secrétariat-administration',
+      'Sociale',
+      'Technique commerciale',
+      'Vétérinaire',
+    ]
+  }
+
+  private isHumanitiesClass(classObj?: Class | null) {
+    if (!classObj) return false
+    return classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9
+  }
+
   private getRdcDasClassCatalog() {
     return [
       { name: '1ère Maternelle', level: 'Maternelle', gradeLevel: 1 },
@@ -105,6 +139,7 @@ export default class StudentController {
             .orWhereHas('user', (userQuery) => {
               userQuery
                 .whereILike('firstName', `%${search}%`)
+                .orWhereILike('postnom', `%${search}%`)
                 .orWhereILike('lastName', `%${search}%`)
                 .orWhereILike('email', `%${search}%`)
             })
@@ -158,7 +193,48 @@ export default class StudentController {
         name: 'Gestion Éducative RDC',
       },
       classes,
+      schoolOptions: this.getRdcSchoolOptions(),
       selectedClassId: request.input('class_id', ''),
+    })
+  }
+
+  public async showPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const student = await Student.query()
+      .where('id', params.id)
+      .where('schoolId', user.schoolId)
+      .preload('user')
+      .preload('class')
+      .preload('school')
+      .firstOrFail()
+
+    const [recentGrades, incidentsCount] = await Promise.all([
+      Grade.query()
+        .where('studentId', student.id)
+        .preload('subject')
+        .orderBy('examDate', 'desc')
+        .limit(5),
+      Discipline.query().where('studentId', student.id).count('* as total').first(),
+    ])
+
+    const averageGrade = recentGrades.length
+      ? (
+          recentGrades.reduce((sum, grade) => sum + Number(grade.score || 0), 0) /
+          recentGrades.length
+        ).toFixed(1)
+      : '-'
+
+    return view.render('students/show', {
+      school: {
+        id: user.schoolId,
+        name: student.school?.name || 'Gestion Éducative RDC',
+      },
+      student,
+      recentGrades,
+      stats: {
+        averageGrade,
+        incidentsCount: Number(incidentsCount?.$extras.total || 0),
+      },
     })
   }
 
@@ -167,11 +243,12 @@ export default class StudentController {
     const schema = vine.compile(
       vine.object({
         firstName: vine.string().trim(),
-        postnom: vine.string().trim().optional(),
+        postnom: vine.string().trim(),
         lastName: vine.string().trim(),
         email: vine.string().email().unique({ table: 'users', column: 'email' }),
         phone: vine.string().trim().optional(),
         classId: vine.string().exists({ table: 'classes', column: 'id' }).optional(),
+        schoolOption: vine.string().trim().optional(),
         birthDate: vine.date({ formats: ['YYYY-MM-DD'] }),
         birthPlace: vine.string().trim().optional(),
         nationality: vine.string().trim().optional(),
@@ -182,6 +259,17 @@ export default class StudentController {
       })
     )
     const payload = await request.validateUsing(schema)
+    const selectedClass = payload.classId
+      ? await Class.query().where('id', payload.classId).where('schoolId', user.schoolId).first()
+      : null
+    const schoolOptions = this.getRdcSchoolOptions()
+    const isHumanities = this.isHumanitiesClass(selectedClass)
+
+    if (isHumanities && (!payload.schoolOption || !schoolOptions.includes(payload.schoolOption))) {
+      session.flash('error', "Veuillez sélectionner une option valide pour cette classe des humanités.")
+      return response.redirect().back()
+    }
+
     const tempPassword = randomBytes(6).toString('hex')
     const registrationNumber = `STU-${Date.now()}`
 
@@ -190,7 +278,7 @@ export default class StudentController {
       studentUser.useTransaction(trx)
       studentUser.schoolId = user.schoolId
       studentUser.firstName = payload.firstName
-      studentUser.postnom = payload.postnom || null
+      studentUser.postnom = payload.postnom
       studentUser.lastName = payload.lastName
       studentUser.email = payload.email.trim().toLowerCase()
       studentUser.phone = payload.phone || null
@@ -204,6 +292,7 @@ export default class StudentController {
       student.userId = studentUser.id
       student.schoolId = user.schoolId
       student.classId = payload.classId || null
+      student.schoolOption = isHumanities ? payload.schoolOption! : null
       student.registrationNumber = registrationNumber
       student.birthDate = payload.birthDate
       student.birthPlace = payload.birthPlace || ''
@@ -394,7 +483,7 @@ export default class StudentController {
       success: true,
       reportCard: {
         student: {
-          name: `${student.user?.firstName} ${student.user?.lastName}`,
+          name: student.user?.fullName || '-',
           registrationNumber: student.registrationNumber,
           class: student.class?.name,
         },

@@ -169,7 +169,7 @@ export default class TransferController {
       authorization: {
         code: authorization.authorizationCode,
         student: {
-          name: `${authorization.student.user.firstName} ${authorization.student.user.lastName}`,
+          name: authorization.student.user.fullName,
           registrationNumber: authorization.student.registrationNumber,
           class: authorization.student.class?.name,
         },

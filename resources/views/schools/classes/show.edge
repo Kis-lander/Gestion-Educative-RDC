@@ -95,7 +95,7 @@
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Enseignant principal</span>
-            <span>{{ classObj.teacher?.user?.firstName }} {{ classObj.teacher?.user?.lastName || 'Non assigné' }}</span>
+            <span>{{ classObj.teacher?.user?.fullName || 'Non assigné' }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Date création</span>
@@ -128,7 +128,7 @@
                   {{ subject.hours_per_week }}h/semaine
                 </p>
               </div>
-              <button onclick="removeSubject('{{ subject.id }}')" class="text-red-500 hover:text-red-700">
+              <button onclick="removeSubject('{{ subject.subject_id }}')" class="text-red-500 hover:text-red-700">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -275,14 +275,14 @@
                         <option value="">Sélectionner un enseignant</option>
                         @each(enseignant in teachers)
         <option value="{{ enseignant.id }}">
-          {{ enseignant.user.firstName }} {{ enseignant.user.lastName }}
+          {{ enseignant.user.fullName }}
         </option>
       @end
 
 
 
                       </select>
-                      <input type="number" name="hoursPerWeek" placeholder="Heures par semaine" required
+                      <input type="number" name="hoursPerWeek" placeholder="Heures par semaine" min="1" max="20" value="4" required
                              class="w-full px-3 py-2 border rounded-lg mb-4">
                       <div class="flex gap-3">
                         <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2 border rounded-lg">Annuler</button>
@@ -303,7 +303,7 @@
         const form = document.getElementById("addSubjectForm");
         const formData = new FormData(form);
         formData.append("classId", "{{ classObj.id }}");
-        fetch("/api/classes/add-subject", {
+        fetch("/school/classes/{{ classObj.id }}/subjects", {
           method: "POST",
           headers: {
             "X-CSRF-TOKEN": "{{ csrfToken }}"
@@ -320,7 +320,7 @@
 
       function removeSubject(subjectId) {
         if (confirm("Retirer cette matière de la classe ?")) {
-          fetch(`/api/classes/{{ classObj.id }}/subject/${subjectId}`, {
+          fetch(`/school/classes/{{ classObj.id }}/subjects/${subjectId}`, {
             method: "DELETE",
             headers: {
               "X-CSRF-TOKEN": "{{ csrfToken }}"

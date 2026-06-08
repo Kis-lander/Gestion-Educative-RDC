@@ -4,6 +4,7 @@ import db from '@adonisjs/lucid/services/db'
 import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
 import { DateTime } from 'luxon'
+import { resolveAppLanguage } from '#services/language_service'
 import School from '#models/school'
 import User from '#models/user'
 import OtpService from '#services/otp_service'
@@ -43,23 +44,27 @@ export default class AuthController {
       student: 'Élève',
     }
 
-    const filledFields = [
+    const profileFields = [
       user.firstName,
+      user.postnom,
       user.lastName,
       user.email,
       user.phone,
       user.role,
       user.schoolId,
       user.avatarUrl,
-    ].filter(Boolean).length
+    ]
+    const filledFields = profileFields.filter(Boolean).length
 
     return view.render('profile/index', {
-      title: `Mon profil - ${user.firstName} ${user.lastName}`,
+      title: `Mon profil - ${user.fullName}`,
       user: {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
+        postnom: user.postnom,
         lastName: user.lastName,
+        fullName: user.fullName,
         phone: user.phone,
         role: user.role,
         roleLabel: roleLabels[user.role] ?? user.role,
@@ -77,7 +82,7 @@ export default class AuthController {
         documentsShared: profileStats.documentsShared,
         activeDays: profileStats.activeDays,
       },
-      profileCompletion: Math.round((filledFields / 7) * 100),
+      profileCompletion: Math.round((filledFields / profileFields.length) * 100),
       recentActivities,
     })
   }
@@ -188,7 +193,7 @@ export default class AuthController {
     await user.load('school')
 
     return view.render('profile/edit', {
-      title: `Modifier mon profil - ${user.firstName} ${user.lastName}`,
+      title: `Modifier mon profil - ${user.fullName}`,
       user: this.getProfileViewUser(user),
     })
   }
@@ -198,7 +203,7 @@ export default class AuthController {
     await user.load('school')
 
     return view.render('profile/security', {
-      title: `Sécurité - ${user.firstName} ${user.lastName}`,
+      title: `Sécurité - ${user.fullName}`,
       user: this.getProfileViewUser(user),
       stats: {
         passwordStrength: 'Bon',
@@ -210,16 +215,17 @@ export default class AuthController {
     })
   }
 
-  public async preferencesPage({ auth, view }: HttpContext) {
+  public async preferencesPage({ auth, session, view }: HttpContext) {
     const user = auth.getUserOrFail()
     await user.load('school')
+    const language = await resolveAppLanguage({ auth, session })
 
     return view.render('profile/preferences', {
-      title: `Préférences - ${user.firstName} ${user.lastName}`,
+      title: `Préférences - ${user.fullName}`,
       user: this.getProfileViewUser(user),
       preferences: {
         theme: 'dark',
-        language: 'fr',
+        language,
         timezone: 'Africa/Kinshasa',
         dateFormat: 'dd/mm/yyyy',
         notifyMessages: true,
@@ -227,6 +233,21 @@ export default class AuthController {
         notifySecurity: true,
       },
     })
+  }
+
+  public async updatePreferences({ auth, request, response, session }: HttpContext) {
+    const language = String(request.input('language', 'fr'))
+    const supportedLanguages = ['fr', 'en', 'ln', 'sw', 'kg', 'lua']
+
+    if (supportedLanguages.includes(language)) {
+      const user = auth.getUserOrFail()
+      user.preferredLanguage = language
+      await user.save()
+      session.put('locale', language)
+    }
+
+    session.flash('success', 'Préférences enregistrées')
+    return response.redirect('/profile/preferences')
   }
 
   public async activityPage({ auth, request, view }: HttpContext) {
@@ -311,7 +332,7 @@ export default class AuthController {
     }).length
 
     return view.render('profile/activity', {
-      title: `Mon activité - ${user.firstName} ${user.lastName}`,
+      title: `Mon activité - ${user.fullName}`,
       user: this.getProfileViewUser(user),
       activities,
       url: '/profile/activity',
@@ -497,7 +518,9 @@ export default class AuthController {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
+      postnom: user.postnom,
       lastName: user.lastName,
+      fullName: user.fullName,
       phone: user.phone,
       role: user.role,
       roleLabel: roleLabels[user.role] ?? user.role,
@@ -682,6 +705,7 @@ export default class AuthController {
 
     user.merge(data)
     await user.save()
+    await auth.use('web').login(user)
 
     return response.ok({
       success: true,
@@ -799,6 +823,7 @@ export default class AuthController {
       director.schoolId = schoolId
       director.role = 'director'
       director.firstName = 'Directeur'
+      director.postnom = 'A completer'
       director.lastName = school.name
       director.status = 'active'
     }

@@ -14,7 +14,7 @@ import { DateTime } from 'luxon'
 
 const webSignupValidator = vine.compile(
   vine.object({
-    fullName: vine.string().trim().minLength(2),
+    fullName: vine.string().trim().regex(/^\S+\s+\S+\s+.+$/),
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
     role: vine.enum([
       'inspection',
@@ -30,19 +30,30 @@ const webSignupValidator = vine.compile(
 )
 
 export default class NewAccountController {
+  private splitFullName(fullName: string) {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean)
+
+    return {
+      firstName: parts[0] || 'A completer',
+      postnom: parts.length > 2 ? parts.slice(1, -1).join(' ') : 'A completer',
+      lastName: parts.length > 1 ? parts[parts.length - 1] : 'A completer',
+    }
+  }
+
   public async create({ inertia }: HttpContext) {
     return inertia.render('auth/signup', {})
   }
 
   public async store({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(webSignupValidator)
-    const [firstName, ...lastNameParts] = payload.fullName.split(/\s+/)
+    const name = this.splitFullName(payload.fullName)
 
     await User.create({
       email: payload.email,
       password: payload.password,
-      firstName,
-      lastName: lastNameParts.join(' ') || firstName,
+      firstName: name.firstName,
+      postnom: name.postnom,
+      lastName: name.lastName,
       role: payload.role,
       status: 'active',
       schoolId: null as unknown as string,
@@ -69,6 +80,7 @@ export default class NewAccountController {
       user.email = payload.email
       user.password = tempPassword
       user.firstName = payload.firstName
+      user.postnom = payload.postnom
       user.lastName = payload.lastName
       user.phone = payload.phone || null
       user.role = payload.role
@@ -127,6 +139,7 @@ export default class NewAccountController {
               email: account.email,
               password: tempPassword,
               firstName: account.firstName,
+              postnom: account.postnom,
               lastName: account.lastName,
               role: account.role,
               schoolId: payload.schoolId,

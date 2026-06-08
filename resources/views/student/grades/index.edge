@@ -117,7 +117,7 @@
                   {{ subject.name }}
                 </td>
                 <td class="px-4 py-3 text-center">
-                  {{ subject.coefficient }}
+                  {{ subject.coefficient || '-' }}
                 </td>
                 <td class="px-4 py-3 text-center">
                   <span
@@ -159,7 +159,7 @@
                 MOYENNE GÉNÉRALE
               </td>
               <td class="px-4 py-3 text-center">
-                {{ totalCoefficient }}
+                {{ totalCoefficient || 0 }}
               </td>
               <td colspan="3" class="px-4 py-3">
               </td>
@@ -181,8 +181,10 @@
       <h3 class="font-semibold mb-3">
         Analyse des performances par matière
       </h3>
-      <canvas id="radarChart" height="250">
-      </canvas>
+      <div class="relative">
+        <canvas id="radarChart">
+        </canvas>
+      </div>
     </div>
 
     <!-- Appréciation générale -->
@@ -220,7 +222,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             scales: {
               r: {
                 min: 0,

@@ -68,7 +68,7 @@
             </option>
             @each(user in users)
               <option value="{{ user.id }}">
-                {{ user.firstName }} {{ user.lastName }} ({{ user.role }})
+                {{ user.fullName }} ({{ user.role }})
               </option>
             @end
           </select>

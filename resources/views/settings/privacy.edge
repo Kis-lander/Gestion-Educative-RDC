@@ -181,7 +181,9 @@
         const visibility = {
           profile: document.getElementById("profileVisibility").value,
           email: document.getElementById("emailVisibility").value,
-          phone: document.getElementById("phoneVisibility").value
+          phone: document.getElementById("phoneVisibility").value,
+          dataCollection: document.getElementById("dataCollection")?.checked,
+          activityTracking: document.getElementById("activityTracking")?.checked
         };
         fetch("/api/settings/privacy/visibility", {
           method: "POST",
@@ -207,7 +209,7 @@
               "X-CSRF-TOKEN": "{{ csrfToken }}"
             }
           }).then(res => res.json()).then(data => {
-            if (data.success) window.location.href = "/logout"; else alert("Erreur: " + data.message);
+            if (data.success) window.location.href = "/login"; else alert("Erreur: " + data.message);
           });
         }
       }

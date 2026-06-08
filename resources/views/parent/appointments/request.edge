@@ -31,7 +31,7 @@
                   Sélectionner
                 </option>
                 @each(child in children)
-                  <option value="{{ child.id }}">
+                  <option value="{{ child.id }}" {{ selectedStudentId === child.id ? 'selected' : '' }}>
                     {{ child.name }} - {{ child.className }}
                   </option>
                 @end
@@ -189,6 +189,8 @@
       function loadAvailableSlots() {
         const teacherId = document.querySelector("[name=teacherId]").value;
         const date = document.querySelector("[name=proposedDate]").value;
+        document.getElementById("selectedSlot").value = "";
+        selectedSlotValue = null;
         if (!teacherId || !date) return;
         fetch(`/api/teachers/${teacherId}/available-slots?date=${date}`).then(res => res.json()).then(data => {
           const container = document.getElementById("slotsContainer");
@@ -231,6 +233,13 @@
       // Date minimale (aujourd'hui + 2 jours)
 
       const dateInput = document.querySelector("[name=proposedDate]");
+      const selectedReason = "{{ selectedReason }}";
+      const reasonSelect = document.querySelector("[name=reason]");
+
+      if (selectedReason && reasonSelect) {
+        const existingReason = Array.from(reasonSelect.options).find(option => option.value === selectedReason);
+        reasonSelect.value = existingReason ? selectedReason : "Autre";
+      }
 
       const minDate = new Date();
 

@@ -200,7 +200,7 @@
           </h3>
         </div>
         <div class="table-responsive">
-          <table class="w-full text-sm">
+          <table id="attendanceRecords" class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th class="px-4 py-2">
@@ -347,7 +347,9 @@
       }
 
       function renderChart(labels, values) {
-        const ctx = document.getElementById("attendanceChart").getContext("2d");
+        const canvas = document.getElementById("attendanceChart");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
         if (attendanceChart) attendanceChart.destroy();
         attendanceChart = new Chart(ctx, {
           type: "line",
@@ -387,6 +389,7 @@
 
       function updateTable(records) {
         const tbody = document.querySelector("#attendanceRecords tbody");
+        const childId = document.getElementById("childSelect")?.value || "";
         if (!tbody) return;
         if (records && records.length > 0) {
           tbody.innerHTML = records.map(record => `
@@ -403,7 +406,7 @@
                       ${record.status !== "present" ? record.justified ? '<span class="text-green-600"><i class="fas fa-check-circle"></i> Justifiée</span>' : record.status === "absent" ? '<span class="text-red-600"><i class="fas fa-clock"></i> Non justifiée</span>' : "-" : "-"}
                     </td>
                     <td class="px-4 py-2 text-center">
-                      ${record.status === "absent" && !record.justified ? `<button onclick="justifyAbsence('${record.id}', '{{ selectedChild.id }}')" class="text-primary hover:underline text-sm">
+                      ${record.status === "absent" && !record.justified ? `<button onclick="justifyAbsence('${record.id}', '${childId}')" class="text-primary hover:underline text-sm">
                           <i class="fas fa-edit"></i> Justifier
                         </button>` : "-"}
                     </td>
@@ -431,6 +434,7 @@
       function exportAttendance() {
         const childId = document.getElementById("childSelect").value;
         const period = document.getElementById("periodSelect").value;
+        if (!childId) return;
         window.location.href = `/api/parent/attendance/export?child_id=${childId}&period=${period}`;
       }
 

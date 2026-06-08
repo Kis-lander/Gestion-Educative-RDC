@@ -3,6 +3,7 @@ import db from '@adonisjs/lucid/services/db'
 import hash from '@adonisjs/core/services/hash'
 import { DateTime } from 'luxon'
 import User from '#models/user'
+import { getDefaultAppLanguage } from '#services/language_service'
 import {
   createAcademicSessionValidator,
   updateAcademicSessionValidator,
@@ -20,7 +21,11 @@ export default class SessionController {
     return '/dashboard'
   }
 
-  public async create({ inertia }: HttpContext) {
+  public async create({ inertia, session }: HttpContext) {
+    if (!session.get('locale')) {
+      session.put('locale', await getDefaultAppLanguage())
+    }
+
     return inertia.render('auth/login', {})
   }
 

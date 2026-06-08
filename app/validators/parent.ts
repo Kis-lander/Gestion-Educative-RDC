@@ -20,6 +20,7 @@ export const createParentValidator = vine.create(
   vine.object({
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
     firstName: vine.string().trim().maxLength(100),
+    postnom: vine.string().trim().maxLength(100),
     lastName: vine.string().trim().maxLength(100),
     phone: vine
       .string()

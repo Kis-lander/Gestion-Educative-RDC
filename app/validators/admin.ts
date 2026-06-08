@@ -24,6 +24,7 @@ export const createUserValidator = vine.create(
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
     password: vine.string().minLength(8).confirmed({ confirmationField: 'passwordConfirmation' }),
     firstName: vine.string().trim().maxLength(100),
+    postnom: vine.string().trim().maxLength(100),
     lastName: vine.string().trim().maxLength(100),
     phone: vine.string().trim().optional(),
     role: vine.enum([
@@ -45,6 +46,7 @@ export const createUserValidator = vine.create(
 export const updateUserValidator = vine.create(
   vine.object({
     firstName: vine.string().trim().optional(),
+    postnom: vine.string().trim().optional(),
     lastName: vine.string().trim().optional(),
     phone: vine.string().trim().optional(),
     role: vine

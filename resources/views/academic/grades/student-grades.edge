@@ -33,7 +33,7 @@
           <div
             class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white text-xl font-bold"
           >
-            {{ student.name.charAt(0) }}
+            {{ (student.name || 'Élève').charAt(0) }}
           </div>
           <div>
             <h3 class="font-bold text-lg">
@@ -73,11 +73,11 @@
                 <span
                   class="font-bold {{ termSummary.average >= 15 ? 'text-green-600' : (termSummary.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
                 >
-                  {{ termSummary.average }}/20
+                  {{ termSummary.hasGrades ? termSummary.average + '/20' : '-' }}
           </span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-1.5">
-                <div class="bg-primary rounded-full h-1.5" style="width: {{ (termSummary.average / 20) * 100 }}%">
+                <div class="bg-primary rounded-full h-1.5" style="width: {{ termSummary.hasGrades ? (termSummary.average / 20) * 100 : 0 }}%">
                 </div>
               </div>
               <div class="flex justify-between text-xs text-gray-500 mt-1">
@@ -97,10 +97,10 @@
           Moyenne générale
         </p>
         <p class="text-4xl font-bold">
-          {{ overallAverage }}/20
+          {{ hasOverallAverage ? overallAverage + '/20' : '-' }}
         </p>
         <div class="mt-2 flex justify-center gap-4 text-sm">
-          <span>Classement: {{ rank }}/{{ totalStudents }}</span>
+          <span>Classement: {{ rank }}{{ totalStudents ? '/' + totalStudents : '' }}</span>
           <span>Décile: {{ decile }}</span>
         </div>
       </div>
@@ -168,7 +168,7 @@
             </span>
                 </td>
                 <td class="px-4 py-3 text-center font-bold">
-                  {{ subject.average.toFixed(1) }}/20
+                  {{ subject.hasGrades ? subject.average.toFixed(1) + '/20' : '-' }}
                 </td>
                 <td class="px-4 py-3 text-center">
                   {{ subject.coefficient }}
@@ -192,16 +192,16 @@
                 TOTAL / MOYENNE GÉNÉRALE
               </td>
               <td class="px-4 py-3 text-center">
-                {{ termAverages.t1 || '-' }}
+                {{ termAverages.t1 ? termAverages.t1 + '/20' : '-' }}
               </td>
               <td class="px-4 py-3 text-center">
-                {{ termAverages.t2 || '-' }}
+                {{ termAverages.t2 ? termAverages.t2 + '/20' : '-' }}
               </td>
               <td class="px-4 py-3 text-center">
-                {{ termAverages.t3 || '-' }}
+                {{ termAverages.t3 ? termAverages.t3 + '/20' : '-' }}
               </td>
               <td class="px-4 py-3 text-center">
-                {{ overallAverage }}/20
+                {{ hasOverallAverage ? overallAverage + '/20' : '-' }}
               </td>
               <td class="px-4 py-3 text-center">
                 {{ totalCoefficient }}

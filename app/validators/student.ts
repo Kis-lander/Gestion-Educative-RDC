@@ -22,6 +22,7 @@ export const createStudentValidator = vine.create(
   vine.object({
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
     firstName: vine.string().trim().maxLength(100),
+    postnom: vine.string().trim().maxLength(100),
     lastName: vine.string().trim().maxLength(100),
     registrationNumber: vine
       .string()
@@ -48,6 +49,7 @@ export const createStudentValidator = vine.create(
 export const updateStudentValidator = vine.create(
   vine.object({
     firstName: vine.string().trim().optional(),
+    postnom: vine.string().trim().optional(),
     lastName: vine.string().trim().optional(),
     classId: vine.string().exists({ table: 'classes', column: 'id' }).optional(),
     parentPhone: vine.string().trim().optional(),

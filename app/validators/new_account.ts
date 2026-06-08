@@ -21,6 +21,7 @@ export const createUserAccountValidator = vine.create(
   vine.object({
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
     firstName: vine.string().trim().maxLength(100),
+    postnom: vine.string().trim().maxLength(100),
     lastName: vine.string().trim().maxLength(100),
     phone: vine.string().trim().optional(),
     role: vine.enum([
@@ -45,6 +46,7 @@ export const createBulkAccountsValidator = vine.create(
       vine.object({
         email: vine.string().trim().email(),
         firstName: vine.string().trim(),
+        postnom: vine.string().trim(),
         lastName: vine.string().trim(),
         role: vine.enum(['teacher', 'student']),
         classId: vine.string().exists({ table: 'classes', column: 'id' }).optional(),

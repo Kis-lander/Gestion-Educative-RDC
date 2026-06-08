@@ -51,7 +51,7 @@
 
         <label class="block" x-show="role === 'student'">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Postnom</span>
-          <input name="postnom" class="w-full px-3 py-2 border rounded-lg" />
+          <input name="postnom" required class="w-full px-3 py-2 border rounded-lg" />
         </label>
 
         <label class="block">
@@ -85,10 +85,25 @@
       <div x-show="role === 'student'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label class="block">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe</span>
-          <select name="classId" class="w-full px-3 py-2 border rounded-lg">
+          <select name="classId" id="accountClassSelect" class="w-full px-3 py-2 border rounded-lg">
             <option value="">Non affecté</option>
             @each(classObj in classes)
-              <option value="{{ classObj.id }}">{{ classObj.name }}</option>
+              <option
+                value="{{ classObj.id }}"
+                data-humanities="{{ classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9 ? 'true' : 'false' }}"
+              >
+                {{ classObj.name }}
+              </option>
+            @end
+          </select>
+        </label>
+
+        <label id="accountSchoolOptionField" class="block hidden">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Option *</span>
+          <select name="schoolOption" id="accountSchoolOptionSelect" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">Sélectionner une option</option>
+            @each(option in schoolOptions)
+              <option value="{{ option }}">{{ option }}</option>
             @end
           </select>
         </label>
@@ -177,7 +192,7 @@
             @each(student in students)
               <label
                 class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                data-search="{{ (student.user.firstName + ' ' + student.user.lastName + ' ' + student.registrationNumber + ' ' + (student.class ? student.class.name : '')).toLowerCase() }}"
+                data-search="{{ (student.user.fullName + ' ' + student.registrationNumber + ' ' + (student.class ? student.class.name : '')).toLowerCase() }}"
                 x-show="$el.dataset.search.includes(childSearch.toLowerCase())"
               >
                 <input
@@ -190,7 +205,7 @@
                 />
                 <span class="flex-1">
                   <span class="block font-medium text-gray-800 dark:text-white">
-                    {{ student.user.firstName }} {{ student.user.lastName }}
+                    {{ student.user.fullName }}
                   </span>
                   <span class="block text-xs text-gray-500">
                     Matricule: {{ student.registrationNumber }}{{ student.class ? ' - Classe: ' + student.class.name : ' - Classe non affectée' }}
@@ -217,4 +232,23 @@
         </a>
       </div>
     </form>
+
+    <script>
+      const accountClassSelect = document.getElementById("accountClassSelect");
+      const accountOptionField = document.getElementById("accountSchoolOptionField");
+      const accountOptionSelect = document.getElementById("accountSchoolOptionSelect");
+
+      function syncAccountSchoolOptionField() {
+        const selectedOption = accountClassSelect?.selectedOptions?.[0];
+        const isHumanities = selectedOption?.dataset.humanities === "true";
+        accountOptionField?.classList.toggle("hidden", !isHumanities);
+        if (accountOptionSelect) {
+          accountOptionSelect.required = isHumanities;
+          if (!isHumanities) accountOptionSelect.value = "";
+        }
+      }
+
+      accountClassSelect?.addEventListener("change", syncAccountSchoolOptionField);
+      syncAccountSchoolOptionField();
+    </script>
   @endsection

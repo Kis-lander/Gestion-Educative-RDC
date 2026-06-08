@@ -739,6 +739,198 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'settings.get_language': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/settings/language'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['getLanguage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['getLanguage']>>>
+    }
+  }
+  'settings.save_language': {
+    methods: ["POST"]
+    pattern: '/api/settings/language'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveLanguage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveLanguage']>>>
+    }
+  }
+  'settings.save_regional': {
+    methods: ["POST"]
+    pattern: '/api/settings/regional'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveRegional']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveRegional']>>>
+    }
+  }
+  'settings.reset_general': {
+    methods: ["POST"]
+    pattern: '/api/settings/general/reset'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['resetGeneral']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['resetGeneral']>>>
+    }
+  }
+  'settings.update_email': {
+    methods: ["PUT"]
+    pattern: '/api/settings/account/email'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['updateEmail']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['updateEmail']>>>
+    }
+  }
+  'settings.revoke_session': {
+    methods: ["POST"]
+    pattern: '/api/settings/account/revoke-session/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['revokeSession']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['revokeSession']>>>
+    }
+  }
+  'settings.revoke_all_sessions': {
+    methods: ["POST"]
+    pattern: '/api/settings/account/revoke-all-sessions'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['revokeAllSessions']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['revokeAllSessions']>>>
+    }
+  }
+  'settings.deactivate_account': {
+    methods: ["POST"]
+    pattern: '/api/settings/account/deactivate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['deactivateAccount']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['deactivateAccount']>>>
+    }
+  }
+  'settings.delete_account': {
+    methods: ["DELETE"]
+    pattern: '/api/settings/account/delete'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['deleteAccount']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['deleteAccount']>>>
+    }
+  }
+  'settings.save_notification_types': {
+    methods: ["POST"]
+    pattern: '/api/settings/notification-types'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveNotificationTypes']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveNotificationTypes']>>>
+    }
+  }
+  'settings.save_quiet_hours': {
+    methods: ["POST"]
+    pattern: '/api/settings/quiet-hours'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveQuietHours']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveQuietHours']>>>
+    }
+  }
+  'settings.save_visibility': {
+    methods: ["POST"]
+    pattern: '/api/settings/privacy/visibility'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveVisibility']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveVisibility']>>>
+    }
+  }
+  'settings.export_data': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/settings/privacy/export-data'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['exportData']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['exportData']>>>
+    }
+  }
+  'settings.delete_data': {
+    methods: ["DELETE"]
+    pattern: '/api/settings/privacy/delete-data'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['deleteData']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['deleteData']>>>
+    }
+  }
+  'settings.block_user': {
+    methods: ["POST"]
+    pattern: '/api/settings/privacy/block'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['blockUser']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['blockUser']>>>
+    }
+  }
+  'settings.unblock_user': {
+    methods: ["DELETE"]
+    pattern: '/api/settings/privacy/unblock/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['unblockUser']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['unblockUser']>>>
+    }
+  }
   'settings.general': {
     methods: ["GET","HEAD"]
     pattern: '/settings/general'
@@ -747,8 +939,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['generalPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['generalPage']>>>
     }
   }
   'settings.general.store': {
@@ -759,8 +951,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveGeneral']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveGeneral']>>>
     }
   }
   'teachers.index': {
@@ -1099,6 +1291,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['markAttendance']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'api.teachers.available_slots': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/teachers/:teacherId/available-slots'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { teacherId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getTeacherAvailableSlots']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getTeacherAvailableSlots']>>>
+    }
+  }
   'inspection.users.stats': {
     methods: ["GET","HEAD"]
     pattern: '/api/users/stats'
@@ -1195,7 +1399,7 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['preferencesPage']>>>
     }
   }
-  'profile.preferences.save': {
+  'profile.preferences.update': {
     methods: ["POST"]
     pattern: '/profile/preferences'
     types: {
@@ -1203,8 +1407,8 @@ export interface Registry {
       paramsTuple: []
       params: {}
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['savePreferences']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['savePreferences']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updatePreferences']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updatePreferences']>>>
     }
   }
   'profile.activity': {
@@ -1229,30 +1433,6 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateAvatar']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateAvatar']>>>
-    }
-  }
-  'auth.save_language': {
-    methods: ["POST"]
-    pattern: '/api/settings/language'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['saveLanguage']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['saveLanguage']>>>
-    }
-  }
-  'auth.save_regional': {
-    methods: ["POST"]
-    pattern: '/api/settings/regional'
-    types: {
-      body: {}
-      paramsTuple: []
-      params: {}
-      query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['saveRegional']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['saveRegional']>>>
     }
   }
   'academic.classes.index': {
@@ -1565,6 +1745,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['store']>>>
+    }
+  }
+  'students.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/students/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['showPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['showPage']>>>
     }
   }
   'schools.classes.index': {
@@ -2239,6 +2431,78 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateSchoolProfile']>>>
     }
   }
+  'settings.account_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/account'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['accountPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['accountPage']>>>
+    }
+  }
+  'settings.language_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/language'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['languagePage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['languagePage']>>>
+    }
+  }
+  'settings.notifications_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/notifications'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['notificationsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['notificationsPage']>>>
+    }
+  }
+  'settings.save_notifications': {
+    methods: ["POST"]
+    pattern: '/settings/notifications'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveNotifications']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['saveNotifications']>>>
+    }
+  }
+  'settings.privacy_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/privacy'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['privacyPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['privacyPage']>>>
+    }
+  }
+  'academics.student_grades_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/academic/grades/student/:studentId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { studentId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['studentGradesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['studentGradesPage']>>>
+    }
+  }
   'teachers.attendance_index_page': {
     methods: ["GET","HEAD"]
     pattern: '/teacher/attendance'
@@ -2261,6 +2525,90 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['attendanceMarkPage']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['attendanceMarkPage']>>>
+    }
+  }
+  'parents.child_grades_details_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/grades/child/:studentId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { studentId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['childGradesDetailsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['childGradesDetailsPage']>>>
+    }
+  }
+  'parents.discipline_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/discipline'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['disciplinePage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['disciplinePage']>>>
+    }
+  }
+  'parents.attendance_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/attendance'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['attendancePage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['attendancePage']>>>
+    }
+  }
+  'parents.payments_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/payments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentsPage']>>>
+    }
+  }
+  'parents.appointments_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/appointments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentsPage']>>>
+    }
+  }
+  'parents.appointment_request_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/appointments/request'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentRequestPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentRequestPage']>>>
+    }
+  }
+  'parents.request_appointment': {
+    methods: ["POST"]
+    pattern: '/parent/appointments/request'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['requestAppointment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['requestAppointment']>>>
     }
   }
   'schools.register_school': {
@@ -2681,6 +3029,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['addSubjectToClass']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['addSubjectToClass']>>>
+    }
+  }
+  'academics.remove_subject_from_class': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/school/classes/:classId/subjects/:subjectId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { classId: ParamValue; subjectId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectFromClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectFromClass']>>>
     }
   }
   'academics.get_grades_by_class': {
@@ -3173,6 +3533,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getChildPayments']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getChildPayments']>>>
+    }
+  }
+  'parents.get_child_attendance': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/parent/attendance/:studentId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { studentId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getChildAttendance']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getChildAttendance']>>>
     }
   }
   'parents.justify_absence': {

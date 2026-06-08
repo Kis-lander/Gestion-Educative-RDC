@@ -168,7 +168,7 @@
             @if(director.avatarUrl)
               <img
                 src="{{ director.avatarUrl }}"
-                alt="Photo de profil de {{ director.firstName }} {{ director.lastName }}"
+                alt="Photo de profil de {{ director.fullName }}"
                 class="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-600"
               />
             @else
@@ -180,7 +180,7 @@
             @endif
             <div>
               <p class="font-semibold">
-                {{ director.firstName }} {{ director.lastName }}
+                {{ director.fullName }}
               </p>
               <p class="text-xs text-gray-500">
                 Directeur

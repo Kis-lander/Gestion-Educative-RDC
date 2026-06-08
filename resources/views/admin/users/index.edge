@@ -189,7 +189,7 @@
                     </div>
                     <div>
                       <p class="font-medium">
-                        {{ user.firstName }} {{ user.lastName }}
+                        {{ user.fullName }}
                       </p>
                       <p class="text-xs text-gray-500">
                         {{ user.phone || '-' }}
@@ -252,7 +252,7 @@
                       <i class="fas {{ user.status === 'active' ? 'fa-pause-circle' : 'fa-play-circle' }}"></i>
                     </button>
                     <button
-                      onclick="deleteUser('{{ user.id }}', '{{ user.firstName }} {{ user.lastName }}')"
+                      onclick="deleteUser('{{ user.id }}', '{{ user.fullName }}')"
                       class="text-red-500 hover:text-red-700"
                       title="Supprimer"
                     >

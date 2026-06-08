@@ -1,7 +1,7 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Mon profil - {{ user.firstName }} {{ user.lastName }}
+    Mon profil - {{ user.fullName }}
   @endsection
   
   @section('dashboardTitle')
@@ -95,7 +95,7 @@
           <input type="file" id="avatarInput" class="hidden" accept="image/*" />
         </div>
         <h2 class="text-xl font-bold mt-3">
-          {{ user.firstName }} {{ user.lastName }}
+          {{ user.fullName }}
         </h2>
         <p class="text-gray-500 text-sm">
           {{ user.roleLabel }}
@@ -115,7 +115,7 @@
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
             <span class="text-gray-500">Nom complet</span>
-            <span class="font-medium">{{ user.firstName }} {{ user.lastName }}</span>
+            <span class="font-medium">{{ user.fullName }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Email</span>

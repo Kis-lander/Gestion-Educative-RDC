@@ -297,7 +297,7 @@ export default class PedagogicalController {
 
     const reportCard = {
       student: {
-        name: `${student.user.firstName} ${student.user.lastName}`,
+        name: student.user.fullName,
         registrationNumber: student.registrationNumber,
         class: student.class.name,
       },

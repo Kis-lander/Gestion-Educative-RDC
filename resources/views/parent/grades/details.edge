@@ -16,7 +16,7 @@
       <button onclick="printDetails()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
         <i class="fas fa-print mr-2"></i>Imprimer
   </button>
-      <a href="/parent/grades/child/{{ child.id }}" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+      <a href="/parent/grades?child_id={{ child.id }}&term={{ selectedTerm }}" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
         <i class="fas fa-arrow-left mr-2"></i>Retour
   </a>
     </div>
@@ -120,9 +120,7 @@
           </div>
           <div class="flex items-center justify-center gap-2">
             <i
-              class=fas
-              fa-arrow-
-              {{ subject.trend > 0 ? 'up text-green-500' : (subject.trend < 0 ? 'down text-red-500' : 'right text-gray-400') }}
+              class="fas fa-arrow-{{ subject.trend > 0 ? 'up text-green-500' : (subject.trend < 0 ? 'down text-red-500' : 'right text-gray-400') }}"
             ></i>
             <span class="text-sm">Évolution: {{ subject.trend > 0 ? '+' : '' }}{{ subject.trend }} points</span>
           </div>
@@ -179,6 +177,12 @@
                 </td>
                 <td class="px-4 py-2 text-center">
                   {{ grade.classAverage || '-' }}/20
+                </td>
+              </tr>
+            @else
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                  Aucune évaluation disponible pour cette matière
                 </td>
               </tr>
             @end

@@ -275,6 +275,7 @@
       document.getElementById("applyFilters")?.addEventListener("click", () => {
         const childId = document.getElementById("childSelect").value;
         const year = document.getElementById("yearSelect").value;
+        if (!childId) return;
         window.location.href = `/parent/payments?child_id=${childId}&year=${year}`;
       });
 
@@ -285,11 +286,13 @@
       function exportPayments() {
         const childId = document.getElementById("childSelect").value;
         const year = document.getElementById("yearSelect").value;
+        if (!childId) return;
         window.location.href = `/api/parent/payments/export?child_id=${childId}&year=${year}`;
       }
 
       function requestPaymentPlan() {
         const childId = document.getElementById("childSelect").value;
+        if (!childId) return;
         window.location.href = `/parent/payments/payment-plan/request?child_id=${childId}`;
       }
     </script>

@@ -4,6 +4,7 @@ import { DateTime } from 'luxon'
 import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import { edgePageContext } from '#start/view_context'
+import { getDefaultAppLanguage } from '#services/language_service'
 
 async function getWelcomeStats() {
   const [schools, students, teachers, provinces] = await Promise.all([
@@ -26,6 +27,7 @@ router
     return view.render('welcome/index', {
       title: 'Gestion Educative RDC - Plateforme nationale',
       stats: await getWelcomeStats(),
+      appLanguage: await getDefaultAppLanguage(),
     })
   })
   .as('welcome.index')
@@ -36,6 +38,7 @@ router
     return view.render('welcome/index', {
       title: 'Gestion Educative RDC - Plateforme nationale',
       stats: await getWelcomeStats(),
+      appLanguage: await getDefaultAppLanguage(),
     })
   })
   .as('welcome.landing')
@@ -158,30 +161,43 @@ router
   .use(middleware.auth())
 
 router
-  .get('/settings/general', ({ auth, view }) => {
-    return view.render('settings/general', {
-      school: { id: auth.user?.schoolId, name: 'Gestion Éducative RDC' },
-      settings: {
-        displayName: auth.user?.fullName || '',
-        bio: '',
-        website: '',
-        dateFormat: 'DD/MM/YYYY',
-        timeFormat: '24h',
-        itemsPerPage: 20,
-        defaultExportFormat: 'pdf',
-        compressExports: false,
-      },
-      currentDate: new Date().toLocaleDateString('fr-FR'),
-    })
+  .group(() => {
+    router.get('/language', [controllers.Settings, 'getLanguage'])
+    router.post('/language', [controllers.Settings, 'saveLanguage'])
+    router.post('/regional', [controllers.Settings, 'saveRegional'])
+    router.post('/general/reset', [controllers.Settings, 'resetGeneral']).use(middleware.auth())
+    router.put('/account/email', [controllers.Settings, 'updateEmail']).use(middleware.auth())
+    router
+      .post('/account/revoke-session/:id', [controllers.Settings, 'revokeSession'])
+      .use(middleware.auth())
+    router
+      .post('/account/revoke-all-sessions', [controllers.Settings, 'revokeAllSessions'])
+      .use(middleware.auth())
+    router
+      .post('/account/deactivate', [controllers.Settings, 'deactivateAccount'])
+      .use(middleware.auth())
+    router.delete('/account/delete', [controllers.Settings, 'deleteAccount']).use(middleware.auth())
+    router
+      .post('/notification-types', [controllers.Settings, 'saveNotificationTypes'])
+      .use(middleware.auth())
+    router.post('/quiet-hours', [controllers.Settings, 'saveQuietHours']).use(middleware.auth())
+    router
+      .post('/privacy/visibility', [controllers.Settings, 'saveVisibility'])
+      .use(middleware.auth())
+    router.get('/privacy/export-data', [controllers.Settings, 'exportData']).use(middleware.auth())
+    router.delete('/privacy/delete-data', [controllers.Settings, 'deleteData']).use(middleware.auth())
+    router.post('/privacy/block', [controllers.Settings, 'blockUser']).use(middleware.auth())
+    router.delete('/privacy/unblock/:id', [controllers.Settings, 'unblockUser']).use(middleware.auth())
   })
+  .prefix('/api/settings')
+
+router
+  .get('/settings/general', [controllers.Settings, 'generalPage'])
   .as('settings.general')
   .use(middleware.auth())
 
 router
-  .post('/settings/general', ({ response, session }) => {
-    session.flash('success', 'Paramètres enregistrés.')
-    return response.redirect('/settings/general')
-  })
+  .post('/settings/general', [controllers.Settings, 'saveGeneral'])
   .as('settings.general.store')
   .use(middleware.auth())
 
@@ -333,6 +349,11 @@ router
   ])
 
 router
+  .get('/api/teachers/:teacherId/available-slots', [controllers.Parents, 'getTeacherAvailableSlots'])
+  .as('api.teachers.available_slots')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['parent', 'director'] })])
+
+router
   .get('/api/users/stats', [controllers.Inspections, 'usersStats'])
   .as('inspection.users.stats')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['inspection'] })])
@@ -364,6 +385,10 @@ router
 router
   .get('/profile/preferences', [controllers.Auth, 'preferencesPage'])
   .as('profile.preferences')
+  .use(middleware.auth())
+router
+  .post('/profile/preferences', [controllers.Auth, 'updatePreferences'])
+  .as('profile.preferences.update')
   .use(middleware.auth())
 router
   .get('/profile/activity', [controllers.Auth, 'activityPage'])
@@ -446,6 +471,7 @@ router
     router.get('/', [controllers.Students, 'indexPage']).as('students.index')
     router.get('/create', [controllers.Students, 'createPage']).as('students.create')
     router.post('/create', [controllers.Students, 'store']).as('students.store')
+    router.get('/:id', [controllers.Students, 'showPage']).as('students.show')
   })
   .prefix('/students')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director'] })])
@@ -740,18 +766,11 @@ router
 
 router
   .group(() => {
-    router.get('/account', async (ctx) =>
-      ctx.view.render('settings/account', await edgePageContext(ctx))
-    )
-    router.get('/language', async (ctx) =>
-      ctx.view.render('settings/language', await edgePageContext(ctx))
-    )
-    router.get('/notifications', async (ctx) =>
-      ctx.view.render('settings/notifications', await edgePageContext(ctx))
-    )
-    router.get('/privacy', async (ctx) =>
-      ctx.view.render('settings/privacy', await edgePageContext(ctx))
-    )
+    router.get('/account', [controllers.Settings, 'accountPage'])
+    router.get('/language', [controllers.Settings, 'languagePage'])
+    router.get('/notifications', [controllers.Settings, 'notificationsPage'])
+    router.post('/notifications', [controllers.Settings, 'saveNotifications'])
+    router.get('/privacy', [controllers.Settings, 'privacyPage'])
   })
   .prefix('/settings')
   .use(middleware.auth())
@@ -845,9 +864,7 @@ router
     router.get('/grades/class/:classId/view', async (ctx) =>
       ctx.view.render('academic/grades/class-grades', await edgePageContext(ctx))
     )
-    router.get('/grades/student/:studentId', async (ctx) =>
-      ctx.view.render('academic/grades/student-grades', await edgePageContext(ctx))
-    )
+    router.get('/grades/student/:studentId', [controllers.Academics, 'studentGradesPage'])
     router.get('/grades/publish', async (ctx) =>
       ctx.view.render('academic/grades/publish', await edgePageContext(ctx))
     )
@@ -1000,23 +1017,265 @@ router
     )
     router.get('/grades/report-card', async (ctx) => {
       const context = await edgePageContext(ctx)
+      const selectedStudentId = String(ctx.request.input('student_id', context.student?.id || ''))
+      const selectedTerm = context.selectedTerm
+      const academicYear = `${context.currentYear - 1}-${context.currentYear}`
+      const authUser = ctx.auth.user
+
+      const studentQuery = db
+        .from('students')
+        .leftJoin('users', 'students.user_id', 'users.id')
+        .leftJoin('classes', 'students.class_id', 'classes.id')
+        .leftJoin('schools', 'students.school_id', 'schools.id')
+        .select(
+          'students.id',
+          'students.registration_number',
+          'students.birth_date',
+          'students.birth_place',
+          'students.gender',
+          'students.class_id',
+          'students.school_id',
+          'users.first_name',
+          'users.postnom',
+          'users.last_name',
+          'classes.name as class_name',
+          'schools.name as school_name',
+          'schools.code as school_code',
+          'schools.province as school_province',
+          'schools.territory as school_city'
+        )
+
+      if (authUser?.role === 'student') {
+        studentQuery.where('students.user_id', authUser.id)
+      } else if (selectedStudentId) {
+        studentQuery.where('students.id', selectedStudentId)
+      } else if (authUser?.schoolId) {
+        studentQuery.where('students.school_id', authUser.schoolId)
+      }
+
+      const studentRecord = await studentQuery.first()
+      const studentId = studentRecord?.id || context.student?.id || ''
+      const classId = studentRecord?.class_id || context.student?.classId || context.classObj?.id || ''
+      const formatDate = (value: any) => {
+        if (!value) return '-'
+        const date = DateTime.fromJSDate(value instanceof Date ? value : new Date(value))
+        return date.isValid ? date.toFormat('dd/MM/yyyy') : String(value)
+      }
+
+      const studentName = [
+        studentRecord?.first_name,
+        studentRecord?.postnom,
+        studentRecord?.last_name,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
+      const student = {
+        ...context.student,
+        id: studentId,
+        name: studentName || context.user?.fullName || context.student?.name || '-',
+        registrationNumber: studentRecord?.registration_number || context.student?.registrationNumber || '-',
+        className: studentRecord?.class_name || context.student?.className || context.classObj?.name || '-',
+        birthDate: formatDate(studentRecord?.birth_date || context.student?.birthDate),
+        birthPlace: studentRecord?.birth_place || context.student?.birthPlace || '-',
+        gender:
+          studentRecord?.gender === 'female'
+            ? 'F'
+            : studentRecord?.gender === 'male'
+              ? 'M'
+              : studentRecord?.gender || '-',
+        classId,
+      }
+
+      const contextSchool = context.school as any
+      const school = {
+        ...context.school,
+        id: studentRecord?.school_id || contextSchool?.id,
+        name: studentRecord?.school_name || contextSchool?.name || 'Gestion Éducative RDC',
+        code: studentRecord?.school_code || contextSchool?.code || '-',
+        province: studentRecord?.school_province || contextSchool?.province || '-',
+        city: studentRecord?.school_city || contextSchool?.city || '-',
+      }
+
+      const gradeRows = studentId
+        ? await db
+            .from('grades')
+            .leftJoin('subjects', 'grades.subject_id', 'subjects.id')
+            .where('grades.student_id', studentId)
+            .where('grades.term', selectedTerm)
+            .select(
+              'subjects.name as subject',
+              'subjects.coefficient as coefficient',
+              'grades.score',
+              'grades.max_score',
+              'grades.teacher_comments as comment'
+            )
+        : []
+
+      const subjectGrades = new Map<string, any>()
+      for (const grade of gradeRows) {
+        if (grade.score === null || grade.score === undefined) continue
+
+        const subject = grade.subject || 'Matière'
+        const coefficient = Number(grade.coefficient || 1)
+        const maxScore = Number(grade.max_score || 20)
+        const score = Number(grade.score)
+        const scoreOnTwenty = maxScore > 0 ? (score / maxScore) * 20 : score
+
+        if (!subjectGrades.has(subject)) {
+          subjectGrades.set(subject, {
+            subject,
+            coefficient,
+            scores: [],
+            comment: grade.comment || '',
+          })
+        }
+
+        const subjectGrade = subjectGrades.get(subject)
+        subjectGrade.scores.push(scoreOnTwenty)
+        if (!subjectGrade.comment && grade.comment) subjectGrade.comment = grade.comment
+      }
+
+      const grades: any[] = Array.from(subjectGrades.values()).map((grade) => {
+        const score =
+          grade.scores.reduce((sum: number, value: number) => sum + value, 0) / grade.scores.length
+
+        return {
+          subject: grade.subject,
+          coefficient: grade.coefficient,
+          score: Number(score.toFixed(1)),
+          scoreLabel: Number(score.toFixed(1)).toString(),
+          pointsLabel: (Number(score.toFixed(1)) * Number(grade.coefficient || 0)).toFixed(1),
+          hasScore: true,
+          statusClass: score >= 15 ? 'score-good' : score >= 10 ? 'score-average' : 'score-low',
+          comment: grade.comment,
+        }
+      })
+
+      if (grades.length === 0 && classId) {
+        const classSubjects = await db
+          .from('class_subject')
+          .join('subjects', 'class_subject.subject_id', 'subjects.id')
+          .where('class_subject.class_id', classId)
+          .select('subjects.name as subject', 'subjects.coefficient as coefficient')
+
+        grades.push(
+          ...classSubjects.map((subject) => ({
+            subject: subject.subject || 'Matiere',
+            coefficient: Number(subject.coefficient || 1),
+            score: null,
+            scoreLabel: '-',
+            pointsLabel: '-',
+            hasScore: false,
+            statusClass: 'score-empty',
+            comment: 'Non cote',
+          }))
+        )
+      }
+
+      const totalCoefficient = grades.reduce(
+        (sum, grade) => sum + Number(grade.coefficient || 0),
+        0
+      )
+      const totalPoints = grades.reduce(
+        (sum, grade) =>
+          sum + (grade.hasScore ? Number(grade.score || 0) * Number(grade.coefficient || 0) : 0),
+        0
+      )
+      const scoredCoefficient = grades.reduce(
+        (sum, grade) => sum + (grade.hasScore ? Number(grade.coefficient || 0) : 0),
+        0
+      )
+      const overallAverage =
+        scoredCoefficient > 0 ? Number((totalPoints / scoredCoefficient).toFixed(1)) : 0
+
+      const classRows = classId
+        ? await db
+            .from('grades')
+            .join('students', 'grades.student_id', 'students.id')
+            .leftJoin('subjects', 'grades.subject_id', 'subjects.id')
+            .where('students.class_id', classId)
+            .where('grades.term', selectedTerm)
+            .select(
+              'grades.student_id',
+              'grades.score',
+              'grades.max_score',
+              'subjects.coefficient as coefficient'
+            )
+        : []
+      const classAverages = new Map<string, { points: number; coefficients: number }>()
+      for (const grade of classRows) {
+        if (grade.score === null || grade.score === undefined) continue
+        const maxScore = Number(grade.max_score || 20)
+        const scoreOnTwenty = maxScore > 0 ? (Number(grade.score) / maxScore) * 20 : Number(grade.score)
+        const coefficient = Number(grade.coefficient || 1)
+        const current = classAverages.get(grade.student_id) || { points: 0, coefficients: 0 }
+        current.points += scoreOnTwenty * coefficient
+        current.coefficients += coefficient
+        classAverages.set(grade.student_id, current)
+      }
+      const rankedAverages = Array.from(classAverages.entries())
+        .map(([id, value]) => ({
+          id,
+          average: value.coefficients > 0 ? value.points / value.coefficients : 0,
+        }))
+        .sort((a, b) => b.average - a.average)
+      const rankIndex = rankedAverages.findIndex((entry) => entry.id === studentId)
+      const totalStudents = classId
+        ? Number(
+            (await db
+              .from('students')
+              .where('class_id', classId)
+              .count('* as total')
+              .first())?.total || context.totalStudents
+          )
+        : context.totalStudents
+
+      const attendanceRows = studentId
+        ? await db.from('attendances').where('student_id', studentId).select('status')
+        : []
+      const presentCount = attendanceRows.filter((row) => row.status === 'present').length
+      const absences = attendanceRows.filter((row) => row.status === 'absent').length
+      const lates = attendanceRows.filter((row) => row.status === 'late').length
+      const attendanceRate =
+        attendanceRows.length > 0 ? Math.round((presentCount / attendanceRows.length) * 100) : 0
+      const hasScoredGrades = grades.some((grade) => grade.hasScore)
+      const decision =
+        !hasScoredGrades ? '-' : overallAverage >= 10 ? 'Admis' : 'Non admis'
+      const appreciation =
+        !hasScoredGrades
+          ? '-'
+          : overallAverage >= 16
+            ? 'Excellent travail. Continuez ainsi.'
+            : overallAverage >= 12
+              ? 'Bon travail. Des efforts réguliers sont encouragés.'
+              : overallAverage >= 10
+                ? 'Travail satisfaisant. Continuez vos efforts.'
+                : 'Des efforts importants sont nécessaires.'
 
       return ctx.view.render('student/grades/report-card', {
         ...context,
-        academicYear: `${context.currentYear - 1}-${context.currentYear}`,
+        school,
+        student,
+        grades,
+        academicYear,
         termLabel: context.selectedTermLabel,
-        totalCoefficient: 0,
-        totalPoints: 0,
-        overallAverage: 0,
-        rank: '-',
-        totalStudents: context.totalStudents,
-        decision: '-',
+        totalCoefficient,
+        totalPoints,
+        overallAverage,
+        rank: rankIndex >= 0 ? rankIndex + 1 : '-',
+        totalStudents,
+        decision,
         behavior: { grade: 'Satisfaisant', rating: 3 },
-        attendance: { rate: 0, absences: 0, lates: 0 },
-        appreciation: '-',
+        attendance: { rate: attendanceRate, absences, lates },
+        appreciation,
         observations: '-',
         principalName: '-',
         generationDate: DateTime.now().toLocaleString(DateTime.DATE_SHORT),
+        schoolName: school.name,
+        documentTitle: 'Bulletin scolaire',
+        showPrintHeader: false,
+        showPrintFooter: false,
       })
     })
     router.get('/messages', ({ response }) => response.redirect('/communication/messages'))
@@ -1054,26 +1313,30 @@ router
     router.get('/grades', async (ctx) =>
       ctx.view.render('parent/grades/index', await edgePageContext(ctx))
     )
-    router.get('/grades/child/:studentId', async (ctx) =>
-      ctx.view.render('parent/grades/details', await edgePageContext(ctx))
-    )
+    router.get('/grades/child/:studentId', [controllers.Parents, 'childGradesDetailsPage'])
     router.get('/grades/report-card/:studentId', async (ctx) =>
       ctx.view.render('parent/grades/report-card', await edgePageContext(ctx))
     )
-    router.get('/discipline', async (ctx) =>
-      ctx.view.render('parent/discipline/index', await edgePageContext(ctx))
+    router.get('/discipline', [controllers.Parents, 'disciplinePage'])
+    router.get('/discipline/child/:studentId', ({ params, response }) =>
+      response.redirect(`/parent/discipline?child_id=${params.studentId}`)
+    )
+    router.get('/discipline/details/:id', async (ctx) =>
+      ctx.view.render('parent/discipline/details', await edgePageContext(ctx))
     )
     router.get('/discipline/:id', async (ctx) =>
       ctx.view.render('parent/discipline/details', await edgePageContext(ctx))
     )
-    router.get('/attendance', async (ctx) =>
-      ctx.view.render('parent/attendance/index', await edgePageContext(ctx))
+    router.get('/attendance', [controllers.Parents, 'attendancePage'])
+    router.get('/attendance/child/:studentId', ({ params, response }) =>
+      response.redirect(`/parent/attendance?child_id=${params.studentId}`)
     )
     router.get('/attendance/justify', async (ctx) =>
       ctx.view.render('parent/attendance/justify', await edgePageContext(ctx))
     )
-    router.get('/payments', async (ctx) =>
-      ctx.view.render('parent/payments/index', await edgePageContext(ctx))
+    router.get('/payments', [controllers.Parents, 'paymentsPage'])
+    router.get('/payments/child/:studentId', ({ params, response }) =>
+      response.redirect(`/parent/payments?child_id=${params.studentId}`)
     )
     router.get('/payments/history', async (ctx) =>
       ctx.view.render('parent/payments/history', await edgePageContext(ctx))
@@ -1089,12 +1352,9 @@ router
     router.get('/messages/:id', ({ params, response }) =>
       response.redirect(`/communication/messages/read/${params.id}`)
     )
-    router.get('/appointments', async (ctx) =>
-      ctx.view.render('parent/appointments/index', await edgePageContext(ctx))
-    )
-    router.get('/appointments/request', async (ctx) =>
-      ctx.view.render('parent/appointments/request', await edgePageContext(ctx))
-    )
+    router.get('/appointments', [controllers.Parents, 'appointmentsPage'])
+    router.get('/appointments/request', [controllers.Parents, 'appointmentRequestPage'])
+    router.post('/appointments/request', [controllers.Parents, 'requestAppointment'])
     router.get('/appointments/schedule', async (ctx) =>
       ctx.view.render('parent/appointments/schedule', await edgePageContext(ctx))
     )
@@ -1280,6 +1540,10 @@ router
             router.delete('/subjects/:id', [controllers.Academics, 'deleteSubject'])
             router.get('/classes/:classId/subjects', [controllers.Academics, 'getClassSubjects'])
             router.post('/classes/:classId/subjects', [controllers.Academics, 'addSubjectToClass'])
+            router.delete('/classes/:classId/subjects/:subjectId', [
+              controllers.Academics,
+              'removeSubjectFromClass',
+            ])
 
             // Gestion des notes
             router.get('/classes/:classId/grades', [controllers.Academics, 'getGradesByClass'])
@@ -1393,6 +1657,9 @@ router
 
             // Paiements
             router.get('/payments/child/:studentId', [controllers.Parents, 'getChildPayments'])
+
+            // Présences
+            router.get('/attendance/:studentId', [controllers.Parents, 'getChildAttendance'])
 
             // Absences
             router.post('/absence/justify', [controllers.Parents, 'justifyAbsence'])

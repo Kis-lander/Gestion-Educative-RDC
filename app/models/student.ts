@@ -27,6 +27,9 @@ export default class Student extends StudentSchema {
   declare classId: string | null
 
   @column()
+  declare schoolOption: string | null
+
+  @column()
   declare registrationNumber: string
 
   @column.date()

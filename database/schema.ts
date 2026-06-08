@@ -515,7 +515,7 @@ export class SchoolSchema extends BaseModel {
 }
 
 export class StudentSchema extends BaseModel {
-  static $columns = ['academicStatus', 'address', 'birthDate', 'birthPlace', 'classId', 'createdAt', 'gender', 'id', 'medicalInfo', 'nationality', 'parentPhone', 'registrationNumber', 'schoolId', 'shift', 'updatedAt', 'userId'] as const
+  static $columns = ['academicStatus', 'address', 'birthDate', 'birthPlace', 'classId', 'createdAt', 'gender', 'id', 'medicalInfo', 'nationality', 'parentPhone', 'registrationNumber', 'schoolId', 'schoolOption', 'shift', 'updatedAt', 'userId'] as const
   $columns = StudentSchema.$columns
   @column()
   declare academicStatus: string | null
@@ -543,6 +543,8 @@ export class StudentSchema extends BaseModel {
   declare registrationNumber: string
   @column()
   declare schoolId: string | null
+  @column()
+  declare schoolOption: string | null
   @column()
   declare shift: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -657,8 +659,27 @@ export class TransferAuthorizationSchema extends BaseModel {
   declare validUntil: DateTime | null
 }
 
+export class UserSettingSchema extends BaseModel {
+  static $columns = ['createdAt', 'group', 'id', 'key', 'updatedAt', 'userId', 'value'] as const
+  $columns = UserSettingSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare group: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare key: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+  @column()
+  declare value: string | null
+}
+
 export class UserSchema extends BaseModel {
-  static $columns = ['avatarUrl', 'createdAt', 'email', 'firstName', 'id', 'lastLogin', 'lastName', 'password', 'phone', 'postnom', 'rememberMeToken', 'role', 'schoolId', 'status', 'updatedAt'] as const
+  static $columns = ['avatarUrl', 'createdAt', 'email', 'firstName', 'id', 'lastLogin', 'lastName', 'password', 'phone', 'postnom', 'preferredLanguage', 'rememberMeToken', 'role', 'schoolId', 'status', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatarUrl: string | null
@@ -679,7 +700,9 @@ export class UserSchema extends BaseModel {
   @column()
   declare phone: string | null
   @column()
-  declare postnom: string | null
+  declare postnom: string
+  @column()
+  declare preferredLanguage: string
   @column()
   declare rememberMeToken: string | null
   @column()

@@ -338,11 +338,20 @@ export default class AcademicController {
         'users.first_name as teacher_first_name',
         'users.last_name as teacher_last_name'
       )
+    const assignedSubjectIds = subjects.map((subject) => subject.subject_id)
+    const [availableSubjects, teachers] = await Promise.all([
+      Subject.query()
+        .if(assignedSubjectIds.length > 0, (query) => query.whereNotIn('id', assignedSubjectIds))
+        .orderBy('name', 'asc'),
+      Teacher.query().where('schoolId', user.schoolId).where('status', 'active').preload('user'),
+    ])
 
     return view.render('schools/classes/show', {
       school: this.getFallbackSchool(user),
       classObj,
       subjects,
+      availableSubjects,
+      teachers,
       timetable: [],
       stats: {
         studentsCount: Number(studentsCount[0].$extras.total || 0),
@@ -601,6 +610,7 @@ export default class AcademicController {
       query.whereHas('user', (userQuery) => {
         userQuery
           .where('firstName', 'ILIKE', `%${search}%`)
+          .orWhere('postnom', 'ILIKE', `%${search}%`)
           .orWhere('lastName', 'ILIKE', `%${search}%`)
       })
     }
@@ -716,7 +726,8 @@ export default class AcademicController {
   /**
    * Assigner une matière à une classe
    */
-  public async addSubjectToClass({ request, params, response }: HttpContext) {
+  public async addSubjectToClass({ auth, request, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
     const assignmentSchema = vine.compile(
       vine.object({
         subjectId: vine.string().exists({ table: 'subjects', column: 'id' }),
@@ -726,7 +737,14 @@ export default class AcademicController {
     )
     const payload = await request.validateUsing(assignmentSchema)
 
-    const classObj = await Class.findOrFail(params.classId)
+    const classObj = await Class.query()
+      .where('id', params.classId)
+      .where('schoolId', user.schoolId)
+      .firstOrFail()
+    await Teacher.query()
+      .where('id', payload.teacherId)
+      .where('schoolId', user.schoolId)
+      .firstOrFail()
 
     // Vérifier si la matière est déjà assignée
     const existingAssignment = await db
@@ -759,6 +777,32 @@ export default class AcademicController {
   /**
    * Obtenir les matières d'une classe
    */
+  public async removeSubjectFromClass({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const classObj = await Class.query()
+      .where('id', params.classId)
+      .where('schoolId', user.schoolId)
+      .firstOrFail()
+
+    const deleted = await db
+      .from('class_subject')
+      .where('class_id', classObj.id)
+      .where('subject_id', params.subjectId)
+      .delete()
+
+    if (!deleted) {
+      return response.notFound({
+        success: false,
+        message: 'Cette matiere n est pas assignee a cette classe',
+      })
+    }
+
+    return response.ok({
+      success: true,
+      message: 'Matiere retiree de la classe avec succes',
+    })
+  }
+
   public async getClassSubjects({ params, response }: HttpContext) {
     const subjects = await db
       .from('class_subject')
@@ -896,6 +940,226 @@ export default class AcademicController {
     })
   }
 
+  public async studentGradesPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const student = await Student.query()
+      .where('id', params.studentId)
+      .where('schoolId', user.schoolId)
+      .preload('user')
+      .preload('class')
+      .preload('school')
+      .firstOrFail()
+
+    const grades = await Grade.query()
+      .where('studentId', student.id)
+      .preload('subject')
+      .orderBy('examDate', 'asc')
+    const assignedSubjects = student.classId
+      ? await db
+          .from('class_subject')
+          .where('class_subject.class_id', student.classId)
+          .join('subjects', 'class_subject.subject_id', 'subjects.id')
+          .select(
+            'subjects.id as subject_id',
+            'subjects.name as subject_name',
+            'subjects.coefficient'
+          )
+      : []
+    const parentRecord = await db
+      .from('parent_student')
+      .join('parents', 'parent_student.parent_id', 'parents.id')
+      .join('users', 'parents.user_id', 'users.id')
+      .where('parent_student.student_id', student.id)
+      .select(
+        'users.first_name as firstName',
+        'users.postnom as postnom',
+        'users.last_name as lastName',
+        'parents.relationship'
+      )
+      .first()
+    const attendance = await db
+      .from('attendances')
+      .where('student_id', student.id)
+      .select(
+        db.raw(
+          "sum(case when status in ('present', 'excused') then 1 else 0 end) as present_total"
+        )
+      )
+      .count('* as total')
+      .first()
+    const attendanceTotal = Number(attendance?.total || 0)
+    const attendanceRate = attendanceTotal
+      ? Math.round((Number(attendance?.present_total || 0) / attendanceTotal) * 100)
+      : null
+
+    const normalizeTerm = (term?: string | null) => {
+      const value = String(term || '').toLowerCase()
+      if (value.includes('2') || value.includes('t2')) return 't2'
+      if (value.includes('3') || value.includes('t3')) return 't3'
+      return 't1'
+    }
+    const average = (values: number[]) =>
+      values.length
+        ? Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1))
+        : 0
+
+    const subjectBuckets = new Map<
+      string,
+      {
+        name: string
+        coefficient: number
+        terms: { t1: number[]; t2: number[]; t3: number[] }
+      }
+    >()
+    for (const subject of assignedSubjects) {
+      subjectBuckets.set(subject.subject_id, {
+        name: subject.subject_name || 'Matière',
+        coefficient: Number(subject.coefficient || 1),
+        terms: { t1: [], t2: [], t3: [] },
+      })
+    }
+
+    for (const grade of grades) {
+      if (grade.score === null || !Number.isFinite(Number(grade.score))) continue
+
+      const term = normalizeTerm(grade.term)
+      const score = Number(grade.score)
+
+      if (!subjectBuckets.has(grade.subjectId)) {
+        subjectBuckets.set(grade.subjectId, {
+          name: grade.subject?.name || 'Matière',
+          coefficient: Number(grade.subject?.coefficient || 1),
+          terms: { t1: [], t2: [], t3: [] },
+        })
+      }
+      subjectBuckets.get(grade.subjectId)!.terms[term].push(score)
+    }
+
+    const subjectRows = Array.from(subjectBuckets.values()).map((subject) => {
+      const t1 = average(subject.terms.t1)
+      const t2 = average(subject.terms.t2)
+      const t3 = average(subject.terms.t3)
+      const values = [t1, t2, t3].filter((value) => value > 0)
+      const first = values[0] || 0
+      const last = values[values.length - 1] || 0
+
+      return {
+        name: subject.name,
+        t1,
+        t2,
+        t3,
+        average: average(values),
+        coefficient: subject.coefficient,
+        trend: last - first,
+        hasGrades: values.length > 0,
+      }
+    })
+    const weightedAverage = (items: Array<{ value: number; coefficient: number }>) => {
+      const validItems = items.filter((item) => item.value > 0)
+      const coefficientTotal = validItems.reduce((sum, item) => sum + item.coefficient, 0)
+      if (!coefficientTotal) return 0
+
+      return Number(
+        (
+          validItems.reduce((sum, item) => sum + item.value * item.coefficient, 0) /
+          coefficientTotal
+        ).toFixed(1)
+      )
+    }
+    const termAverages = {
+      t1: weightedAverage(subjectRows.map((subject) => ({ value: subject.t1, coefficient: subject.coefficient }))),
+      t2: weightedAverage(subjectRows.map((subject) => ({ value: subject.t2, coefficient: subject.coefficient }))),
+      t3: weightedAverage(subjectRows.map((subject) => ({ value: subject.t3, coefficient: subject.coefficient }))),
+    }
+    const overallAverage = weightedAverage(
+      subjectRows.map((subject) => ({ value: subject.average, coefficient: subject.coefficient }))
+    )
+    const totalCoefficient = Array.from(subjectBuckets.values()).reduce(
+      (sum, subject) => sum + subject.coefficient,
+      0
+    )
+    const activeStudents = student.classId
+      ? await Student.query()
+          .where('classId', student.classId)
+          .where('academicStatus', 'active')
+          .select('id')
+      : []
+    const totalStudents = activeStudents.length
+    const rankRows = student.classId
+      ? await Grade.query()
+          .whereIn(
+            'studentId',
+            activeStudents.map((classStudent) => classStudent.id)
+          )
+          .preload('subject')
+      : []
+    const averagesByStudent = new Map<string, Map<string, number[]>>()
+    for (const grade of rankRows) {
+      if (grade.score === null || !Number.isFinite(Number(grade.score))) continue
+      if (!averagesByStudent.has(grade.studentId)) averagesByStudent.set(grade.studentId, new Map())
+      const subjects = averagesByStudent.get(grade.studentId)!
+      if (!subjects.has(grade.subjectId)) subjects.set(grade.subjectId, [])
+      subjects.get(grade.subjectId)!.push(Number(grade.score))
+    }
+    const rankedStudents = Array.from(averagesByStudent.entries())
+      .map(([studentId, subjects]) => {
+        const items = Array.from(subjects.entries()).map(([subjectId, scores]) => {
+          const subject = subjectBuckets.get(subjectId)
+          return {
+            value: average(scores),
+            coefficient: subject?.coefficient || 1,
+          }
+        })
+
+        return { studentId, average: weightedAverage(items) }
+      })
+      .filter((item) => item.average > 0)
+      .sort((a, b) => b.average - a.average)
+    const rankIndex = rankedStudents.findIndex((item) => item.studentId === student.id)
+    const rank = rankIndex >= 0 ? rankIndex + 1 : '-'
+    const decile = typeof rank === 'number' && totalStudents
+      ? Math.max(1, Math.ceil((rank / totalStudents) * 10))
+      : '-'
+    const parentName = parentRecord
+      ? [
+          [parentRecord.firstName, parentRecord.postnom, parentRecord.lastName].filter(Boolean).join(' '),
+          parentRecord.relationship ? `(${parentRecord.relationship})` : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
+      : '-'
+    const attendanceLabel = attendanceRate === null ? '-' : `${attendanceRate}%`
+
+    return view.render('academic/grades/student-grades', {
+      school: {
+        id: user.schoolId,
+        name: student.school?.name || 'Gestion Éducative RDC',
+      },
+      student: {
+        id: student.id,
+        name: student.user?.fullName || 'Élève',
+        registrationNumber: student.registrationNumber || '-',
+        className: student.class?.name || 'Non affecté',
+        birthDate: student.birthDate ? student.birthDate.toFormat('dd/MM/yyyy') : '-',
+        parentName,
+        parentPhone: student.parentPhone || '-',
+      },
+      termsSummary: [
+        { term: 'Trimestre 1', average: termAverages.t1, rank, attendance: attendanceRate || 0, attendanceLabel, hasGrades: termAverages.t1 > 0 },
+        { term: 'Trimestre 2', average: termAverages.t2, rank, attendance: attendanceRate || 0, attendanceLabel, hasGrades: termAverages.t2 > 0 },
+        { term: 'Trimestre 3', average: termAverages.t3, rank, attendance: attendanceRate || 0, attendanceLabel, hasGrades: termAverages.t3 > 0 },
+      ],
+      subjectsGrades: subjectRows,
+      termAverages,
+      overallAverage,
+      hasOverallAverage: overallAverage > 0,
+      totalCoefficient,
+      rank,
+      totalStudents,
+      decile,
+    })
+  }
+
   /**
    * Ajouter une note
    */
@@ -1025,7 +1289,7 @@ export default class AcademicController {
             user_id: parent.userId,
             type: 'grades_published',
             title: 'Notes publiées',
-            content: `Les notes du ${payload.term} pour votre enfant ${student.user?.firstName} ${student.user?.lastName} sont disponibles sur la plateforme.`,
+            content: `Les notes du ${payload.term} pour votre enfant ${student.user?.fullName || 'votre enfant'} sont disponibles sur la plateforme.`,
             created_at: DateTime.now().toSQL(),
           })
         }

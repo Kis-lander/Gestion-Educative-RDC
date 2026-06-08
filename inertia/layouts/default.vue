@@ -122,6 +122,7 @@ onBeforeUnmount(() => {
           <template v-if="page.props.user">
             <span>{{ page.props.user.initials }}</span>
             <Form route="session.destroy">
+              <input type="hidden" name="_csrf" :value="page.props.csrfToken" />
               <button type="submit">{{ t('nav.logout') }}</button>
             </Form>
           </template>

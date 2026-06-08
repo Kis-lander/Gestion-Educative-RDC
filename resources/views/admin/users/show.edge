@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Détails utilisateur - {{ user.firstName }} {{ user.lastName }}
+    Détails utilisateur - {{ user.fullName }}
   @endsection
   
   @section('dashboardTitle')
     Détails utilisateur
   @endsection
   @section('dashboardSubtitle')
-    {{ user.firstName }} {{ user.lastName }}
+    {{ user.fullName }}
   @endsection
   
   @section('actions')
@@ -35,7 +35,7 @@
           {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
         </div>
         <h2 class="text-xl font-bold">
-          {{ user.firstName }} {{ user.lastName }}
+          {{ user.fullName }}
         </h2>
         <p class="text-gray-500 text-sm">
           {{ user.roleLabel }}
@@ -165,7 +165,7 @@
 
     <script>
       async function impersonateUser() {
-        if (confirm(`Vous allez vous connecter en tant que ${user.firstName} ${user.lastName}. Votre session actuelle sera sauvegardée.`)) {
+        if (confirm(`Vous allez vous connecter en tant que ${user.fullName}. Votre session actuelle sera sauvegardée.`)) {
           const res = await fetch(`/admin/users/{{ user.id }}/impersonate`, {
             method: "POST",
             headers: {

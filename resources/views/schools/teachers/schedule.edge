@@ -1,14 +1,14 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Emploi du temps - {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+    Emploi du temps - {{ teacher.user.fullName }}
   @endsection
   
   @section('dashboardTitle')
     Emploi du temps
   @endsection
   @section('dashboardSubtitle')
-    {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+    {{ teacher.user.fullName }}
   @endsection
   
   @section('actions')

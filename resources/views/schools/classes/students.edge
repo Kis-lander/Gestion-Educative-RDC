@@ -154,14 +154,14 @@
                 class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 student-row"
                 data-gender="{{ student.gender }}"
                 data-status="{{ student.academicStatus }}"
-                data-name="{{ student.user.firstName }} {{ student.user.lastName }}"
+                data-name="{{ student.user.fullName }}"
                 data-matricule="{{ student.registrationNumber }}"
               >
                 <td class="px-4 py-3 font-mono text-xs">
                   {{ student.registrationNumber }}
                 </td>
                 <td class="px-4 py-3 font-medium">
-                  {{ student.user.firstName }} {{ student.user.lastName }}
+                  {{ student.user.fullName }}
                 </td>
                 <td class="px-4 py-3">
                   {{ student.gender === 'male' ? 'Masculin' : 'Féminin' }}
@@ -205,7 +205,7 @@
                         <i class="fas fa-star"></i>
                       </a>
                       <button
-                        onclick="transferStudent('{{ student.id }}', '{{ student.user.firstName }} {{ student.user.lastName }}')"
+                        onclick="transferStudent('{{ student.id }}', '{{ student.user.fullName }}')"
                         class="text-yellow-600 hover:text-yellow-800"
                         title="Transférer"
                       >

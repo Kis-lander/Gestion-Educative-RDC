@@ -121,7 +121,7 @@
               </option>
               @each(teacher in teachers)
                 <option value="{{ teacher.id }}">
-                  {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+                  {{ teacher.user.fullName }}
                 </option>
               @end
             </select>

@@ -569,7 +569,7 @@ export default class MessageController {
         return {
           user: {
             id: otherUser?.id,
-            name: otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : 'Inconnu',
+            name: otherUser?.fullName || 'Inconnu',
             role: otherUser?.role,
           },
           lastMessage,

@@ -17,6 +17,7 @@ import {
   sendGlobalCommunicationValidator,
   generateSchoolReportValidator,
 } from '#validators/inspection'
+import { canUseAppLanguage } from '#services/language_service'
 
 export default class InspectionController {
   private mailService = new OtpMailService()
@@ -123,11 +124,12 @@ export default class InspectionController {
   }
 
   private splitFullName(fullName: string) {
-    const [firstName, ...lastNameParts] = fullName.trim().split(/\s+/)
+    const parts = fullName.trim().split(/\s+/).filter(Boolean)
 
     return {
-      firstName: firstName || 'Directeur',
-      lastName: lastNameParts.join(' ') || 'Directeur',
+      firstName: parts[0] || 'Directeur',
+      postnom: parts.length > 2 ? parts.slice(1, -1).join(' ') : 'A completer',
+      lastName: parts.length > 1 ? parts[parts.length - 1] : 'Directeur',
     }
   }
 
@@ -342,7 +344,7 @@ export default class InspectionController {
 
   public async inspectSchoolPage({ params, auth, view }: HttpContext) {
     const school = await School.findOrFail(params.id)
-    const inspector = auth.user ? `${auth.user.firstName} ${auth.user.lastName}` : ''
+    const inspector = auth.user?.fullName || ''
 
     return view.render('inspection/schools/inspect', {
       school,
@@ -381,7 +383,7 @@ export default class InspectionController {
     return view.render('inspection/schools/approve', {
       school,
       director,
-      directorFullName: director ? `${director.firstName} ${director.lastName}`.trim() : `Directeur ${school.name}`,
+      directorFullName: director?.fullName || `Directeur A completer ${school.name}`,
     })
   }
 
@@ -450,6 +452,7 @@ export default class InspectionController {
       director.useTransaction(trx)
       director.email = email
       director.firstName = directorName.firstName
+      director.postnom = directorName.postnom
       director.lastName = directorName.lastName
       director.phone = directorPhone
       director.role = 'director'
@@ -465,7 +468,7 @@ export default class InspectionController {
       password: tempPassword,
       schoolCode: school.code,
       schoolName: school.name,
-      directorName: `${director?.firstName ?? directorName.firstName} ${director?.lastName ?? directorName.lastName}`,
+      directorName: director?.fullName || [directorName.firstName, directorName.postnom, directorName.lastName].join(' '),
       approvedAt:
         school.approvedAt?.toFormat('dd/MM/yyyy HH:mm') ??
         DateTime.now().toFormat('dd/MM/yyyy HH:mm'),
@@ -768,13 +771,18 @@ export default class InspectionController {
         systemName: request.input('system_name', 'Gestion Éducative RDC'),
         currentAcademicYear: request.input('current_academic_year', '2024-2025'),
         currentTerm: request.input('current_term', 'T1'),
-        defaultLanguage: request.input('default_language', 'fr'),
+        defaultLanguage: canUseAppLanguage(request.input('default_language', 'fr'))
+          ? request.input('default_language', 'fr')
+          : 'fr',
         timezone: request.input('timezone', 'Africa/Kinshasa'),
       }
     }
 
     try {
       await this.saveInspectionSettings(group, payload)
+      if (typeof payload.defaultLanguage === 'string') {
+        session.put('locale', payload.defaultLanguage)
+      }
       session.flash('success', 'Paramètres enregistrés')
     } catch {
       session.flash('error', "Impossible d'enregistrer les paramètres")
@@ -1012,7 +1020,7 @@ export default class InspectionController {
       school,
       schoolName: school.name,
       documentTitle: "Rapport d'inspection pédagogique",
-      directorName: director ? `${director.firstName} ${director.lastName}`.trim() : 'Non renseigné',
+      directorName: director?.fullName || 'Non renseigné',
       inspectionDate: DateTime.now().toFormat('dd/MM/yyyy'),
       leadInspector: 'Inspection',
       deputyInspector: null,

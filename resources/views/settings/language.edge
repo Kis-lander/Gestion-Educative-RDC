@@ -88,6 +88,40 @@
                 </p>
               </div>
             </label>
+
+            <label
+              class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            >
+              <input
+                type="radio"
+                name="language"
+                value="kg"
+                class="w-4 h-4"
+              />
+              <div>
+                <span class="font-medium">Kikongo</span>
+                <p class="text-xs text-gray-500">
+                  Langue nationale
+                </p>
+              </div>
+            </label>
+
+            <label
+              class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            >
+              <input
+                type="radio"
+                name="language"
+                value="lua"
+                class="w-4 h-4"
+              />
+              <div>
+                <span class="font-medium">Tshiluba</span>
+                <p class="text-xs text-gray-500">
+                  Langue nationale
+                </p>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -111,13 +145,13 @@
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
             <select id="timezone" class="w-full px-3 py-2 border rounded-lg">
-              <option value="Africa/Kinshasa">
+              <option value="Africa/Kinshasa" {{ regional.timezone === 'Africa/Kinshasa' ? 'selected' : '' }}>
                 Afrique/Kinshasa
               </option>
-              <option value="Africa/Lubumbashi">
+              <option value="Africa/Lubumbashi" {{ regional.timezone === 'Africa/Lubumbashi' ? 'selected' : '' }}>
                 Afrique/Lubumbashi
               </option>
-              <option value="UTC">
+              <option value="UTC" {{ regional.timezone === 'UTC' ? 'selected' : '' }}>
                 UTC
               </option>
             </select>
@@ -126,13 +160,13 @@
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Devise</label>
             <select id="currency" class="w-full px-3 py-2 border rounded-lg">
-              <option value="USD">
+              <option value="USD" {{ regional.currency === 'USD' ? 'selected' : '' }}>
                 Dollar américain (USD)
               </option>
-              <option value="CDF">
+              <option value="CDF" {{ regional.currency === 'CDF' ? 'selected' : '' }}>
                 Franc congolais (CDF)
               </option>
-              <option value="EUR">
+              <option value="EUR" {{ regional.currency === 'EUR' ? 'selected' : '' }}>
                 Euro (EUR)
               </option>
             </select>
@@ -141,10 +175,10 @@
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Premier jour de la semaine</label>
             <select id="firstDayOfWeek" class="w-full px-3 py-2 border rounded-lg">
-              <option value="monday">
+              <option value="monday" {{ regional.firstDayOfWeek === 'monday' ? 'selected' : '' }}>
                 Lundi
               </option>
-              <option value="sunday">
+              <option value="sunday" {{ regional.firstDayOfWeek === 'sunday' ? 'selected' : '' }}>
                 Dimanche
               </option>
             </select>
@@ -205,6 +239,13 @@
     </div>
 
     <script>
+      fetch("/api/settings/language", { headers: { Accept: "application/json" } })
+        .then(res => res.json())
+        .then(data => {
+          const input = document.querySelector(`input[name="language"][value="${data.language || "fr"}"]`);
+          if (input) input.checked = true;
+        });
+
       function saveLanguage() {
         const language = document.querySelector('input[name="language"]:checked')?.value || "fr";
         fetch("/api/settings/language", {
@@ -217,7 +258,12 @@
             language: language
           })
         }).then(res => res.json()).then(data => {
-          if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          if (data.success) {
+            localStorage.setItem("appLanguage", language);
+            localStorage.setItem("appLanguageExplicit", "true");
+            window.AppTranslations?.setLanguage(language);
+            location.reload();
+          } else alert("Erreur: " + data.message);
         });
       }
 

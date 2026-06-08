@@ -144,7 +144,7 @@
           class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover teacher-card"
           data-status="{{ teacher.status }}"
           data-qualification="{{ teacher.qualification }}"
-          data-name="{{ teacher.user.firstName }} {{ teacher.user.lastName }}"
+          data-name="{{ teacher.user.fullName }}"
           data-employee-number="{{ teacher.employeeNumber }}"
         >
 
@@ -178,7 +178,7 @@
 
           <div class="pt-12 pb-3 px-4">
             <h3 class="font-bold text-lg">
-              {{ teacher.user.firstName }} {{ teacher.user.lastName }}
+              {{ teacher.user.fullName }}
             </h3>
             <p class="text-sm text-gray-500">
               {{ teacher.qualification || 'Qualification non renseignée' }}

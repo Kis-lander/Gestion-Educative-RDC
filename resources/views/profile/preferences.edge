@@ -1,7 +1,7 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Préférences - {{ user.firstName }} {{ user.lastName }}
+    Préférences - {{ user.fullName }}
   @endsection
   
   @section('dashboardTitle')
@@ -19,7 +19,17 @@
           Apparence
         </h3>
 
-        <form method="POST" action="/profile/preferences" x-data="{ loading: false }" @submit="loading = true">
+        <form
+          method="POST"
+          action="/profile/preferences"
+          x-data="{ loading: false }"
+          @submit="
+            const language = $el.querySelector('[name=language]')?.value || 'fr';
+            localStorage.setItem('appLanguage', language);
+            localStorage.setItem('appLanguageExplicit', 'true');
+            loading = true;
+          "
+        >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
           <div class="space-y-4">
@@ -71,6 +81,12 @@
                 </option>
                 <option value="sw" {{ preferences.language === 'sw' ? 'selected' : '' }}>
                   Swahili
+                </option>
+                <option value="kg" {{ preferences.language === 'kg' ? 'selected' : '' }}>
+                  Kikongo
+                </option>
+                <option value="lua" {{ preferences.language === 'lua' ? 'selected' : '' }}>
+                  Tshiluba
                 </option>
               </select>
             </div>

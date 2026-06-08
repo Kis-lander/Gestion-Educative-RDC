@@ -317,7 +317,7 @@
               </option>
               @each(student in students)
                 <option value="{{ student.id }}">
-                  {{ student.user.firstName }} {{ student.user.lastName }} ({{ student.className }})
+                  {{ student.user.fullName }} ({{ student.className }})
                 </option>
               @end
             </select>

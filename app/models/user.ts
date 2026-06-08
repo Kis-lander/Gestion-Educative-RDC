@@ -2,7 +2,7 @@ import { UserSchema } from '#database/schema'
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { randomUUID } from 'node:crypto'
-import { column, belongsTo, hasMany, beforeCreate, beforeSave } from '@adonisjs/lucid/orm'
+import { column, computed, belongsTo, hasMany, beforeCreate, beforeSave } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import School from '#models/school'
 import Message from '#models/message'
@@ -26,7 +26,7 @@ export default class User extends UserSchema {
   declare firstName: string
 
   @column()
-  declare postnom: string | null
+  declare postnom: string
 
   @column()
   declare lastName: string
@@ -36,6 +36,9 @@ export default class User extends UserSchema {
 
   @column()
   declare avatarUrl: string | null
+
+  @column()
+  declare preferredLanguage: string
 
   @column()
   declare role:
@@ -84,6 +87,8 @@ export default class User extends UserSchema {
 
   @beforeSave()
   public static async hashPassword(user: User) {
+    user.normalizeThreePartName()
+
     if (user.$dirty.password) {
       user.password = await hash.use('scrypt').make(user.password)
     }
@@ -92,8 +97,27 @@ export default class User extends UserSchema {
   /**
    * GETTERS & METHODS
    */
+  @computed()
   public get fullName(): string {
     return [this.firstName, this.postnom, this.lastName].filter(Boolean).join(' ')
+  }
+
+  private normalizeThreePartName() {
+    const fallback = 'A completer'
+    const parts = [this.firstName, this.postnom, this.lastName]
+      .flatMap((value) => String(value || '').trim().split(/\s+/))
+      .filter(Boolean)
+
+    if (parts.length >= 3) {
+      this.firstName = parts[0]
+      this.postnom = parts.slice(1, -1).join(' ')
+      this.lastName = parts[parts.length - 1]
+      return
+    }
+
+    this.firstName = parts[0] || fallback
+    this.postnom = parts[1] || fallback
+    this.lastName = parts[2] || fallback
   }
 
   public hasRole(role: string | string[]): boolean {

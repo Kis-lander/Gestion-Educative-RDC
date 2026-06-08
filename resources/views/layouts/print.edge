@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>
-      {{ title || 'Document - Gestion Éducative RDC' }}
+      {{ title || 'Document - Gestion Educative RDC' }}
     </title>
     <style>
       * {
@@ -11,41 +11,48 @@
         padding: 0;
         box-sizing: border-box;
       }
-      
+
       body {
         font-family: 'Inter', 'Arial', sans-serif;
         font-size: 12px;
         line-height: 1.5;
         padding: 20px;
+        background: #eef2f7;
       }
-      
+
       @media print {
+        * {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
         body {
           padding: 0;
+          background: #fff;
         }
-      
+
         .no-print {
-          display: none;
+          display: none !important;
         }
-      
+
         table {
           page-break-inside: avoid;
         }
-      
+
         h1,
         h2,
         h3 {
           page-break-after: avoid;
         }
       }
-      
+
       .print-header {
         text-align: center;
         margin-bottom: 20px;
         padding-bottom: 10px;
         border-bottom: 2px solid #2563eb;
       }
-      
+
       .print-footer {
         text-align: center;
         margin-top: 20px;
@@ -53,20 +60,20 @@
         border-top: 1px solid #ddd;
         font-size: 10px;
       }
-      
+
       table {
         width: 100%;
         border-collapse: collapse;
         margin: 15px 0;
       }
-      
+
       th,
       td {
         border: 1px solid #ddd;
         padding: 8px;
         text-align: left;
       }
-      
+
       th {
         background-color: #f3f4f6;
         font-weight: 600;
@@ -74,21 +81,28 @@
     </style>
   </head>
   <body>
-    <div class="print-header">
-      <h2>
-        {{ schoolName || 'Gestion Éducative RDC' }}
-      </h2>
-      <p>
-        {{ documentTitle }}
-      </p>
-    </div>
+    @if(showPrintHeader !== false)
+      <div class="print-header">
+        <h2>
+          {{ schoolName || 'Gestion Educative RDC' }}
+        </h2>
+        @if(documentTitle)
+          <p>
+            {{ documentTitle }}
+          </p>
+        @endif
+      </div>
+    @endif
 
     @section('content')
     @endsection
-    <div class="print-footer">
-      <p>
-        Généré le {{ new Date().toLocaleDateString('fr-FR') }} - Gestion Éducative RDC
-      </p>
-    </div>
+
+    @if(showPrintFooter !== false)
+      <div class="print-footer">
+        <p>
+          Genere le {{ new Date().toLocaleDateString('fr-FR') }} - Gestion Educative RDC
+        </p>
+      </div>
+    @endif
   </body>
 </html>

@@ -36,6 +36,7 @@ export const registerValidator = vine.create(
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
     password: vine.string().minLength(8).confirmed({ confirmationField: 'passwordConfirmation' }),
     firstName: vine.string().trim().maxLength(100),
+    postnom: vine.string().trim().maxLength(100),
     lastName: vine.string().trim().maxLength(100),
     phone: vine.string().trim().optional(),
     role: vine.enum(['director', 'teacher', 'parent', 'student']).optional(),
@@ -99,6 +100,7 @@ export const verifyOtpValidator = vine.create(
 export const updateProfileValidator = vine.create(
   vine.object({
     firstName: vine.string().trim().maxLength(100).optional(),
+    postnom: vine.string().trim().maxLength(100).optional(),
     lastName: vine.string().trim().maxLength(100).optional(),
     phone: vine.string().trim().optional(),
   })

@@ -15,6 +15,40 @@ import { DateTime } from 'luxon'
 export default class SchoolController {
   private mailService = new OtpMailService()
 
+  private getRdcSchoolOptions() {
+    return [
+      'Chimie-biologie',
+      'Commerciale et gestion',
+      'Construction',
+      'Coupe et couture',
+      'Électricité',
+      'Électronique',
+      'Hôtellerie et restauration',
+      'Industrie agricole',
+      'Informatique',
+      'Latin-philo',
+      'Littéraire',
+      'Math-physique',
+      'Mecanique generale',
+      'Mécanique automobile',
+      'Nutrition',
+      'Petrochimie',
+      'Psychopedagogie',
+      'Pédagogie générale',
+      'Pédagogie maternelle',
+      'Pédagogie primaire',
+      'Secrétariat-administration',
+      'Sociale',
+      'Technique commerciale',
+      'Vétérinaire',
+    ]
+  }
+
+  private isHumanitiesClass(classObj?: Class | null) {
+    if (!classObj) return false
+    return classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9
+  }
+
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
 
@@ -36,11 +70,12 @@ export default class SchoolController {
   }
 
   private splitFullName(fullName: string) {
-    const [firstName, ...lastNameParts] = fullName.trim().split(/\s+/)
+    const parts = fullName.trim().split(/\s+/).filter(Boolean)
 
     return {
-      firstName,
-      lastName: lastNameParts.join(' ') || 'Directeur',
+      firstName: parts[0] || 'Directeur',
+      postnom: parts.length > 2 ? parts.slice(1, -1).join(' ') : 'A completer',
+      lastName: parts.length > 1 ? parts[parts.length - 1] : 'Directeur',
     }
   }
 
@@ -123,7 +158,7 @@ export default class SchoolController {
         address: vine.string(),
         phone: vine.string(),
         email: vine.string().email().unique({ table: 'schools', column: 'email' }),
-        directorName: vine.string(),
+        directorName: vine.string().regex(/^\S+\s+\S+\s+.+$/),
         directorPhone: vine.string(),
         directorEmail: vine.string().email().unique({ table: 'users', column: 'email' }),
       })
@@ -161,6 +196,7 @@ export default class SchoolController {
         email: validatedData.directorEmail.trim().toLowerCase(),
         password: tempPassword,
         firstName: directorName.firstName,
+        postnom: directorName.postnom,
         lastName: directorName.lastName,
         phone: validatedData.directorPhone,
         role: 'director',
@@ -307,6 +343,7 @@ export default class SchoolController {
           searchQuery.whereILike('employeeNumber', `%${search}%`).orWhereHas('user', (userQuery) => {
             userQuery
               .whereILike('firstName', `%${search}%`)
+              .orWhereILike('postnom', `%${search}%`)
               .orWhereILike('lastName', `%${search}%`)
               .orWhereILike('email', `%${search}%`)
           })
@@ -357,6 +394,7 @@ export default class SchoolController {
     const schema = vine.compile(
       vine.object({
         firstName: vine.string(),
+        postnom: vine.string(),
         lastName: vine.string(),
         email: vine.string().email().unique({ table: 'users', column: 'email' }),
         phone: vine.string(),
@@ -374,6 +412,7 @@ export default class SchoolController {
       email: data.email,
       password: tempPassword,
       firstName: data.firstName,
+      postnom: data.postnom,
       lastName: data.lastName,
       phone: data.phone,
       role: 'teacher',
@@ -424,6 +463,7 @@ export default class SchoolController {
       school: this.getFallbackSchool(user),
       classes,
       students,
+      schoolOptions: this.getRdcSchoolOptions(),
       roles: [
         { value: 'teacher', label: 'Enseignant' },
         { value: 'discipline_director', label: 'Directeur de discipline' },
@@ -447,6 +487,7 @@ export default class SchoolController {
         query.where((searchQuery) => {
           searchQuery
             .whereILike('firstName', `%${search}%`)
+            .orWhereILike('postnom', `%${search}%`)
             .orWhereILike('lastName', `%${search}%`)
             .orWhereILike('email', `%${search}%`)
         })
@@ -512,6 +553,7 @@ export default class SchoolController {
       student,
       parent,
       classes,
+      schoolOptions: this.getRdcSchoolOptions(),
       students,
       selectedChildrenIds,
       roleLabel: this.getRoleLabel(account.role),
@@ -529,7 +571,7 @@ export default class SchoolController {
     const schema = vine.compile(
       vine.object({
         firstName: vine.string().trim(),
-        postnom: vine.string().trim().optional(),
+        postnom: vine.string().trim(),
         lastName: vine.string().trim(),
         email: vine.string().trim().email(),
         phone: vine.string().trim().optional(),
@@ -537,6 +579,7 @@ export default class SchoolController {
         qualification: vine.string().trim().optional(),
         specialization: vine.string().trim().optional(),
         classId: vine.string().optional(),
+        schoolOption: vine.string().trim().optional(),
         birthDate: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
         birthPlace: vine.string().trim().optional(),
         nationality: vine.string().trim().optional(),
@@ -564,10 +607,21 @@ export default class SchoolController {
       return response.redirect().back()
     }
 
+    const selectedClass = payload.classId
+      ? await Class.query().where('id', payload.classId).where('schoolId', director.schoolId).first()
+      : null
+    const schoolOptions = this.getRdcSchoolOptions()
+    const isHumanities = this.isHumanitiesClass(selectedClass)
+
+    if (account.role === 'student' && isHumanities && (!payload.schoolOption || !schoolOptions.includes(payload.schoolOption))) {
+      session.flash('error', "Veuillez sélectionner une option valide pour cette classe des humanités.")
+      return response.redirect().back()
+    }
+
     await db.transaction(async (trx) => {
       account.useTransaction(trx)
       account.firstName = payload.firstName
-      account.postnom = account.role === 'student' ? payload.postnom || null : account.postnom
+      account.postnom = payload.postnom
       account.lastName = payload.lastName
       account.email = email
       account.phone = payload.phone || null
@@ -587,6 +641,7 @@ export default class SchoolController {
         const student = await Student.query({ client: trx }).where('userId', account.id).first()
         if (student) {
           student.classId = payload.classId || null
+          student.schoolOption = isHumanities ? payload.schoolOption! : null
           if (payload.birthDate) student.birthDate = payload.birthDate
           student.birthPlace = payload.birthPlace || ''
           student.nationality = payload.nationality || 'Congolaise'
@@ -648,13 +703,14 @@ export default class SchoolController {
       vine.object({
         role: vine.enum(['teacher', 'discipline_director', 'finance_director', 'student', 'parent']),
         firstName: vine.string().trim(),
-        postnom: vine.string().trim().optional(),
+        postnom: vine.string().trim(),
         lastName: vine.string().trim(),
         email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
         phone: vine.string().trim().optional(),
         qualification: vine.string().trim().optional(),
         specialization: vine.string().trim().optional(),
         classId: vine.string().optional(),
+        schoolOption: vine.string().trim().optional(),
         birthDate: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
         birthPlace: vine.string().trim().optional(),
         nationality: vine.string().trim().optional(),
@@ -680,6 +736,17 @@ export default class SchoolController {
       return response.redirect().back()
     }
 
+    const selectedClass = payload.classId
+      ? await Class.query().where('id', payload.classId).where('schoolId', director.schoolId).first()
+      : null
+    const schoolOptions = this.getRdcSchoolOptions()
+    const isHumanities = this.isHumanitiesClass(selectedClass)
+
+    if (payload.role === 'student' && isHumanities && (!payload.schoolOption || !schoolOptions.includes(payload.schoolOption))) {
+      session.flash('error', "Veuillez sélectionner une option valide pour cette classe des humanités.")
+      return response.redirect().back()
+    }
+
     const tempPassword = crypto.randomBytes(8).toString('hex')
     const email = payload.email.trim().toLowerCase()
     const school = await School.find(director.schoolId)
@@ -691,7 +758,7 @@ export default class SchoolController {
       createdUser.useTransaction(trx)
       createdUser.schoolId = director.schoolId
       createdUser.firstName = payload.firstName
-      createdUser.postnom = payload.role === 'student' ? payload.postnom || null : null
+      createdUser.postnom = payload.postnom
       createdUser.lastName = payload.lastName
       createdUser.email = email
       createdUser.phone = payload.phone || null
@@ -720,6 +787,7 @@ export default class SchoolController {
         student.userId = createdUser.id
         student.schoolId = director.schoolId!
         student.classId = payload.classId || null
+        student.schoolOption = isHumanities ? payload.schoolOption! : null
         student.registrationNumber = `STU-${Date.now()}`
         student.birthDate = payload.birthDate!
         student.birthPlace = payload.birthPlace || ''
@@ -765,7 +833,7 @@ export default class SchoolController {
     })
 
     const credentials = {
-      fullName: `${createdUser!.firstName} ${createdUser!.lastName}`.trim(),
+      fullName: createdUser!.fullName,
       role: createdUser!.role,
       roleLabel: this.getRoleLabel(createdUser!.role),
       email: createdUser!.email,

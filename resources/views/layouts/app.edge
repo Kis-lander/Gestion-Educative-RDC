@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ appLanguage || 'fr' }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,9 +16,69 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js">
 
     </script>
+    <script>
+      (() => {
+        if (!window.Chart || window.Chart.__adaptiveHeightPatched) return;
+
+        const NativeChart = window.Chart;
+
+        const getDataLength = (config) => {
+          const labelsLength = Array.isArray(config?.data?.labels) ? config.data.labels.length : 0;
+          const datasetLength = (config?.data?.datasets || []).reduce((max, dataset) => {
+            return Math.max(max, Array.isArray(dataset?.data) ? dataset.data.length : 0);
+          }, 0);
+
+          return Math.max(labelsLength, datasetLength);
+        };
+
+        const getAdaptiveHeight = (canvas, config) => {
+          const dataLength = getDataLength(config);
+          const baseHeight = Math.min(Math.max(Number(canvas.getAttribute("height")) || 240, 180), 320);
+          const type = String(config?.type || "").toLowerCase();
+
+          if (["doughnut", "pie", "polararea", "radar"].includes(type)) {
+            return Math.min(Math.max(baseHeight, 220 + Math.max(dataLength - 6, 0) * 18), 520);
+          }
+
+          if (type === "bar") {
+            return Math.min(Math.max(baseHeight, 220 + Math.max(dataLength - 8, 0) * 18), 620);
+          }
+
+          return Math.min(Math.max(baseHeight, 220 + Math.max(dataLength - 12, 0) * 10), 500);
+        };
+
+        function AdaptiveChart(item, config) {
+          config.options = config.options || {};
+          config.options.maintainAspectRatio = false;
+
+          const chart = new NativeChart(item, config);
+          const canvas = chart.canvas;
+
+          if (canvas) {
+            const height = getAdaptiveHeight(canvas, config);
+            canvas.style.display = "block";
+            canvas.style.width = "100%";
+            canvas.style.height = `${height}px`;
+            canvas.height = height;
+            chart.options.maintainAspectRatio = false;
+            chart.resize();
+          }
+
+          return chart;
+        }
+
+        Object.setPrototypeOf(AdaptiveChart, NativeChart);
+        AdaptiveChart.prototype = NativeChart.prototype;
+        Object.assign(AdaptiveChart, NativeChart);
+        AdaptiveChart.__adaptiveHeightPatched = true;
+
+        window.Chart = AdaptiveChart;
+      })();
+    </script>
 
     <!-- Configuration Tailwind pour mode sombre -->
     <script>
+      window.__APP_LANGUAGE__ = "{{ appLanguage || 'fr' }}";
       tailwind.config = {
         darkMode: "class",
         theme: {
@@ -284,6 +344,7 @@
     </main>
 
     @!include('partials/footer')
+    <script src="/js/app-translations.js?v=20260602-6" defer></script>
     @!include('partials/scripts')
 
   </body>

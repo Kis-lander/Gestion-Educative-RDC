@@ -89,6 +89,43 @@ export default class DashboardController {
     const studentsByClass = new Map(
       studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
     )
+    const attendanceRows = classIds.length
+      ? await db
+          .from('attendances')
+          .select('class_id')
+          .select(
+            db.raw(
+              "sum(case when status in ('present', 'excused') then 1 else 0 end) as present_total"
+            )
+          )
+          .count('* as total')
+          .whereIn('class_id', classIds)
+          .where('date', '>=', monthStart)
+          .groupBy('class_id')
+      : []
+    const attendanceByClass = new Map(
+      attendanceRows.map((row) => {
+        const total = Number(row.total || 0)
+        const presentTotal = Number(row.present_total || 0)
+
+        return [
+          String(row.class_id),
+          {
+            total,
+            presentTotal,
+            rate: total ? Math.round((presentTotal / total) * 100) : 0,
+          },
+        ]
+      })
+    )
+    const totalAttendance = attendanceRows.reduce((sum, row) => sum + Number(row.total || 0), 0)
+    const totalPresentAttendance = attendanceRows.reduce(
+      (sum, row) => sum + Number(row.present_total || 0),
+      0
+    )
+    const attendanceRate = totalAttendance
+      ? Math.round((totalPresentAttendance / totalAttendance) * 100)
+      : 0
 
     return view.render('dashboard/director', {
       school: school || this.getFallbackSchool(user),
@@ -97,7 +134,7 @@ export default class DashboardController {
         newStudents: Number(newStudents?.$extras.total || 0),
         teachers: Number(teachers?.$extras.total || 0),
         classes: classes.length,
-        attendanceRate: this.calculateAttendanceRate(null),
+        attendanceRate,
       },
       alerts: [],
       upcomingEvents: [],
@@ -107,7 +144,7 @@ export default class DashboardController {
         name: classObj.name,
         studentsCount: studentsByClass.get(classObj.id) || 0,
         averageGrade: '-',
-        attendanceRate: 0,
+        attendanceRate: attendanceByClass.get(classObj.id)?.rate || 0,
       })),
     })
   }
@@ -191,7 +228,9 @@ export default class DashboardController {
         pendingPayments: 0,
       },
       children: children.map((child) => ({
-        ...child,
+        ...child.toJSON(),
+        id: child.id,
+        registrationNumber: child.registrationNumber || '-',
         user: child.user,
         class: child.class || { name: 'Non affecté' },
         averageGrade: '-',
@@ -217,6 +256,28 @@ export default class DashboardController {
     const averageGrade = grades.length
       ? (grades.reduce((sum, grade) => sum + Number(grade.score || 0), 0) / grades.length).toFixed(1)
       : '-'
+    const parentRecord = studentProfile
+      ? await db
+          .from('parent_student')
+          .join('parents', 'parent_student.parent_id', 'parents.id')
+          .join('users', 'parents.user_id', 'users.id')
+          .where('parent_student.student_id', studentProfile.id)
+          .select(
+            'users.first_name as firstName',
+            'users.postnom as postnom',
+            'users.last_name as lastName',
+            'parents.relationship'
+          )
+          .first()
+      : null
+    const parentName = parentRecord
+      ? [
+          [parentRecord.firstName, parentRecord.postnom, parentRecord.lastName].filter(Boolean).join(' '),
+          parentRecord.relationship ? `(${parentRecord.relationship})` : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
+      : ''
 
     return view.render('dashboard/student', {
       stats: {
@@ -228,12 +289,14 @@ export default class DashboardController {
       },
       student: {
         firstName: user.firstName,
+        postnom: user.postnom,
         lastName: user.lastName,
+        fullName: user.fullName,
         className: studentProfile?.class?.name || 'Non affecté',
         schoolName: studentProfile?.school?.name || 'Gestion Éducative RDC',
         registrationNumber: studentProfile?.registrationNumber || '-',
         birthDate: studentProfile?.birthDate?.toFormat('dd/MM/yyyy') || '-',
-        parentName: '-',
+        parentName,
       },
       recentGrades: grades.map((grade) => ({
         subjectName: grade.subject?.name || '-',
@@ -378,8 +441,9 @@ export default class DashboardController {
    */
   private async getDirectorDashboard({ auth, response }: HttpContext) {
     const schoolId = auth.user!.schoolId
+    const monthStart = DateTime.now().startOf('month').toSQLDate()
 
-    const [students, teachers, classes, performance] = await Promise.all([
+    const [students, teachers, classes, performance, attendance] = await Promise.all([
       Student.query()
         .where('school_id', schoolId!)
         .where('academic_status', 'active')
@@ -398,7 +462,21 @@ export default class DashboardController {
         .where('students.school_id', schoolId!)
         .avg('score as average')
         .first(),
+      db
+        .from('attendances')
+        .innerJoin('students', 'attendances.student_id', 'students.id')
+        .where('students.school_id', schoolId!)
+        .where('attendances.date', '>=', monthStart)
+        .select(
+          db.raw(
+            "sum(case when attendances.status in ('present', 'excused') then 1 else 0 end) as present_total"
+          )
+        )
+        .count('* as total')
+        .first(),
     ])
+    const attendanceTotal = Number(attendance?.total || 0)
+    const presentAttendanceTotal = Number(attendance?.present_total || 0)
 
     return response.ok({
       success: true,
@@ -406,7 +484,9 @@ export default class DashboardController {
         students: Number(students?.$extras.total || 0),
         teachers: Number(teachers?.$extras.total || 0),
         classes: Number(classes?.total || 0),
-        attendanceRate: 0,
+        attendanceRate: attendanceTotal
+          ? Math.round((presentAttendanceTotal / attendanceTotal) * 100)
+          : 0,
         averageGrade: Number(performance?.average || 0),
       },
     })
@@ -519,10 +599,6 @@ export default class DashboardController {
         attendanceRate: 0,
       },
     })
-  }
-
-  private calculateAttendanceRate(rate: any): number {
-    return rate ? 85 : 0 // Ta logique simplifiée conservée
   }
 
   /**
