@@ -69,16 +69,6 @@ export default class SchoolController {
     }
   }
 
-  private splitFullName(fullName: string) {
-    const parts = fullName.trim().split(/\s+/).filter(Boolean)
-
-    return {
-      firstName: parts[0] || 'Directeur',
-      postnom: parts.length > 2 ? parts.slice(1, -1).join(' ') : 'A completer',
-      lastName: parts.length > 1 ? parts[parts.length - 1] : 'Directeur',
-    }
-  }
-
   private getRoleLabel(role: User['role']) {
     const labels: Record<User['role'], string> = {
       inspection: 'Inspection',
@@ -158,9 +148,13 @@ export default class SchoolController {
         address: vine.string(),
         phone: vine.string(),
         email: vine.string().email().unique({ table: 'schools', column: 'email' }),
-        directorName: vine.string().regex(/^\S+\s+\S+\s+.+$/),
+        directorName: vine.string().trim().minLength(2),
         directorPhone: vine.string(),
-        directorEmail: vine.string().email().unique({ table: 'users', column: 'email' }),
+        directorEmail: vine
+          .string()
+          .email()
+          .unique({ table: 'users', column: 'email' })
+          .unique({ table: 'schools', column: 'director_email' }),
       })
     )
 
@@ -170,9 +164,6 @@ export default class SchoolController {
     const schoolCode = `SCH-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
 
     let school: School
-    const tempPassword = crypto.randomBytes(8).toString('hex')
-    const directorName = this.splitFullName(validatedData.directorName)
-
     await db.transaction(async (trx) => {
       school = new School()
       school.useTransaction(trx)
@@ -184,25 +175,37 @@ export default class SchoolController {
         address: validatedData.address,
         phone: validatedData.phone,
         email: validatedData.email,
+        directorName: validatedData.directorName.trim(),
+        directorPhone: validatedData.directorPhone.trim(),
+        directorEmail: validatedData.directorEmail.trim().toLowerCase(),
         status: 'pending',
       })
       await school.save()
 
-    // Créer un compte utilisateur pour le directeur
-    const director = new User()
-      director.useTransaction(trx)
-      director.merge({
-        schoolId: school.id,
-        email: validatedData.directorEmail.trim().toLowerCase(),
-        password: tempPassword,
-        firstName: directorName.firstName,
-        postnom: directorName.postnom,
-        lastName: directorName.lastName,
-        phone: validatedData.directorPhone,
-        role: 'director',
-        status: 'pending',
-      })
-      await director.save()
+      // Notifier l'inspection sans creer le compte directeur avant approbation.
+      const inspectors = await trx
+        .from('users')
+        .where('role', 'inspection')
+        .where('status', 'active')
+        .select('id')
+
+      if (inspectors.length) {
+        await trx.table('messages').insert(
+          inspectors.map((inspector) => ({
+            sender_id: null,
+            receiver_id: inspector.id,
+            school_id: school.id,
+            subject: "Nouvelle demande d'inscription d'école",
+            content: `L'ecole ${school.name} a soumis une demande d'inscription. Elle attend une validation dans la liste des ecoles en attente.`,
+            type: 'system',
+            is_global: false,
+            is_read: false,
+            has_attachment: false,
+            created_at: new Date(),
+            updated_at: new Date(),
+          }))
+        )
+      }
     })
 
 
@@ -388,6 +391,432 @@ export default class SchoolController {
     })
   }
 
+  private async getTeacherForDirector(teacherId: string, schoolId?: string | null) {
+    if (!schoolId) {
+      throw new Error("Votre compte n'est lie a aucune ecole.")
+    }
+
+    return Teacher.query()
+      .where('id', teacherId)
+      .where('schoolId', schoolId)
+      .preload('user')
+      .firstOrFail()
+  }
+
+  private async getTeacherAssignments(teacher: Teacher) {
+    const subjectRows = await db
+      .from('class_subject')
+      .join('subjects', 'class_subject.subject_id', 'subjects.id')
+      .where('class_subject.teacher_id', teacher.id)
+      .select(
+        'subjects.id as id',
+        'subjects.name as name',
+        'subjects.coefficient as coefficient',
+        'class_subject.class_id as classId',
+        'class_subject.hours_per_week as hoursPerWeek'
+      )
+      .orderBy('subjects.name', 'asc')
+
+    const subjectsById = new Map<string, any>()
+    for (const row of subjectRows) {
+      const subjectId = row.id
+      const hoursPerWeek = Number(row.hoursPerWeek ?? row.hours_per_week ?? 0)
+      const current = subjectsById.get(subjectId)
+
+      subjectsById.set(subjectId, {
+        id: subjectId,
+        name: row.name,
+        coefficient: row.coefficient,
+        hoursPerWeek: (current?.hoursPerWeek || 0) + hoursPerWeek,
+      })
+    }
+
+    const linkedClassIds = [...new Set(subjectRows.map((row) => row.classId ?? row.class_id).filter(Boolean))]
+    const classesQuery = Class.query()
+      .where('schoolId', teacher.schoolId)
+      .where((query) => {
+        query.where('teacherId', teacher.id)
+        if (linkedClassIds.length) {
+          query.orWhereIn('id', linkedClassIds)
+        }
+      })
+      .orderBy('gradeLevel', 'asc')
+      .orderBy('name', 'asc')
+
+    const teacherClasses = await classesQuery
+    const classIds = teacherClasses.map((classObj) => classObj.id)
+    const studentCounts = classIds.length
+      ? await db
+          .from('students')
+          .whereIn('class_id', classIds)
+          .groupBy('class_id')
+          .select('class_id')
+          .count('* as total')
+      : []
+    const studentsCountByClass = new Map(
+      studentCounts.map((row) => [row.class_id, Number(row.total || 0)])
+    )
+
+    for (const classObj of teacherClasses) {
+      ;(classObj as any).studentsCount = studentsCountByClass.get(classObj.id) || 0
+    }
+
+    const teacherSubjects = [...subjectsById.values()]
+    const totalStudents = teacherClasses.reduce(
+      (total, classObj) => total + Number((classObj as any).studentsCount || 0),
+      0
+    )
+    const totalHours = teacherSubjects.reduce(
+      (total, subject) => total + Number(subject.hoursPerWeek || 0),
+      0
+    )
+
+    ;(teacher as any).subjectIds = teacherSubjects.map((subject) => subject.id)
+    ;(teacher as any).subjectsCount = teacherSubjects.length
+    ;(teacher as any).classesCount = teacherClasses.length
+    ;(teacher as any).totalStudents = totalStudents
+    ;(teacher as any).totalHours = totalHours
+
+    return {
+      teacherSubjects,
+      teacherClasses,
+      subjectIds: teacherSubjects.map((subject) => subject.id),
+      totalStudents,
+      totalHours,
+    }
+  }
+
+  public async showTeacherPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const assignments = await this.getTeacherAssignments(teacher)
+    const assignmentsCount = await db
+      .from('assignments')
+      .where('teacher_id', teacher.id)
+      .count('* as total')
+      .first()
+    const classIds = assignments.teacherClasses.map((classObj) => classObj.id)
+    const attendanceRows = classIds.length
+      ? await db.from('attendances').whereIn('class_id', classIds).select('status')
+      : []
+    const presentRows = attendanceRows.filter(
+      (row) => row.status === 'present' || row.status === 'excused'
+    ).length
+    const gradeRows = await db
+      .from('grades')
+      .join('class_subject', (join) => {
+        join
+          .on('grades.class_id', '=', 'class_subject.class_id')
+          .andOn('grades.subject_id', '=', 'class_subject.subject_id')
+      })
+      .where('class_subject.teacher_id', teacher.id)
+      .whereNotNull('grades.score')
+      .select('grades.score', 'grades.max_score')
+    const normalizedGrades = gradeRows
+      .map((row) => {
+        const score = Number(row.score)
+        const maxScore = Number(row.max_score || 20)
+        return Number.isFinite(score) && maxScore > 0 ? (score / maxScore) * 20 : null
+      })
+      .filter((score): score is number => score !== null)
+    const averageGradeGiven = normalizedGrades.length
+      ? Math.round((normalizedGrades.reduce((total, score) => total + score, 0) / normalizedGrades.length) * 10) / 10
+      : null
+    const evaluationRows = await db
+      .from('teacher_evaluations')
+      .leftJoin('users', 'teacher_evaluations.evaluator_id', 'users.id')
+      .where('teacher_evaluations.teacher_id', teacher.id)
+      .select(
+        'teacher_evaluations.evaluation_date',
+        'teacher_evaluations.score',
+        'teacher_evaluations.comments',
+        'users.first_name',
+        'users.postnom',
+        'users.last_name'
+      )
+      .orderBy('teacher_evaluations.evaluation_date', 'desc')
+      .limit(5)
+
+    ;(teacher as any).assignmentsCount = Number(assignmentsCount?.total || 0)
+    ;(teacher as any).mainClasses =
+      assignments.teacherClasses
+        .filter((classObj) => classObj.teacherId === teacher.id)
+        .map((classObj) => classObj.name)
+        .join(', ') || 'Aucune'
+    ;(teacher as any).attendanceRate = attendanceRows.length
+      ? Math.round((presentRows / attendanceRows.length) * 100)
+      : 0
+    ;(teacher as any).averageGradeGiven = averageGradeGiven
+
+    return view.render('schools/teachers/show', {
+      school: this.getFallbackSchool(user),
+      teacher,
+      teacherSubjects: assignments.teacherSubjects,
+      teacherClasses: assignments.teacherClasses,
+      evaluations: evaluationRows.map((evaluation) => ({
+        date: DateTime.fromJSDate(new Date(evaluation.evaluation_date)).toFormat('dd/MM/yyyy'),
+        inspector:
+          [evaluation.first_name, evaluation.last_name, evaluation.postnom].filter(Boolean).join(' ') ||
+          'Inspection',
+        comments: evaluation.comments || 'Aucun commentaire',
+        score: Number(evaluation.score || 0),
+      })),
+    })
+  }
+
+  public async editTeacherPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const assignments = await this.getTeacherAssignments(teacher)
+    const subjects = await Subject.query().orderBy('name', 'asc')
+
+    ;(teacher as any).subjectIds = assignments.subjectIds
+
+    return view.render('schools/teachers/edit', {
+      school: this.getFallbackSchool(user),
+      teacher,
+      subjects,
+    })
+  }
+
+  private getDurationHours(startTime: string, endTime: string) {
+    const [startHour, startMinute] = String(startTime).split(':').map(Number)
+    const [endHour, endMinute] = String(endTime).split(':').map(Number)
+    const start = startHour * 60 + (startMinute || 0)
+    const end = endHour * 60 + (endMinute || 0)
+    return Math.max((end - start) / 60, 0)
+  }
+
+  public async scheduleTeacherPage({ auth, params, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const now = DateTime.now()
+    const selectedYear = Number(request.input('year', now.weekYear))
+    const selectedWeek = Number(request.input('week', now.weekNumber))
+    const weekStart = DateTime.fromObject({
+      weekYear: selectedYear,
+      weekNumber: selectedWeek,
+      weekday: 1,
+    })
+    const weekEnd = weekStart.plus({ days: 4 })
+    const entries = await db
+      .from('timetables')
+      .join('subjects', 'timetables.subject_id', 'subjects.id')
+      .join('classes', 'timetables.class_id', 'classes.id')
+      .where('timetables.teacher_id', teacher.id)
+      .where('classes.school_id', teacher.schoolId)
+      .select(
+        'timetables.day_of_week',
+        'timetables.start_time',
+        'timetables.end_time',
+        'timetables.room',
+        'subjects.id as subject_id',
+        'subjects.name as subject_name',
+        'classes.id as class_id',
+        'classes.name as class_name'
+      )
+      .orderBy('timetables.start_time', 'asc')
+      .orderBy('timetables.day_of_week', 'asc')
+
+    const dayKeys: Record<number, 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'> = {
+      1: 'monday',
+      2: 'tuesday',
+      3: 'wednesday',
+      4: 'thursday',
+      5: 'friday',
+      6: 'saturday',
+    }
+    const defaultTimes = ['07:30-08:20', '08:20-09:10', '09:30-10:20', '10:20-11:10', '11:10-12:00']
+    const timeSlots = [
+      ...new Set(
+        entries.length
+          ? entries.map((entry) => `${String(entry.start_time).slice(0, 5)}-${String(entry.end_time).slice(0, 5)}`)
+          : defaultTimes
+      ),
+    ].sort()
+    const timetable = timeSlots.map((time) => ({
+      time,
+      monday: { class: '', content: null as any },
+      tuesday: { class: '', content: null as any },
+      wednesday: { class: '', content: null as any },
+      thursday: { class: '', content: null as any },
+      friday: { class: '', content: null as any },
+      saturday: { class: '', content: null as any },
+    }))
+    const rowByTime = new Map(timetable.map((slot) => [slot.time, slot]))
+    const summary: Record<string, number> = {
+      totalHours: 0,
+      classesCount: 0,
+      subjectsCount: 0,
+      mondayHours: 0,
+      tuesdayHours: 0,
+      wednesdayHours: 0,
+      thursdayHours: 0,
+      fridayHours: 0,
+      saturdayHours: 0,
+    }
+    const classIds = new Set<string>()
+    const subjectIds = new Set<string>()
+
+    for (const entry of entries) {
+      const time = `${String(entry.start_time).slice(0, 5)}-${String(entry.end_time).slice(0, 5)}`
+      const dayKey = dayKeys[Number(entry.day_of_week)]
+      const row = rowByTime.get(time)
+      if (!dayKey || !row) continue
+
+      row[dayKey] = {
+        class: 'bg-blue-50 dark:bg-blue-900/20',
+        content: {
+          subject: entry.subject_name,
+          class: entry.class_name,
+          room: entry.room || '-',
+        },
+      }
+
+      const hours = this.getDurationHours(entry.start_time, entry.end_time)
+      summary.totalHours += hours
+      summary[`${dayKey}Hours`] += hours
+      classIds.add(entry.class_id)
+      subjectIds.add(entry.subject_id)
+    }
+
+    summary.totalHours = Math.round(summary.totalHours * 10) / 10
+    summary.classesCount = classIds.size
+    summary.subjectsCount = subjectIds.size
+
+    const weeks = Array.from({ length: 9 }, (_, index) => {
+      const date = now.plus({ weeks: index - 4 })
+      return {
+        value: `${date.weekYear}-W${String(date.weekNumber).padStart(2, '0')}`,
+        label: `Semaine ${date.weekNumber}`,
+        selected: date.weekYear === selectedYear && date.weekNumber === selectedWeek,
+      }
+    })
+
+    return view.render('schools/teachers/schedule', {
+      school: this.getFallbackSchool(user),
+      teacher,
+      weekRange: `${weekStart.toFormat('dd/MM/yyyy')} - ${weekEnd.toFormat('dd/MM/yyyy')}`,
+      weeks,
+      timetable,
+      summary,
+      availabilities: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'].map((day) => ({
+        day,
+        slots: 'Sur rendez-vous',
+        available: true,
+      })),
+    })
+  }
+
+  public async updateTeacher({ auth, params, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const schema = vine.compile(
+      vine.object({
+        firstName: vine.string().trim(),
+        postnom: vine.string().trim(),
+        lastName: vine.string().trim(),
+        phone: vine.string().trim().optional(),
+        qualification: vine.string().trim(),
+        specialization: vine.string().trim().optional(),
+        status: vine.enum(['active', 'on_leave', 'terminated']),
+        subjects: vine.array(vine.string()).optional(),
+      })
+    )
+    const payload = await request.validateUsing(schema)
+    const selectedSubjectIds = payload.subjects || []
+
+    await db.transaction(async (trx) => {
+      teacher.user.useTransaction(trx)
+      teacher.user.firstName = payload.firstName
+      teacher.user.postnom = payload.postnom
+      teacher.user.lastName = payload.lastName
+      teacher.user.phone = payload.phone || null
+      teacher.user.status = payload.status === 'terminated' ? 'inactive' : 'active'
+      await teacher.user.save()
+
+      teacher.useTransaction(trx)
+      teacher.qualification = payload.qualification
+      teacher.specialization = payload.specialization || ''
+      teacher.status = payload.status
+      await teacher.save()
+
+      if (selectedSubjectIds.length) {
+        await trx
+          .from('class_subject')
+          .where('teacher_id', teacher.id)
+          .whereNotIn('subject_id', selectedSubjectIds)
+          .update({ teacher_id: null, updated_at: new Date() })
+      } else {
+        await trx
+          .from('class_subject')
+          .where('teacher_id', teacher.id)
+          .update({ teacher_id: null, updated_at: new Date() })
+      }
+    })
+
+    session.flash('success', 'Enseignant modifie avec succes.')
+    return response.redirect(`/schools/teachers/${teacher.id}`)
+  }
+
+  public async deleteTeacher({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+
+    await db.transaction(async (trx) => {
+      await trx.from('class_subject').where('teacher_id', teacher.id).update({
+        teacher_id: null,
+        updated_at: new Date(),
+      })
+      await trx.from('classes').where('teacher_id', teacher.id).update({
+        teacher_id: null,
+        updated_at: new Date(),
+      })
+
+      teacher.useTransaction(trx)
+      teacher.status = 'terminated'
+      await teacher.save()
+
+      teacher.user.useTransaction(trx)
+      teacher.user.status = 'inactive'
+      await teacher.user.save()
+    })
+
+    return response.ok({ success: true, message: 'Enseignant desactive avec succes.' })
+  }
+
+  public async resetTeacherPassword({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const tempPassword = crypto.randomBytes(8).toString('hex')
+    const schoolName = await this.getSchoolName(user.schoolId)
+
+    teacher.user.password = tempPassword
+    teacher.user.mustChangePassword = true
+    await teacher.user.save()
+
+    try {
+      await this.mailService.sendAccountCredentials({
+        to: teacher.user.email,
+        schoolName,
+        fullName: teacher.user.fullName,
+        roleLabel: 'Enseignant',
+        email: teacher.user.email,
+        password: tempPassword,
+      })
+    } catch (error) {
+      return response.ok({
+        success: true,
+        message:
+          error instanceof Error
+            ? `Mot de passe reinitialise, mais email non envoye : ${error.message}`
+            : 'Mot de passe reinitialise, mais email non envoye.',
+      })
+    }
+
+    return response.ok({ success: true, message: 'Nouveau mot de passe envoye par email.' })
+  }
+
   public async addTeacher({ request, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
 
@@ -417,6 +846,7 @@ export default class SchoolController {
       phone: data.phone,
       role: 'teacher',
       status: 'active',
+      mustChangePassword: true,
     })
 
     const employeeNumber = `TCH-${String(user.schoolId).slice(0, 4)}-${Date.now()}`
@@ -765,6 +1195,7 @@ export default class SchoolController {
       createdUser.password = tempPassword
       createdUser.role = payload.role
       createdUser.status = 'active'
+      createdUser.mustChangePassword = true
       await createdUser.save()
 
       if (payload.role === 'teacher') {

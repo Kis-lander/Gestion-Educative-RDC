@@ -127,15 +127,19 @@
         <h3 class="font-semibold mb-4">
           Performance par province
         </h3>
-        <canvas id="provincePerformanceChart" height="300">
-        </canvas>
+        <div class="relative min-h-80 w-full">
+          <canvas id="provincePerformanceChart" height="320">
+          </canvas>
+        </div>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-4">
           Top 10 meilleures écoles
         </h3>
-        <canvas id="topSchoolsChart" height="300">
-        </canvas>
+        <div class="relative min-h-80 w-full">
+          <canvas id="topSchoolsChart" height="320">
+          </canvas>
+        </div>
       </div>
     </div>
 
@@ -217,7 +221,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             scales: {
               y: {
                 max: 20
@@ -229,7 +233,7 @@
         if (chart2) chart2.destroy();
         const ctx2 = document.getElementById("topSchoolsChart").getContext("2d");
         chart2 = new Chart(ctx2, {
-          type: "horizontalBar",
+          type: "bar",
           data: {
             labels: data.topSchools?.map(s => s.name.substring(0, 20)) || [],
             datasets: [ {
@@ -240,7 +244,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             indexAxis: "y",
             scales: {
               x: {

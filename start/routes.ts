@@ -22,26 +22,108 @@ async function getWelcomeStats() {
   }
 }
 
-router
-  .get('/', async ({ view }) => {
-    return view.render('welcome/index', {
-      title: 'Gestion Educative RDC - Plateforme nationale',
-      stats: await getWelcomeStats(),
-      appLanguage: await getDefaultAppLanguage(),
+const fallbackTestimonials = [
+  {
+    authorName: 'Jean Mukadi',
+    roleLabel: 'Directeur, Collège Saint Joseph - Kinshasa',
+    content:
+      "La plateforme a révolutionné la gestion de notre école. Les fonctionnalités sont complètes et le support est réactif.",
+    rating: 5,
+  },
+  {
+    authorName: 'Marie Tshibanda',
+    roleLabel: 'Inspectrice, Province du Haut-Katanga',
+    content:
+      "Un outil indispensable pour l'inspection pédagogique. Le suivi des écoles est désormais transparent et efficace.",
+    rating: 5,
+  },
+]
+
+async function getWelcomeTestimonials() {
+  try {
+    const rows = await db
+      .from('public_testimonials')
+      .select('author_name', 'author_role', 'school_name', 'province', 'content', 'rating')
+      .where('status', 'approved')
+      .orderBy('created_at', 'desc')
+      .limit(6)
+
+    const testimonials = rows.map((testimonial) => {
+      const details = [testimonial.author_role, testimonial.school_name, testimonial.province].filter(Boolean)
+
+      return {
+        authorName: testimonial.author_name,
+        roleLabel: details.join(' - '),
+        content: testimonial.content,
+        rating: Number(testimonial.rating ?? 5),
+      }
     })
+
+    return testimonials.length > 0 ? testimonials : fallbackTestimonials
+  } catch {
+    return fallbackTestimonials
+  }
+}
+
+async function getWelcomePageData(request?: { input: (key: string) => unknown }) {
+  return {
+    title: 'Gestion Educative RDC - Plateforme nationale',
+    stats: await getWelcomeStats(),
+    testimonials: await getWelcomeTestimonials(),
+    testimonialSubmitted: request?.input('testimonial') === 'sent',
+    appLanguage: await getDefaultAppLanguage(),
+  }
+}
+
+router
+  .get('/', async ({ view, request }) => {
+    return view.render('welcome/index', await getWelcomePageData(request))
   })
   .as('welcome.index')
 router.get('/home', async ({ inertia }) => inertia.render('home', {})).as('home')
 router.get('/about', async ({ view }) => view.render('welcome/about')).as('about')
 router
-  .get('/welcome', async ({ view }) => {
-    return view.render('welcome/index', {
-      title: 'Gestion Educative RDC - Plateforme nationale',
-      stats: await getWelcomeStats(),
-      appLanguage: await getDefaultAppLanguage(),
-    })
+  .get('/welcome', async ({ view, request }) => {
+    return view.render('welcome/index', await getWelcomePageData(request))
   })
   .as('welcome.landing')
+router
+  .post('/testimonials', async ({ request, response, session }) => {
+    const honeypot = String(request.input('website') ?? '').trim()
+
+    if (honeypot) {
+      return response.redirect('/#testimonials')
+    }
+
+    const authorName = String(request.input('author_name') ?? '').trim().slice(0, 120)
+    const authorRole = String(request.input('author_role') ?? '').trim().slice(0, 120)
+    const schoolName = String(request.input('school_name') ?? '').trim().slice(0, 160)
+    const province = String(request.input('province') ?? '').trim().slice(0, 120)
+    const content = String(request.input('content') ?? '').trim().slice(0, 600)
+    const rating = Math.min(5, Math.max(1, Number(request.input('rating') ?? 5) || 5))
+
+    if (!authorName || content.length < 10) {
+      session.flash('error', 'Veuillez renseigner votre nom et un commentaire plus détaillé.')
+      return response.redirect('/#testimonials')
+    }
+
+    const now = DateTime.now().toSQL()
+
+    await db.table('public_testimonials').insert({
+      author_name: authorName,
+      author_role: authorRole || null,
+      school_name: schoolName || null,
+      province: province || null,
+      content,
+      rating,
+      status: 'approved',
+      created_at: now,
+      updated_at: now,
+    })
+
+    return response.redirect('/?testimonial=sent#testimonials')
+  })
+  .as('welcome.testimonials.store')
 router.get('/welcome/about', async ({ view }) => view.render('welcome/about')).as('welcome.about')
 router
   .get('/welcome/features', async ({ view }) => view.render('welcome/features'))
@@ -95,8 +177,10 @@ router
       controllers.Inspections,
       'approveAndGenerateCredentials',
     ])
+    router.get('/schools/:id/reject', [controllers.Inspections, 'rejectSchoolRedirect'])
     router.post('/schools/:id/reject', [controllers.Inspections, 'rejectSchool'])
     router.post('/schools/:id/toggle-suspend', [controllers.Inspections, 'toggleSuspendSchool'])
+    router.get('/teachers', [controllers.Inspections, 'inspectionTeachersPage'])
     router.get('/communications/global', [controllers.Inspections, 'communicationsGlobalPage'])
     router
       .post('/communications/global', [controllers.Inspections, 'sendGlobalCommunication'])
@@ -204,7 +288,7 @@ router
 router
   .get('/teachers', ({ auth, response }) => {
     return auth.user?.role === 'inspection'
-      ? response.redirect('/inspection/schools')
+      ? response.redirect('/inspection/teachers')
       : response.redirect('/schools/teachers')
   })
   .as('teachers.index')
@@ -383,6 +467,10 @@ router
   .as('profile.security')
   .use(middleware.auth())
 router
+  .post('/profile/change-password', [controllers.Auth, 'changePassword'])
+  .as('profile.change_password')
+  .use(middleware.auth())
+router
   .get('/profile/preferences', [controllers.Auth, 'preferencesPage'])
   .as('profile.preferences')
   .use(middleware.auth())
@@ -507,17 +595,21 @@ router
     router.get('/', [controllers.Schools, 'teachersPage']).as('schools.teachers.index')
     router.get('/create', [controllers.Schools, 'createTeacherPage']).as('schools.teachers.create')
     router.post('/', [controllers.Schools, 'addTeacher']).as('schools.teachers.store')
-    router.get('/:id', ({ response }) => response.redirect('/schools/teachers')).as('schools.teachers.show')
-    router.get('/:id/edit', ({ response }) => response.redirect('/schools/teachers')).as('schools.teachers.edit')
+    router.get('/:id', [controllers.Schools, 'showTeacherPage']).as('schools.teachers.show')
+    router.get('/:id/edit', [controllers.Schools, 'editTeacherPage']).as('schools.teachers.edit')
     router
-      .get('/:id/schedule', ({ response }) => response.redirect('/schools/teachers'))
+      .get('/:id/schedule', [controllers.Schools, 'scheduleTeacherPage'])
       .as('schools.teachers.schedule')
-    router.put('/:id', ({ response }) => response.redirect('/schools/teachers')).as('schools.teachers.update')
-    router
-      .delete('/:id', ({ response }) => response.ok({ success: true, message: 'Action non disponible.' }))
-      .as('schools.teachers.destroy')
+    router.post('/:id', [controllers.Schools, 'updateTeacher']).as('schools.teachers.update.post')
+    router.put('/:id', [controllers.Schools, 'updateTeacher']).as('schools.teachers.update')
+    router.delete('/:id', [controllers.Schools, 'deleteTeacher']).as('schools.teachers.destroy')
   })
   .prefix('/schools/teachers')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
+
+router
+  .post('/api/teachers/:id/reset-password', [controllers.Schools, 'resetTeacherPassword'])
+  .as('api.teachers.reset_password')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
 
 router

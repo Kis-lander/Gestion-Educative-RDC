@@ -2,26 +2,32 @@ import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class AddInfrastructureFieldsToSchools extends BaseSchema {
   public async up() {
-    const hasElectricity = await this.schema.hasColumn('schools', 'has_electricity')
-    const hasInternet = await this.schema.hasColumn('schools', 'has_internet')
-    const hasLibrary = await this.schema.hasColumn('schools', 'has_library')
+    await this.db.rawQuery(`
+      alter table schools
+      add column if not exists has_electricity boolean default false,
+      add column if not exists has_internet boolean default false,
+      add column if not exists has_library boolean default false
+    `)
+    await this.db.rawQuery(`
+      update schools
+      set
+        has_electricity = coalesce(has_electricity, false),
+        has_internet = coalesce(has_internet, false),
+        has_library = coalesce(has_library, false)
+    `)
 
-    this.schema.alterTable('schools', (table) => {
-      if (!hasElectricity) table.boolean('has_electricity').notNullable().defaultTo(false)
-      if (!hasInternet) table.boolean('has_internet').notNullable().defaultTo(false)
-      if (!hasLibrary) table.boolean('has_library').notNullable().defaultTo(false)
-    })
+    for (const column of ['has_electricity', 'has_internet', 'has_library']) {
+      await this.db.rawQuery(`alter table schools alter column ${column} set default false`)
+      await this.db.rawQuery(`alter table schools alter column ${column} set not null`)
+    }
   }
 
   public async down() {
-    const hasElectricity = await this.schema.hasColumn('schools', 'has_electricity')
-    const hasInternet = await this.schema.hasColumn('schools', 'has_internet')
-    const hasLibrary = await this.schema.hasColumn('schools', 'has_library')
-
-    this.schema.alterTable('schools', (table) => {
-      if (hasElectricity) table.dropColumn('has_electricity')
-      if (hasInternet) table.dropColumn('has_internet')
-      if (hasLibrary) table.dropColumn('has_library')
-    })
+    await this.db.rawQuery(`
+      alter table schools
+      drop column if exists has_electricity,
+      drop column if exists has_internet,
+      drop column if exists has_library
+    `)
   }
 }

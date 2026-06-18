@@ -78,7 +78,7 @@
               name="directorName"
               value="{{ directorFullName }}"
               required
-              placeholder="Jean MUKADI"
+              placeholder="Nom complet saisi lors de l'inscription"
               class="w-full px-3 py-2 border rounded-lg"
             />
           </div>
@@ -88,9 +88,9 @@
             <input
               type="tel"
               name="directorPhone"
-              value="{{ director?.phone || school.phone }}"
+              value="{{ directorPhone }}"
               required
-              placeholder="+243 XXX XXX XXX"
+              placeholder="Téléphone saisi lors de l'inscription"
               class="w-full px-3 py-2 border rounded-lg"
             />
           </div>
@@ -100,8 +100,9 @@
             <input
               type="email"
               name="directorEmail"
-              value="{{ director?.email || school.email }}"
+              value="{{ directorEmail }}"
               required
+              placeholder="Email saisi lors de l'inscription"
               class="w-full px-3 py-2 border rounded-lg"
             />
           </div>
@@ -125,12 +126,13 @@
               <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
               <span>Approuver et générer les identifiants</span>
             </button>
-            <a
-              href="/inspection/schools/{{ school.id }}/reject"
-              class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            <button
+              type="button"
+              onclick="rejectSchoolFromApproval()"
+              class="w-auto px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               Rejeter
-        </a>
+            </button>
           </div>
         </form>
       </div>
@@ -147,7 +149,7 @@
             Login
           </p>
           <p class="font-mono">
-            {{ director?.email || school.email }}
+            {{ directorEmail || '-' }}
           </p>
         </div>
         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
@@ -201,6 +203,31 @@
         } else {
           document.querySelector("form").submit();
         }
+      }
+
+      function rejectSchoolFromApproval() {
+        const reason = prompt("Raison du rejet (obligatoire):");
+        if (!reason) return;
+
+        fetch("/inspection/schools/{{ school.id }}/reject", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({ reason })
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              alert(data.message || "Demande rejetée");
+              window.location.href = "/inspection/schools/pending";
+              return;
+            }
+
+            alert("Erreur: " + (data.message || "Rejet impossible"));
+          });
       }
     </script>
   @endsection

@@ -1,6 +1,7 @@
 import { SchoolSchema } from '#database/schema'
 import { DateTime } from 'luxon'
-import { column, hasMany } from '@adonisjs/lucid/orm'
+import { randomUUID } from 'node:crypto'
+import { beforeCreate, column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 import Student from '#models/student'
@@ -32,6 +33,15 @@ export default class School extends SchoolSchema {
 
   @column()
   declare email: string
+
+  @column()
+  declare directorName: string | null
+
+  @column()
+  declare directorPhone: string | null
+
+  @column()
+  declare directorEmail: string | null
 
   @column()
   declare logoUrl: string
@@ -69,4 +79,9 @@ export default class School extends SchoolSchema {
 
   @hasMany(() => Class)
   declare classes: HasMany<typeof Class>
+
+  @beforeCreate()
+  public static assignId(school: School) {
+    school.id = school.id ?? randomUUID()
+  }
 }

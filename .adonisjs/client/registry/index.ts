@@ -30,6 +30,12 @@ const routes = {
     tokens: [{"old":"/welcome","type":0,"val":"welcome","end":""}],
     types: placeholder as Registry['welcome.landing']['types'],
   },
+  'welcome.testimonials.store': {
+    methods: ["POST"],
+    pattern: '/testimonials',
+    tokens: [{"old":"/testimonials","type":0,"val":"testimonials","end":""}],
+    types: placeholder as Registry['welcome.testimonials.store']['types'],
+  },
   'welcome.about': {
     methods: ["GET","HEAD"],
     pattern: '/welcome/about',
@@ -186,6 +192,12 @@ const routes = {
     tokens: [{"old":"/inspection/schools/:id/generate-credentials","type":0,"val":"inspection","end":""},{"old":"/inspection/schools/:id/generate-credentials","type":0,"val":"schools","end":""},{"old":"/inspection/schools/:id/generate-credentials","type":1,"val":"id","end":""},{"old":"/inspection/schools/:id/generate-credentials","type":0,"val":"generate-credentials","end":""}],
     types: placeholder as Registry['inspections.approve_and_generate_credentials']['types'],
   },
+  'inspections.reject_school_redirect': {
+    methods: ["GET","HEAD"],
+    pattern: '/inspection/schools/:id/reject',
+    tokens: [{"old":"/inspection/schools/:id/reject","type":0,"val":"inspection","end":""},{"old":"/inspection/schools/:id/reject","type":0,"val":"schools","end":""},{"old":"/inspection/schools/:id/reject","type":1,"val":"id","end":""},{"old":"/inspection/schools/:id/reject","type":0,"val":"reject","end":""}],
+    types: placeholder as Registry['inspections.reject_school_redirect']['types'],
+  },
   'inspections.reject_school': {
     methods: ["POST"],
     pattern: '/inspection/schools/:id/reject',
@@ -197,6 +209,12 @@ const routes = {
     pattern: '/inspection/schools/:id/toggle-suspend',
     tokens: [{"old":"/inspection/schools/:id/toggle-suspend","type":0,"val":"inspection","end":""},{"old":"/inspection/schools/:id/toggle-suspend","type":0,"val":"schools","end":""},{"old":"/inspection/schools/:id/toggle-suspend","type":1,"val":"id","end":""},{"old":"/inspection/schools/:id/toggle-suspend","type":0,"val":"toggle-suspend","end":""}],
     types: placeholder as Registry['inspections.toggle_suspend_school']['types'],
+  },
+  'inspections.inspection_teachers_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/inspection/teachers',
+    tokens: [{"old":"/inspection/teachers","type":0,"val":"inspection","end":""},{"old":"/inspection/teachers","type":0,"val":"teachers","end":""}],
+    types: placeholder as Registry['inspections.inspection_teachers_page']['types'],
   },
   'inspections.communications_global_page': {
     methods: ["GET","HEAD"],
@@ -696,6 +714,12 @@ const routes = {
     tokens: [{"old":"/profile/security","type":0,"val":"profile","end":""},{"old":"/profile/security","type":0,"val":"security","end":""}],
     types: placeholder as Registry['profile.security']['types'],
   },
+  'profile.change_password': {
+    methods: ["POST"],
+    pattern: '/profile/change-password',
+    tokens: [{"old":"/profile/change-password","type":0,"val":"profile","end":""},{"old":"/profile/change-password","type":0,"val":"change-password","end":""}],
+    types: placeholder as Registry['profile.change_password']['types'],
+  },
   'profile.preferences': {
     methods: ["GET","HEAD"],
     pattern: '/profile/preferences',
@@ -990,6 +1014,12 @@ const routes = {
     tokens: [{"old":"/schools/teachers/:id/schedule","type":0,"val":"schools","end":""},{"old":"/schools/teachers/:id/schedule","type":0,"val":"teachers","end":""},{"old":"/schools/teachers/:id/schedule","type":1,"val":"id","end":""},{"old":"/schools/teachers/:id/schedule","type":0,"val":"schedule","end":""}],
     types: placeholder as Registry['schools.teachers.schedule']['types'],
   },
+  'schools.teachers.update.post': {
+    methods: ["POST"],
+    pattern: '/schools/teachers/:id',
+    tokens: [{"old":"/schools/teachers/:id","type":0,"val":"schools","end":""},{"old":"/schools/teachers/:id","type":0,"val":"teachers","end":""},{"old":"/schools/teachers/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['schools.teachers.update.post']['types'],
+  },
   'schools.teachers.update': {
     methods: ["PUT"],
     pattern: '/schools/teachers/:id',
@@ -1001,6 +1031,12 @@ const routes = {
     pattern: '/schools/teachers/:id',
     tokens: [{"old":"/schools/teachers/:id","type":0,"val":"schools","end":""},{"old":"/schools/teachers/:id","type":0,"val":"teachers","end":""},{"old":"/schools/teachers/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['schools.teachers.destroy']['types'],
+  },
+  'api.teachers.reset_password': {
+    methods: ["POST"],
+    pattern: '/api/teachers/:id/reset-password',
+    tokens: [{"old":"/api/teachers/:id/reset-password","type":0,"val":"api","end":""},{"old":"/api/teachers/:id/reset-password","type":0,"val":"teachers","end":""},{"old":"/api/teachers/:id/reset-password","type":1,"val":"id","end":""},{"old":"/api/teachers/:id/reset-password","type":0,"val":"reset-password","end":""}],
+    types: placeholder as Registry['api.teachers.reset_password']['types'],
   },
   'discipline.dashboard': {
     methods: ["GET","HEAD"],

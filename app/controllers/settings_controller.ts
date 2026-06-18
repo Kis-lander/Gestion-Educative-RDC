@@ -114,8 +114,8 @@ export default class SettingsController {
 
     return {
       firstName: parts[0] || '',
-      postnom: parts.length > 2 ? parts.slice(1, -1).join(' ') : '',
-      lastName: parts.length > 1 ? parts[parts.length - 1] : '',
+      lastName: parts[1] || '',
+      postnom: parts.length > 2 ? parts.slice(2).join(' ') : '',
     }
   }
 
@@ -166,7 +166,7 @@ export default class SettingsController {
     const displayNameParts = displayName.split(/\s+/).filter(Boolean)
 
     if (displayName && displayNameParts.length < 3) {
-      session.flash('error', 'Le nom doit contenir trois parties : prénom, postnom et nom.')
+      session.flash('error', 'Le nom doit contenir trois parties : prénom, nom et postnom.')
       return response.redirect('/settings/general')
     }
 

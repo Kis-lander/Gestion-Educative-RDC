@@ -295,13 +295,8 @@
                   {{ inspection.report }}
                 </p>
                 @if(inspection.rating)
-                  <div class="flex items-center gap-1 mt-2">
-                    <span class="text-xs text-gray-500">Note:</span>
-                    <div class="flex">
-                      @for(i = 0; i < 5; i++)
-                        <i class=fas fa-star text-xs {{ i < inspection.rating ? 'text-yellow-500' : 'text-gray-300' }}></i>
-                      @endfor
-                    </div>
+                  <div class="mt-2 text-xs text-gray-500">
+                    Note: <span class="font-medium text-gray-700 dark:text-gray-300">{{ inspection.rating }}/10</span>
                   </div>
                 @endif
               </div>

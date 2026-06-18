@@ -1122,7 +1122,7 @@ export default class AcademicController {
       : '-'
     const parentName = parentRecord
       ? [
-          [parentRecord.firstName, parentRecord.postnom, parentRecord.lastName].filter(Boolean).join(' '),
+          [parentRecord.firstName, parentRecord.lastName, parentRecord.postnom].filter(Boolean).join(' '),
           parentRecord.relationship ? `(${parentRecord.relationship})` : '',
         ]
           .filter(Boolean)

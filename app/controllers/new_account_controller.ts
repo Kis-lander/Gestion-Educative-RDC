@@ -35,8 +35,8 @@ export default class NewAccountController {
 
     return {
       firstName: parts[0] || 'A completer',
-      postnom: parts.length > 2 ? parts.slice(1, -1).join(' ') : 'A completer',
-      lastName: parts.length > 1 ? parts[parts.length - 1] : 'A completer',
+      lastName: parts[1] || 'A completer',
+      postnom: parts.length > 2 ? parts.slice(2).join(' ') : 'A completer',
     }
   }
 
@@ -86,6 +86,7 @@ export default class NewAccountController {
       user.role = payload.role
       user.schoolId = payload.schoolId
       user.status = 'active'
+      user.mustChangePassword = true
 
       await user.save()
 
@@ -144,6 +145,7 @@ export default class NewAccountController {
               role: account.role,
               schoolId: payload.schoolId,
               status: 'active',
+              mustChangePassword: true,
             },
             { client: trx }
           )

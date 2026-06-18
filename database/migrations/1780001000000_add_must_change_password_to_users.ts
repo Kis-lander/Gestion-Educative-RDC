@@ -1,17 +1,17 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
-export default class AddPostnomToUsersTable extends BaseSchema {
+export default class AddMustChangePasswordToUsers extends BaseSchema {
   protected tableName = 'users'
 
   public async up() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.string('postnom', 100).nullable().after('last_name')
+      table.boolean('must_change_password').notNullable().defaultTo(false)
     })
   }
 
   public async down() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.dropColumn('postnom')
+      table.dropColumn('must_change_password')
     })
   }
 }

@@ -30,6 +30,28 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
+    const exception = error as { code?: string; status?: number }
+
+    if (exception.code === 'E_BAD_CSRF_TOKEN') {
+      const wantsJson =
+        String(ctx.request.header('accept') || '').includes('application/json') ||
+        String(ctx.request.header('content-type') || '').includes('application/json')
+
+      if (wantsJson) {
+        return ctx.response.status(419).send({
+          success: false,
+          message: 'Session expiree. Veuillez rafraichir la page puis reessayer.',
+        })
+      }
+
+      ctx.session.flash(
+        'error',
+        'Session expiree ou formulaire ouvert trop longtemps. Veuillez reessayer.'
+      )
+
+      return ctx.response.redirect().back()
+    }
+
     return super.handle(error, ctx)
   }
 

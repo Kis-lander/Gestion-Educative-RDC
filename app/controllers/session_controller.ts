@@ -21,12 +21,14 @@ export default class SessionController {
     return '/dashboard'
   }
 
-  public async create({ inertia, session }: HttpContext) {
+  public async create({ view, session }: HttpContext) {
     if (!session.get('locale')) {
       session.put('locale', await getDefaultAppLanguage())
     }
 
-    return inertia.render('auth/login', {})
+    return view.render('auth/login', {
+      appLanguage: session.get('locale'),
+    })
   }
 
   public async store({ auth, request, response, session }: HttpContext) {
@@ -44,6 +46,14 @@ export default class SessionController {
 
       user.lastLogin = DateTime.now()
       await user.save()
+
+      if (user.mustChangePassword) {
+        session.flash(
+          'success',
+          'Connexion reussie. Veuillez changer votre mot de passe temporaire.'
+        )
+        return response.redirect('/profile/security')
+      }
 
       session.flash('success', 'Connexion reussie')
       return response.redirect(this.getRedirectPath(user.role))

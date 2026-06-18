@@ -76,15 +76,19 @@
         <h3 class="font-semibold mb-4">
           Répartition géographique
         </h3>
-        <canvas id="geoChart" height="250">
-        </canvas>
+        <div class="relative min-h-72 w-full">
+          <canvas id="geoChart" height="288">
+          </canvas>
+        </div>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-4">
           Tendances démographiques
         </h3>
-        <canvas id="demographicsChart" height="250">
-        </canvas>
+        <div class="relative min-h-72 w-full">
+          <canvas id="demographicsChart" height="288">
+          </canvas>
+        </div>
       </div>
     </div>
 
@@ -282,7 +286,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false
           }
         });
         // Graphique démographique
@@ -312,6 +316,7 @@
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               legend: {
                 labels: {

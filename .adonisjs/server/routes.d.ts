@@ -8,6 +8,7 @@ export type ScannedRoutes = {
     'home': { paramsTuple?: []; params?: {} }
     'about': { paramsTuple?: []; params?: {} }
     'welcome.landing': { paramsTuple?: []; params?: {} }
+    'welcome.testimonials.store': { paramsTuple?: []; params?: {} }
     'welcome.about': { paramsTuple?: []; params?: {} }
     'welcome.features': { paramsTuple?: []; params?: {} }
     'welcome.contact': { paramsTuple?: []; params?: {} }
@@ -34,8 +35,10 @@ export type ScannedRoutes = {
     'inspections.school_details_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.approve_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.approve_and_generate_credentials': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reject_school_redirect': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.reject_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.toggle_suspend_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.inspection_teachers_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_global_page': { paramsTuple?: []; params?: {} }
     'inspection.communications.global.store': { paramsTuple?: []; params?: {} }
     'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
@@ -119,6 +122,7 @@ export type ScannedRoutes = {
     'profile': { paramsTuple?: []; params?: {} }
     'profile.edit': { paramsTuple?: []; params?: {} }
     'profile.security': { paramsTuple?: []; params?: {} }
+    'profile.change_password': { paramsTuple?: []; params?: {} }
     'profile.preferences': { paramsTuple?: []; params?: {} }
     'profile.preferences.update': { paramsTuple?: []; params?: {} }
     'profile.activity': { paramsTuple?: []; params?: {} }
@@ -168,8 +172,10 @@ export type ScannedRoutes = {
     'schools.teachers.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'schools.teachers.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'schools.teachers.schedule': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'schools.teachers.update.post': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'schools.teachers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'schools.teachers.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.teachers.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'discipline.dashboard': { paramsTuple?: []; params?: {} }
     'discipline.incidents.index': { paramsTuple?: []; params?: {} }
     'discipline.incidents.report': { paramsTuple?: []; params?: {} }
@@ -370,6 +376,8 @@ export type ScannedRoutes = {
     'inspections.inspect_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.school_details_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.approve_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reject_school_redirect': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.inspection_teachers_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_global_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
@@ -561,6 +569,8 @@ export type ScannedRoutes = {
     'inspections.inspect_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.school_details_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.approve_school_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.reject_school_redirect': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.inspection_teachers_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_global_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
@@ -728,6 +738,7 @@ export type ScannedRoutes = {
     'admin.get_user_activity_logs': { paramsTuple?: []; params?: {} }
   }
   POST: {
+    'welcome.testimonials.store': { paramsTuple?: []; params?: {} }
     'schools.register': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
@@ -763,6 +774,7 @@ export type ScannedRoutes = {
     'api.notifications.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'api.notifications.mark_all_read': { paramsTuple?: []; params?: {} }
     'api.teacher.attendance.store': { paramsTuple?: []; params?: {} }
+    'profile.change_password': { paramsTuple?: []; params?: {} }
     'profile.preferences.update': { paramsTuple?: []; params?: {} }
     'profile.avatar.update': { paramsTuple?: []; params?: {} }
     'academic.classes.seed_rdc_das': { paramsTuple?: []; params?: {} }
@@ -776,6 +788,8 @@ export type ScannedRoutes = {
     'schools.classes.store': { paramsTuple?: []; params?: {} }
     'schools.classes.update.post': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'schools.teachers.store': { paramsTuple?: []; params?: {} }
+    'schools.teachers.update.post': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.teachers.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'discipline.incidents.store': { paramsTuple?: []; params?: {} }
     'discipline.incidents.update.post': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'discipline.sanctions.apply.store': { paramsTuple?: []; params?: {} }

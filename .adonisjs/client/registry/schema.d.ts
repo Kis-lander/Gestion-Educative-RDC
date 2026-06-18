@@ -55,6 +55,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'welcome.testimonials.store': {
+    methods: ["POST"]
+    pattern: '/testimonials'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'welcome.about': {
     methods: ["GET","HEAD"]
     pattern: '/welcome/about'
@@ -367,6 +379,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['approveAndGenerateCredentials']>>>
     }
   }
+  'inspections.reject_school_redirect': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/schools/:id/reject'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['rejectSchoolRedirect']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['rejectSchoolRedirect']>>>
+    }
+  }
   'inspections.reject_school': {
     methods: ["POST"]
     pattern: '/inspection/schools/:id/reject'
@@ -389,6 +413,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['toggleSuspendSchool']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['toggleSuspendSchool']>>>
+    }
+  }
+  'inspections.inspection_teachers_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/teachers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['inspectionTeachersPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['inspectionTeachersPage']>>>
     }
   }
   'inspections.communications_global_page': {
@@ -1387,6 +1423,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['securityPage']>>>
     }
   }
+  'profile.change_password': {
+    methods: ["POST"]
+    pattern: '/profile/change-password'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/auth').changePasswordValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/auth').changePasswordValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['changePassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['changePassword']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'profile.preferences': {
     methods: ["GET","HEAD"]
     pattern: '/profile/preferences'
@@ -1947,8 +1995,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['showTeacherPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['showTeacherPage']>>>
     }
   }
   'schools.teachers.edit': {
@@ -1959,8 +2007,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['editTeacherPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['editTeacherPage']>>>
     }
   }
   'schools.teachers.schedule': {
@@ -1971,8 +2019,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['scheduleTeacherPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['scheduleTeacherPage']>>>
+    }
+  }
+  'schools.teachers.update.post': {
+    methods: ["POST"]
+    pattern: '/schools/teachers/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateTeacher']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateTeacher']>>>
     }
   }
   'schools.teachers.update': {
@@ -1983,8 +2043,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateTeacher']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateTeacher']>>>
     }
   }
   'schools.teachers.destroy': {
@@ -1995,8 +2055,20 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: unknown
-      errorResponse: unknown
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['deleteTeacher']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['deleteTeacher']>>>
+    }
+  }
+  'api.teachers.reset_password': {
+    methods: ["POST"]
+    pattern: '/api/teachers/:id/reset-password'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetTeacherPassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetTeacherPassword']>>>
     }
   }
   'discipline.dashboard': {

@@ -4,14 +4,10 @@ export default class AddSchoolOptionToStudents extends BaseSchema {
   protected tableName = 'students'
 
   public async up() {
-    this.schema.alterTable(this.tableName, (table) => {
-      table.string('school_option', 100).nullable()
-    })
+    await this.db.rawQuery(`alter table students add column if not exists school_option varchar(100)`)
   }
 
   public async down() {
-    this.schema.alterTable(this.tableName, (table) => {
-      table.dropColumn('school_option')
-    })
+    await this.db.rawQuery(`alter table students drop column if exists school_option`)
   }
 }

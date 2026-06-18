@@ -6,7 +6,7 @@
     <div class="flex gap-2">
       @if(pagination.currentPage > 1)
         <a
-          href="{{ url }}?page={{ pagination.currentPage - 1 }}"
+          href="{{ url }}{{ url.includes('?') ? '&' : '?' }}page={{ pagination.currentPage - 1 }}"
           class="px-3 py-1 border rounded hover:bg-gray-50 text-sm"
         >
           <i class="fas fa-chevron-left"></i>Précédent
@@ -19,7 +19,7 @@
 
       @if(pagination.currentPage < pagination.lastPage)
         <a
-          href="{{ url }}?page={{ pagination.currentPage + 1 }}"
+          href="{{ url }}{{ url.includes('?') ? '&' : '?' }}page={{ pagination.currentPage + 1 }}"
           class="px-3 py-1 border rounded hover:bg-gray-50 text-sm"
         >
           Suivant <i class="fas fa-chevron-right"></i>

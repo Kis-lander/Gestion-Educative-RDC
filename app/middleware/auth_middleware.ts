@@ -28,6 +28,29 @@ export default class SchoolRoleMiddleware {
       })
     }
 
+    const url = ctx.request.url()
+    const canChangeTemporaryPassword =
+      url.startsWith('/profile/security') ||
+      url.startsWith('/profile/change-password') ||
+      url.startsWith('/api/v1/change-password') ||
+      url.startsWith('/logout') ||
+      url.startsWith('/api/v1/logout')
+
+    if (user.mustChangePassword && !canChangeTemporaryPassword) {
+      const acceptsHtml = ctx.request.accepts(['html', 'json']) === 'html'
+
+      if (acceptsHtml && !url.startsWith('/api')) {
+        ctx.session.flash('error', 'Veuillez changer votre mot de passe temporaire pour continuer.')
+        return ctx.response.redirect('/profile/security')
+      }
+
+      return ctx.response.status(403).send({
+        success: false,
+        message: 'Mot de passe temporaire a changer avant de continuer.',
+        redirectTo: '/profile/security',
+      })
+    }
+
     return next()
   }
 }

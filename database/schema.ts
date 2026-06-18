@@ -406,6 +406,31 @@ export class ParentSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class PublicTestimonialSchema extends BaseModel {
+  static $columns = ['authorName', 'authorRole', 'content', 'createdAt', 'id', 'province', 'rating', 'schoolName', 'status', 'updatedAt'] as const
+  $columns = PublicTestimonialSchema.$columns
+  @column()
+  declare authorName: string
+  @column()
+  declare authorRole: string | null
+  @column()
+  declare content: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare province: string | null
+  @column()
+  declare rating: number
+  @column()
+  declare schoolName: string | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class RoleSchema extends BaseModel {
   static $columns = ['createdAt', 'description', 'id', 'name', 'permissions', 'updatedAt'] as const
   $columns = RoleSchema.$columns
@@ -476,7 +501,7 @@ export class SchoolInspectionSchema extends BaseModel {
 }
 
 export class SchoolSchema extends BaseModel {
-  static $columns = ['address', 'approvedAt', 'code', 'createdAt', 'email', 'hasElectricity', 'hasInternet', 'hasLibrary', 'id', 'logoUrl', 'name', 'phone', 'province', 'status', 'teacherId', 'territory', 'updatedAt'] as const
+  static $columns = ['address', 'approvedAt', 'code', 'createdAt', 'directorEmail', 'directorName', 'directorPhone', 'email', 'hasElectricity', 'hasInternet', 'hasLibrary', 'id', 'logoUrl', 'name', 'phone', 'province', 'status', 'teacherId', 'territory', 'updatedAt'] as const
   $columns = SchoolSchema.$columns
   @column()
   declare address: string
@@ -486,6 +511,12 @@ export class SchoolSchema extends BaseModel {
   declare code: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column()
+  declare directorEmail: string | null
+  @column()
+  declare directorName: string | null
+  @column()
+  declare directorPhone: string | null
   @column()
   declare email: string | null
   @column()
@@ -568,6 +599,27 @@ export class SubjectSchema extends BaseModel {
   declare id: string
   @column()
   declare name: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class TeacherEvaluationSchema extends BaseModel {
+  static $columns = ['comments', 'createdAt', 'evaluationDate', 'evaluatorId', 'id', 'score', 'teacherId', 'updatedAt'] as const
+  $columns = TeacherEvaluationSchema.$columns
+  @column()
+  declare comments: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.date()
+  declare evaluationDate: DateTime
+  @column()
+  declare evaluatorId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare score: number | null
+  @column()
+  declare teacherId: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
@@ -679,7 +731,7 @@ export class UserSettingSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['avatarUrl', 'createdAt', 'email', 'firstName', 'id', 'lastLogin', 'lastName', 'password', 'phone', 'postnom', 'preferredLanguage', 'rememberMeToken', 'role', 'schoolId', 'status', 'updatedAt'] as const
+  static $columns = ['avatarUrl', 'createdAt', 'email', 'firstName', 'id', 'lastLogin', 'lastName', 'mustChangePassword', 'password', 'phone', 'postnom', 'preferredLanguage', 'rememberMeToken', 'role', 'schoolId', 'status', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column()
   declare avatarUrl: string | null
@@ -695,6 +747,8 @@ export class UserSchema extends BaseModel {
   declare lastLogin: DateTime | null
   @column()
   declare lastName: string
+  @column()
+  declare mustChangePassword: boolean
   @column({ serializeAs: null })
   declare password: string
   @column()

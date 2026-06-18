@@ -143,8 +143,10 @@
         <h3 class="font-semibold mb-4">
           Répartition par province
         </h3>
-        <canvas id="provinceChart" height="250">
-        </canvas>
+        <div class="relative min-h-72 w-full">
+          <canvas id="provinceChart" height="288">
+          </canvas>
+        </div>
       </div>
 
       <!-- Évolution des inscriptions -->
@@ -152,8 +154,10 @@
         <h3 class="font-semibold mb-4">
           Évolution des inscriptions
         </h3>
-        <canvas id="trendChart" height="250">
-        </canvas>
+        <div class="relative min-h-72 w-full">
+          <canvas id="trendChart" height="288">
+          </canvas>
+        </div>
       </div>
     </div>
 
@@ -236,7 +240,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false
           }
         });
         // Graphique tendance
@@ -257,7 +261,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false
           }
         });
         // Tableau

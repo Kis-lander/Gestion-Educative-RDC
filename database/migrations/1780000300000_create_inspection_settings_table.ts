@@ -2,22 +2,18 @@ import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class CreateInspectionSettingsTable extends BaseSchema {
   public async up() {
-    const exists = await this.schema.hasTable('inspection_settings')
-
-    if (exists) return
-
-    this.schema.createTable('inspection_settings', (table) => {
-      table.string('key').primary()
-      table.string('group').notNullable()
-      table.text('value').nullable()
-      table.timestamp('created_at')
-      table.timestamp('updated_at')
-    })
+    await this.db.rawQuery(`
+      create table if not exists inspection_settings (
+        key varchar(255) primary key,
+        "group" varchar(255) not null,
+        value text null,
+        created_at timestamptz,
+        updated_at timestamptz
+      )
+    `)
   }
 
   public async down() {
-    const exists = await this.schema.hasTable('inspection_settings')
-
-    if (exists) this.schema.dropTable('inspection_settings')
+    await this.db.rawQuery(`drop table if exists inspection_settings`)
   }
 }

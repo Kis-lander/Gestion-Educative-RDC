@@ -73,11 +73,11 @@
     <!-- Enseignants -->
     @if(['director', 'inspection'].includes(auth?.user?.role))
       <a
-        href="/teachers"
+        href="{{ auth?.user?.role === 'inspection' ? '/inspection/teachers' : '/teachers' }}"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-        :class="linkClass(['/teachers', '/schools/teachers'])"
+        :class="linkClass(['/teachers', '/schools/teachers', '/inspection/teachers'])"
       >
-        <i class="fas fa-chalkboard-user w-5" :class="iconClass(['/teachers', '/schools/teachers'])"></i>
+        <i class="fas fa-chalkboard-user w-5" :class="iconClass(['/teachers', '/schools/teachers', '/inspection/teachers'])"></i>
         <span x-show="sidebarOpen">Enseignants</span>
       </a>
     @endif

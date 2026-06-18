@@ -128,8 +128,8 @@ export default class InspectionController {
 
     return {
       firstName: parts[0] || 'Directeur',
-      postnom: parts.length > 2 ? parts.slice(1, -1).join(' ') : 'A completer',
-      lastName: parts.length > 1 ? parts[parts.length - 1] : 'Directeur',
+      lastName: parts[1] || 'Directeur',
+      postnom: parts.length > 2 ? parts.slice(2).join(' ') : 'A completer',
     }
   }
 
@@ -209,9 +209,10 @@ export default class InspectionController {
 
         return {
           ...school.serialize(),
-          directorName: director ? `${director.first_name} ${director.last_name}`.trim() : null,
-          directorPhone: director?.phone ?? null,
-          directorEmail: director?.email ?? null,
+          directorName:
+            director ? `${director.first_name} ${director.last_name}`.trim() : school.directorName,
+          directorPhone: director?.phone ?? school.directorPhone,
+          directorEmail: director?.email ?? school.directorEmail,
         }
       }),
       pagination: this.getPaginationMeta(paginator),
@@ -226,7 +227,7 @@ export default class InspectionController {
       .where('role', 'director')
       .first()
 
-    const [students, teachers, classesCount, averageGrade, classes] = await Promise.all([
+    const [students, teachers, classesCount, averageGrade, classes, inspections] = await Promise.all([
       db
         .from('students')
         .where('school_id', school.id)
@@ -242,6 +243,12 @@ export default class InspectionController {
         .avg('grades.score as average')
         .first(),
       db.from('classes').where('school_id', school.id).limit(10),
+      db
+        .from('school_inspections')
+        .where('school_id', school.id)
+        .orderBy('inspection_date', 'desc')
+        .orderBy('created_at', 'desc')
+        .limit(10),
     ])
     const classIds = classes.map((classObj) => classObj.id)
     const studentRows = classIds.length
@@ -261,6 +268,17 @@ export default class InspectionController {
       studentsCount: studentsByClass.get(String(classObj.id)) || 0,
     }))
 
+    const inspectionHistory = inspections.map((inspection) => ({
+      date: DateTime.fromJSDate(new Date(inspection.inspection_date)).toFormat('dd/MM/yyyy'),
+      inspector: inspection.inspector,
+      report: inspection.report,
+      rating: inspection.rating,
+      recommendations: inspection.recommendations,
+      followUpDate: inspection.follow_up_date
+        ? DateTime.fromJSDate(new Date(inspection.follow_up_date)).toFormat('dd/MM/yyyy')
+        : null,
+    }))
+
     return view.render('inspection/schools/show', {
       school,
       director,
@@ -271,7 +289,7 @@ export default class InspectionController {
         averageGrade: Number(averageGrade?.average || 0).toFixed(1),
       },
       classes: classesWithCounts,
-      inspections: [],
+      inspections: inspectionHistory,
     })
   }
 
@@ -375,15 +393,22 @@ export default class InspectionController {
 
   public async approveSchoolPage({ params, view }: HttpContext) {
     const school = await School.findOrFail(params.id)
-    const director = await User.query()
+    const director = await db
+      .from('users')
+      .select('id', 'first_name', 'postnom', 'last_name', 'phone', 'email')
       .where('school_id', school.id)
       .where('role', 'director')
       .first()
+    const directorFullName = director
+      ? [director.first_name, director.last_name, director.postnom].filter(Boolean).join(' ')
+      : String(school.$extras?.director_name || school.directorName || '')
 
     return view.render('inspection/schools/approve', {
       school,
       director,
-      directorFullName: director?.fullName || `Directeur A completer ${school.name}`,
+      directorFullName,
+      directorPhone: director?.phone || school.$extras?.director_phone || school.directorPhone || '',
+      directorEmail: director?.email || school.$extras?.director_email || school.directorEmail || '',
     })
   }
 
@@ -396,9 +421,15 @@ export default class InspectionController {
     view,
   }: HttpContext) {
     let school = await School.findOrFail(params.id)
-    const email = String(request.input('directorEmail', school.email)).trim().toLowerCase()
-    const directorFullName = String(request.input('directorName', `Directeur ${school.name}`)).trim()
-    const directorPhone = String(request.input('directorPhone', school.phone)).trim()
+    const email = String(request.input('directorEmail', school.directorEmail || school.email))
+      .trim()
+      .toLowerCase()
+    const directorFullName = String(
+      request.input('directorName', school.directorName || `Directeur ${school.name}`)
+    ).trim()
+    const directorPhone = String(
+      request.input('directorPhone', school.directorPhone || school.phone)
+    ).trim()
     const tempPassword = randomBytes(8).toString('hex')
     let director = await User.query()
       .where('school_id', school.id)
@@ -441,6 +472,9 @@ export default class InspectionController {
         .update({
           status: 'active',
           approved_at: approvedAt.toSQL(),
+          director_name: directorFullName,
+          director_phone: directorPhone,
+          director_email: email,
           updated_at: new Date(),
         })
 
@@ -458,6 +492,7 @@ export default class InspectionController {
       director.role = 'director'
       director.password = tempPassword
       director.status = 'active'
+      director.mustChangePassword = true
       await director.save()
     })
 
@@ -468,7 +503,7 @@ export default class InspectionController {
       password: tempPassword,
       schoolCode: school.code,
       schoolName: school.name,
-      directorName: director?.fullName || [directorName.firstName, directorName.postnom, directorName.lastName].join(' '),
+      directorName: director?.fullName || [directorName.firstName, directorName.lastName, directorName.postnom].join(' '),
       approvedAt:
         school.approvedAt?.toFormat('dd/MM/yyyy HH:mm') ??
         DateTime.now().toFormat('dd/MM/yyyy HH:mm'),
@@ -512,10 +547,35 @@ export default class InspectionController {
     })
   }
 
-  public async rejectSchool({ request, params, response }: HttpContext) {
+  public async rejectSchoolRedirect({ params, response, session }: HttpContext) {
+    session.flash('error', 'Veuillez confirmer le rejet depuis le bouton prévu.')
+    return response.redirect(`/inspection/schools/${params.id}/approve`)
+  }
+
+  public async rejectSchool({ request, params, response, session }: HttpContext) {
     const school = await School.findOrFail(params.id)
-    school.status = 'suspended'
-    await school.save()
+    const reason = String(request.input('reason', '')).trim()
+
+    await db.transaction(async (trx) => {
+      await trx.from('users').where('school_id', school.id).delete()
+      await trx.from('schools').where('id', school.id).delete()
+    })
+
+    const message = reason ? 'Demande rejetée et supprimée' : 'Demande supprimée'
+
+    const wantsJson =
+      String(request.header('accept') || '').includes('application/json') ||
+      String(request.header('content-type') || '').includes('application/json')
+
+    if (wantsJson) {
+      return response.ok({
+        success: true,
+        message,
+      })
+    }
+
+    session.flash('success', message)
+    return response.redirect('/inspection/schools/pending')
 
     return response.ok({
       success: true,
@@ -989,6 +1049,83 @@ export default class InspectionController {
         qualified: 0,
         subjectsCount: 0,
         totalHours: 0,
+      },
+    })
+  }
+
+  public async inspectionTeachersPage({ request, view }: HttpContext) {
+    const page = Number(request.input('page', 1))
+    const status = request.input('status')
+    const province = request.input('province')
+    const schoolId = request.input('school_id')
+    const search = String(request.input('search', '')).trim()
+
+    const query = Teacher.query()
+      .preload('user')
+      .preload('school')
+      .if(status, (teacherQuery) => teacherQuery.where('status', status))
+      .if(schoolId, (teacherQuery) => teacherQuery.where('schoolId', schoolId))
+      .if(province, (teacherQuery) => {
+        teacherQuery.whereHas('school', (schoolQuery) => schoolQuery.where('province', province))
+      })
+      .if(search, (teacherQuery) => {
+        teacherQuery.where((searchQuery) => {
+          searchQuery
+            .whereILike('employeeNumber', `%${search}%`)
+            .orWhereILike('qualification', `%${search}%`)
+            .orWhereILike('specialization', `%${search}%`)
+            .orWhereHas('user', (userQuery) => {
+              userQuery
+                .whereILike('firstName', `%${search}%`)
+                .orWhereILike('postnom', `%${search}%`)
+                .orWhereILike('lastName', `%${search}%`)
+                .orWhereILike('email', `%${search}%`)
+            })
+            .orWhereHas('school', (schoolQuery) => {
+              schoolQuery.whereILike('name', `%${search}%`).orWhereILike('code', `%${search}%`)
+            })
+        })
+      })
+      .orderBy('createdAt', 'desc')
+
+    const paginator = await query.paginate(page, 20)
+    const [total, active, onLeave, schools, provinces] = await Promise.all([
+      Teacher.query().count('* as total').first(),
+      Teacher.query().where('status', 'active').count('* as total').first(),
+      Teacher.query().where('status', 'on_leave').count('* as total').first(),
+      School.query().orderBy('name', 'asc'),
+      db.from('schools').whereNotNull('province').distinct('province').orderBy('province', 'asc'),
+    ])
+
+    const queryParams = new URLSearchParams()
+    if (status) queryParams.set('status', String(status))
+    if (province) queryParams.set('province', String(province))
+    if (schoolId) queryParams.set('school_id', String(schoolId))
+    if (search) queryParams.set('search', search)
+
+    return view.render('inspection/teachers/index', {
+      teachers: paginator.all().map((teacher) => ({
+        ...teacher.serialize(),
+        user: teacher.user,
+        school: teacher.school,
+      })),
+      pagination: this.getPaginationMeta(paginator),
+      url: queryParams.size
+        ? `/inspection/teachers?${queryParams.toString()}`
+        : '/inspection/teachers',
+      filters: {
+        status,
+        province,
+        schoolId,
+        search,
+      },
+      schools,
+      provinces: provinces.map((row) => row.province).filter(Boolean),
+      stats: {
+        total: Number(total?.$extras.total || 0),
+        active: Number(active?.$extras.total || 0),
+        onLeave: Number(onLeave?.$extras.total || 0),
+        schools: schools.length,
       },
     })
   }

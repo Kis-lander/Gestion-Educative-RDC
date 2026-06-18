@@ -285,6 +285,7 @@ export default class StudentController {
       studentUser.password = tempPassword
       studentUser.role = 'student'
       studentUser.status = 'active'
+      studentUser.mustChangePassword = true
       await studentUser.save()
 
       const student = new Student()

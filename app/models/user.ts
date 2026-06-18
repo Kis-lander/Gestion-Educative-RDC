@@ -26,10 +26,10 @@ export default class User extends UserSchema {
   declare firstName: string
 
   @column()
-  declare postnom: string
+  declare lastName: string
 
   @column()
-  declare lastName: string
+  declare postnom: string
 
   @column()
   declare phone: string | null
@@ -39,6 +39,9 @@ export default class User extends UserSchema {
 
   @column()
   declare preferredLanguage: string
+
+  @column()
+  declare mustChangePassword: boolean
 
   @column()
   declare role:
@@ -99,25 +102,25 @@ export default class User extends UserSchema {
    */
   @computed()
   public get fullName(): string {
-    return [this.firstName, this.postnom, this.lastName].filter(Boolean).join(' ')
+    return [this.firstName, this.lastName, this.postnom].filter(Boolean).join(' ')
   }
 
   private normalizeThreePartName() {
     const fallback = 'A completer'
-    const parts = [this.firstName, this.postnom, this.lastName]
+    const parts = [this.firstName, this.lastName, this.postnom]
       .flatMap((value) => String(value || '').trim().split(/\s+/))
       .filter(Boolean)
 
     if (parts.length >= 3) {
       this.firstName = parts[0]
-      this.postnom = parts.slice(1, -1).join(' ')
-      this.lastName = parts[parts.length - 1]
+      this.lastName = parts[1]
+      this.postnom = parts.slice(2).join(' ')
       return
     }
 
     this.firstName = parts[0] || fallback
-    this.postnom = parts[1] || fallback
-    this.lastName = parts[2] || fallback
+    this.lastName = parts[1] || fallback
+    this.postnom = parts[2] || fallback
   }
 
   public hasRole(role: string | string[]): boolean {

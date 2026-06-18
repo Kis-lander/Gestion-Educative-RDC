@@ -107,7 +107,7 @@ export default class TeacherController {
           if (!studentsById.has(studentId)) {
             studentsById.set(studentId, {
               id: studentId,
-              name: [row.first_name, row.postnom, row.last_name].filter(Boolean).join(' '),
+              name: [row.first_name, row.last_name, row.postnom].filter(Boolean).join(' '),
               registrationNumber: row.registration_number,
               present: 0,
               absent: 0,

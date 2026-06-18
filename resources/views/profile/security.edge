@@ -160,10 +160,11 @@
 
         @if(!twoFactorEnabled)
           <button
-            onclick="setupTwoFactor()"
-            class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+            type="button"
+            disabled
+            class="w-full px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed"
           >
-            <i class="fas fa-qrcode mr-2"></i>Activer la 2FA
+            <i class="fas fa-qrcode mr-2"></i>2FA bientÃ´t disponible
     </button>
         @else
           <button
@@ -267,7 +268,7 @@
 
     <script>
       function setupTwoFactor() {
-        window.location.href = "/profile/2fa/setup";
+        alert("L'authentification Ã  deux facteurs n'est pas encore disponible.");
       }
 
       function disableTwoFactor() {

@@ -546,6 +546,7 @@ export default class AuthController {
         throw new Error('Invalid credentials')
       }
 
+      const mustChangePassword = user.mustChangePassword
       await auth.use('web').login(user)
 
       user.lastLogin = DateTime.now()
@@ -555,6 +556,8 @@ export default class AuthController {
       return response.ok({
         success: true,
         message: 'Connexion reussie',
+        mustChangePassword,
+        redirectTo: mustChangePassword ? '/profile/security' : null,
         user: {
           id: user.id,
           email: user.email,
@@ -623,10 +626,29 @@ export default class AuthController {
     }
 
     if ((payload.purpose ?? 'login') === 'login') {
+      const mustChangePassword = result.user.mustChangePassword
       await auth.use('web').login(result.user)
       result.user.lastLogin = DateTime.now()
       await result.user.save()
       await result.user.load('school')
+
+      return response.ok({
+        success: true,
+        message: 'Code verifie avec succes',
+        mustChangePassword,
+        redirectTo: mustChangePassword ? '/profile/security' : null,
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          fullName: result.user.fullName,
+          role: result.user.role,
+          schoolId: result.user.schoolId,
+          schoolName: result.user.school?.name,
+          avatarUrl: result.user.avatarUrl,
+        },
+      })
     }
 
     return response.ok({
@@ -649,12 +671,18 @@ export default class AuthController {
   /**
    * Changer le mot de passe.
    */
-  public async changePassword({ request, auth, response }: HttpContext) {
+  public async changePassword({ request, auth, response, session }: HttpContext) {
     const { currentPassword, newPassword } = await request.validateUsing(changePasswordValidator)
     const user = auth.getUserOrFail()
+    const wantsHtml = String(request.header('accept') || '').includes('text/html')
 
     const isValidPassword = await hash.verify(user.password, currentPassword)
     if (!isValidPassword) {
+      if (wantsHtml) {
+        session.flash('error', 'Mot de passe actuel incorrect')
+        return response.redirect().back()
+      }
+
       return response.badRequest({
         success: false,
         message: 'Mot de passe actuel incorrect',
@@ -662,7 +690,13 @@ export default class AuthController {
     }
 
     user.password = newPassword
+    user.mustChangePassword = false
     await user.save()
+
+    if (wantsHtml) {
+      session.flash('success', 'Mot de passe change avec succes')
+      return response.redirect('/profile/security')
+    }
 
     return response.ok({
       success: true,
@@ -831,6 +865,7 @@ export default class AuthController {
     director.email = `${login}@gestion-educative.cd`.toLowerCase()
     director.password = tempPassword
     director.status = 'active'
+    director.mustChangePassword = true
     await director.save()
 
     return response.created({

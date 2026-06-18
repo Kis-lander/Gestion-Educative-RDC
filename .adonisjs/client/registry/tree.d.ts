@@ -5,6 +5,9 @@ export interface ApiDefinition {
   welcome: {
     index: typeof routes['welcome.index']
     landing: typeof routes['welcome.landing']
+    testimonials: {
+      store: typeof routes['welcome.testimonials.store']
+    }
     about: typeof routes['welcome.about']
     features: typeof routes['welcome.features']
     contact: typeof routes['welcome.contact']
@@ -47,7 +50,9 @@ export interface ApiDefinition {
       show: typeof routes['schools.teachers.show']
       edit: typeof routes['schools.teachers.edit']
       schedule: typeof routes['schools.teachers.schedule']
-      update: typeof routes['schools.teachers.update']
+      update: typeof routes['schools.teachers.update'] & {
+        post: typeof routes['schools.teachers.update.post']
+      }
       destroy: typeof routes['schools.teachers.destroy']
     }
     profile: {
@@ -125,8 +130,10 @@ export interface ApiDefinition {
     schoolDetailsPage: typeof routes['inspections.school_details_page']
     approveSchoolPage: typeof routes['inspections.approve_school_page']
     approveAndGenerateCredentials: typeof routes['inspections.approve_and_generate_credentials']
+    rejectSchoolRedirect: typeof routes['inspections.reject_school_redirect']
     rejectSchool: typeof routes['inspections.reject_school']
     toggleSuspendSchool: typeof routes['inspections.toggle_suspend_school']
+    inspectionTeachersPage: typeof routes['inspections.inspection_teachers_page']
     communicationsGlobalPage: typeof routes['inspections.communications_global_page']
     communicationsSchoolPage: typeof routes['inspections.communications_school_page']
     communicationsHistoryPage: typeof routes['inspections.communications_history_page']
@@ -246,11 +253,13 @@ export interface ApiDefinition {
     }
     teachers: {
       availableSlots: typeof routes['api.teachers.available_slots']
+      resetPassword: typeof routes['api.teachers.reset_password']
     }
   }
   profile: typeof routes['profile'] & {
     edit: typeof routes['profile.edit']
     security: typeof routes['profile.security']
+    changePassword: typeof routes['profile.change_password']
     preferences: typeof routes['profile.preferences'] & {
       update: typeof routes['profile.preferences.update']
     }

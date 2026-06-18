@@ -125,6 +125,14 @@
       .welcome-hero > div {
         z-index: 1;
       }
+
+      .testimonial-form-toggle summary {
+        list-style: none;
+      }
+
+      .testimonial-form-toggle summary::-webkit-details-marker {
+        display: none;
+      }
     </style>
   </head>
   <body class="antialiased bg-gray-50 text-gray-900">
@@ -287,50 +295,191 @@
       </div>
     </div>
 
-    <!-- Témoignages -->
-    <div class="py-16 bg-white dark:bg-gray-800 scroll-reveal">
+    <!-- Temoignages -->
+    <div id="testimonials" class="py-16 bg-white dark:bg-gray-800 scroll-reveal">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
             Ils nous font confiance
           </h2>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">
+            Des avis partagés par les écoles et les acteurs pédagogiques.
+          </p>
         </div>
+
+        @if(testimonialSubmitted)
+          <div class="max-w-3xl mx-auto mb-8 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+            Merci, votre commentaire est maintenant publié.
+          </div>
+        @endif
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 scroll-reveal">
-            <div class="flex items-center gap-2 text-yellow-500 mb-3">
-              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>
-            </div>
-            <p class="text-gray-700 dark:text-gray-300">
-              "La plateforme a révolutionné la gestion de notre école. Les fonctionnalités sont complètes et le support est réactif."
-            </p>
-            <div class="mt-4">
-              <p class="font-semibold">
-                Jean Mukadi
+          @each(testimonial in testimonials)
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 scroll-reveal">
+              <div class="flex items-center gap-2 mb-3" aria-label="{{ testimonial.rating }} sur 5">
+                <i class="fas fa-star {{ testimonial.rating >= 1 ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+                <i class="fas fa-star {{ testimonial.rating >= 2 ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+                <i class="fas fa-star {{ testimonial.rating >= 3 ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+                <i class="fas fa-star {{ testimonial.rating >= 4 ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+                <i class="fas fa-star {{ testimonial.rating >= 5 ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+              </div>
+              <p class="text-gray-700 dark:text-gray-300">
+                "{{ testimonial.content }}"
               </p>
-              <p class="text-sm text-gray-500">
-                Directeur, Collège Saint Joseph - Kinshasa
-              </p>
+              <div class="mt-4">
+                <p class="font-semibold">
+                  {{ testimonial.authorName }}
+                </p>
+                @if(testimonial.roleLabel)
+                  <p class="text-sm text-gray-500">
+                    {{ testimonial.roleLabel }}
+                  </p>
+                @endif
+              </div>
             </div>
-          </div>
-
-          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 scroll-reveal">
-            <div class="flex items-center gap-2 text-yellow-500 mb-3">
-              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>              <i class="fas fa-star"></i>
-            </div>
-            <p class="text-gray-700 dark:text-gray-300">
-              "Un outil indispensable pour l'inspection pédagogique. Le suivi des écoles est désormais transparent et efficace."
-            </p>
-            <div class="mt-4">
-              <p class="font-semibold">
-                Marie Tshibanda
-              </p>
-              <p class="text-sm text-gray-500">
-                Inspectrice, Province du Haut-Katanga
-              </p>
-            </div>
-          </div>
+          @end
         </div>
+
+        <details class="testimonial-form-toggle mt-10 text-center scroll-reveal">
+          <summary class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-primary px-5 py-2.5 font-semibold text-white hover:bg-blue-700 transition">
+            <i class="fas fa-comment-dots mr-2"></i>Partager mon avis
+          </summary>
+
+          <form action="/testimonials" method="POST" class="mt-6 max-w-3xl mx-auto text-left bg-gray-900 text-white rounded-xl p-6">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+            <div class="hidden">
+              <label>
+                Site web
+                <input type="text" name="website" tabindex="-1" autocomplete="off" />
+              </label>
+            </div>
+
+            <h3 class="text-2xl font-bold">
+              Partagez votre expérience
+            </h3>
+            <p class="text-gray-300 mt-2">
+              Votre commentaire apparaîtra dans cette section pour aider d'autres établissements.
+            </p>
+
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="testimonial-author-name" class="block text-sm font-semibold mb-2">
+                  Votre nom *
+                </label>
+                <input
+                  id="testimonial-author-name"
+                  name="author_name"
+                  type="text"
+                  required
+                  maxlength="120"
+                  class="w-full rounded-lg border border-white/20 bg-white px-3 py-2 text-gray-900"
+                />
+              </div>
+              <div>
+                <label for="testimonial-author-role" class="block text-sm font-semibold mb-2">
+                  Fonction
+                </label>
+                <input
+                  id="testimonial-author-role"
+                  name="author_role"
+                  type="text"
+                  maxlength="120"
+                  placeholder="Directeur, inspectrice..."
+                  class="w-full rounded-lg border border-white/20 bg-white px-3 py-2 text-gray-900"
+                />
+              </div>
+              <div>
+                <label for="testimonial-school-name" class="block text-sm font-semibold mb-2">
+                  École ou structure
+                </label>
+                <input
+                  id="testimonial-school-name"
+                  name="school_name"
+                  type="text"
+                  maxlength="160"
+                  class="w-full rounded-lg border border-white/20 bg-white px-3 py-2 text-gray-900"
+                />
+              </div>
+              <div>
+                <label for="testimonial-province" class="block text-sm font-semibold mb-2">
+                  Province
+                </label>
+                <select
+                  id="testimonial-province"
+                  name="province"
+                  class="w-full rounded-lg border border-white/20 bg-white px-3 py-2 text-gray-900"
+                >
+                  <option value="">Sélectionner une province</option>
+                  <option value="Bas-Uele">Bas-Uele</option>
+                  <option value="Équateur">Équateur</option>
+                  <option value="Haut-Katanga">Haut-Katanga</option>
+                  <option value="Haut-Lomami">Haut-Lomami</option>
+                  <option value="Haut-Uele">Haut-Uele</option>
+                  <option value="Ituri">Ituri</option>
+                  <option value="Kasaï">Kasaï</option>
+                  <option value="Kasaï-Central">Kasaï-Central</option>
+                  <option value="Kasaï-Oriental">Kasaï-Oriental</option>
+                  <option value="Kinshasa">Kinshasa</option>
+                  <option value="Kongo Central">Kongo Central</option>
+                  <option value="Kwango">Kwango</option>
+                  <option value="Kwilu">Kwilu</option>
+                  <option value="Lomami">Lomami</option>
+                  <option value="Lualaba">Lualaba</option>
+                  <option value="Mai-Ndombe">Mai-Ndombe</option>
+                  <option value="Maniema">Maniema</option>
+                  <option value="Mongala">Mongala</option>
+                  <option value="Nord-Kivu">Nord-Kivu</option>
+                  <option value="Nord-Ubangi">Nord-Ubangi</option>
+                  <option value="Sankuru">Sankuru</option>
+                  <option value="Sud-Kivu">Sud-Kivu</option>
+                  <option value="Sud-Ubangi">Sud-Ubangi</option>
+                  <option value="Tanganyika">Tanganyika</option>
+                  <option value="Tshopo">Tshopo</option>
+                  <option value="Tshuapa">Tshuapa</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <label for="testimonial-rating" class="block text-sm font-semibold mb-2">
+                Note
+              </label>
+              <select
+                id="testimonial-rating"
+                name="rating"
+                class="w-full rounded-lg border border-white/20 bg-white px-3 py-2 text-gray-900"
+              >
+                <option value="5">5 étoiles</option>
+                <option value="4">4 étoiles</option>
+                <option value="3">3 étoiles</option>
+                <option value="2">2 étoiles</option>
+                <option value="1">1 étoile</option>
+              </select>
+            </div>
+
+            <div class="mt-4">
+              <label for="testimonial-content" class="block text-sm font-semibold mb-2">
+                Commentaire *
+              </label>
+              <textarea
+                id="testimonial-content"
+                name="content"
+                required
+                minlength="10"
+                maxlength="600"
+                rows="5"
+                class="w-full rounded-lg border border-white/20 bg-white px-3 py-2 text-gray-900"
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              class="mt-5 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 font-semibold text-white hover:bg-blue-700 transition"
+            >
+              <i class="fas fa-paper-plane mr-2"></i>Publier mon avis
+            </button>
+          </form>
+        </details>
       </div>
     </div>
 

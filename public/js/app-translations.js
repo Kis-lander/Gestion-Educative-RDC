@@ -1168,6 +1168,114 @@
     Object.assign(dictionaries[language], translations)
   })
 
+  const inspectionTeachersPageExtensions = {
+    en: {
+      'Enseignants - Inspection pédagogique RDC': 'Teachers - Pedagogical Inspection DRC',
+      'Consultation du corps enseignant rattaché aux établissements suivis': 'View teaching staff attached to monitored schools',
+      'Total enseignants': 'Total teachers',
+      'Actifs': 'Active',
+      'En congé': 'On leave',
+      'Écoles référencées': 'Referenced schools',
+      'Statut': 'Status',
+      'Tous': 'All',
+      'Terminé': 'Terminated',
+      'Province': 'Province',
+      'École': 'School',
+      'Recherche': 'Search',
+      'Nom, matricule, école...': 'Name, employee number, school...',
+      'Enseignant': 'Teacher',
+      'Qualification': 'Qualification',
+      'Spécialisation': 'Specialization',
+      'Actif': 'Active',
+      "Voir l'école": 'View school',
+      'Aucun enseignant trouvé': 'No teacher found',
+    },
+    ln: {
+      'Enseignants - Inspection pédagogique RDC': 'Balakisi - Botali ya mateya RDC',
+      'Consultation du corps enseignant rattaché aux établissements suivis': 'Botali ya balakisi ya biteyelo oyo ezali kolandama',
+      'Total enseignants': 'Balakisi nyonso',
+      'Actifs': 'Bazali kosala',
+      'En congé': 'Na konje',
+      'Écoles référencées': 'Biteyelo ekomisami',
+      'Statut': 'Ezaleli',
+      'Tous': 'Nyonso',
+      'Terminé': 'Esili',
+      'Province': 'Provinsi',
+      'École': 'Eteyelo',
+      'Recherche': 'Boluki',
+      'Nom, matricule, école...': 'Nkombo, nimero, eteyelo...',
+      'Enseignant': 'Molakisi',
+      'Qualification': 'Diplome',
+      'Spécialisation': 'Mayele ya mosala',
+      'Actif': 'Azali kosala',
+      "Voir l'école": 'Tala eteyelo',
+      'Aucun enseignant trouvé': 'Molakisi moko te amonani',
+    },
+    sw: {
+      'Enseignants - Inspection pédagogique RDC': 'Walimu - Ukaguzi wa Elimu RDC',
+      'Consultation du corps enseignant rattaché aux établissements suivis': 'Kuangalia walimu waliounganishwa na shule zinazofuatiliwa',
+      'Total enseignants': 'Jumla ya walimu',
+      'Actifs': 'Hai',
+      'En congé': 'Likizoni',
+      'Écoles référencées': 'Shule zilizorejelewa',
+      'Statut': 'Hali',
+      'Tous': 'Wote',
+      'Terminé': 'Imesitishwa',
+      'Province': 'Mkoa',
+      'École': 'Shule',
+      'Recherche': 'Tafuta',
+      'Nom, matricule, école...': 'Jina, nambari, shule...',
+      'Enseignant': 'Mwalimu',
+      'Qualification': 'Sifa',
+      'Spécialisation': 'Utaalamu',
+      'Actif': 'Hai',
+      "Voir l'école": 'Angalia shule',
+      'Aucun enseignant trouvé': 'Hakuna mwalimu aliyepatikana',
+    },
+    kg: {
+      'Enseignants - Inspection pédagogique RDC': 'Balongi - Kutala malongi RDC',
+      'Consultation du corps enseignant rattaché aux établissements suivis': 'Kutala balongi ya masukulu yina ke landama',
+      'Total enseignants': 'Balongi nyonso',
+      'Actifs': 'Ke sala',
+      'En congé': 'Na konje',
+      'Écoles référencées': 'Masukulu masonamene',
+      'Statut': 'Kifwani',
+      'Tous': 'Yonso',
+      'Terminé': 'Manaka',
+      'Province': 'Provinsi',
+      'École': 'Sukulu',
+      'Recherche': 'Sosa',
+      'Nom, matricule, école...': 'Nkumbu, nimero, sukulu...',
+      'Enseignant': 'Longi',
+      'Qualification': 'Diplome',
+      'Spécialisation': 'Mayele ya kisalu',
+      'Actif': 'Ke sala',
+      "Voir l'école": 'Tala sukulu',
+      'Aucun enseignant trouvé': 'Longi moko ve monanaka',
+    },
+    lua: {
+      'Enseignants - Inspection pédagogique RDC': 'Balongeshi - Kutala malonga RDC',
+      'Consultation du corps enseignant rattaché aux établissements suivis': 'Kutala balongeshi ba mashikola adi alongolola',
+      'Total enseignants': 'Balongeshi bonso',
+      'Actifs': 'Badi basala',
+      'En congé': 'Mu konje',
+      'Écoles référencées': 'Mashikola asongeshama',
+      'Statut': 'Mushindu',
+      'Tous': 'Bonso',
+      'Terminé': 'Bumanisha',
+      'Province': 'Provinsi',
+      'École': 'Shikola',
+      'Recherche': 'Kusanka',
+      'Nom, matricule, école...': 'Dina, nimero, shikola...',
+      'Enseignant': 'Mulongeshi',
+      'Qualification': 'Diplome',
+      'Spécialisation': 'Lungenyi lua mudimu',
+      'Actif': 'Udi usala',
+      "Voir l'école": 'Tala shikola',
+      'Aucun enseignant trouvé': 'Mulongeshi kadi mumonika',
+    },
+  }
+
   const welcomePageExtensions = {
     en: {
       'Gestion Educative RDC - Plateforme nationale': 'Education Management DRC - National platform',
@@ -1341,6 +1449,10 @@
     },
   }
 
+  Object.entries(inspectionTeachersPageExtensions).forEach(([language, translations]) => {
+    Object.assign(dictionaries[language], translations)
+  })
+
   Object.entries(welcomePageExtensions).forEach(([language, translations]) => {
     Object.assign(dictionaries[language], translations)
   })
@@ -1481,9 +1593,10 @@
     while (walker.nextNode()) nodes.push(walker.currentNode)
     nodes.forEach((node) => translateNodeText(node, dictionary, language))
 
-    document.querySelectorAll('option, button, input[placeholder], textarea[placeholder]').forEach((element) => {
+    document.querySelectorAll('option, button, input[placeholder], textarea[placeholder], [title]').forEach((element) => {
       if (shouldSkipElement(element) && !['INPUT', 'TEXTAREA'].includes(element.tagName)) return
       if (element.placeholder) translateAttribute(element, 'placeholder', dictionary, language)
+      if (element.getAttribute('title')) translateAttribute(element, 'title', dictionary, language)
       if (element.tagName === 'OPTION') translateElementText(element, dictionary, language)
       if (element.tagName === 'BUTTON') {
         const ariaLabel = element.getAttribute('aria-label')

@@ -127,15 +127,19 @@
         <h3 class="font-semibold mb-4">
           Évolution des transferts
         </h3>
-        <canvas id="trendChart" height="200">
-        </canvas>
+        <div class="relative min-h-72 w-full">
+          <canvas id="trendChart" height="288">
+          </canvas>
+        </div>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-4">
           Top provinces d'origine
         </h3>
-        <canvas id="originChart" height="200">
-        </canvas>
+        <div class="relative min-h-72 w-full">
+          <canvas id="originChart" height="288">
+          </canvas>
+        </div>
       </div>
     </div>
 
@@ -247,7 +251,8 @@
             } ]
           },
           options: {
-            responsive: true
+            responsive: true,
+            maintainAspectRatio: false
           }
         });
         // Graphique origines
@@ -263,7 +268,8 @@
             } ]
           },
           options: {
-            responsive: true
+            responsive: true,
+            maintainAspectRatio: false
           }
         });
         // Matrice des flux
