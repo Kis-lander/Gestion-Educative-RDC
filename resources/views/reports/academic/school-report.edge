@@ -1,12 +1,14 @@
 @layout('layouts/print')
 
   @section('title')
-    Rapport académique - {{ school.name }}
+    Rapport scolaire - {{ school.name }}
   @endsection
+
+  @section('content')
   <div class="school-report">
     <div class="text-center mb-6">
       <h1 class="text-2xl font-bold">
-        RAPPORT ACADÉMIQUE
+        RAPPORT SCOLAIRE
       </h1>
       <h2 class="text-xl">
         {{ school.name }}
@@ -222,7 +224,7 @@
       </div>
       <div class="text-center">
         <p>
-          Le Responsable Académique
+          Le Responsable Scolaire
         </p>
         <div class="mt-12">
           _______________
@@ -260,4 +262,4 @@
       }
     }
   </style>
-
+  @endsection

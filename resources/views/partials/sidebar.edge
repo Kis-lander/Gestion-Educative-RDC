@@ -58,6 +58,18 @@
       </a>
     @endif
     
+    <!-- Matières -->
+    @if(auth?.user?.role === 'director')
+      <a
+        href="/schools/subjects"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/schools/subjects'])"
+      >
+        <i class="fas fa-book-open w-5" :class="iconClass(['/schools/subjects'])"></i>
+        <span x-show="sidebarOpen">Matières</span>
+      </a>
+    @endif
+
     <!-- Élèves -->
     @if(['director', 'teacher', 'discipline_director'].includes(auth?.user?.role))
       <a
@@ -130,6 +142,18 @@
       </a>
     @endif
     
+    <!-- Transferts -->
+    @if(auth?.user?.role === 'director')
+      <a
+        href="/schools/transfers/requests"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/schools/transfers'])"
+      >
+        <i class="fas fa-right-left w-5" :class="iconClass(['/schools/transfers'])"></i>
+        <span x-show="sidebarOpen">Transferts</span>
+      </a>
+    @endif
+
     <!-- Messages -->
     <a
       href="/communication/messages"

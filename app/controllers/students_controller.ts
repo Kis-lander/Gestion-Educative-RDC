@@ -15,6 +15,16 @@ import ForumTopic from '#models/forum_topic'
 // import ForumPost from '#models/forum_post'
 import Discipline from '#models/discipline'
 import Message from '#models/message'
+import School from '#models/school'
+import OtpMailService from '#services/otp_mail_service'
+import {
+  RDC_CLASS_CATALOG,
+  RDC_SCHOOL_OPTIONS,
+  getClassSchoolOption,
+  isHumanitiesClass,
+  resolveEnrollmentClass,
+} from '#services/school_class_service'
+import { getGovernanceContext } from '#services/school_governance_service'
 
 // Import dynamique pour éviter les soucis de circularité sur TransferAuthorization
 // On l'importera dans la méthode concernée comme dans ton code original
@@ -23,86 +33,7 @@ import Message from '#models/message'
 import { submitAssignmentValidator, postForumQuestionValidator } from '#validators/student'
 
 export default class StudentController {
-  private getRdcSchoolOptions() {
-    return [
-      'Chimie-biologie',
-      'Commerciale et gestion',
-      'Construction',
-      'Coupe et couture',
-      'Électricité',
-      'Électronique',
-      'Hôtellerie et restauration',
-      'Industrie agricole',
-      'Informatique',
-      'Latin-philo',
-      'Littéraire',
-      'Math-physique',
-      'Mecanique generale',
-      'Mécanique automobile',
-      'Nutrition',
-      'Petrochimie',
-      'Psychopedagogie',
-      'Pédagogie générale',
-      'Pédagogie maternelle',
-      'Pédagogie primaire',
-      'Secrétariat-administration',
-      'Sociale',
-      'Technique commerciale',
-      'Vétérinaire',
-    ]
-  }
-
-  private isHumanitiesClass(classObj?: Class | null) {
-    if (!classObj) return false
-    return classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9
-  }
-
-  private getRdcDasClassCatalog() {
-    return [
-      { name: '1ère Maternelle', level: 'Maternelle', gradeLevel: 1 },
-      { name: '2ème Maternelle', level: 'Maternelle', gradeLevel: 2 },
-      { name: '3ème Maternelle', level: 'Maternelle', gradeLevel: 3 },
-      { name: '1ère Primaire', level: 'Primaire', gradeLevel: 1 },
-      { name: '2ème Primaire', level: 'Primaire', gradeLevel: 2 },
-      { name: '3ème Primaire', level: 'Primaire', gradeLevel: 3 },
-      { name: '4ème Primaire', level: 'Primaire', gradeLevel: 4 },
-      { name: '5ème Primaire', level: 'Primaire', gradeLevel: 5 },
-      { name: '6ème Primaire', level: 'Primaire', gradeLevel: 6 },
-      { name: '7ème Éducation de base', level: 'Éducation de base', gradeLevel: 7 },
-      { name: '8ème Éducation de base', level: 'Éducation de base', gradeLevel: 8 },
-      { name: '1ère Humanités', level: 'Humanités', gradeLevel: 9 },
-      { name: '2ème Humanités', level: 'Humanités', gradeLevel: 10 },
-      { name: '3ème Humanités', level: 'Humanités', gradeLevel: 11 },
-      { name: '4ème Humanités', level: 'Humanités', gradeLevel: 12 },
-    ]
-  }
-
-  private async ensureRdcDasClasses(schoolId?: string | null) {
-    if (!schoolId) return
-
-    const currentYear = DateTime.now().year.toString()
-    const existingCount = await Class.query()
-      .where('schoolId', schoolId)
-      .where('academicYear', currentYear)
-      .count('* as total')
-      .first()
-
-    if (Number(existingCount?.$extras.total || 0) > 0) return
-
-    await Class.createMany(
-      this.getRdcDasClassCatalog().map((classItem) => ({
-        schoolId,
-        name: classItem.name,
-        level: classItem.level,
-        gradeLevel: classItem.gradeLevel,
-        maxCapacity: 50,
-        currentEnrollment: 0,
-        academicYear: currentYear,
-        shift: 'morning' as const,
-        teacherId: null,
-      }))
-    )
-  }
+  private mailService = new OtpMailService()
 
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
@@ -119,6 +50,7 @@ export default class StudentController {
 
   public async indexPage({ auth, request, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const page = Number(request.input('page', 1))
     const classId = request.input('class_id')
     const status = request.input('status')
@@ -127,6 +59,11 @@ export default class StudentController {
 
     const query = Student.query()
       .where('schoolId', user.schoolId)
+      .if(!governance.canManageAllSections, (studentQuery) =>
+        studentQuery.whereHas('class', (classQuery) =>
+          classQuery.where('schoolSectionId', governance.sectionId)
+        )
+      )
       .preload('user')
       .preload('class')
       .if(classId, (studentQuery) => studentQuery.where('classId', classId))
@@ -149,15 +86,52 @@ export default class StudentController {
 
     const paginator = await query.paginate(page, 20)
     const [classes, total, active, girls, boys] = await Promise.all([
-      Class.query().where('schoolId', user.schoolId).orderBy('name', 'asc'),
-      Student.query().where('schoolId', user.schoolId).count('* as total').first(),
+      Class.query()
+        .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
+        .if(!governance.canManageAllSections, (classQuery) =>
+          classQuery.where('schoolSectionId', governance.sectionId)
+        )
+        .orderBy('name', 'asc'),
       Student.query()
         .where('schoolId', user.schoolId)
+        .if(!governance.canManageAllSections, (studentQuery) =>
+          studentQuery.whereHas('class', (classQuery) =>
+            classQuery.where('schoolSectionId', governance.sectionId)
+          )
+        )
+        .count('* as total')
+        .first(),
+      Student.query()
+        .where('schoolId', user.schoolId)
+        .if(!governance.canManageAllSections, (studentQuery) =>
+          studentQuery.whereHas('class', (classQuery) =>
+            classQuery.where('schoolSectionId', governance.sectionId)
+          )
+        )
         .where('academicStatus', 'active')
         .count('* as total')
         .first(),
-      Student.query().where('schoolId', user.schoolId).where('gender', 'female').count('* as total').first(),
-      Student.query().where('schoolId', user.schoolId).where('gender', 'male').count('* as total').first(),
+      Student.query()
+        .where('schoolId', user.schoolId)
+        .if(!governance.canManageAllSections, (studentQuery) =>
+          studentQuery.whereHas('class', (classQuery) =>
+            classQuery.where('schoolSectionId', governance.sectionId)
+          )
+        )
+        .where('gender', 'female')
+        .count('* as total')
+        .first(),
+      Student.query()
+        .where('schoolId', user.schoolId)
+        .if(!governance.canManageAllSections, (studentQuery) =>
+          studentQuery.whereHas('class', (classQuery) =>
+            classQuery.where('schoolSectionId', governance.sectionId)
+          )
+        )
+        .where('gender', 'male')
+        .count('* as total')
+        .first(),
     ])
 
     return view.render('students/index', {
@@ -180,10 +154,13 @@ export default class StudentController {
 
   public async createPage({ auth, request, view }: HttpContext) {
     const user = auth.getUserOrFail()
-    await this.ensureRdcDasClasses(user.schoolId)
-
+    const governance = await getGovernanceContext(user)
     const classes = await Class.query()
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (classQuery) =>
+        classQuery.where('schoolSectionId', governance.sectionId)
+      )
       .orderBy('gradeLevel', 'asc')
       .orderBy('name', 'asc')
 
@@ -193,16 +170,23 @@ export default class StudentController {
         name: 'Gestion Éducative RDC',
       },
       classes,
-      schoolOptions: this.getRdcSchoolOptions(),
+      classCatalog: RDC_CLASS_CATALOG,
+      schoolOptions: RDC_SCHOOL_OPTIONS,
       selectedClassId: request.input('class_id', ''),
     })
   }
 
   public async showPage({ auth, params, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const student = await Student.query()
       .where('id', params.id)
       .where('schoolId', user.schoolId)
+      .if(!governance.canManageAllSections, (studentQuery) =>
+        studentQuery.whereHas('class', (classQuery) =>
+          classQuery.where('schoolSectionId', governance.sectionId)
+        )
+      )
       .preload('user')
       .preload('class')
       .preload('school')
@@ -238,8 +222,9 @@ export default class StudentController {
     })
   }
 
-  public async store({ auth, request, response, session }: HttpContext) {
+  public async store({ auth, request, response, session, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const schema = vine.compile(
       vine.object({
         firstName: vine.string().trim(),
@@ -247,7 +232,8 @@ export default class StudentController {
         lastName: vine.string().trim(),
         email: vine.string().email().unique({ table: 'users', column: 'email' }),
         phone: vine.string().trim().optional(),
-        classId: vine.string().exists({ table: 'classes', column: 'id' }).optional(),
+        classId: vine.string().optional(),
+        className: vine.string().trim().optional(),
         schoolOption: vine.string().trim().optional(),
         birthDate: vine.date({ formats: ['YYYY-MM-DD'] }),
         birthPlace: vine.string().trim().optional(),
@@ -259,60 +245,115 @@ export default class StudentController {
       })
     )
     const payload = await request.validateUsing(schema)
-    const selectedClass = payload.classId
-      ? await Class.query().where('id', payload.classId).where('schoolId', user.schoolId).first()
-      : null
-    const schoolOptions = this.getRdcSchoolOptions()
-    const isHumanities = this.isHumanitiesClass(selectedClass)
-
-    if (isHumanities && (!payload.schoolOption || !schoolOptions.includes(payload.schoolOption))) {
-      session.flash('error', "Veuillez sélectionner une option valide pour cette classe des humanités.")
+    if (!payload.classId && !payload.className) {
+      session.flash('error', 'Veuillez sélectionner ou renseigner la classe de l’élève.')
       return response.redirect().back()
     }
 
     const tempPassword = randomBytes(6).toString('hex')
     const registrationNumber = `STU-${Date.now()}`
+    let createdStudentUser: User
 
-    await db.transaction(async (trx) => {
-      const studentUser = new User()
-      studentUser.useTransaction(trx)
-      studentUser.schoolId = user.schoolId
-      studentUser.firstName = payload.firstName
-      studentUser.postnom = payload.postnom
-      studentUser.lastName = payload.lastName
-      studentUser.email = payload.email.trim().toLowerCase()
-      studentUser.phone = payload.phone || null
-      studentUser.password = tempPassword
-      studentUser.role = 'student'
-      studentUser.status = 'active'
-      studentUser.mustChangePassword = true
-      await studentUser.save()
+    try {
+      await db.transaction(async (trx) => {
+        const selectedClass = await resolveEnrollmentClass({
+          schoolId: user.schoolId!,
+          classId: payload.classId,
+          className: payload.className,
+          schoolOption: payload.schoolOption,
+          allowedSectionId: governance.canManageAllSections ? null : governance.sectionId,
+          trx,
+        })
 
-      const student = new Student()
-      student.useTransaction(trx)
-      student.userId = studentUser.id
-      student.schoolId = user.schoolId
-      student.classId = payload.classId || null
-      student.schoolOption = isHumanities ? payload.schoolOption! : null
-      student.registrationNumber = registrationNumber
-      student.birthDate = payload.birthDate
-      student.birthPlace = payload.birthPlace || ''
-      student.nationality = payload.nationality || 'Congolaise'
-      student.gender = payload.gender
-      student.parentPhone = payload.parentPhone
-      student.address = payload.address || ''
-      student.medicalInfo = payload.medicalInfo || null
-      student.academicStatus = 'active'
-      student.shift = 'morning'
-      await student.save()
+        const studentUser = new User()
+        studentUser.useTransaction(trx)
+        studentUser.schoolId = user.schoolId
+        studentUser.firstName = payload.firstName
+        studentUser.postnom = payload.postnom
+        studentUser.lastName = payload.lastName
+        studentUser.email = payload.email.trim().toLowerCase()
+        studentUser.phone = payload.phone || null
+        studentUser.password = tempPassword
+        studentUser.role = 'student'
+        studentUser.status = 'active'
+        studentUser.mustChangePassword = true
+        await studentUser.save()
+        createdStudentUser = studentUser
+
+        const student = new Student()
+        student.useTransaction(trx)
+        student.userId = studentUser.id
+        student.schoolId = user.schoolId
+        student.classId = selectedClass.id
+        student.schoolOption = isHumanitiesClass(selectedClass)
+          ? getClassSchoolOption(selectedClass) || payload.schoolOption!
+          : null
+        student.registrationNumber = registrationNumber
+        student.birthDate = payload.birthDate
+        student.birthPlace = payload.birthPlace || ''
+        student.nationality = payload.nationality || 'Congolaise'
+        student.gender = payload.gender
+        student.parentPhone = payload.parentPhone
+        student.address = payload.address || ''
+        student.medicalInfo = payload.medicalInfo || null
+        student.academicStatus = 'active'
+        student.shift = 'morning'
+        await student.save()
+
+        await trx.from('classes').where('id', selectedClass.id).increment('current_enrollment', 1)
+      })
+    } catch (error) {
+      session.flash(
+        'error',
+        error instanceof Error ? error.message : "L'inscription de l'élève a échoué."
+      )
+      return response.redirect().back()
+    }
+
+    const school = await School.find(user.schoolId)
+    const schoolName = school?.name || 'Gestion Éducative RDC'
+    const credentials = {
+      fullName: createdStudentUser!.fullName,
+      role: createdStudentUser!.role,
+      roleLabel: 'Élève',
+      email: createdStudentUser!.email,
+      password: tempPassword,
+      schoolName,
+      profileReference: registrationNumber,
+      createdAt: DateTime.now().toFormat('dd/MM/yyyy HH:mm'),
+    }
+    let emailDelivery = {
+      sent: true,
+      message: `Les identifiants ont été envoyés à ${credentials.email}.`,
+    }
+
+    try {
+      await this.mailService.sendAccountCredentials({
+        to: credentials.email,
+        schoolName,
+        fullName: credentials.fullName,
+        roleLabel: credentials.roleLabel,
+        email: credentials.email,
+        password: credentials.password,
+      })
+    } catch (error) {
+      emailDelivery = {
+        sent: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "L'email n'a pas pu être envoyé automatiquement.",
+      }
+    }
+
+    return view.render('schools/accounts/credentials', {
+      school: {
+        id: user.schoolId,
+        name: schoolName,
+      },
+      credentials,
+      emailDelivery,
     })
-
-    session.flash(
-      'success',
-      `Élève créé avec succès. Email: ${payload.email}. Mot de passe temporaire: ${tempPassword}`
-    )
-
-    return response.redirect('/students/create')
   }
 
   /**

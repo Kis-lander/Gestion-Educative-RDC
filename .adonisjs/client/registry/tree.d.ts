@@ -25,23 +25,37 @@ export interface ApiDefinition {
       store: typeof routes['schools.accounts.store']
       edit: typeof routes['schools.accounts.edit']
       update: typeof routes['schools.accounts.update']
+      credentials: typeof routes['schools.accounts.credentials']
     }
     classes: {
       index: typeof routes['schools.classes.index']
+      archives: typeof routes['schools.classes.archives']
+      restore: typeof routes['schools.classes.restore']
+      destroyPermanently: typeof routes['schools.classes.destroy_permanently']
       create: typeof routes['schools.classes.create']
       seedRdcDas: typeof routes['schools.classes.seed_rdc_das']
       store: typeof routes['schools.classes.store']
       students: typeof routes['schools.classes.students']
       edit: typeof routes['schools.classes.edit']
       show: typeof routes['schools.classes.show']
+      subjects: {
+        store: typeof routes['schools.classes.subjects.store']
+        destroy: typeof routes['schools.classes.subjects.destroy']
+      }
       update: typeof routes['schools.classes.update'] & {
         post: typeof routes['schools.classes.update.post']
       }
-      destroy: typeof routes['schools.classes.destroy']
+      destroy: typeof routes['schools.classes.destroy'] & {
+        post: typeof routes['schools.classes.destroy.post']
+      }
     }
     timetable: {
       index: typeof routes['schools.timetable.index']
       create: typeof routes['schools.timetable.create']
+      store: typeof routes['schools.timetable.store']
+    }
+    transfers: {
+      request: typeof routes['schools.transfers.request']
     }
     teachers: {
       index: typeof routes['schools.teachers.index']
@@ -50,15 +64,36 @@ export interface ApiDefinition {
       show: typeof routes['schools.teachers.show']
       edit: typeof routes['schools.teachers.edit']
       schedule: typeof routes['schools.teachers.schedule']
+      credentials: typeof routes['schools.teachers.credentials']
       update: typeof routes['schools.teachers.update'] & {
         post: typeof routes['schools.teachers.update.post']
       }
+      replace: typeof routes['schools.teachers.replace']
       destroy: typeof routes['schools.teachers.destroy']
     }
     profile: {
       update: {
         web: typeof routes['schools.profile.update.web']
       }
+    }
+    subjects: {
+      index: typeof routes['schools.subjects.index']
+      store: typeof routes['schools.subjects.store']
+      assign: typeof routes['schools.subjects.assign'] & {
+        store: typeof routes['schools.subjects.assign.store']
+      }
+      catalog: typeof routes['schools.subjects.catalog']
+      assignments: {
+        destroy: typeof routes['schools.subjects.assignments.destroy']
+      }
+      classes: typeof routes['schools.subjects.classes'] & {
+        destroy: typeof routes['schools.subjects.classes.destroy']
+      }
+      edit: typeof routes['schools.subjects.edit']
+      update: typeof routes['schools.subjects.update'] & {
+        post: typeof routes['schools.subjects.update.post']
+      }
+      destroy: typeof routes['schools.subjects.destroy']
     }
     registerSchool: typeof routes['schools.register_school']
     dashboard: typeof routes['schools.dashboard']
@@ -254,6 +289,7 @@ export interface ApiDefinition {
     teachers: {
       availableSlots: typeof routes['api.teachers.available_slots']
       resetPassword: typeof routes['api.teachers.reset_password']
+      list: typeof routes['api.teachers.list']
     }
   }
   profile: typeof routes['profile'] & {
@@ -384,6 +420,23 @@ export interface ApiDefinition {
       export: typeof routes['financial.reports.export']
     }
   }
+  transfers: {
+    authorizeTransferPage: typeof routes['transfers.authorize_transfer_page']
+    pendingTransfersPage: typeof routes['transfers.pending_transfers_page']
+    requestsPage: typeof routes['transfers.requests_page']
+    transferHistoryPage: typeof routes['transfers.transfer_history_page']
+    transferDetails: typeof routes['transfers.transfer_details']
+    updateReason: typeof routes['transfers.update_reason']
+    cancelTransfer: typeof routes['transfers.cancel_transfer']
+    authorizeTransfer: typeof routes['transfers.authorize_transfer']
+    rejectIncomingTransfer: typeof routes['transfers.reject_incoming_transfer']
+    verifyAuthorization: typeof routes['transfers.verify_authorization']
+    requestTransfer: typeof routes['transfers.request_transfer']
+    getPendingTransfers: typeof routes['transfers.get_pending_transfers']
+    approveTransfer: typeof routes['transfers.approve_transfer']
+    rejectTransfer: typeof routes['transfers.reject_transfer']
+    completeTransfer: typeof routes['transfers.complete_transfer']
+  }
   academics: {
     studentGradesPage: typeof routes['academics.student_grades_page']
     getClasses: typeof routes['academics.get_classes']
@@ -434,14 +487,6 @@ export interface ApiDefinition {
     getProfile: typeof routes['auth.get_profile']
     updateProfile: typeof routes['auth.update_profile']
     generateSchoolCredentials: typeof routes['auth.generate_school_credentials']
-  }
-  transfers: {
-    verifyAuthorization: typeof routes['transfers.verify_authorization']
-    requestTransfer: typeof routes['transfers.request_transfer']
-    getPendingTransfers: typeof routes['transfers.get_pending_transfers']
-    approveTransfer: typeof routes['transfers.approve_transfer']
-    rejectTransfer: typeof routes['transfers.reject_transfer']
-    completeTransfer: typeof routes['transfers.complete_transfer']
   }
   pedagogicals: {
     generateReportCard: typeof routes['pedagogicals.generate_report_card']

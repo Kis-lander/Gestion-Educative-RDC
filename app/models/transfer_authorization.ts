@@ -27,7 +27,7 @@ export default class TransferAuthorization extends TransferAuthorizationSchema {
   declare authorizationCode: string
 
   @column()
-  declare status: 'pending' | 'approved' | 'rejected' | 'used'
+  declare status: 'pending' | 'approved' | 'rejected' | 'used' | 'cancelled'
 
   @column()
   declare reason: string

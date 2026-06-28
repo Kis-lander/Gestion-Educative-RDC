@@ -4,18 +4,18 @@ import vine, { SimpleMessagesProvider } from '@vinejs/vine'
  * Messages d'erreur personnalisés en français
  */
 const sessionMessages = {
-  'name.unique': 'Une session académique avec ce nom existe déjà',
+  'name.unique': 'Une session scolaire avec ce nom existe déjà',
   'startDate.required': 'La date de début est requise',
   'endDate.required': 'La date de fin est requise',
   'endDate.afterField': 'La date de fin doit être après la date de début',
-  'sessionId.exists': "La session académique spécifiée n'existe pas",
+  'sessionId.exists': "La session scolaire spécifiée n'existe pas",
   'termNumber.range': 'Le numéro du trimestre doit être entre 1 et 3',
   'examEndDate.afterField': 'La date de fin des examens doit être après la date de début',
   'schoolId.exists': "L'école spécifiée n'existe pas",
 }
 
 /**
- * Validateur pour la création d'une session académique
+ * Validateur pour la création d'une session scolaire
  */
 export const createAcademicSessionValidator = vine.create(
   vine.object({

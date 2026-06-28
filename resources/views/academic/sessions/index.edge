@@ -1,11 +1,11 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Sessions académiques - {{ school.name }}
+    Sessions scolaires - {{ school.name }}
   @endsection
   
   @section('dashboardTitle')
-    Sessions académiques
+    Sessions scolaires
   @endsection
   @section('dashboardSubtitle')
     Gérez les années et trimestres scolaires
@@ -216,7 +216,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
           <i class="fas fa-calendar-alt text-5xl text-gray-400 mb-3"></i>
           <p class="text-gray-500">
-            Aucune session académique trouvée
+            Aucune session scolaire trouvée
           </p>
           <a href="/academic/sessions/create" class="mt-3 inline-block text-primary hover:underline">
             Créer la première session

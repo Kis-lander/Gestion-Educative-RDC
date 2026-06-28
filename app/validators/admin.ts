@@ -35,6 +35,7 @@ export const createUserValidator = vine.create(
       'parent',
       'student',
       'discipline_director',
+      'secretary',
     ]),
     schoolId: vine.string().exists({ table: 'schools', column: 'id' }).optional(),
   })
@@ -58,6 +59,7 @@ export const updateUserValidator = vine.create(
         'parent',
         'student',
         'discipline_director',
+        'secretary',
       ])
       .optional(),
     status: vine.enum(['active', 'inactive', 'suspended']).optional(),

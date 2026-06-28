@@ -19,7 +19,13 @@
           Nouvelle assignation
         </h3>
 
-        <form method="POST" action="/api/subjects/assign" x-data="{ loading: false }" @submit="loading = true">
+        <form
+          id="subjectAssignmentForm"
+          method="POST"
+          action="/schools/subjects/assign"
+          x-data="{ loading: false }"
+          @submit="loading = true"
+        >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
           <div class="space-y-4">
@@ -30,7 +36,12 @@
                   Sélectionner une classe
                 </option>
                 @each(classObj in classes)
-                  <option value="{{ classObj.id }}">
+                  <option
+                    value="{{ classObj.id }}"
+                    data-level="{{ classObj.level }}"
+                    data-grade-level="{{ classObj.gradeLevel }}"
+                    data-school-option="{{ classObj.schoolOption || '' }}"
+                  >
                     {{ classObj.name }} ({{ classObj.level }})
                   </option>
                 @end
@@ -39,16 +50,66 @@
 
             <div>
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Matière *</label>
-              <select name="subjectId" required class="w-full px-4 py-2 border rounded-lg">
+              <select
+                name="subjectId"
+                id="subjectSelect"
+                class="absolute h-px w-px opacity-0 pointer-events-none"
+                tabindex="-1"
+                aria-hidden="true"
+              >
                 <option value="">
                   Sélectionner une matière
                 </option>
                 @each(subject in subjects)
-                  <option value="{{ subject.id }}">
-                    {{ subject.name }} (Coeff {{ subject.coefficient }})
+                  <option
+                    value="{{ subject.id }}"
+                    data-subject-id="{{ subject.id }}"
+                    data-default-coefficient="{{ subject.coefficient }}"
+                    {{ selectedSubjectId === subject.id ? 'selected' : '' }}
+                  >
+                    {{ subject.code }} — {{ subject.name }}
                   </option>
                 @end
               </select>
+              <div id="subjectCombobox" class="relative">
+                <button
+                  type="button"
+                  id="subjectComboboxButton"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  class="w-full flex items-center justify-between gap-3 px-4 py-2 border rounded-lg bg-white dark:bg-gray-900 text-left focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <span id="subjectComboboxLabel" class="truncate text-gray-500 dark:text-gray-400">
+                    Sélectionner une matière
+                  </span>
+                  <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                </button>
+                <div
+                  id="subjectComboboxPanel"
+                  class="hidden absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-xl"
+                >
+                  <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                    <div class="relative">
+                      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                      <input
+                        type="search"
+                        id="subjectComboboxSearch"
+                        placeholder="Rechercher par code ou par nom..."
+                        autocomplete="off"
+                        class="w-full pl-9 pr-3 py-2 border rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+                  <div
+                    id="subjectComboboxOptions"
+                    role="listbox"
+                    class="max-h-64 overflow-y-auto overscroll-contain py-1"
+                  ></div>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">
+                Les noms et codes sont identiques pour tous les établissements.
+              </p>
             </div>
 
             <div>
@@ -66,13 +127,22 @@
             </div>
 
             <div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Coefficient</label>
+              <select name="coefficient" id="assignmentCoefficient" class="w-full px-4 py-2 border rounded-lg">
+                @each(value in [1, 2, 3, 4, 5])
+                  <option value="{{ value }}">{{ value }}</option>
+                @end
+              </select>
+            </div>
+
+            <div>
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Heures par semaine</label>
               <input
                 type="number"
                 name="hoursPerWeek"
                 value="4"
                 min="1"
-                max="40"
+                max="20"
                 class="w-full px-4 py-2 border rounded-lg"
               />
             </div>
@@ -126,7 +196,7 @@
                     Enseignant: {{ assignment.teacherName }}
                   </p>
                   <p class="text-xs text-gray-400">
-                    {{ assignment.hoursPerWeek }} heures/semaine
+                    Coefficient {{ assignment.coefficient }} · {{ assignment.hoursPerWeek }} heures/semaine
                   </p>
                 </div>
                 <button onclick="removeAssignment('{{ assignment.id }}')" class="text-red-500 hover:text-red-700">
@@ -173,7 +243,7 @@
                   <div class="flex flex-wrap gap-1">
                     @each(sub in summary.subjects)
                       <span class="text-xs bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">
-                        {{ sub.name }} ({{ sub.hours }}h)
+                        {{ sub.name }} (Coeff {{ sub.coefficient }}, {{ sub.hours }}h)
               </span>
                     @end
                   </div>
@@ -211,7 +281,7 @@
 
       function removeAssignment(assignmentId) {
         if (confirm("Retirer cette assignation ?")) {
-          fetch(`/api/subjects/assignment/${assignmentId}`, {
+          fetch(`/schools/subjects/assignments/${assignmentId}`, {
             method: "DELETE",
             headers: {
               "X-CSRF-TOKEN": "{{ csrfToken }}"
@@ -227,33 +297,217 @@
       }
       // Gestion du formulaire
 
-      const form = document.querySelector("form");
+      {
+      const form = document.getElementById("subjectAssignmentForm");
+      const classSelect = form?.querySelector('select[name="classId"]');
+      const subjectSelect = form?.querySelector('select[name="subjectId"]');
+      const subjectCombobox = document.getElementById("subjectCombobox");
+      const subjectComboboxButton = document.getElementById("subjectComboboxButton");
+      const subjectComboboxLabel = document.getElementById("subjectComboboxLabel");
+      const subjectComboboxPanel = document.getElementById("subjectComboboxPanel");
+      const subjectComboboxSearch = document.getElementById("subjectComboboxSearch");
+      const subjectComboboxOptions = document.getElementById("subjectComboboxOptions");
+      const coefficientSelect = document.getElementById("assignmentCoefficient");
+      const hoursInput = form?.querySelector('input[name="hoursPerWeek"]');
+      const subjectPrograms = [
+        @each(program in subjectPrograms)
+          {
+            subjectId: "{{ program.subject_id }}",
+            level: "{{ program.level }}",
+            min: Number("{{ program.grade_level_min }}"),
+            max: Number("{{ program.grade_level_max }}"),
+            option: "{{ program.school_option || '' }}",
+            coefficient: Number("{{ program.default_coefficient }}"),
+            hours: Number("{{ program.default_hours_per_week }}")
+          },
+        @end
+      ];
+
+      function availableProgram(subjectId) {
+        const selectedClass = classSelect?.selectedOptions?.[0];
+        if (!selectedClass?.value) return null;
+        const level = selectedClass.dataset.level || "";
+        const grade = Number(selectedClass.dataset.gradeLevel || 0);
+        const option = selectedClass.dataset.schoolOption || "";
+        const matches = subjectPrograms.filter(program =>
+          program.subjectId === subjectId &&
+          grade >= program.min &&
+          grade <= program.max &&
+          (program.level === "Tous" || program.level === level) &&
+          (!program.option || program.option === option)
+        );
+        return matches.sort((left, right) => Number(Boolean(right.option)) - Number(Boolean(left.option)))[0] || null;
+      }
+
+      function normalizeSearch(value) {
+        return String(value || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase();
+      }
+
+      function closeSubjectCombobox() {
+        subjectComboboxPanel?.classList.add("hidden");
+        subjectComboboxButton?.setAttribute("aria-expanded", "false");
+      }
+
+      function renderSubjectOptions() {
+        if (!subjectComboboxOptions || !subjectSelect) return;
+        const search = normalizeSearch(subjectComboboxSearch?.value);
+        const options = Array.from(subjectSelect.querySelectorAll("option[data-subject-id]"))
+          .filter(option => !option.hidden && normalizeSearch(option.textContent).includes(search));
+
+        subjectComboboxOptions.replaceChildren();
+
+        if (!options.length) {
+          const empty = document.createElement("p");
+          empty.className = "px-4 py-5 text-center text-sm text-gray-500";
+          empty.textContent = "Aucune matière correspondante";
+          subjectComboboxOptions.appendChild(empty);
+          return;
+        }
+
+        options.forEach(option => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.role = "option";
+          item.dataset.value = option.value;
+          item.className = [
+            "w-full px-4 py-2 text-left hover:bg-blue-50 dark:hover:bg-gray-700",
+            "focus:outline-none focus:bg-blue-50 dark:focus:bg-gray-700",
+            option.value === subjectSelect.value
+              ? "bg-primary text-white hover:bg-primary dark:hover:bg-primary"
+              : ""
+          ].join(" ");
+          item.textContent = option.textContent.trim();
+          item.addEventListener("click", () => {
+            subjectSelect.value = option.value;
+            subjectSelect.dispatchEvent(new Event("change", { bubbles: true }));
+            closeSubjectCombobox();
+          });
+          subjectComboboxOptions.appendChild(item);
+        });
+      }
+
+      function syncSubjectComboboxLabel() {
+        const selected = subjectSelect?.selectedOptions?.[0];
+        const hasValue = Boolean(selected?.value);
+        if (subjectComboboxLabel) {
+          subjectComboboxLabel.textContent = hasValue
+            ? selected.textContent.trim()
+            : "Sélectionner une matière";
+          subjectComboboxLabel.classList.toggle("text-gray-500", !hasValue);
+          subjectComboboxLabel.classList.toggle("dark:text-gray-400", !hasValue);
+        }
+        subjectComboboxButton?.classList.remove("border-red-500", "ring-1", "ring-red-500");
+        renderSubjectOptions();
+      }
+
+      function filterSubjectsForClass() {
+        const selectedValue = subjectSelect?.value;
+        subjectSelect?.querySelectorAll("option[data-subject-id]").forEach(option => {
+          option.hidden = Boolean(classSelect?.value) && !availableProgram(option.dataset.subjectId);
+        });
+        if (selectedValue && subjectSelect?.selectedOptions?.[0]?.hidden) subjectSelect.value = "";
+        syncSubjectComboboxLabel();
+        syncDefaultCoefficient();
+      }
+
+      function syncDefaultCoefficient() {
+        const selected = subjectSelect?.selectedOptions?.[0];
+        const program = selected?.dataset.subjectId ? availableProgram(selected.dataset.subjectId) : null;
+        if (coefficientSelect) {
+          coefficientSelect.value = String(program?.coefficient || selected?.dataset.defaultCoefficient || 1);
+        }
+        if (hoursInput && program?.hours) hoursInput.value = String(program.hours);
+      }
+
+      classSelect?.addEventListener("change", filterSubjectsForClass);
+      subjectSelect?.addEventListener("change", () => {
+        syncSubjectComboboxLabel();
+        syncDefaultCoefficient();
+      });
+      subjectComboboxButton?.addEventListener("click", () => {
+        const opening = subjectComboboxPanel?.classList.contains("hidden");
+        if (!opening) {
+          closeSubjectCombobox();
+          return;
+        }
+        subjectComboboxPanel?.classList.remove("hidden");
+        subjectComboboxButton.setAttribute("aria-expanded", "true");
+        if (subjectComboboxSearch) {
+          subjectComboboxSearch.value = "";
+          renderSubjectOptions();
+          requestAnimationFrame(() => subjectComboboxSearch.focus());
+        }
+      });
+      subjectComboboxSearch?.addEventListener("input", renderSubjectOptions);
+      subjectComboboxSearch?.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          closeSubjectCombobox();
+          subjectComboboxButton?.focus();
+        }
+      });
+      document.addEventListener("click", event => {
+        if (subjectCombobox && !subjectCombobox.contains(event.target)) closeSubjectCombobox();
+      });
+      filterSubjectsForClass();
 
       if (form) {
         form.addEventListener("submit", async e => {
           e.preventDefault();
+          if (!subjectSelect?.value) {
+            subjectComboboxButton?.classList.add("border-red-500", "ring-1", "ring-red-500");
+            subjectComboboxButton?.focus();
+            window.dispatchEvent(new CustomEvent("show-toast", {
+              detail: { message: "Veuillez sélectionner une matière.", type: "error" }
+            }));
+            return;
+          }
           const formData = new FormData(form);
-          const loading = form.querySelector("[x-data]")?.__x?.$data;
+          const state = window.Alpine?.$data(form);
+          if (state) state.loading = true;
+          let reloadScheduled = false;
           try {
-            const res = await fetch("/api/subjects/assign", {
+            const res = await fetch("/schools/subjects/assign", {
               method: "POST",
               headers: {
-                "X-CSRF-TOKEN": "{{ csrfToken }}"
+                "X-CSRF-TOKEN": "{{ csrfToken }}",
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
               },
               body: formData
             });
+            const contentType = res.headers.get("content-type") || "";
+            if (!contentType.includes("application/json")) {
+              throw new Error("Le serveur a renvoyé une réponse inattendue.");
+            }
             const data = await res.json();
-            if (data.success) {
-              location.reload();
+            if (res.ok && data.success) {
+              window.dispatchEvent(new CustomEvent("show-toast", {
+                detail: {
+                  message: data.message,
+                  type: "success"
+                }
+              }));
+              form.reset();
+              reloadScheduled = true;
+              setTimeout(() => location.reload(), 1200);
             } else {
-              alert("Erreur: " + data.message);
-              if (loading) loading.loading = false;
+              throw new Error(data.message || "Impossible d'assigner la matière.");
             }
           } catch (err) {
-            alert("Erreur de connexion");
-            if (loading) loading.loading = false;
+            window.dispatchEvent(new CustomEvent("show-toast", {
+              detail: {
+                message: err instanceof Error ? err.message : "Erreur de connexion.",
+                type: "error"
+              }
+            }));
+          } finally {
+            if (!reloadScheduled && state) state.loading = false;
           }
         });
+      }
       }
     </script>
   @endsection

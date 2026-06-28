@@ -89,7 +89,7 @@
                     {{ slot.time }}
                   </td>
                   @each(day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'])
-                    <td class="px-1 py-1">
+                    <td class="px-1 py-1 rounded transition-colors duration-150" data-schedule-cell>
                       <input type="hidden" name="entries[{{ slot.index }}][{{ day }}][id]" value="{{ slot[day].id }}" />
                       <select
                         name="entries[{{ slot.index }}][{{ day }}][subjectId]"
@@ -156,6 +156,32 @@
     </div>
 
     <script>
+      function updateScheduleCell(cell) {
+        if (!cell) return;
+        const controls = cell.querySelectorAll("select, input[type=text]");
+        const isFilled = Array.from(controls).some(control => String(control.value || "").trim() !== "");
+
+        cell.classList.toggle("bg-blue-50", isFilled);
+        cell.classList.toggle("dark:bg-blue-900/30", isFilled);
+        cell.classList.toggle("ring-1", isFilled);
+        cell.classList.toggle("ring-inset", isFilled);
+        cell.classList.toggle("ring-blue-400", isFilled);
+
+        controls.forEach(control => {
+          control.classList.toggle("border-blue-400", isFilled);
+          control.classList.toggle("bg-blue-50", isFilled);
+          control.classList.toggle("dark:bg-blue-950/40", isFilled);
+        });
+      }
+
+      document.querySelectorAll("[data-schedule-cell]").forEach(cell => {
+        updateScheduleCell(cell);
+        cell.querySelectorAll("select, input[type=text]").forEach(control => {
+          control.addEventListener("change", () => updateScheduleCell(cell));
+          control.addEventListener("input", () => updateScheduleCell(cell));
+        });
+      });
+
       function deleteTimetable() {
         if (confirm("Êtes-vous sûr de vouloir supprimer cet emploi du temps ? Cette action est irréversible.")) {
           fetch("/api/timetable/{{ timetableId }}", {

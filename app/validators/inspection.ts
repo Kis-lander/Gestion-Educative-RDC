@@ -11,6 +11,22 @@ const inspectionMessages = {
   'rating.range': 'La note doit être comprise entre 0 et 10',
 }
 
+const communicationTargets = [
+  'all',
+  'promoter',
+  'preschool_director',
+  'primary_director',
+  'prefect',
+  'studies_director',
+  'pedagogical_advisor',
+  'discipline_director',
+  'deputy_discipline_director',
+  'finance_director',
+  'secretary',
+  'teacher',
+  'parent',
+] as const
+
 /**
  * Validateur pour la liste des écoles (Filtres d'inspection)
  */
@@ -72,7 +88,7 @@ export const sendGlobalCommunicationValidator = vine.compile(
   vine.object({
     subject: vine.string().trim().minLength(3),
     content: vine.string().trim().minLength(10),
-    targetRole: vine.enum(['all', 'director', 'teacher', 'parent']).optional(),
+    targetRole: vine.enum(communicationTargets).optional(),
     targetProvince: vine.string().trim().optional(),
   })
 )

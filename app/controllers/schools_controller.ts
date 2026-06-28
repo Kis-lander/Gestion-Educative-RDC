@@ -11,43 +11,27 @@ import OtpMailService from '#services/otp_mail_service'
 import vine from '@vinejs/vine'
 import crypto from 'node:crypto'
 import { DateTime } from 'luxon'
+import {
+  RDC_CLASS_CATALOG,
+  RDC_SCHOOL_OPTIONS,
+  getClassSchoolOption,
+  isHumanitiesClass,
+  resolveEnrollmentClass,
+} from '#services/school_class_service'
+import {
+  POSITION_BASE_ROLES,
+  SECTION_POSITION_OPTIONS,
+  SCHOOL_POSITIONS,
+  canCreatePosition,
+  getGovernanceContext,
+  isSchoolWidePosition,
+  listSchoolSections,
+  positionLabel,
+  type SchoolPosition,
+} from '#services/school_governance_service'
 
 export default class SchoolController {
   private mailService = new OtpMailService()
-
-  private getRdcSchoolOptions() {
-    return [
-      'Chimie-biologie',
-      'Commerciale et gestion',
-      'Construction',
-      'Coupe et couture',
-      'Électricité',
-      'Électronique',
-      'Hôtellerie et restauration',
-      'Industrie agricole',
-      'Informatique',
-      'Latin-philo',
-      'Littéraire',
-      'Math-physique',
-      'Mecanique generale',
-      'Mécanique automobile',
-      'Nutrition',
-      'Petrochimie',
-      'Psychopedagogie',
-      'Pédagogie générale',
-      'Pédagogie maternelle',
-      'Pédagogie primaire',
-      'Secrétariat-administration',
-      'Sociale',
-      'Technique commerciale',
-      'Vétérinaire',
-    ]
-  }
-
-  private isHumanitiesClass(classObj?: Class | null) {
-    if (!classObj) return false
-    return classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9
-  }
 
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
@@ -78,6 +62,7 @@ export default class SchoolController {
       parent: 'Parent',
       student: 'Élève',
       discipline_director: 'Direction de discipline',
+      secretary: 'Secrétariat',
     }
 
     return labels[role]
@@ -87,53 +72,6 @@ export default class SchoolController {
     if (!schoolId) return 'Gestion Éducative RDC'
     const school = await School.find(schoolId)
     return school?.name || 'Gestion Éducative RDC'
-  }
-
-  private getRdcDasClassCatalog() {
-    return [
-      { name: '1ère Maternelle', level: 'Maternelle', gradeLevel: 1 },
-      { name: '2ème Maternelle', level: 'Maternelle', gradeLevel: 2 },
-      { name: '3ème Maternelle', level: 'Maternelle', gradeLevel: 3 },
-      { name: '1ère Primaire', level: 'Primaire', gradeLevel: 1 },
-      { name: '2ème Primaire', level: 'Primaire', gradeLevel: 2 },
-      { name: '3ème Primaire', level: 'Primaire', gradeLevel: 3 },
-      { name: '4ème Primaire', level: 'Primaire', gradeLevel: 4 },
-      { name: '5ème Primaire', level: 'Primaire', gradeLevel: 5 },
-      { name: '6ème Primaire', level: 'Primaire', gradeLevel: 6 },
-      { name: '7ème Éducation de base', level: 'Éducation de base', gradeLevel: 7 },
-      { name: '8ème Éducation de base', level: 'Éducation de base', gradeLevel: 8 },
-      { name: '1ère Humanités', level: 'Humanités', gradeLevel: 9 },
-      { name: '2ème Humanités', level: 'Humanités', gradeLevel: 10 },
-      { name: '3ème Humanités', level: 'Humanités', gradeLevel: 11 },
-      { name: '4ème Humanités', level: 'Humanités', gradeLevel: 12 },
-    ]
-  }
-
-  private async ensureRdcDasClasses(schoolId?: string | null) {
-    if (!schoolId) return
-
-    const currentYear = DateTime.now().year.toString()
-    const existingCount = await Class.query()
-      .where('schoolId', schoolId)
-      .where('academicYear', currentYear)
-      .count('* as total')
-      .first()
-
-    if (Number(existingCount?.$extras.total || 0) > 0) return
-
-    await Class.createMany(
-      this.getRdcDasClassCatalog().map((classItem) => ({
-        schoolId,
-        name: classItem.name,
-        level: classItem.level,
-        gradeLevel: classItem.gradeLevel,
-        maxCapacity: 50,
-        currentEnrollment: 0,
-        academicYear: currentYear,
-        shift: 'morning' as const,
-        teacherId: null,
-      }))
-    )
   }
 
   /**
@@ -208,7 +146,6 @@ export default class SchoolController {
       }
     })
 
-
     const result = {
       success: true,
       message: "Demande d'inscription soumise avec succès. En attente d'approbation.",
@@ -246,7 +183,10 @@ export default class SchoolController {
       .where('academicStatus', 'active')
       .count('* as total')
     const [teachersCount] = await Teacher.query().where('schoolId', school.id).count('* as total')
-    const [classesCount] = await Class.query().where('schoolId', school.id).count('* as total')
+    const [classesCount] = await Class.query()
+      .where('schoolId', school.id)
+      .whereNull('archivedAt')
+      .count('* as total')
 
     const recentStudents = await Student.query()
       .where('schoolId', school.id)
@@ -343,40 +283,112 @@ export default class SchoolController {
       .if(qualification, (teacherQuery) => teacherQuery.where('qualification', qualification))
       .if(search, (teacherQuery) => {
         teacherQuery.where((searchQuery) => {
-          searchQuery.whereILike('employeeNumber', `%${search}%`).orWhereHas('user', (userQuery) => {
-            userQuery
-              .whereILike('firstName', `%${search}%`)
-              .orWhereILike('postnom', `%${search}%`)
-              .orWhereILike('lastName', `%${search}%`)
-              .orWhereILike('email', `%${search}%`)
-          })
+          searchQuery
+            .whereILike('employeeNumber', `%${search}%`)
+            .orWhereHas('user', (userQuery) => {
+              userQuery
+                .whereILike('firstName', `%${search}%`)
+                .orWhereILike('postnom', `%${search}%`)
+                .orWhereILike('lastName', `%${search}%`)
+                .orWhereILike('email', `%${search}%`)
+            })
         })
       })
       .orderBy('createdAt', 'desc')
 
     const paginator = await query.paginate(page, 20)
-    const [total, active, subjectsCount] = await Promise.all([
+    const teachers = paginator.all()
+    const [total, active, qualified, assignmentRows, primaryClassRows] = await Promise.all([
       Teacher.query().where('schoolId', user.schoolId).count('* as total').first(),
-      Teacher.query().where('schoolId', user.schoolId).where('status', 'active').count('* as total').first(),
-      Subject.query().count('* as total').first(),
+      Teacher.query()
+        .where('schoolId', user.schoolId)
+        .where('status', 'active')
+        .count('* as total')
+        .first(),
+      Teacher.query()
+        .where('schoolId', user.schoolId)
+        .whereNotNull('qualification')
+        .whereNot('qualification', '')
+        .count('* as total')
+        .first(),
+      db
+        .from('class_subject')
+        .join('classes', 'class_subject.class_id', 'classes.id')
+        .where('classes.school_id', user.schoolId)
+        .whereNull('classes.archived_at')
+        .select(
+          'class_subject.teacher_id',
+          'class_subject.subject_id',
+          'class_subject.class_id',
+          'class_subject.hours_per_week'
+        ),
+      db
+        .from('classes')
+        .where('school_id', user.schoolId)
+        .whereNull('archived_at')
+        .whereNotNull('teacher_id')
+        .select('teacher_id', 'id as class_id'),
     ])
+
+    const workloadByTeacher = new Map<
+      string,
+      { subjects: Set<string>; classes: Set<string>; totalHours: number }
+    >()
+    const getWorkload = (teacherId: string) => {
+      const existing = workloadByTeacher.get(teacherId)
+      if (existing) return existing
+
+      const workload = {
+        subjects: new Set<string>(),
+        classes: new Set<string>(),
+        totalHours: 0,
+      }
+      workloadByTeacher.set(teacherId, workload)
+      return workload
+    }
+
+    for (const row of assignmentRows) {
+      if (!row.teacher_id) continue
+      const workload = getWorkload(row.teacher_id)
+      if (row.subject_id) workload.subjects.add(row.subject_id)
+      if (row.class_id) workload.classes.add(row.class_id)
+      workload.totalHours += Number(row.hours_per_week || 0)
+    }
+
+    for (const row of primaryClassRows) {
+      if (!row.teacher_id) continue
+      getWorkload(row.teacher_id).classes.add(row.class_id)
+    }
+
+    const assignedSubjects = new Set(
+      assignmentRows.map((row) => row.subject_id).filter(Boolean)
+    )
+    const totalHours = assignmentRows.reduce(
+      (sum, row) => sum + Number(row.hours_per_week || 0),
+      0
+    )
 
     return view.render('schools/teachers/index', {
       school: this.getFallbackSchool(user),
-      teachers: paginator.all().map((teacher) => ({
-        ...teacher.serialize(),
-        user: teacher.user,
-        subjectsCount: 0,
-        classesCount: 0,
-      })),
+      teachers: teachers.map((teacher) => {
+        const workload = workloadByTeacher.get(teacher.id)
+
+        return {
+          ...teacher.serialize(),
+          user: teacher.user,
+          subjectsCount: workload?.subjects.size || 0,
+          classesCount: workload?.classes.size || 0,
+          totalHours: workload?.totalHours || 0,
+        }
+      }),
       pagination: this.getPaginationMeta(paginator),
       url: '/schools/teachers',
       stats: {
         total: Number(total?.$extras.total || 0),
         active: Number(active?.$extras.total || 0),
-        qualified: Number(active?.$extras.total || 0),
-        subjectsCount: Number(subjectsCount?.$extras.total || 0),
-        totalHours: 0,
+        qualified: Number(qualified?.$extras.total || 0),
+        subjectsCount: assignedSubjects.size,
+        totalHours,
       },
     })
   }
@@ -388,6 +400,28 @@ export default class SchoolController {
     return view.render('schools/teachers/create', {
       school: this.getFallbackSchool(user),
       subjects,
+    })
+  }
+
+  public async listActiveTeachers({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teachers = await Teacher.query()
+      .where('schoolId', user.schoolId)
+      .where('status', 'active')
+      .preload('user')
+      .orderBy('createdAt', 'desc')
+
+    return response.ok({
+      success: true,
+      teachers: teachers.map((teacher) => ({
+        id: teacher.id,
+        user: {
+          firstName: teacher.user.firstName,
+          postnom: teacher.user.postnom,
+          lastName: teacher.user.lastName,
+          fullName: teacher.user.fullName,
+        },
+      })),
     })
   }
 
@@ -431,9 +465,12 @@ export default class SchoolController {
       })
     }
 
-    const linkedClassIds = [...new Set(subjectRows.map((row) => row.classId ?? row.class_id).filter(Boolean))]
+    const linkedClassIds = [
+      ...new Set(subjectRows.map((row) => row.classId ?? row.class_id).filter(Boolean)),
+    ]
     const classesQuery = Class.query()
       .where('schoolId', teacher.schoolId)
+      .whereNull('archivedAt')
       .where((query) => {
         query.where('teacherId', teacher.id)
         if (linkedClassIds.length) {
@@ -520,7 +557,10 @@ export default class SchoolController {
       })
       .filter((score): score is number => score !== null)
     const averageGradeGiven = normalizedGrades.length
-      ? Math.round((normalizedGrades.reduce((total, score) => total + score, 0) / normalizedGrades.length) * 10) / 10
+      ? Math.round(
+          (normalizedGrades.reduce((total, score) => total + score, 0) / normalizedGrades.length) *
+            10
+        ) / 10
       : null
     const evaluationRows = await db
       .from('teacher_evaluations')
@@ -556,8 +596,9 @@ export default class SchoolController {
       evaluations: evaluationRows.map((evaluation) => ({
         date: DateTime.fromJSDate(new Date(evaluation.evaluation_date)).toFormat('dd/MM/yyyy'),
         inspector:
-          [evaluation.first_name, evaluation.last_name, evaluation.postnom].filter(Boolean).join(' ') ||
-          'Inspection',
+          [evaluation.first_name, evaluation.last_name, evaluation.postnom]
+            .filter(Boolean)
+            .join(' ') || 'Inspection',
         comments: evaluation.comments || 'Aucun commentaire',
         score: Number(evaluation.score || 0),
       })),
@@ -568,7 +609,15 @@ export default class SchoolController {
     const user = auth.getUserOrFail()
     const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
     const assignments = await this.getTeacherAssignments(teacher)
-    const subjects = await Subject.query().orderBy('name', 'asc')
+    const [subjects, replacementTeachers] = await Promise.all([
+      Subject.query().orderBy('name', 'asc'),
+      Teacher.query()
+        .where('schoolId', user.schoolId)
+        .where('status', 'active')
+        .whereNot('id', teacher.id)
+        .preload('user')
+        .orderBy('createdAt', 'desc'),
+    ])
 
     ;(teacher as any).subjectIds = assignments.subjectIds
 
@@ -576,6 +625,7 @@ export default class SchoolController {
       school: this.getFallbackSchool(user),
       teacher,
       subjects,
+      replacementTeachers,
     })
   }
 
@@ -599,26 +649,50 @@ export default class SchoolController {
       weekday: 1,
     })
     const weekEnd = weekStart.plus({ days: 4 })
-    const entries = await db
-      .from('timetables')
-      .join('subjects', 'timetables.subject_id', 'subjects.id')
-      .join('classes', 'timetables.class_id', 'classes.id')
-      .where('timetables.teacher_id', teacher.id)
-      .where('classes.school_id', teacher.schoolId)
-      .select(
-        'timetables.day_of_week',
-        'timetables.start_time',
-        'timetables.end_time',
-        'timetables.room',
-        'subjects.id as subject_id',
-        'subjects.name as subject_name',
-        'classes.id as class_id',
-        'classes.name as class_name'
-      )
-      .orderBy('timetables.start_time', 'asc')
-      .orderBy('timetables.day_of_week', 'asc')
+    const [entries, assignmentRows] = await Promise.all([
+      db
+        .from('timetables')
+        .join('subjects', 'timetables.subject_id', 'subjects.id')
+        .join('classes', 'timetables.class_id', 'classes.id')
+        .where('timetables.teacher_id', teacher.id)
+        .where('classes.school_id', teacher.schoolId)
+        .whereNull('classes.archived_at')
+        .select(
+          'timetables.day_of_week',
+          'timetables.start_time',
+          'timetables.end_time',
+          'timetables.room',
+          'subjects.id as subject_id',
+          'subjects.name as subject_name',
+          'classes.id as class_id',
+          'classes.name as class_name'
+        )
+        .orderBy('timetables.start_time', 'asc')
+        .orderBy('timetables.day_of_week', 'asc'),
+      db
+        .from('class_subject')
+        .join('subjects', 'class_subject.subject_id', 'subjects.id')
+        .join('classes', 'class_subject.class_id', 'classes.id')
+        .where('class_subject.teacher_id', teacher.id)
+        .where('classes.school_id', teacher.schoolId)
+        .whereNull('classes.archived_at')
+        .select(
+          'class_subject.id',
+          'class_subject.hours_per_week',
+          'subjects.id as subject_id',
+          'subjects.name as subject_name',
+          'classes.id as class_id',
+          'classes.name as class_name'
+        )
+        .orderBy('classes.grade_level', 'asc')
+        .orderBy('classes.name', 'asc')
+        .orderBy('subjects.name', 'asc'),
+    ])
 
-    const dayKeys: Record<number, 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'> = {
+    const dayKeys: Record<
+      number,
+      'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
+    > = {
       1: 'monday',
       2: 'tuesday',
       3: 'wednesday',
@@ -630,7 +704,10 @@ export default class SchoolController {
     const timeSlots = [
       ...new Set(
         entries.length
-          ? entries.map((entry) => `${String(entry.start_time).slice(0, 5)}-${String(entry.end_time).slice(0, 5)}`)
+          ? entries.map(
+              (entry) =>
+                `${String(entry.start_time).slice(0, 5)}-${String(entry.end_time).slice(0, 5)}`
+            )
           : defaultTimes
       ),
     ].sort()
@@ -680,9 +757,32 @@ export default class SchoolController {
       subjectIds.add(entry.subject_id)
     }
 
-    summary.totalHours = Math.round(summary.totalHours * 10) / 10
-    summary.classesCount = classIds.size
-    summary.subjectsCount = subjectIds.size
+    const assignedClassIds = new Set<string>()
+    const assignedSubjectIds = new Set<string>()
+    let assignedHours = 0
+    const scheduledPairs = new Set(
+      entries.map((entry) => `${entry.class_id}:${entry.subject_id}`)
+    )
+    const assignedCourses = assignmentRows.map((assignment) => {
+      assignedClassIds.add(assignment.class_id)
+      assignedSubjectIds.add(assignment.subject_id)
+      assignedHours += Number(assignment.hours_per_week || 0)
+
+      return {
+        id: assignment.id,
+        classId: assignment.class_id,
+        className: assignment.class_name,
+        subjectId: assignment.subject_id,
+        subjectName: assignment.subject_name,
+        hoursPerWeek: Number(assignment.hours_per_week || 0),
+        scheduled: scheduledPairs.has(`${assignment.class_id}:${assignment.subject_id}`),
+      }
+    })
+
+    summary.plannedHours = Math.round(summary.totalHours * 10) / 10
+    summary.totalHours = Math.round(assignedHours * 10) / 10
+    summary.classesCount = assignedClassIds.size || classIds.size
+    summary.subjectsCount = assignedSubjectIds.size || subjectIds.size
 
     const weeks = Array.from({ length: 9 }, (_, index) => {
       const date = now.plus({ weeks: index - 4 })
@@ -700,6 +800,8 @@ export default class SchoolController {
       weeks,
       timetable,
       summary,
+      assignedCourses,
+      hasScheduledEntries: entries.length > 0,
       availabilities: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'].map((day) => ({
         day,
         slots: 'Sur rendez-vous',
@@ -741,6 +843,26 @@ export default class SchoolController {
       teacher.status = payload.status
       await teacher.save()
 
+      if (payload.status === 'terminated') {
+        await trx.from('class_subject').where('teacher_id', teacher.id).update({
+          teacher_id: null,
+          updated_at: new Date(),
+        })
+        await trx.from('classes').where('teacher_id', teacher.id).update({
+          teacher_id: null,
+          updated_at: new Date(),
+        })
+        await trx.from('timetables').where('teacher_id', teacher.id).update({
+          teacher_id: null,
+          updated_at: new Date(),
+        })
+        await trx
+          .from('assignments')
+          .where('teacher_id', teacher.id)
+          .whereIn('status', ['draft', 'published'])
+          .update({ status: 'closed', updated_at: new Date() })
+      }
+
       if (selectedSubjectIds.length) {
         await trx
           .from('class_subject')
@@ -772,6 +894,15 @@ export default class SchoolController {
         teacher_id: null,
         updated_at: new Date(),
       })
+      await trx.from('timetables').where('teacher_id', teacher.id).update({
+        teacher_id: null,
+        updated_at: new Date(),
+      })
+      await trx
+        .from('assignments')
+        .where('teacher_id', teacher.id)
+        .whereIn('status', ['draft', 'published'])
+        .update({ status: 'closed', updated_at: new Date() })
 
       teacher.useTransaction(trx)
       teacher.status = 'terminated'
@@ -785,7 +916,162 @@ export default class SchoolController {
     return response.ok({ success: true, message: 'Enseignant desactive avec succes.' })
   }
 
-  public async resetTeacherPassword({ auth, params, response }: HttpContext) {
+  public async replaceTeacher({ auth, params, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const schema = vine.compile(
+      vine.object({
+        replacementTeacherId: vine.string().trim(),
+      })
+    )
+    const payload = await request.validateUsing(schema)
+
+    if (teacher.status === 'terminated') {
+      session.flash('error', 'Cet enseignant est déjà désactivé.')
+      return response.redirect().back()
+    }
+
+    if (payload.replacementTeacherId === teacher.id) {
+      session.flash('error', 'Un enseignant ne peut pas se remplacer lui-même.')
+      return response.redirect().back()
+    }
+
+    const replacement = await Teacher.query()
+      .where('id', payload.replacementTeacherId)
+      .where('schoolId', user.schoolId)
+      .where('status', 'active')
+      .preload('user')
+      .first()
+
+    if (!replacement) {
+      session.flash('error', "Le remplaçant doit être un enseignant actif de votre établissement.")
+      return response.redirect().back()
+    }
+
+    const activeClassRows = await db
+      .from('classes')
+      .where('school_id', user.schoolId)
+      .whereNull('archived_at')
+      .select('id')
+    const activeClassIds = activeClassRows.map((classObj) => classObj.id)
+    const [outgoingTimetable, replacementTimetable] = await Promise.all([
+      activeClassIds.length
+        ? db
+            .from('timetables')
+            .whereIn('class_id', activeClassIds)
+            .where('teacher_id', teacher.id)
+            .select(
+              'academic_year',
+              'term',
+              'shift',
+              'day_of_week',
+              'start_time',
+              'end_time'
+            )
+        : [],
+      db
+        .from('timetables')
+        .where('teacher_id', replacement.id)
+        .select(
+          'academic_year',
+          'term',
+          'shift',
+          'day_of_week',
+          'start_time',
+          'end_time'
+        ),
+    ])
+    const hasScheduleConflict = outgoingTimetable.some((outgoing) =>
+      replacementTimetable.some(
+        (existing) =>
+          existing.academic_year === outgoing.academic_year &&
+          existing.term === outgoing.term &&
+          existing.shift === outgoing.shift &&
+          Number(existing.day_of_week) === Number(outgoing.day_of_week) &&
+          String(existing.start_time) < String(outgoing.end_time) &&
+          String(existing.end_time) > String(outgoing.start_time)
+      )
+    )
+
+    if (hasScheduleConflict) {
+      session.flash(
+        'error',
+        `Le remplacement est impossible : l'emploi du temps de ${replacement.user.fullName} contient un créneau en conflit.`
+      )
+      return response.redirect().back()
+    }
+
+    const transferred = {
+      mainClasses: 0,
+      courses: 0,
+      timetableEntries: 0,
+      activeAssignments: 0,
+    }
+    const affectedRows = (result: number | any[]) =>
+      Array.isArray(result) ? result.length : Number(result || 0)
+
+    await db.transaction(async (trx) => {
+      if (activeClassIds.length) {
+        transferred.mainClasses = affectedRows(
+          await trx
+            .from('classes')
+            .whereIn('id', activeClassIds)
+            .where('teacher_id', teacher.id)
+            .update({ teacher_id: replacement.id, updated_at: new Date() })
+        )
+
+        transferred.courses = affectedRows(
+          await trx
+            .from('class_subject')
+            .whereIn('class_id', activeClassIds)
+            .where('teacher_id', teacher.id)
+            .update({ teacher_id: replacement.id, updated_at: new Date() })
+        )
+
+        transferred.timetableEntries = affectedRows(
+          await trx
+            .from('timetables')
+            .whereIn('class_id', activeClassIds)
+            .where('teacher_id', teacher.id)
+            .update({ teacher_id: replacement.id, updated_at: new Date() })
+        )
+
+        transferred.activeAssignments = affectedRows(
+          await trx
+            .from('assignments')
+            .whereIn('class_id', activeClassIds)
+            .where('teacher_id', teacher.id)
+            .whereIn('status', ['draft', 'published'])
+            .update({ teacher_id: replacement.id, updated_at: new Date() })
+        )
+      }
+
+      teacher.useTransaction(trx)
+      teacher.status = 'terminated'
+      await teacher.save()
+
+      teacher.user.useTransaction(trx)
+      teacher.user.status = 'inactive'
+      await teacher.user.save()
+    })
+
+    session.flash(
+      'success',
+      `${teacher.user.fullName} a été remplacé par ${replacement.user.fullName} : ` +
+        `${transferred.mainClasses} classe(s), ${transferred.courses} cours, ` +
+        `${transferred.timetableEntries} créneau(x) et ${transferred.activeAssignments} devoir(s) transféré(s).`
+    )
+
+    return response.redirect(`/schools/teachers/${replacement.id}`)
+  }
+
+  public async resetTeacherPassword({
+    auth,
+    params,
+    request,
+    response,
+    view,
+  }: HttpContext) {
     const user = auth.getUserOrFail()
     const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
     const tempPassword = crypto.randomBytes(8).toString('hex')
@@ -794,6 +1080,11 @@ export default class SchoolController {
     teacher.user.password = tempPassword
     teacher.user.mustChangePassword = true
     await teacher.user.save()
+
+    let emailDelivery = {
+      sent: true,
+      message: `Les nouveaux identifiants ont été envoyés à ${teacher.user.email}.`,
+    }
 
     try {
       await this.mailService.sendAccountCredentials({
@@ -805,19 +1096,48 @@ export default class SchoolController {
         password: tempPassword,
       })
     } catch (error) {
-      return response.ok({
-        success: true,
+      emailDelivery = {
+        sent: false,
         message:
           error instanceof Error
-            ? `Mot de passe reinitialise, mais email non envoye : ${error.message}`
-            : 'Mot de passe reinitialise, mais email non envoye.',
+            ? `Mot de passe réinitialisé, mais email non envoyé : ${error.message}`
+            : 'Mot de passe réinitialisé, mais email non envoyé.',
+      }
+    }
+
+    const credentials = {
+      fullName: teacher.user.fullName,
+      role: teacher.user.role,
+      roleLabel: 'Enseignant',
+      email: teacher.user.email,
+      password: tempPassword,
+      schoolName,
+      profileReference: teacher.employeeNumber,
+      createdAt: DateTime.now().toFormat('dd/MM/yyyy HH:mm'),
+    }
+
+    if (request.accepts(['html', 'json']) === 'html') {
+      return view.render('schools/accounts/credentials', {
+        school: this.getFallbackSchool(user),
+        credentials,
+        emailDelivery,
       })
     }
 
-    return response.ok({ success: true, message: 'Nouveau mot de passe envoye par email.' })
+    return response.ok({
+      success: true,
+      message: emailDelivery.sent
+        ? 'Nouveau mot de passe envoyé par email.'
+        : 'Nouveau mot de passe généré, mais email non envoyé.',
+      credentials: {
+        email: credentials.email,
+        temporaryPassword: credentials.password,
+      },
+      emailDelivery,
+    })
   }
 
-  public async addTeacher({ request, auth, response }: HttpContext) {
+  public async addTeacher({ request, auth, response, view }: HttpContext) {
     const user = auth.getUserOrFail()
 
     const schema = vine.compile(
@@ -861,29 +1181,102 @@ export default class SchoolController {
       status: 'active',
     })
 
-    if (request.header('accept')?.includes('text/html')) {
-      return response.redirect('/schools/teachers')
+    const schoolName = await this.getSchoolName(user.schoolId)
+    const credentials = {
+      fullName: teacherUser.fullName,
+      role: teacherUser.role,
+      roleLabel: 'Enseignant',
+      email: teacherUser.email,
+      password: tempPassword,
+      schoolName,
+      profileReference: employeeNumber,
+      createdAt: DateTime.now().toFormat('dd/MM/yyyy HH:mm'),
+    }
+    let emailDelivery = {
+      sent: true,
+      message: `Les identifiants ont été envoyés à ${teacherUser.email}.`,
+    }
+
+    try {
+      await this.mailService.sendAccountCredentials({
+        to: teacherUser.email,
+        schoolName,
+        fullName: teacherUser.fullName,
+        roleLabel: 'Enseignant',
+        email: teacherUser.email,
+        password: tempPassword,
+      })
+    } catch (error) {
+      emailDelivery = {
+        sent: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "L'email n'a pas pu être envoyé automatiquement.",
+      }
+    }
+
+    if (request.accepts(['html', 'json']) === 'html') {
+      return view.render('schools/accounts/credentials', {
+        school: this.getFallbackSchool(user),
+        credentials,
+        emailDelivery,
+      })
     }
 
     return response.created({
       success: true,
       teacher: { ...teacher.serialize(), user: teacherUser.serialize() },
       credentials: { email: teacherUser.email, temporaryPassword: tempPassword },
+      emailDelivery,
     })
   }
 
   public async createAccountPage({ auth, view }: HttpContext) {
     const user = auth.getUserOrFail()
-    await this.ensureRdcDasClasses(user.schoolId)
+    const governance = await getGovernanceContext(user)
+    const sections = await listSchoolSections(user.schoolId)
+    const visibleSections = governance.canManageAllSections
+      ? sections
+      : sections.filter((section) => section.id === governance.sectionId)
+    const governanceRoles = governance.creatablePositions.map((position) => ({
+      value: position,
+      label: positionLabel(position),
+      schoolWide: isSchoolWidePosition(position),
+      sectionCodes: Object.entries({
+        maternelle: ['preschool_director'],
+        primaire: ['primary_director'],
+        secondaire: ['prefect', 'studies_director', 'pedagogical_advisor'],
+        all_sections: ['finance_director', 'secretary'],
+      })
+        .filter(([, positions]) => positions.includes(position))
+        .map(([code]) => code),
+    }))
+    const canCreateLearnerAccounts = [
+      'promoter',
+      'preschool_director',
+      'primary_director',
+      'prefect',
+      'studies_director',
+    ].includes(governance.position)
 
     const [classes, students] = await Promise.all([
       Class.query()
         .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
+        .if(!governance.canManageAllSections, (query) =>
+          query.where('schoolSectionId', governance.sectionId)
+        )
         .orderBy('gradeLevel', 'asc')
         .orderBy('name', 'asc'),
       Student.query()
         .where('schoolId', user.schoolId)
         .where('academicStatus', 'active')
+        .if(!governance.canManageAllSections, (query) =>
+          query.whereHas('class', (classQuery) =>
+            classQuery.where('schoolSectionId', governance.sectionId)
+          )
+        )
         .preload('user')
         .preload('class')
         .orderBy('createdAt', 'desc'),
@@ -892,14 +1285,19 @@ export default class SchoolController {
     return view.render('schools/accounts/create', {
       school: this.getFallbackSchool(user),
       classes,
+      classCatalog: RDC_CLASS_CATALOG,
       students,
-      schoolOptions: this.getRdcSchoolOptions(),
+      schoolOptions: RDC_SCHOOL_OPTIONS,
+      sections: visibleSections,
+      governance,
       roles: [
-        { value: 'teacher', label: 'Enseignant' },
-        { value: 'discipline_director', label: 'Directeur de discipline' },
-        { value: 'finance_director', label: 'Directeur financier' },
-        { value: 'student', label: 'Élève' },
-        { value: 'parent', label: 'Parent' },
+        ...governanceRoles,
+        ...(canCreateLearnerAccounts
+          ? [
+              { value: 'student', label: 'Élève' },
+              { value: 'parent', label: 'Parent' },
+            ]
+          : []),
       ],
     })
   }
@@ -908,11 +1306,54 @@ export default class SchoolController {
     const user = auth.getUserOrFail()
     const search = String(request.input('search', '')).trim()
     const role = request.input('role')
+    const governance = await getGovernanceContext(user)
+    const assignments = await db
+      .from('school_staff_assignments')
+      .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+      .where('school_staff_assignments.school_id', user.schoolId)
+      .where('school_staff_assignments.is_active', true)
+      .select(
+        'school_staff_assignments.user_id',
+        'school_staff_assignments.position',
+        'school_staff_assignments.school_section_id',
+        'school_sections.name as section_name'
+      )
+    const assignmentByUser = new Map(assignments.map((assignment) => [assignment.user_id, assignment]))
+    const sectionUserIds = governance.canManageAllSections
+      ? null
+      : assignments
+          .filter(
+            (assignment) =>
+              assignment.school_section_id === governance.sectionId ||
+              isSchoolWidePosition(assignment.position)
+          )
+          .map((assignment) => assignment.user_id)
 
     const accounts = await User.query()
       .where('schoolId', user.schoolId)
-      .whereIn('role', ['teacher', 'discipline_director', 'finance_director', 'student', 'parent'])
-      .if(role, (query) => query.where('role', role))
+      .whereNot('id', user.id)
+      .whereIn('role', [
+        'director',
+        'teacher',
+        'discipline_director',
+        'finance_director',
+        'secretary',
+        'student',
+        'parent',
+      ])
+      .if(sectionUserIds !== null, (query) => {
+        query.where((scope) => {
+          if (sectionUserIds!.length) scope.whereIn('id', sectionUserIds!)
+          scope.orWhereIn(
+            'id',
+            db
+              .from('students')
+              .join('classes', 'students.class_id', 'classes.id')
+              .where('classes.school_section_id', governance.sectionId)
+              .select('students.user_id')
+          )
+        })
+      })
       .if(search, (query) => {
         query.where((searchQuery) => {
           searchQuery
@@ -926,21 +1367,27 @@ export default class SchoolController {
 
     return view.render('schools/accounts/index', {
       school: this.getFallbackSchool(user),
-      accounts: accounts.map((account) => ({
-        id: account.id,
-        fullName: account.fullName,
-        email: account.email,
-        phone: account.phone || '-',
-        role: account.role,
-        roleLabel: this.getRoleLabel(account.role),
-        status: account.status,
-      })),
+      accounts: accounts
+        .map((account) => {
+          const assignment = assignmentByUser.get(account.id)
+          return {
+            id: account.id,
+            fullName: account.fullName,
+            email: account.email,
+            phone: account.phone || '-',
+            role: assignment?.position || account.role,
+            roleLabel: assignment ? positionLabel(assignment.position) : this.getRoleLabel(account.role),
+            sectionName: assignment?.section_name || null,
+            status: account.status,
+          }
+        })
+        .filter((account) => !role || account.role === role),
       selectedRole: role || '',
       search,
       roles: [
-        { value: 'teacher', label: 'Enseignant' },
-        { value: 'discipline_director', label: 'Directeur de discipline' },
-        { value: 'finance_director', label: 'Directeur financier' },
+        ...Object.entries(SCHOOL_POSITIONS)
+          .filter(([position]) => position !== 'promoter')
+          .map(([value, label]) => ({ value, label })),
         { value: 'student', label: 'Élève' },
         { value: 'parent', label: 'Parent' },
       ],
@@ -949,16 +1396,27 @@ export default class SchoolController {
 
   public async editAccountPage({ auth, params, view }: HttpContext) {
     const director = auth.getUserOrFail()
-    await this.ensureRdcDasClasses(director.schoolId)
 
     const account = await User.query()
       .where('id', params.id)
       .where('schoolId', director.schoolId)
-      .whereIn('role', ['teacher', 'discipline_director', 'finance_director', 'student', 'parent'])
+      .whereIn('role', [
+        'director',
+        'teacher',
+        'discipline_director',
+        'finance_director',
+        'secretary',
+        'student',
+        'parent',
+      ])
       .firstOrFail()
 
     const [classes, students, teacher, student, parent] = await Promise.all([
-      Class.query().where('schoolId', director.schoolId).orderBy('gradeLevel', 'asc').orderBy('name', 'asc'),
+      Class.query()
+        .where('schoolId', director.schoolId)
+        .whereNull('archivedAt')
+        .orderBy('gradeLevel', 'asc')
+        .orderBy('name', 'asc'),
       Student.query()
         .where('schoolId', director.schoolId)
         .where('academicStatus', 'active')
@@ -972,9 +1430,19 @@ export default class SchoolController {
 
     let selectedChildrenIds: string[] = []
     if (parent) {
-      const links = await db.from('parent_student').where('parent_id', parent.id).select('student_id')
+      const links = await db
+        .from('parent_student')
+        .where('parent_id', parent.id)
+        .select('student_id')
       selectedChildrenIds = links.map((link) => link.student_id)
     }
+    const staffAssignment = await db
+      .from('school_staff_assignments')
+      .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+      .where('school_staff_assignments.user_id', account.id)
+      .where('school_staff_assignments.is_active', true)
+      .select('school_staff_assignments.position', 'school_sections.name as section_name')
+      .first()
 
     return view.render('schools/accounts/edit', {
       school: this.getFallbackSchool(director),
@@ -983,10 +1451,12 @@ export default class SchoolController {
       student,
       parent,
       classes,
-      schoolOptions: this.getRdcSchoolOptions(),
+      schoolOptions: RDC_SCHOOL_OPTIONS,
       students,
       selectedChildrenIds,
-      roleLabel: this.getRoleLabel(account.role),
+      roleLabel: staffAssignment
+        ? `${positionLabel(staffAssignment.position)} — ${staffAssignment.section_name || "Toute l'école"}`
+        : this.getRoleLabel(account.role),
     })
   }
 
@@ -995,7 +1465,15 @@ export default class SchoolController {
     const account = await User.query()
       .where('id', params.id)
       .where('schoolId', director.schoolId)
-      .whereIn('role', ['teacher', 'discipline_director', 'finance_director', 'student', 'parent'])
+      .whereIn('role', [
+        'director',
+        'teacher',
+        'discipline_director',
+        'finance_director',
+        'secretary',
+        'student',
+        'parent',
+      ])
       .firstOrFail()
 
     const schema = vine.compile(
@@ -1009,6 +1487,7 @@ export default class SchoolController {
         qualification: vine.string().trim().optional(),
         specialization: vine.string().trim().optional(),
         classId: vine.string().optional(),
+        className: vine.string().trim().optional(),
         schoolOption: vine.string().trim().optional(),
         birthDate: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
         birthPlace: vine.string().trim().optional(),
@@ -1025,7 +1504,10 @@ export default class SchoolController {
     )
     const payload = await request.validateUsing(schema)
     const email = payload.email.trim().toLowerCase()
-    const existingEmail = await User.query().where('email', email).whereNot('id', account.id).first()
+    const existingEmail = await User.query()
+      .where('email', email)
+      .whereNot('id', account.id)
+      .first()
 
     if (existingEmail) {
       session.flash('error', 'Cette adresse email est déjà utilisée par un autre compte.')
@@ -1033,18 +1515,32 @@ export default class SchoolController {
     }
 
     if (account.role === 'parent' && (!payload.relationship || !payload.childrenIds?.length)) {
-      session.flash('error', 'Le lien de parenté et au moins un élève rattaché sont requis pour un parent.')
+      session.flash(
+        'error',
+        'Le lien de parenté et au moins un élève rattaché sont requis pour un parent.'
+      )
       return response.redirect().back()
     }
 
     const selectedClass = payload.classId
-      ? await Class.query().where('id', payload.classId).where('schoolId', director.schoolId).first()
+      ? await Class.query()
+          .where('id', payload.classId)
+          .where('schoolId', director.schoolId)
+          .whereNull('archivedAt')
+          .first()
       : null
-    const schoolOptions = this.getRdcSchoolOptions()
-    const isHumanities = this.isHumanitiesClass(selectedClass)
+    const schoolOptions = RDC_SCHOOL_OPTIONS
+    const isHumanities = isHumanitiesClass(selectedClass)
 
-    if (account.role === 'student' && isHumanities && (!payload.schoolOption || !schoolOptions.includes(payload.schoolOption))) {
-      session.flash('error', "Veuillez sélectionner une option valide pour cette classe des humanités.")
+    if (
+      account.role === 'student' &&
+      isHumanities &&
+      (!payload.schoolOption || !schoolOptions.includes(payload.schoolOption as any))
+    ) {
+      session.flash(
+        'error',
+        'Veuillez sélectionner une option valide pour cette classe des humanités.'
+      )
       return response.redirect().back()
     }
 
@@ -1121,8 +1617,116 @@ export default class SchoolController {
     return response.redirect('/schools/accounts')
   }
 
+  public async resetAccountCredentials({
+    auth,
+    params,
+    request,
+    response,
+    view,
+  }: HttpContext) {
+    const director = auth.getUserOrFail()
+    const account = await User.query()
+      .where('id', params.id)
+      .where('schoolId', director.schoolId)
+      .whereIn('role', [
+        'director',
+        'teacher',
+        'discipline_director',
+        'finance_director',
+        'secretary',
+        'student',
+        'parent',
+      ])
+      .firstOrFail()
+    const tempPassword = crypto.randomBytes(8).toString('hex')
+    const schoolName = await this.getSchoolName(director.schoolId)
+
+    account.password = tempPassword
+    account.mustChangePassword = true
+    await account.save()
+
+    let profileReference = '-'
+    if (account.role === 'teacher') {
+      const teacher = await Teacher.query().where('userId', account.id).first()
+      profileReference = teacher?.employeeNumber || '-'
+    } else if (account.role === 'student') {
+      const student = await Student.query().where('userId', account.id).first()
+      profileReference = student?.registrationNumber || '-'
+    } else if (account.role === 'parent') {
+      const parent = await Parent.query().where('userId', account.id).first()
+      if (parent) {
+        const linkedChildren = await db
+          .from('parent_student')
+          .where('parent_id', parent.id)
+          .count('* as total')
+          .first()
+        profileReference = `${Number(linkedChildren?.total || 0)} élève(s) lié(s)`
+      }
+    }
+
+    const resetAssignment = await db
+      .from('school_staff_assignments')
+      .where('user_id', account.id)
+      .where('is_active', true)
+      .select('position')
+      .first()
+    const credentials = {
+      fullName: account.fullName,
+      role: account.role,
+      roleLabel: resetAssignment
+        ? positionLabel(resetAssignment.position)
+        : this.getRoleLabel(account.role),
+      email: account.email,
+      password: tempPassword,
+      schoolName,
+      profileReference,
+      createdAt: DateTime.now().toFormat('dd/MM/yyyy HH:mm'),
+    }
+    let emailDelivery = {
+      sent: true,
+      message: `Les nouveaux identifiants ont été envoyés à ${account.email}.`,
+    }
+
+    try {
+      await this.mailService.sendAccountCredentials({
+        to: account.email,
+        schoolName,
+        fullName: account.fullName,
+        roleLabel: credentials.roleLabel,
+        email: account.email,
+        password: tempPassword,
+      })
+    } catch (error) {
+      emailDelivery = {
+        sent: false,
+        message:
+          error instanceof Error
+            ? `Identifiants générés, mais email non envoyé : ${error.message}`
+            : 'Identifiants générés, mais email non envoyé.',
+      }
+    }
+
+    if (request.accepts(['html', 'json']) === 'html') {
+      return view.render('schools/accounts/credentials', {
+        school: this.getFallbackSchool(director),
+        credentials,
+        emailDelivery,
+      })
+    }
+
+    return response.ok({
+      success: true,
+      message: emailDelivery.sent
+        ? 'Nouveaux identifiants envoyés par email.'
+        : 'Nouveaux identifiants générés, mais email non envoyé.',
+      credentials: { email: account.email, temporaryPassword: tempPassword },
+      emailDelivery,
+    })
+  }
+
   public async storeAccount({ auth, request, response, session, view }: HttpContext) {
     const director = auth.getUserOrFail()
+    const governance = await getGovernanceContext(director)
 
     if (!director.schoolId) {
       session.flash('error', "Votre compte n'est lié à aucune école.")
@@ -1131,7 +1735,21 @@ export default class SchoolController {
 
     const schema = vine.compile(
       vine.object({
-        role: vine.enum(['teacher', 'discipline_director', 'finance_director', 'student', 'parent']),
+        role: vine.enum([
+          'preschool_director',
+          'primary_director',
+          'prefect',
+          'studies_director',
+          'pedagogical_advisor',
+          'teacher',
+          'discipline_director',
+          'deputy_discipline_director',
+          'finance_director',
+          'secretary',
+          'student',
+          'parent',
+        ]),
+        sectionId: vine.string().optional(),
         firstName: vine.string().trim(),
         postnom: vine.string().trim(),
         lastName: vine.string().trim(),
@@ -1140,6 +1758,7 @@ export default class SchoolController {
         qualification: vine.string().trim().optional(),
         specialization: vine.string().trim().optional(),
         classId: vine.string().optional(),
+        className: vine.string().trim().optional(),
         schoolOption: vine.string().trim().optional(),
         birthDate: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
         birthPlace: vine.string().trim().optional(),
@@ -1155,25 +1774,113 @@ export default class SchoolController {
       })
     )
     const payload = await request.validateUsing(schema)
+    const requestedPosition =
+      payload.role in POSITION_BASE_ROLES ? (payload.role as SchoolPosition) : null
+    const canCreateLearnerAccounts = [
+      'promoter',
+      'preschool_director',
+      'primary_director',
+      'prefect',
+      'studies_director',
+    ].includes(governance.position)
 
-    if (payload.role === 'student' && (!payload.birthDate || !payload.gender || !payload.parentPhone)) {
-      session.flash('error', "La date de naissance, le sexe et le téléphone parent sont requis pour un élève.")
+    if (requestedPosition && !canCreatePosition(governance, requestedPosition)) {
+      session.flash('error', "Vous n'êtes pas autorisé à créer cette fonction.")
+      return response.redirect().back()
+    }
+    if (['student', 'parent'].includes(payload.role) && !canCreateLearnerAccounts) {
+      session.flash('error', "Vous n'êtes pas autorisé à créer ce type de compte.")
+      return response.redirect().back()
+    }
+
+    const sectionId = isSchoolWidePosition(requestedPosition)
+      ? null
+      : governance.canManageAllSections
+        ? payload.sectionId
+        : governance.sectionId
+
+    if (requestedPosition && !isSchoolWidePosition(requestedPosition) && !sectionId) {
+      session.flash('error', 'Veuillez sélectionner la section scolaire concernée.')
+      return response.redirect().back()
+    }
+
+    if (sectionId && requestedPosition) {
+      const validSection = await db
+        .from('school_sections')
+        .where('id', sectionId)
+        .where('school_id', director.schoolId)
+        .where('is_active', true)
+        .first()
+      if (!validSection) {
+        session.flash('error', "La section scolaire sélectionnée n'appartient pas à cette école.")
+        return response.redirect().back()
+      }
+      if (!SECTION_POSITION_OPTIONS[validSection.code]?.includes(requestedPosition)) {
+        session.flash(
+          'error',
+          `${positionLabel(requestedPosition)} ne peut pas être affecté à ${validSection.name}.`
+        )
+        return response.redirect().back()
+      }
+    }
+
+    const uniqueStaffPositions: SchoolPosition[] = [
+      'preschool_director',
+      'primary_director',
+      'prefect',
+      'studies_director',
+      'pedagogical_advisor',
+      'discipline_director',
+      'deputy_discipline_director',
+      'finance_director',
+      'secretary',
+    ]
+    if (requestedPosition && uniqueStaffPositions.includes(requestedPosition)) {
+      const existingAssignmentQuery = db
+        .from('school_staff_assignments')
+        .where('school_id', director.schoolId)
+        .where('position', requestedPosition)
+        .where('is_active', true)
+
+      if (isSchoolWidePosition(requestedPosition)) {
+        existingAssignmentQuery.whereNull('school_section_id')
+      } else {
+        existingAssignmentQuery.where('school_section_id', sectionId)
+      }
+
+      const existingAssignment = await existingAssignmentQuery.first()
+      if (existingAssignment) {
+        session.flash(
+          'error',
+          isSchoolWidePosition(requestedPosition)
+            ? `${positionLabel(requestedPosition)} est dÃ©jÃ  nommÃ© pour toute l'Ã©cole.`
+            : `${positionLabel(requestedPosition)} est dÃ©jÃ  nommÃ© pour cette section.`
+        )
+        return response.redirect().back()
+      }
+    }
+
+    if (
+      payload.role === 'student' &&
+      (!payload.birthDate || !payload.gender || !payload.parentPhone)
+    ) {
+      session.flash(
+        'error',
+        'La date de naissance, le sexe et le téléphone parent sont requis pour un élève.'
+      )
       return response.redirect().back()
     }
 
     if (payload.role === 'parent' && (!payload.relationship || !payload.childrenIds?.length)) {
-      session.flash('error', 'Le lien de parenté et au moins un élève lié sont requis pour un parent.')
+      session.flash(
+        'error',
+        'Le lien de parenté et au moins un élève lié sont requis pour un parent.'
+      )
       return response.redirect().back()
     }
 
-    const selectedClass = payload.classId
-      ? await Class.query().where('id', payload.classId).where('schoolId', director.schoolId).first()
-      : null
-    const schoolOptions = this.getRdcSchoolOptions()
-    const isHumanities = this.isHumanitiesClass(selectedClass)
-
-    if (payload.role === 'student' && isHumanities && (!payload.schoolOption || !schoolOptions.includes(payload.schoolOption))) {
-      session.flash('error', "Veuillez sélectionner une option valide pour cette classe des humanités.")
+    if (payload.role === 'student' && !payload.classId && !payload.className) {
+      session.flash('error', 'Veuillez sélectionner ou renseigner la classe de l’élève.')
       return response.redirect().back()
     }
 
@@ -1183,90 +1890,134 @@ export default class SchoolController {
     let createdUser: User
     let profileReference = ''
 
-    await db.transaction(async (trx) => {
-      createdUser = new User()
-      createdUser.useTransaction(trx)
-      createdUser.schoolId = director.schoolId
-      createdUser.firstName = payload.firstName
-      createdUser.postnom = payload.postnom
-      createdUser.lastName = payload.lastName
-      createdUser.email = email
-      createdUser.phone = payload.phone || null
-      createdUser.password = tempPassword
-      createdUser.role = payload.role
-      createdUser.status = 'active'
-      createdUser.mustChangePassword = true
-      await createdUser.save()
+    try {
+      await db.transaction(async (trx) => {
+        const selectedClass =
+          payload.role === 'student'
+            ? await resolveEnrollmentClass({
+                schoolId: director.schoolId!,
+                classId: payload.classId,
+                className: payload.className,
+                schoolOption: payload.schoolOption,
+                allowedSectionId: governance.canManageAllSections ? null : governance.sectionId,
+                trx,
+              })
+            : null
 
-      if (payload.role === 'teacher') {
-        const teacher = new Teacher()
-        teacher.useTransaction(trx)
-        teacher.userId = createdUser.id
-        teacher.schoolId = director.schoolId!
-        teacher.employeeNumber = `TCH-${String(director.schoolId).slice(0, 4)}-${Date.now()}`
-        teacher.qualification = payload.qualification || 'Non renseignée'
-        teacher.specialization = payload.specialization || ''
-        teacher.hireDate = DateTime.now()
-        teacher.status = 'active'
-        await teacher.save()
-        profileReference = teacher.employeeNumber
-      }
+        createdUser = new User()
+        createdUser.useTransaction(trx)
+        createdUser.schoolId = director.schoolId
+        createdUser.firstName = payload.firstName
+        createdUser.postnom = payload.postnom
+        createdUser.lastName = payload.lastName
+        createdUser.email = email
+        createdUser.phone = payload.phone || null
+        createdUser.password = tempPassword
+        createdUser.role = requestedPosition
+          ? POSITION_BASE_ROLES[requestedPosition]
+          : (payload.role as User['role'])
+        createdUser.status = 'active'
+        createdUser.mustChangePassword = true
+        await createdUser.save()
 
-      if (payload.role === 'student') {
-        const student = new Student()
-        student.useTransaction(trx)
-        student.userId = createdUser.id
-        student.schoolId = director.schoolId!
-        student.classId = payload.classId || null
-        student.schoolOption = isHumanities ? payload.schoolOption! : null
-        student.registrationNumber = `STU-${Date.now()}`
-        student.birthDate = payload.birthDate!
-        student.birthPlace = payload.birthPlace || ''
-        student.nationality = payload.nationality || 'Congolaise'
-        student.gender = payload.gender!
-        student.parentPhone = payload.parentPhone!
-        student.address = payload.address || ''
-        student.medicalInfo = payload.medicalInfo || null
-        student.academicStatus = 'active'
-        student.shift = 'morning'
-        await student.save()
-        profileReference = student.registrationNumber
-      }
-
-      if (payload.role === 'parent') {
-        const parent = new Parent()
-        parent.useTransaction(trx)
-        parent.userId = createdUser.id
-        parent.relationship = payload.relationship!
-        parent.profession = payload.profession || null
-        parent.emergencyPhone = payload.emergencyPhone || payload.phone || ''
-        await parent.save()
-
-        const validChildren = await Student.query({ client: trx })
-          .whereIn('id', payload.childrenIds!)
-          .where('schoolId', director.schoolId)
-
-        if (validChildren.length !== payload.childrenIds!.length) {
-          throw new Error("Un des élèves sélectionnés n'appartient pas à votre école.")
-        }
-
-        await trx.table('parent_student').insert(
-          validChildren.map((student, index) => ({
-            parent_id: parent.id,
-            student_id: student.id,
-            is_primary: index === 0,
+        if (requestedPosition) {
+          await trx.table('school_staff_assignments').insert({
+            school_id: director.schoolId,
+            school_section_id: sectionId,
+            user_id: createdUser.id,
+            position: requestedPosition,
+            is_primary: true,
+            is_active: true,
+            created_by: director.id,
             created_at: new Date(),
             updated_at: new Date(),
-          }))
-        )
-        profileReference = `${validChildren.length} élève(s) lié(s)`
-      }
-    })
+          })
+        }
+
+        if (requestedPosition === 'teacher') {
+          const teacher = new Teacher()
+          teacher.useTransaction(trx)
+          teacher.userId = createdUser.id
+          teacher.schoolId = director.schoolId!
+          teacher.employeeNumber = `TCH-${String(director.schoolId).slice(0, 4)}-${Date.now()}`
+          teacher.qualification = payload.qualification || 'Non renseignée'
+          teacher.specialization = payload.specialization || ''
+          teacher.hireDate = DateTime.now()
+          teacher.status = 'active'
+          await teacher.save()
+          profileReference = teacher.employeeNumber
+        }
+
+        if (payload.role === 'student') {
+          const student = new Student()
+          student.useTransaction(trx)
+          student.userId = createdUser.id
+          student.schoolId = director.schoolId!
+          student.classId = selectedClass!.id
+          student.schoolOption = isHumanitiesClass(selectedClass)
+            ? getClassSchoolOption(selectedClass) || payload.schoolOption!
+            : null
+          student.registrationNumber = `STU-${Date.now()}`
+          student.birthDate = payload.birthDate!
+          student.birthPlace = payload.birthPlace || ''
+          student.nationality = payload.nationality || 'Congolaise'
+          student.gender = payload.gender!
+          student.parentPhone = payload.parentPhone!
+          student.address = payload.address || ''
+          student.medicalInfo = payload.medicalInfo || null
+          student.academicStatus = 'active'
+          student.shift = 'morning'
+          await student.save()
+          await trx
+            .from('classes')
+            .where('id', selectedClass!.id)
+            .increment('current_enrollment', 1)
+          profileReference = student.registrationNumber
+        }
+
+        if (payload.role === 'parent') {
+          const parent = new Parent()
+          parent.useTransaction(trx)
+          parent.userId = createdUser.id
+          parent.relationship = payload.relationship!
+          parent.profession = payload.profession || null
+          parent.emergencyPhone = payload.emergencyPhone || payload.phone || ''
+          await parent.save()
+
+          const validChildren = await Student.query({ client: trx })
+            .whereIn('id', payload.childrenIds!)
+            .where('schoolId', director.schoolId)
+
+          if (validChildren.length !== payload.childrenIds!.length) {
+            throw new Error("Un des élèves sélectionnés n'appartient pas à votre école.")
+          }
+
+          await trx.table('parent_student').insert(
+            validChildren.map((student, index) => ({
+              parent_id: parent.id,
+              student_id: student.id,
+              is_primary: index === 0,
+              created_at: new Date(),
+              updated_at: new Date(),
+            }))
+          )
+          profileReference = `${validChildren.length} élève(s) lié(s)`
+        }
+      })
+    } catch (error) {
+      session.flash(
+        'error',
+        error instanceof Error ? error.message : 'La création du compte a échoué.'
+      )
+      return response.redirect().back()
+    }
 
     const credentials = {
       fullName: createdUser!.fullName,
       role: createdUser!.role,
-      roleLabel: this.getRoleLabel(createdUser!.role),
+      roleLabel: requestedPosition
+        ? positionLabel(requestedPosition)
+        : this.getRoleLabel(createdUser!.role),
       email: createdUser!.email,
       password: tempPassword,
       schoolName: school?.name || (await this.getSchoolName(director.schoolId)),

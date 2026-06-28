@@ -1,0 +1,146 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    {{ governance.positionLabel }} - {{ school.name }}
+  @endsection
+
+  @section('dashboardTitle')
+    Espace {{ governance.positionLabel }}
+  @endsection
+
+  @section('dashboardSubtitle')
+    @if(governance.isPromoter)
+      Supervision générale de l'établissement et de ses sections scolaires
+    @else
+      Gestion de {{ governance.sectionName || 'votre section scolaire' }}
+    @end
+  @endsection
+
+  @section('actions')
+    @if(governance.creatablePositions.length)
+      <a href="/schools/accounts/create" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+        <i class="fas fa-user-plus mr-2"></i>Créer un compte
+      </a>
+    @end
+  @endsection
+
+  @section('stats')
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <p class="text-sm text-gray-500">Sections suivies</p>
+        <p class="text-3xl font-bold text-primary mt-1">{{ stats.sections }}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <p class="text-sm text-gray-500">Classes</p>
+        <p class="text-3xl font-bold text-purple-600 mt-1">{{ stats.classes }}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <p class="text-sm text-gray-500">Élèves</p>
+        <p class="text-3xl font-bold text-green-600 mt-1">{{ stats.students }}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <p class="text-sm text-gray-500">Enseignants affectés</p>
+        <p class="text-3xl font-bold text-yellow-600 mt-1">{{ stats.teachers }}</p>
+      </div>
+    </div>
+  @endsection
+
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Mission principale</p>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ governance.mission }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <p class="text-sm text-gray-500">Supervision hiérarchique</p>
+        @if(governance.supervisorLabel)
+          <p class="font-semibold text-gray-900 dark:text-white mt-1">{{ governance.supervisorLabel }}</p>
+          <p class="text-sm text-gray-500 mt-1">
+            {{ supervisorName || 'Responsable non encore affecté' }}
+          </p>
+        @else
+          <p class="font-semibold text-gray-900 dark:text-white mt-1">Autorité principale</p>
+          <p class="text-sm text-gray-500 mt-1">Supervision générale de l'établissement</p>
+        @end
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      @each(action in quickActions)
+        <a href="{{ action.href }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 hover:ring-2 hover:ring-primary transition">
+          <i class="fas {{ action.icon }} text-primary text-xl"></i>
+          <p class="font-medium mt-3">{{ action.label }}</p>
+        </a>
+      @end
+    </div>
+
+    @if(governance.isPromoter)
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        @each(section in sectionCards)
+          <a href="/academic/classes?section_id={{ section.id }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:ring-2 hover:ring-primary transition">
+            <div class="flex items-center justify-between">
+              <h2 class="font-semibold text-lg">{{ section.name }}</h2>
+              <i class="fas fa-school text-primary"></i>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-4 text-sm">
+              <div>
+                <p class="text-gray-500">Classes</p>
+                <p class="text-xl font-bold">{{ section.classesCount }}</p>
+              </div>
+              <div>
+                <p class="text-gray-500">Élèves</p>
+                <p class="text-xl font-bold">{{ section.studentsCount }}</p>
+              </div>
+            </div>
+          </a>
+        @end
+      </div>
+    @end
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <section class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-lg">Équipe de gouvernance</h2>
+          <a href="/schools/accounts" class="text-primary text-sm hover:underline">Voir les comptes</a>
+        </div>
+        <div class="space-y-3">
+          @each(member in staff)
+            <div class="flex items-center justify-between gap-3 border-b dark:border-gray-700 pb-3">
+              <div>
+                <p class="font-medium">{{ member.fullName }}</p>
+                <p class="text-sm text-gray-500">{{ member.positionLabel }}</p>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">{{ member.sectionName }}</span>
+            </div>
+          @else
+            <p class="text-gray-500 text-center py-5">Aucun collaborateur affecté.</p>
+          @end
+        </div>
+      </section>
+
+      <section class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-lg">Classes de votre périmètre</h2>
+          <a href="/academic/classes" class="text-primary text-sm hover:underline">Toutes les classes</a>
+        </div>
+        <div class="space-y-3">
+          @each(classObj in classes)
+            <a href="/schools/classes/{{ classObj.id }}" class="flex items-center justify-between p-3 rounded-lg border dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <span class="font-medium">{{ classObj.name }}</span>
+              <span class="text-sm text-gray-500">{{ classObj.studentsCount }} élève(s)</span>
+            </a>
+          @else
+            <p class="text-gray-500 text-center py-5">Aucune classe dans ce périmètre.</p>
+          @end
+        </div>
+      </section>
+    </div>
+  @endsection

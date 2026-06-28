@@ -23,6 +23,59 @@
   @endsection
   
   @section('content')
+    @if(assignedCourses.length > 0)
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+          <div>
+            <h2 class="font-semibold text-lg">Cours affectés à l’enseignant</h2>
+            <p class="text-sm text-gray-500">
+              Ces cours proviennent des matières assignées aux classes.
+            </p>
+          </div>
+          @if(!hasScheduledEntries)
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm">
+              <i class="fas fa-exclamation-triangle mr-2"></i>Créneaux à planifier
+            </span>
+          @endif
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          @each(course in assignedCourses)
+            <div class="border dark:border-gray-700 rounded-lg p-3">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ course.subjectName }}</p>
+                  <p class="text-sm text-gray-500">{{ course.className }}</p>
+                  <p class="text-xs text-gray-400 mt-1">{{ course.hoursPerWeek }}h/semaine</p>
+                </div>
+                <span
+                  class="text-xs px-2 py-1 rounded-full {{ course.scheduled ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}"
+                >
+                  {{ course.scheduled ? 'Planifié' : 'À planifier' }}
+                </span>
+              </div>
+              <a
+                href="/schools/timetable/create?class_id={{ course.classId }}"
+                class="mt-3 inline-flex items-center text-primary text-sm hover:underline"
+              >
+                <i class="fas fa-calendar-plus mr-1"></i>
+                {{ course.scheduled ? 'Modifier les créneaux' : 'Planifier les créneaux' }}
+              </a>
+            </div>
+          @end
+        </div>
+      </div>
+    @else
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
+        <p class="font-medium text-yellow-800 dark:text-yellow-200">
+          Aucune matière n’est encore assignée à cet enseignant.
+        </p>
+        <a href="/schools/subjects/assign" class="inline-flex items-center text-primary mt-2 hover:underline">
+          <i class="fas fa-link mr-1"></i>Assigner une matière
+        </a>
+      </div>
+    @endif
+
     <!-- Sélection de la semaine -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="flex justify-between items-center flex-wrap gap-3">
@@ -212,8 +265,12 @@
         </h3>
         <div class="space-y-2">
           <div class="flex justify-between">
-            <span>Total heures de cours</span>
+            <span>Charge hebdomadaire assignée</span>
             <span class="font-bold">{{ summary.totalHours || 0 }}h</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Heures déjà planifiées</span>
+            <span class="font-bold">{{ summary.plannedHours || 0 }}h</span>
           </div>
           <div class="flex justify-between">
             <span>Nombre de classes</span>
@@ -323,8 +380,7 @@
       function changeWeek() {
         const select = document.getElementById("weekSelect");
         const [ year, week ] = select.value.split("-W");
-        // Calculer la date à partir du numéro de semaine
-        loadSchedule();
+        window.location.href = `/schools/teachers/{{ teacher.id }}/schedule?year=${year}&week=${Number(week)}`;
       }
 
       function printSchedule() {

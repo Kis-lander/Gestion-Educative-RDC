@@ -106,6 +106,22 @@
         background: rgba(15, 23, 42, 0.36) !important;
       }
 
+      .school-register-card .form-error-box {
+        border: 2px solid #ef4444 !important;
+        background: #fff1f2 !important;
+        color: #7f1d1d !important;
+      }
+
+      .school-register-card .form-error-box p,
+      .school-register-card .form-error-box span,
+      .school-register-card .form-error-box li {
+        color: #7f1d1d !important;
+      }
+
+      .school-register-card .form-error-box i {
+        color: #b91c1c !important;
+      }
+
       .school-register-summary {
         background: rgba(249, 115, 22, 0.12) !important;
         color: #f8fafc;
@@ -177,15 +193,21 @@
       </div>
 
       @flashMessage('error')
-        <div class="mb-5 rounded-lg border border-red-400 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-          {{ $message }}
+        <div class="form-error-box mb-5 rounded-lg px-4 py-3 text-sm font-bold shadow-sm">
+          <div class="flex items-start gap-2">
+            <i class="fas fa-circle-exclamation mt-0.5"></i>
+            <span>{{ $message }}</span>
+          </div>
         </div>
       @end
 
       @errors()
-        <div class="mb-5 rounded-lg border border-red-400 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <p class="font-semibold">Veuillez corriger les informations du formulaire.</p>
-          <ul class="mt-2 list-disc space-y-1 pl-5">
+        <div class="form-error-box mb-5 rounded-lg px-4 py-3 text-sm font-semibold shadow-sm">
+          <p class="flex items-start gap-2 font-extrabold">
+            <i class="fas fa-circle-exclamation mt-0.5"></i>
+            <span>Veuillez corriger les informations du formulaire.</span>
+          </p>
+          <ul class="mt-2 list-disc space-y-1 pl-8">
             @each(message in $messages)
               <li>{{ message.message || message }}</li>
             @end

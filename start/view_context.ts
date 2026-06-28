@@ -32,6 +32,7 @@ export async function edgePageContext(
     try {
       classes = await Class.query()
         .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
         .orderBy('gradeLevel', 'asc')
         .orderBy('name', 'asc')
     } catch {}

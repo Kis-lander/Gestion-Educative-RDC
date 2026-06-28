@@ -20,7 +20,7 @@ export default class StudentsSchema extends BaseSchema {
       table
         .enum('academic_status', ['active', 'transferred', 'graduated', 'suspended', 'expelled'])
         .defaultTo('active')
-      date: 'enrollment_date'
+      table.date('enrollment_date').defaultTo(this.now())
       table.timestamps(true)
 
       table.index(['school_id', 'class_id', 'academic_status'])

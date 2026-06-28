@@ -22,6 +22,7 @@ export default class UsersSchema extends BaseSchema {
           'parent',
           'student',
           'discipline_director',
+          'secretary',
         ])
         .notNullable()
       table.enum('status', ['active', 'inactive', 'suspended']).defaultTo('active')

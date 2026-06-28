@@ -31,6 +31,7 @@ export const createUserAccountValidator = vine.create(
       'parent',
       'student',
       'discipline_director',
+      'secretary',
     ]),
     schoolId: vine.string().exists({ table: 'schools', column: 'id' }),
     sendEmail: vine.boolean().optional(),

@@ -102,25 +102,58 @@
 
         <form
           method="POST"
-          action="/api/transfers/complete"
+          action="/schools/transfers/{{ transfer.id }}/authorize"
           x-data="{ loading: false }"
           @submit="loading = true"
         >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
-          <input type="hidden" name="transferId" value="{{ transfer.id }}" />
+
+          @if(automaticClass)
+            <div class="mb-4">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe d'affectation</label>
+              <div class="rounded-lg border border-green-500/40 bg-green-50 px-4 py-3 dark:bg-green-900/20">
+                <p class="font-semibold text-green-800 dark:text-green-300">
+                  {{ automaticClass.name }}
+                </p>
+                <p class="mt-1 text-xs text-green-700 dark:text-green-400">
+                  Affectation automatique dans la première section disponible (50 élèves maximum).
+                </p>
+              </div>
+            </div>
+          @else
+            <div class="mb-4">
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe d'affectation *</label>
+              <select name="newClassId" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="">Sélectionner une classe</option>
+                @each(classObj in classes)
+                  <option value="{{ classObj.id }}">
+                    {{ classObj.name }} ({{ classObj.level }})
+                  </option>
+                @end
+              </select>
+              <p class="mt-1 text-xs text-amber-600">
+                La classe d'origine n'a pas pu être reconnue automatiquement.
+              </p>
+            </div>
+          @endif
 
           <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe d'affectation *</label>
-            <select name="newClassId" required class="w-full px-3 py-2 border rounded-lg">
-              <option value="">
-                Sélectionner une classe
-              </option>
-              @each(classObj in classes)
-                <option value="{{ classObj.id }}">
-                  {{ classObj.name }} ({{ classObj.level }})
-                </option>
-              @end
-            </select>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2">
+              Téléphone de l'élève{{ transfer.studentPhone ? '' : ' *' }}
+            </label>
+            <input
+              type="tel"
+              name="studentPhone"
+              value="{{ transfer.studentPhone || '' }}"
+              {{ transfer.studentPhone ? '' : 'required' }}
+              placeholder="+243..."
+              class="w-full px-3 py-2 border rounded-lg"
+            />
+            @if(!transfer.studentPhone)
+              <p class="mt-1 text-xs text-amber-600">
+                Le numéro n'a pas été renseigné par l'école de provenance. Complétez-le avant l'inscription.
+              </p>
+            @endif
           </div>
 
           <div class="mb-4">
@@ -148,7 +181,7 @@
             <p class="text-sm text-green-800 dark:text-green-300">
               <i class="fas fa-info-circle mr-2"></i>
               En autorisant ce transfert, l'élève sera inscrit dans votre établissement.
-          Son dossier académique précédent sera accessible.
+          Son dossier scolaire précédent sera accessible.
             </p>
           </div>
 
@@ -242,14 +275,14 @@
       function rejectTransfer() {
         const reason = prompt("Raison du rejet (obligatoire) :");
         if (reason) {
-          fetch("/api/transfers/{{ transfer.id }}/reject", {
+          fetch("/schools/transfers/{{ transfer.id }}/reject", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "X-CSRF-TOKEN": "{{ csrfToken }}"
             },
             body: JSON.stringify({
-              reason: reason
+              rejectionReason: reason
             })
           }).then(res => res.json()).then(data => {
             if (data.success) {

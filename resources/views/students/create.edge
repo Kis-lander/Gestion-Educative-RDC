@@ -13,7 +13,11 @@
   @endsection
 
   @section('content')
-    <form method="POST" action="/students/create" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6">
+    <form
+      method="POST"
+      action="/students/create"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6"
+    >
       <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -43,27 +47,62 @@
         </label>
 
         <label class="block">
-          <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe</span>
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe déjà enregistrée</span>
           <select name="classId" id="studentClassSelect" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Non affecté</option>
+            <option value="">
+              Sélectionner une classe existante
+            </option>
             @each(classObj in classes)
               <option
                 value="{{ classObj.id }}"
                 data-humanities="{{ classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9 ? 'true' : 'false' }}"
+                data-school-option="{{ classObj.name.includes(' - ') ? classObj.name.split(' - ').slice(1).join(' - ') : '' }}"
                 {{ selectedClassId === classObj.id ? 'selected' : '' }}
               >
                 {{ classObj.name }}
               </option>
+            @else
+              <option value="" disabled>
+                Aucune classe enregistrée dans cet établissement
+              </option>
             @end
           </select>
+          <span class="block text-xs text-gray-500 mt-1">
+            Cette liste provient uniquement des classes existantes de votre établissement.
+          </span>
+        </label>
+
+        <label id="studentNewClassField" class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe de l'élève *</span>
+          <select name="className" id="studentNewClassSelect" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">
+              Sélectionner une classe
+            </option>
+            @each(classItem in classCatalog)
+              <option
+                value="{{ classItem.name }}"
+                data-humanities="{{ classItem.level.toLowerCase().includes('humanit') || classItem.gradeLevel >= 9 ? 'true' : 'false' }}"
+              >
+                {{ classItem.name }}
+              </option>
+            @end
+          </select>
+          <span class="block text-xs text-gray-500 mt-1">
+            Si elle n'existe pas, elle sera créée une seule fois. Après 50 élèves, la section B,
+            puis C, sera ouverte automatiquement.
+          </span>
         </label>
 
         <label id="studentSchoolOptionField" class="block hidden">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Option *</span>
           <select name="schoolOption" id="studentSchoolOptionSelect" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner une option</option>
+            <option value="">
+              Sélectionner une option
+            </option>
             @each(option in schoolOptions)
-              <option value="{{ option }}">{{ option }}</option>
+              <option value="{{ option }}">
+                {{ option }}
+              </option>
             @end
           </select>
         </label>
@@ -71,9 +110,15 @@
         <label class="block">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Sexe *</span>
           <select name="gender" required class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner</option>
-            <option value="male">Masculin</option>
-            <option value="female">Féminin</option>
+            <option value="">
+              Sélectionner
+            </option>
+            <option value="male">
+              Masculin
+            </option>
+            <option value="female">
+              Féminin
+            </option>
           </select>
         </label>
 
@@ -120,20 +165,38 @@
 
     <script>
       const classSelect = document.getElementById("studentClassSelect");
+
+      const newClassField = document.getElementById("studentNewClassField");
+
+      const newClassSelect = document.getElementById("studentNewClassSelect");
+
       const optionField = document.getElementById("studentSchoolOptionField");
+
       const optionSelect = document.getElementById("studentSchoolOptionSelect");
 
       function syncSchoolOptionField() {
-        const selectedOption = classSelect?.selectedOptions?.[0];
+        const usesExistingClass = Boolean(classSelect?.value);
+        newClassField?.classList.toggle("hidden", usesExistingClass);
+        if (newClassSelect) {
+          newClassSelect.required = !usesExistingClass;
+          if (usesExistingClass) newClassSelect.value = "";
+        }
+        const selectedOption = usesExistingClass ? classSelect?.selectedOptions?.[0] : newClassSelect?.selectedOptions?.[0];
         const isHumanities = selectedOption?.dataset.humanities === "true";
+        const registeredSchoolOption = selectedOption?.dataset.schoolOption || "";
         optionField?.classList.toggle("hidden", !isHumanities);
         if (optionSelect) {
           optionSelect.required = isHumanities;
+          optionSelect.disabled = Boolean(registeredSchoolOption);
+          if (registeredSchoolOption) optionSelect.value = registeredSchoolOption;
           if (!isHumanities) optionSelect.value = "";
         }
       }
 
       classSelect?.addEventListener("change", syncSchoolOptionField);
+
+      newClassSelect?.addEventListener("change", syncSchoolOptionField);
+
       syncSchoolOptionField();
     </script>
   @endsection

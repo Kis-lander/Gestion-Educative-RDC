@@ -13,7 +13,10 @@
 
   @section('content')
     <div class="flex flex-wrap gap-3 mb-5">
-      <a href="/schools/accounts" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
+      <a
+        href="/schools/accounts"
+        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+      >
         <i class="fas fa-edit mr-2"></i>Modifier un compte
       </a>
     </div>
@@ -23,9 +26,14 @@
       action="/schools/accounts/create"
       class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6"
       x-data="{
-        role: 'teacher',
+        role: '{{ roles[0] ? roles[0].value : '' }}',
+        sectionId: '{{ governance.sectionId || '' }}',
+        schoolWideRoles: {{ JSON.stringify(roles.filter((role) => role.schoolWide).map((role) => role.value)) }},
         childSearch: '',
         selectedChildrenCount: 0,
+        isSchoolWideRole() {
+          return this.schoolWideRoles.includes(this.role)
+        },
         refreshChildrenCount() {
           this.selectedChildrenCount = this.$el.querySelectorAll('[data-child-checkbox]:checked').length
         }
@@ -37,11 +45,46 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label class="block md:col-span-2">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Type de compte *</span>
-          <select name="role" x-model="role" required class="w-full px-3 py-2 border rounded-lg">
+          <select
+            name="role"
+            id="accountRoleSelect"
+            x-model="role"
+            required
+            class="w-full px-3 py-2 border rounded-lg"
+          >
             @each(role in roles)
-              <option value="{{ role.value }}">{{ role.label }}</option>
+              <option
+                value="{{ role.value }}"
+                data-section-codes="{{ role.sectionCodes ? role.sectionCodes.join(',') : '' }}"
+                data-school-wide="{{ role.schoolWide ? 'true' : 'false' }}"
+              >
+                {{ role.label }}
+              </option>
             @end
           </select>
+        </label>
+
+        <label
+          x-show="!['student', 'parent'].includes(role) && !isSchoolWideRole()"
+          class="block md:col-span-2"
+        >
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Section scolaire *</span>
+          <select
+            name="sectionId"
+            x-model="sectionId"
+            class="w-full px-3 py-2 border rounded-lg"
+            :required="!['student', 'parent'].includes(role) && !isSchoolWideRole()"
+          >
+            <option value="">Sélectionner une section scolaire</option>
+            @each(section in sections)
+              <option value="{{ section.id }}" data-section-code="{{ section.code }}">
+                {{ section.name }}
+              </option>
+            @end
+          </select>
+          <span class="block text-xs text-gray-500 mt-1">
+            Le compte ne pourra consulter et gérer que les données de cette section. Le Directeur financier et le Secrétaire sont affectés à toute l'école.
+          </span>
         </label>
 
         <label class="block">
@@ -84,26 +127,61 @@
 
       <div x-show="role === 'student'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label class="block">
-          <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe</span>
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe déjà enregistrée</span>
           <select name="classId" id="accountClassSelect" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Non affecté</option>
+            <option value="">
+              Sélectionner une classe existante
+            </option>
             @each(classObj in classes)
               <option
                 value="{{ classObj.id }}"
                 data-humanities="{{ classObj.level?.toLowerCase().includes('humanit') || classObj.gradeLevel >= 9 ? 'true' : 'false' }}"
+                data-school-option="{{ classObj.name.includes(' - ') ? classObj.name.split(' - ').slice(1).join(' - ') : '' }}"
               >
                 {{ classObj.name }}
               </option>
+            @else
+              <option value="" disabled>
+                Aucune classe enregistrée dans cet établissement
+              </option>
             @end
           </select>
+          <span class="block text-xs text-gray-500 mt-1">
+            Cette liste provient uniquement des classes existantes de votre établissement.
+          </span>
+        </label>
+
+        <label id="accountNewClassField" class="block">
+          <span class="block text-gray-700 dark:text-gray-300 mb-2">Classe de l'élève *</span>
+          <select name="className" id="accountNewClassSelect" class="w-full px-3 py-2 border rounded-lg">
+            <option value="">
+              Sélectionner une classe
+            </option>
+            @each(classItem in classCatalog)
+              <option
+                value="{{ classItem.name }}"
+                data-humanities="{{ classItem.level.toLowerCase().includes('humanit') || classItem.gradeLevel >= 9 ? 'true' : 'false' }}"
+              >
+                {{ classItem.name }}
+              </option>
+            @end
+          </select>
+          <span class="block text-xs text-gray-500 mt-1">
+            La classe absente sera créée une seule fois. Après 50 élèves, la section B, puis C,
+            sera ouverte automatiquement.
+          </span>
         </label>
 
         <label id="accountSchoolOptionField" class="block hidden">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Option *</span>
           <select name="schoolOption" id="accountSchoolOptionSelect" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner une option</option>
+            <option value="">
+              Sélectionner une option
+            </option>
             @each(option in schoolOptions)
-              <option value="{{ option }}">{{ option }}</option>
+              <option value="{{ option }}">
+                {{ option }}
+              </option>
             @end
           </select>
         </label>
@@ -111,9 +189,15 @@
         <label class="block">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Sexe</span>
           <select name="gender" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner</option>
-            <option value="male">Masculin</option>
-            <option value="female">Féminin</option>
+            <option value="">
+              Sélectionner
+            </option>
+            <option value="male">
+              Masculin
+            </option>
+            <option value="female">
+              Féminin
+            </option>
           </select>
         </label>
 
@@ -152,11 +236,21 @@
         <label class="block">
           <span class="block text-gray-700 dark:text-gray-300 mb-2">Lien de parenté</span>
           <select name="relationship" class="w-full px-3 py-2 border rounded-lg">
-            <option value="">Sélectionner</option>
-            <option value="Père">Père</option>
-            <option value="Mère">Mère</option>
-            <option value="Tuteur">Tuteur</option>
-            <option value="Tutrice">Tutrice</option>
+            <option value="">
+              Sélectionner
+            </option>
+            <option value="Père">
+              Père
+            </option>
+            <option value="Mère">
+              Mère
+            </option>
+            <option value="Tuteur">
+              Tuteur
+            </option>
+            <option value="Tutrice">
+              Tutrice
+            </option>
           </select>
         </label>
 
@@ -173,11 +267,15 @@
         <div class="md:col-span-2 rounded-lg border dark:border-gray-700 p-4">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div>
-              <h3 class="font-semibold text-gray-800 dark:text-white">Rattachement parent-élève</h3>
-              <p class="text-sm text-gray-500">Sélectionnez l'élève ou les élèves que ce parent pourra suivre.</p>
+              <h3 class="font-semibold text-gray-800 dark:text-white">
+                Rattachement parent-élève
+              </h3>
+              <p class="text-sm text-gray-500">
+                Sélectionnez l'élève ou les élèves que ce parent pourra suivre.
+              </p>
             </div>
             <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
-              <span x-text="selectedChildrenCount"></span> sélectionné(s)
+              <span x-text="selectedChildrenCount"></span>sélectionné(s)
             </span>
           </div>
 
@@ -188,7 +286,9 @@
             class="w-full px-3 py-2 border rounded-lg mb-3"
           />
 
-          <div class="max-h-72 overflow-y-auto divide-y dark:divide-gray-700 border dark:border-gray-700 rounded-lg">
+          <div
+            class="max-h-72 overflow-y-auto divide-y dark:divide-gray-700 border dark:border-gray-700 rounded-lg"
+          >
             @each(student in students)
               <label
                 class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
@@ -212,8 +312,10 @@
                   </span>
                 </span>
               </label>
-              @else
-              <p class="p-4 text-center text-gray-500">Aucun élève disponible dans cette école.</p>
+            @else
+              <p class="p-4 text-center text-gray-500">
+                Aucun élève disponible dans cette école.
+              </p>
             @end
           </div>
         </div>
@@ -235,20 +337,43 @@
 
     <script>
       const accountClassSelect = document.getElementById("accountClassSelect");
+
+      const accountRoleSelect = document.getElementById("accountRoleSelect");
+
+      const accountNewClassField = document.getElementById("accountNewClassField");
+
+      const accountNewClassSelect = document.getElementById("accountNewClassSelect");
+
       const accountOptionField = document.getElementById("accountSchoolOptionField");
+
       const accountOptionSelect = document.getElementById("accountSchoolOptionSelect");
 
       function syncAccountSchoolOptionField() {
-        const selectedOption = accountClassSelect?.selectedOptions?.[0];
+        const isStudent = accountRoleSelect?.value === "student";
+        const usesExistingClass = Boolean(accountClassSelect?.value);
+        accountNewClassField?.classList.toggle("hidden", usesExistingClass || !isStudent);
+        if (accountNewClassSelect) {
+          accountNewClassSelect.required = isStudent && !usesExistingClass;
+          if (usesExistingClass) accountNewClassSelect.value = "";
+        }
+        const selectedOption = usesExistingClass ? accountClassSelect?.selectedOptions?.[0] : accountNewClassSelect?.selectedOptions?.[0];
         const isHumanities = selectedOption?.dataset.humanities === "true";
-        accountOptionField?.classList.toggle("hidden", !isHumanities);
+        const registeredSchoolOption = selectedOption?.dataset.schoolOption || "";
+        accountOptionField?.classList.toggle("hidden", !isStudent || !isHumanities);
         if (accountOptionSelect) {
-          accountOptionSelect.required = isHumanities;
+          accountOptionSelect.required = isStudent && isHumanities;
+          accountOptionSelect.disabled = Boolean(registeredSchoolOption);
+          if (registeredSchoolOption) accountOptionSelect.value = registeredSchoolOption;
           if (!isHumanities) accountOptionSelect.value = "";
         }
       }
 
       accountClassSelect?.addEventListener("change", syncAccountSchoolOptionField);
+
+      accountNewClassSelect?.addEventListener("change", syncAccountSchoolOptionField);
+
+      accountRoleSelect?.addEventListener("change", syncAccountSchoolOptionField);
+
       syncAccountSchoolOptionField();
     </script>
   @endsection

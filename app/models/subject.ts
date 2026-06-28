@@ -28,6 +28,9 @@ export default class Subject extends SubjectSchema {
   @column()
   declare coefficient: number
 
+  @column()
+  declare isStandard: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

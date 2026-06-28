@@ -243,6 +243,7 @@ export default class FinancialController {
     const classes = await db
       .from('classes')
       .where('school_id', auth.user!.schoolId!)
+      .whereNull('archived_at')
       .select('id', 'name')
       .orderBy('name', 'asc')
 

@@ -352,6 +352,7 @@ export default class DisciplineController {
     const classes = await db
       .from('classes')
       .where('school_id', user.schoolId)
+      .whereNull('archived_at')
       .select('id', 'name')
       .orderBy('name', 'asc')
 

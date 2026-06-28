@@ -1,0 +1,152 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Dossier historique - {{ history.studentName }}
+  @endsection
+
+  @section('dashboardTitle')
+    Dossier scolaire historique
+  @endsection
+  @section('dashboardSubtitle')
+    Archive en lecture seule conservée par {{ history.school.name }}
+  @endsection
+
+  @section('actions')
+    <a href="/schools/transfers/requests" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+      <i class="fas fa-arrow-left mr-2"></i>Retour aux transferts
+    </a>
+  @endsection
+
+  @section('stats')
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-primary">{{ academic.summary?.gradesCount || 0 }}</p>
+        <p class="text-sm text-gray-500">Notes archivées</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-green-600">
+          {{ academic.summary?.averagePercentage !== null && academic.summary?.averagePercentage !== undefined ? academic.summary.averagePercentage.toFixed(1) + '%' : '-' }}
+        </p>
+        <p class="text-sm text-gray-500">Moyenne historique</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-red-600">{{ academic.summary?.incidentsCount || 0 }}</p>
+        <p class="text-sm text-gray-500">Incidents archivés</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-purple-600">{{ academic.summary?.paymentsCount || 0 }}</p>
+        <p class="text-sm text-gray-500">Paiements archivés</p>
+      </div>
+    </div>
+  @endsection
+
+  @section('content')
+    <div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
+      <i class="fas fa-lock mr-2"></i>
+      Ce dossier est un instantané créé lors du transfert. Il ne peut pas être modifié depuis l'école de provenance.
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold border-b pb-2 mb-3">Élève</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Nom</span><span class="text-right font-medium">{{ history.studentName }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Matricule</span><span class="font-mono">{{ history.registrationNumber }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Sexe</span><span>{{ personal.gender === 'male' ? 'Masculin' : 'Féminin' }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Naissance</span><span>{{ personal.birthDate || '-' }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Téléphone parent</span><span>{{ personal.parentPhone || '-' }}</span></div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold border-b pb-2 mb-3">Scolarité quittée</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between gap-3"><span class="text-gray-500">École</span><span class="text-right">{{ history.school.name }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Classe</span><span>{{ history.className || '-' }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Option</span><span>{{ history.schoolOption || '-' }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Année scolaire</span><span>{{ history.academicYear || '-' }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Date de départ</span><span>{{ history.leftAt.toFormat('dd/MM/yyyy') }}</span></div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold border-b pb-2 mb-3">Transfert</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Destination</span><span class="text-right">{{ history.destinationSchool.name }}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-gray-500">Classe d'accueil</span><span>{{ history.destinationClass?.name || '-' }}</span></div>
+          <div>
+            <span class="text-gray-500">Motif</span>
+            <p class="mt-1">{{ history.transferReason || '-' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-4 py-3 border-b dark:border-gray-700">
+        <h3 class="font-semibold">Notes archivées</h3>
+      </div>
+      <div class="table-responsive">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2 text-left">Matière</th>
+              <th class="px-4 py-2 text-left">Classe</th>
+              <th class="px-4 py-2 text-center">Évaluation</th>
+              <th class="px-4 py-2 text-center">Note</th>
+              <th class="px-4 py-2 text-center">Trimestre</th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(grade in academicGrades)
+              <tr class="border-b dark:border-gray-700">
+                <td class="px-4 py-2 font-medium">{{ grade.subject_name || '-' }}</td>
+                <td class="px-4 py-2">{{ grade.class_name || '-' }}</td>
+                <td class="px-4 py-2 text-center">{{ grade.exam_type || '-' }}</td>
+                <td class="px-4 py-2 text-center font-bold">{{ grade.score ?? '-' }}/{{ grade.max_score || 20 }}</td>
+                <td class="px-4 py-2 text-center">{{ grade.term || '-' }}</td>
+              </tr>
+            @else
+              <tr><td colspan="5" class="text-center py-8 text-gray-500">Aucune note archivée</td></tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold border-b pb-2 mb-3">Discipline</h3>
+        <div class="space-y-3">
+          @each(incident in academicDisciplines)
+            <div class="border rounded-lg p-3 dark:border-gray-700">
+              <div class="flex justify-between gap-3 text-sm">
+                <span class="font-medium">{{ incident.incident_type }}</span>
+                <span class="text-gray-500">{{ incident.incident_date }}</span>
+              </div>
+              <p class="text-sm mt-1">{{ incident.description }}</p>
+            </div>
+          @else
+            <p class="text-sm text-gray-500">Aucun incident archivé</p>
+          @end
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold border-b pb-2 mb-3">Paiements</h3>
+        <div class="space-y-3">
+          @each(payment in academicPayments)
+            <div class="flex justify-between gap-3 border-b pb-2 text-sm dark:border-gray-700">
+              <div>
+                <p class="font-medium">{{ payment.fee_type }}</p>
+                <p class="text-xs text-gray-500">{{ payment.payment_date }} · {{ payment.receipt_number || '-' }}</p>
+              </div>
+              <span class="font-bold">{{ payment.amount_paid }} {{ payment.currency }}</span>
+            </div>
+          @else
+            <p class="text-sm text-gray-500">Aucun paiement archivé</p>
+          @end
+        </div>
+      </div>
+    </div>
+  @endsection

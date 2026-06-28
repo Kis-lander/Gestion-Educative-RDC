@@ -5,6 +5,7 @@ import User from '#models/user'
 import Student from '#models/student'
 import Teacher from '#models/teacher'
 import Parent from '#models/parent'
+import { getDefaultAppLanguage } from '#services/language_service'
 import {
   createUserAccountValidator,
   createBulkAccountsValidator,
@@ -16,15 +17,7 @@ const webSignupValidator = vine.compile(
   vine.object({
     fullName: vine.string().trim().regex(/^\S+\s+\S+\s+.+$/),
     email: vine.string().trim().email().unique({ table: 'users', column: 'email' }),
-    role: vine.enum([
-      'inspection',
-      'director',
-      'finance_director',
-      'teacher',
-      'parent',
-      'student',
-      'discipline_director',
-    ]),
+    role: vine.enum(['inspection']),
     password: vine.string().minLength(8).confirmed({ confirmationField: 'passwordConfirmation' }),
   })
 )
@@ -40,8 +33,14 @@ export default class NewAccountController {
     }
   }
 
-  public async create({ inertia }: HttpContext) {
-    return inertia.render('auth/signup', {})
+  public async create({ view, session }: HttpContext) {
+    if (!session.get('locale')) {
+      session.put('locale', await getDefaultAppLanguage())
+    }
+
+    return view.render('auth/signup', {
+      appLanguage: session.get('locale'),
+    })
   }
 
   public async store({ request, response, session }: HttpContext) {

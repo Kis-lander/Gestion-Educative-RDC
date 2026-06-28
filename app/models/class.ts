@@ -18,6 +18,9 @@ export default class Class extends ClassSchema {
   @column()
   declare schoolId: string
 
+  @column()
+  declare schoolSectionId: string | null
+
   /**
    * teacher_id peut être null si la classe n'a pas encore de titulaire assigné
    */
@@ -44,6 +47,12 @@ export default class Class extends ClassSchema {
 
   @column()
   declare shift: 'morning' | 'afternoon' | 'evening'
+
+  @column.dateTime()
+  declare archivedAt: DateTime | null
+
+  @column()
+  declare archivedBy: string | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

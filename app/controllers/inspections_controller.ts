@@ -8,6 +8,7 @@ import Student from '#models/student'
 import TransferAuthorization from '#models/transfer_authorization'
 import OtpMailService from '#services/otp_mail_service'
 import { DateTime } from 'luxon'
+import { ensureSchoolSections } from '#services/school_governance_service'
 import { randomBytes } from 'node:crypto'
 import { basename, join } from 'node:path'
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
@@ -22,6 +23,19 @@ import { canUseAppLanguage } from '#services/language_service'
 export default class InspectionController {
   private mailService = new OtpMailService()
   private backupDirectory = join(process.cwd(), 'tmp', 'inspection-backups')
+  private governanceCommunicationTargets = new Set([
+    'promoter',
+    'preschool_director',
+    'primary_director',
+    'prefect',
+    'studies_director',
+    'pedagogical_advisor',
+    'discipline_director',
+    'deputy_discipline_director',
+    'finance_director',
+    'secretary',
+    'teacher',
+  ])
   private defaultInspectionSettings = {
     systemName: 'Gestion Éducative RDC',
     currentAcademicYear: '2024-2025',
@@ -235,14 +249,43 @@ export default class InspectionController {
         .count('* as total')
         .first(),
       User.query().where('school_id', school.id).where('role', 'teacher').count('* as total').first(),
-      db.from('classes').where('school_id', school.id).count('* as total').first(),
+      db
+        .from('classes')
+        .where('school_id', school.id)
+        .whereNull('archived_at')
+        .count('* as total')
+        .first(),
       db
         .from('grades')
         .join('students', 'grades.student_id', 'students.id')
         .where('students.school_id', school.id)
         .avg('grades.score as average')
         .first(),
-      db.from('classes').where('school_id', school.id).limit(10),
+      db
+        .from('classes')
+        .leftJoin('teachers', (join) => {
+          join
+            .on('classes.teacher_id', '=', 'teachers.id')
+            .andOn('teachers.school_id', '=', 'classes.school_id')
+        })
+        .leftJoin('users', 'teachers.user_id', 'users.id')
+        .where('classes.school_id', school.id)
+        .whereNull('classes.archived_at')
+        .select(
+          'classes.id',
+          'classes.name',
+          'classes.level',
+          'classes.grade_level as grade_level',
+          'classes.max_capacity as max_capacity',
+          'classes.academic_year as academic_year',
+          'classes.shift',
+          'users.first_name as teacher_first_name',
+          'users.postnom as teacher_postnom',
+          'users.last_name as teacher_last_name'
+        )
+        .orderBy('classes.grade_level', 'asc')
+        .orderBy('classes.name', 'asc')
+        .limit(10),
       db
         .from('school_inspections')
         .where('school_id', school.id)
@@ -257,15 +300,42 @@ export default class InspectionController {
           .select('class_id')
           .count('* as total')
           .whereIn('class_id', classIds)
+          .where('school_id', school.id)
           .where('academic_status', 'active')
           .groupBy('class_id')
       : []
     const studentsByClass = new Map(
       studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
     )
+    const classAverageRows = classIds.length
+      ? await db
+          .from('grades')
+          .join('students', 'grades.student_id', 'students.id')
+          .whereIn('grades.class_id', classIds)
+          .where('students.school_id', school.id)
+          .groupBy('grades.class_id')
+          .select('grades.class_id')
+          .avg('grades.score as average')
+      : []
+    const averageByClass = new Map(
+      classAverageRows.map((row) => [String(row.class_id), Number(row.average || 0)])
+    )
     const classesWithCounts = classes.map((classObj) => ({
-      ...classObj,
+      id: classObj.id,
+      name: classObj.name,
+      level: classObj.level,
+      gradeLevel: Number(classObj.grade_level),
+      maxCapacity: Number(classObj.max_capacity || 50),
+      academicYear: classObj.academic_year,
+      shift: classObj.shift,
       studentsCount: studentsByClass.get(String(classObj.id)) || 0,
+      averageGrade: averageByClass.has(String(classObj.id))
+        ? averageByClass.get(String(classObj.id))!.toFixed(1)
+        : null,
+      teacherName:
+        [classObj.teacher_first_name, classObj.teacher_last_name, classObj.teacher_postnom]
+          .filter(Boolean)
+          .join(' ') || null,
     }))
 
     const inspectionHistory = inspections.map((inspection) => ({
@@ -293,25 +363,54 @@ export default class InspectionController {
     })
   }
 
+  private async getGovernanceCommunicationUserIds(targetRole: string, province?: string) {
+    const query = db
+      .from('school_staff_assignments')
+      .join('users', 'school_staff_assignments.user_id', 'users.id')
+      .join('schools', 'school_staff_assignments.school_id', 'schools.id')
+      .where('school_staff_assignments.position', targetRole)
+      .where('school_staff_assignments.is_active', true)
+      .where('users.status', 'active')
+      .select('users.id')
+
+    if (province) {
+      query.where('schools.province', province)
+    }
+
+    const rows = await query
+    return [...new Set(rows.map((row) => String(row.id)))]
+  }
+
   public async schoolClassesPage({ params, request, view }: HttpContext) {
     const school = await School.findOrFail(params.id)
     const page = Number(request.input('page', 1))
 
     const paginator = await db
       .from('classes')
-      .leftJoin('teachers', 'classes.teacher_id', 'teachers.id')
+      .leftJoin('teachers', (join) => {
+        join
+          .on('classes.teacher_id', '=', 'teachers.id')
+          .andOn('teachers.school_id', '=', 'classes.school_id')
+      })
       .leftJoin('users', 'teachers.user_id', 'users.id')
-      .leftJoin('students', 'students.class_id', 'classes.id')
+      .leftJoin('students', (join) => {
+        join
+          .on('students.class_id', '=', 'classes.id')
+          .andOn('students.school_id', '=', 'classes.school_id')
+      })
       .where('classes.school_id', school.id)
+      .whereNull('classes.archived_at')
       .select(
         'classes.id',
         'classes.name',
         'classes.level',
-        'classes.grade_level as gradeLevel',
-        'classes.max_capacity as maxCapacity',
-        'classes.academic_year as academicYear',
+        db.raw('classes.grade_level as "gradeLevel"'),
+        db.raw('classes.max_capacity as "maxCapacity"'),
+        db.raw('classes.academic_year as "academicYear"'),
         'classes.shift',
-        db.raw("concat(users.first_name, ' ', users.last_name) as teacher_name"),
+        db.raw(
+          `nullif(trim(concat_ws(' ', users.first_name, users.last_name, users.postnom)), '') as "teacherName"`
+        ),
         db.raw(
           'count(distinct students.id) filter (where students.academic_status = ?) as "currentEnrollment"',
           ['active']
@@ -326,7 +425,8 @@ export default class InspectionController {
         'classes.academic_year',
         'classes.shift',
         'users.first_name',
-        'users.last_name'
+        'users.last_name',
+        'users.postnom'
       )
       .orderBy('classes.grade_level', 'asc')
       .orderBy('classes.name', 'asc')
@@ -425,7 +525,7 @@ export default class InspectionController {
       .trim()
       .toLowerCase()
     const directorFullName = String(
-      request.input('directorName', school.directorName || `Directeur ${school.name}`)
+      request.input('directorName', school.directorName || `Promoteur ${school.name}`)
     ).trim()
     const directorPhone = String(
       request.input('directorPhone', school.directorPhone || school.phone)
@@ -437,7 +537,7 @@ export default class InspectionController {
       .first()
 
     if (!email) {
-      session.flash('error', 'Veuillez renseigner le nom, le téléphone et l’email du directeur.')
+      session.flash('error', 'Veuillez renseigner le nom, le téléphone et l’email du Promoteur.')
       return response.redirect().back()
     }
 
@@ -457,7 +557,7 @@ export default class InspectionController {
     if (director?.id === auth.user?.id) {
       session.flash(
         'error',
-        'Le compte inspection ne peut pas être utilisé comme compte directeur.'
+        'Le compte inspection ne peut pas être utilisé comme compte Promoteur.'
       )
       return response.redirect().back()
     }
@@ -494,6 +594,23 @@ export default class InspectionController {
       director.status = 'active'
       director.mustChangePassword = true
       await director.save()
+
+      await ensureSchoolSections(school.id, trx)
+      await trx
+        .table('school_staff_assignments')
+        .insert({
+          school_id: school.id,
+          school_section_id: null,
+          user_id: director.id,
+          position: 'promoter',
+          is_primary: true,
+          is_active: true,
+          created_by: auth.user?.id || null,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .onConflict()
+        .ignore()
     })
 
     school = await School.findOrFail(params.id)
@@ -1346,6 +1463,7 @@ export default class InspectionController {
         .first(),
       db
         .from('classes')
+        .whereNull('archived_at')
         .count('* as total')
         .sum('max_capacity as capacity')
         .sum('current_enrollment as enrollment')
@@ -1843,9 +1961,15 @@ export default class InspectionController {
   public async sendGlobalCommunication({ request, response, auth }: HttpContext) {
     const payload = await request.validateUsing(sendGlobalCommunicationValidator)
 
-    const targetUsersQuery = User.query().where('status', 'active')
+    const targetUsersQuery = User.query().where('status', 'active').whereNotNull('schoolId')
 
-    if (payload.targetRole && payload.targetRole !== 'all') {
+    if (payload.targetRole && this.governanceCommunicationTargets.has(payload.targetRole)) {
+      const targetUserIds = await this.getGovernanceCommunicationUserIds(
+        payload.targetRole,
+        payload.targetProvince
+      )
+      targetUsersQuery.whereIn('id', targetUserIds)
+    } else if (payload.targetRole && payload.targetRole !== 'all') {
       targetUsersQuery.where('role', payload.targetRole)
     }
 

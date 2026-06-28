@@ -165,22 +165,67 @@
 
             <div class="flex gap-2">
               <button
-                type="button"
-                onclick="resetPassword()"
+                type="submit"
+                formaction="/schools/teachers/{{ teacher.id }}/credentials"
+                formmethod="POST"
+                formnovalidate
+                onclick="return confirm('Générer un nouveau mot de passe temporaire pour cet enseignant ?')"
                 class="px-6 py-2 border border-yellow-500 text-yellow-600 rounded-lg hover:bg-yellow-50"
               >
-                <i class="fas fa-key mr-2"></i>Réinitialiser mot de passe
-          </button>
+                <i class="fas fa-key mr-2"></i>Générer les identifiants
+              </button>
               <button
                 type="button"
                 onclick="deleteTeacher()"
                 class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
-                <i class="fas fa-trash mr-2"></i>Supprimer
+                <i class="fas fa-user-slash mr-2"></i>Désactiver sans remplaçant
           </button>
             </div>
           </div>
         </form>
+
+        <div class="mt-8 pt-6 border-t dark:border-gray-700">
+          <h3 class="font-semibold text-lg mb-2">
+            Remplacer cet enseignant
+          </h3>
+          <p class="text-sm text-gray-500 mb-4">
+            Le titulaire, les cours, l'emploi du temps et les devoirs non clôturés seront transférés.
+            Les éléments historiques clôturés resteront attribués à l'ancien enseignant.
+          </p>
+
+          <form
+            method="POST"
+            action="/schools/teachers/{{ teacher.id }}/replace"
+            onsubmit="return confirm('Confirmer le transfert de toutes les responsabilités courantes et la désactivation de cet enseignant ?')"
+            class="flex flex-col md:flex-row gap-3"
+          >
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+            <select
+              name="replacementTeacherId"
+              required
+              class="flex-1 px-4 py-2 border rounded-lg"
+            >
+              <option value="">Sélectionner l'enseignant remplaçant</option>
+              @each(replacement in replacementTeachers)
+                <option value="{{ replacement.id }}">
+                  {{ replacement.user.fullName }} — {{ replacement.specialization || replacement.qualification }}
+                </option>
+              @else
+                <option value="" disabled>Aucun enseignant actif disponible</option>
+              @end
+            </select>
+            <button
+              type="submit"
+              class="px-5 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+              @if(!replacementTeachers.length)
+                disabled
+              @endif
+            >
+              <i class="fas fa-people-arrows mr-2"></i>Transférer et désactiver
+            </button>
+          </form>
+        </div>
       </div>
 
       <!-- Informations -->
@@ -216,32 +261,18 @@
         <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
           <p class="text-sm flex gap-2">
             <i class="fas fa-exclamation-triangle text-yellow-600"></i>
-            <span>La suppression d'un enseignant est irréversible. Toutes les données associées (notes, devoirs, classes) seront conservées mais anonymisées.</span>
+            <span>
+              La désactivation simple retire l'enseignant de ses classes, cours et emplois du temps sans
+              désigner de remplaçant. Utilisez de préférence le transfert ci-contre.
+            </span>
           </p>
         </div>
       </div>
     </div>
 
     <script>
-      function resetPassword() {
-        if (confirm("Réinitialiser le mot de passe de cet enseignant ? Un email lui sera envoyé avec un lien de réinitialisation.")) {
-          fetch("/api/teachers/{{ teacher.id }}/reset-password", {
-            method: "POST",
-            headers: {
-              "X-CSRF-TOKEN": "{{ csrfToken }}"
-            }
-          }).then(res => res.json()).then(data => {
-            if (data.success) {
-              alert("Un email de réinitialisation a été envoyé");
-            } else {
-              alert("Erreur: " + data.message);
-            }
-          });
-        }
-      }
-
       function deleteTeacher() {
-        if (confirm(`⚠️ Supprimer définitivement l'enseignant "{{ teacher.user.fullName }}" ?\n\nCette action est irréversible.`)) {
+        if (confirm(`Désactiver "{{ teacher.user.fullName }}" sans remplaçant ?\n\nSes classes, cours et créneaux resteront sans enseignant jusqu'à une nouvelle affectation.`)) {
           fetch("/schools/teachers/{{ teacher.id }}", {
             method: "DELETE",
             headers: {

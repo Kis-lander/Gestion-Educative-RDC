@@ -78,7 +78,11 @@
       ].join(",");
 
       const revealItems = Array.from(document.querySelectorAll(revealSelector))
-        .filter((item) => !item.closest("[x-cloak]") && !item.classList.contains("scroll-top-button"));
+        .filter((item) =>
+          !item.closest("[x-cloak]") &&
+          !item.closest("[data-no-scroll-reveal]") &&
+          !item.classList.contains("scroll-top-button")
+        );
 
       revealItems.forEach((item, index) => {
         item.classList.add("scroll-reveal");
@@ -335,9 +339,13 @@
   });
   // Fonctions utilitaires
 
+  function getInterfaceLocale() {
+    return document.documentElement.lang === "en" ? "en-US" : "fr-FR";
+  }
+
   function formatDate(date) {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("fr-FR", {
+    return new Date(date).toLocaleDateString(getInterfaceLocale(), {
       day: "2-digit",
       month: "2-digit",
       year: "numeric"
@@ -346,7 +354,7 @@
 
   function formatDateTime(date) {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("fr-FR", {
+    return new Date(date).toLocaleDateString(getInterfaceLocale(), {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -357,7 +365,7 @@
 
   function formatCurrency(amount, currency = "USD") {
     if (!amount && amount !== 0) return "-";
-    return new Intl.NumberFormat("fr-FR", {
+    return new Intl.NumberFormat(getInterfaceLocale(), {
       style: "currency",
       currency: currency,
       minimumFractionDigits: 0,

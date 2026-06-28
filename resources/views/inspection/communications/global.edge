@@ -66,14 +66,50 @@
 
           <div class="mb-4">
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Cibles</label>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="targetRole" value="all" x-model="targetRole" checked class="w-4 h-4" />
-                <span>Tous les utilisateurs</span>
+                <span>Toutes les &eacute;coles</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="targetRole" value="director" x-model="targetRole" class="w-4 h-4" />
-                <span>Directeurs uniquement</span>
+                <input type="radio" name="targetRole" value="promoter" x-model="targetRole" class="w-4 h-4" />
+                <span>Promoteurs uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="preschool_director" x-model="targetRole" class="w-4 h-4" />
+                <span>Directeurs de la maternelle uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="primary_director" x-model="targetRole" class="w-4 h-4" />
+                <span>Directeurs du primaire uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="prefect" x-model="targetRole" class="w-4 h-4" />
+                <span>Pr&eacute;fets des &eacute;tudes uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="studies_director" x-model="targetRole" class="w-4 h-4" />
+                <span>Directeurs des &eacute;tudes uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="pedagogical_advisor" x-model="targetRole" class="w-4 h-4" />
+                <span>Conseillers p&eacute;dagogiques uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="discipline_director" x-model="targetRole" class="w-4 h-4" />
+                <span>Directeurs de discipline titulaires uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="deputy_discipline_director" x-model="targetRole" class="w-4 h-4" />
+                <span>Directeurs de discipline adjoints uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="finance_director" x-model="targetRole" class="w-4 h-4" />
+                <span>Directeurs financiers uniquement</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="targetRole" value="secretary" x-model="targetRole" class="w-4 h-4" />
+                <span>Secr&eacute;taires uniquement</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="targetRole" value="teacher" x-model="targetRole" class="w-4 h-4" />
@@ -224,11 +260,20 @@
               Destinataires:
               <span
                 x-text="({
-                  all: 'Tous les utilisateurs',
-                  director: 'Directeurs uniquement',
+                  all: 'Toutes les \u00e9coles',
+                  promoter: 'Promoteurs uniquement',
+                  preschool_director: 'Directeurs de la maternelle uniquement',
+                  primary_director: 'Directeurs du primaire uniquement',
+                  prefect: 'Prefets des etudes uniquement',
+                  studies_director: 'Directeurs des etudes uniquement',
+                  pedagogical_advisor: 'Conseillers pedagogiques uniquement',
+                  discipline_director: 'Directeurs de discipline titulaires uniquement',
+                  deputy_discipline_director: 'Directeurs de discipline adjoints uniquement',
+                  finance_director: 'Directeurs financiers uniquement',
+                  secretary: 'Secretaires uniquement',
                   teacher: 'Enseignants uniquement',
                   parent: 'Parents uniquement'
-                }[targetRole] || 'Tous les utilisateurs') + (targetProvince ? ' - Province: ' + targetProvince : ' - Toutes les provinces')"
+                }[targetRole] || 'Toutes les \u00e9coles') + (targetProvince ? ' - Province: ' + targetProvince : ' - Toutes les provinces')"
               ></span>
             </div>
             <div x-show="urgent" class="mt-3 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
@@ -368,11 +413,47 @@
         let label = "";
         switch (role) {
          case "all":
-          label = "Tous les utilisateurs";
+          label = "Toutes les \u00e9coles";
           break;
 
-         case "director":
-          label = "Directeurs";
+         case "promoter":
+          label = "Promoteurs";
+          break;
+
+         case "preschool_director":
+          label = "Directeurs de la maternelle";
+          break;
+
+         case "primary_director":
+          label = "Directeurs du primaire";
+          break;
+
+         case "prefect":
+          label = "Prefets des etudes";
+          break;
+
+         case "studies_director":
+          label = "Directeurs des etudes";
+          break;
+
+         case "pedagogical_advisor":
+          label = "Conseillers pedagogiques";
+          break;
+
+         case "discipline_director":
+          label = "Directeurs de discipline titulaires";
+          break;
+
+         case "deputy_discipline_director":
+          label = "Directeurs de discipline adjoints";
+          break;
+
+         case "finance_director":
+          label = "Directeurs financiers";
+          break;
+
+         case "secretary":
+          label = "Secretaires";
           break;
 
          case "teacher":

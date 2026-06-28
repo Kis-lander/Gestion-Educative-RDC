@@ -31,6 +31,7 @@ export default class PedagogicalController {
     await Class.query()
       .where('id', payload.classId)
       .where('school_id', auth.user!.schoolId)
+      .whereNull('archivedAt')
       .firstOrFail()
 
     if (payload.schedule.length === 0) {
@@ -390,7 +391,7 @@ export default class PedagogicalController {
   }
 
   /**
-   * Calendrier Académique (Mass Insert)
+   * Calendrier Scolaire (Mass Insert)
    */
   public async createAcademicCalendar({ request, response }: HttpContext) {
     const payload = await request.validateUsing(createAcademicCalendarValidator)

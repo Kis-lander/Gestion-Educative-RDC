@@ -14,16 +14,16 @@
   @section('actions')
     <div class="flex gap-2">
       <a
-        href="/schools/subjects/create"
+        href="/schools/subjects/catalog"
         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
       >
-        <i class="fas fa-plus mr-2"></i>Nouvelle matière
+        <i class="fas fa-book mr-2"></i>Référentiel national
   </a>
       <a
         href="/schools/subjects/assign"
         class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
       >
-        <i class="fas fa-link mr-2"></i>Assigner aux classes
+        <i class="fas fa-link mr-2"></i>Assigner une matière
   </a>
     </div>
   @endsection
@@ -66,6 +66,21 @@
   @endsection
   
   @section('content')
+    <div class="flex flex-col sm:flex-row sm:justify-end gap-2 mb-6">
+      <a
+        href="/schools/subjects/catalog"
+        class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        <i class="fas fa-book mr-2"></i>Référentiel national
+      </a>
+      <a
+        href="/schools/subjects/assign"
+        class="inline-flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-link mr-2"></i>Assigner une matière
+      </a>
+    </div>
+
     <!-- Filtres et recherche -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -179,9 +194,9 @@
                     <a
                       href="/schools/subjects/{{ subject.id }}/edit"
                       class="text-primary hover:underline"
-                      title="Modifier"
+                      title="Consulter"
                     >
-                      <i class="fas fa-edit"></i>
+                      <i class="fas fa-eye"></i>
                     </a>
                     <button
                       onclick="viewClasses('{{ subject.id }}', '{{ subject.name }}')"
@@ -193,7 +208,7 @@
                     <button
                       onclick="deleteSubject('{{ subject.id }}', '{{ subject.name }}')"
                       class="text-red-500 hover:text-red-700"
-                      title="Supprimer"
+                      title="Retirer du programme"
                     >
                       <i class="fas fa-trash"></i>
                     </button>
@@ -204,10 +219,10 @@
               <tr>
                 <td colspan="7" class="text-center py-12 text-gray-500">
                   <i class="fas fa-book text-4xl mb-3 block"></i>
-                  Aucune matière trouvée
+                  Aucune matière n'est encore assignée dans cet établissement
                   <div class="mt-3">
-                    <a href="/schools/subjects/create" class="text-primary hover:underline">
-                      Créer votre première matière
+                    <a href="/schools/subjects/assign" class="text-primary hover:underline">
+                      Assigner une matière du référentiel national
               </a>
                   </div>
                 </td>
@@ -295,7 +310,7 @@
         modalContent.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
         modal.classList.remove("hidden");
         modal.classList.add("flex");
-        fetch(`/api/subjects/${subjectId}/classes`).then(res => res.json()).then(data => {
+        fetch(`/schools/subjects/${subjectId}/classes`).then(res => res.json()).then(data => {
           if (data.classes && data.classes.length > 0) {
             modalContent.innerHTML = `
                       <div class="space-y-2">
@@ -321,7 +336,7 @@
 
       function removeFromClass(subjectId, classId) {
         if (confirm("Retirer cette matière de la classe ?")) {
-          fetch(`/api/subjects/${subjectId}/class/${classId}`, {
+          fetch(`/schools/subjects/${subjectId}/classes/${classId}`, {
             method: "DELETE",
             headers: {
               "X-CSRF-TOKEN": "{{ csrfToken }}"
@@ -337,8 +352,8 @@
       }
 
       function deleteSubject(subjectId, subjectName) {
-        if (confirm(`Supprimer définitivement la matière "${subjectName}" ? Cette action est irréversible.`)) {
-          fetch(`/api/subjects/${subjectId}`, {
+        if (confirm(`Retirer la matière "${subjectName}" du programme de cet établissement ?`)) {
+          fetch(`/schools/subjects/${subjectId}`, {
             method: "DELETE",
             headers: {
               "X-CSRF-TOKEN": "{{ csrfToken }}"

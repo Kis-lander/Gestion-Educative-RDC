@@ -234,6 +234,59 @@
         @include('partials/pagination')
       </div>
 
+      <div id="transferStudentModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h3 class="font-bold text-lg">Transférer un élève</h3>
+              <p id="transferStudentName" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <button type="button" onclick="closeTransferModal()" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <form id="transferStudentForm">
+            <input type="hidden" name="studentId" id="transferStudentId" />
+
+            <label class="block mb-4">
+              <span class="block text-gray-700 dark:text-gray-300 mb-2">Code de l’établissement destination *</span>
+              <input
+                type="text"
+                name="targetSchoolCode"
+                required
+                autocomplete="off"
+                placeholder="Ex. SCH-XXXXXX"
+                class="w-full px-4 py-2 border rounded-lg uppercase"
+              />
+              <span class="block text-xs text-gray-500 mt-1">
+                Utilisez le code officiel communiqué par l’établissement de destination.
+              </span>
+            </label>
+
+            <label class="block mb-5">
+              <span class="block text-gray-700 dark:text-gray-300 mb-2">Motif du transfert</span>
+              <textarea
+                name="reason"
+                rows="3"
+                placeholder="Précisez le motif du transfert..."
+                class="w-full px-4 py-2 border rounded-lg"
+              ></textarea>
+            </label>
+
+            <div class="flex gap-3">
+              <button type="button" onclick="closeTransferModal()" class="flex-1 px-4 py-2 border rounded-lg">
+                Annuler
+              </button>
+              <button id="transferStudentSubmit" type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg">
+                <span>Envoyer la demande</span>
+                <i class="fas fa-spinner fa-spin ml-2 hidden"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <script>
         const filterStatus = document.getElementById("filterStatus");
 
@@ -312,28 +365,73 @@
         }
 
         function transferStudent(studentId, studentName) {
-          const targetSchool = prompt(`Entrez le code de l'école de destination pour l'élève ${studentName} :`);
-          if (targetSchool) {
-            fetch("/api/students/transfer-request", {
+          document.getElementById("transferStudentId").value = studentId;
+          document.getElementById("transferStudentName").textContent = studentName;
+          const modal = document.getElementById("transferStudentModal");
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+          modal.querySelector("[name=targetSchoolCode]")?.focus();
+        }
+
+        function closeTransferModal() {
+          const modal = document.getElementById("transferStudentModal");
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+          document.getElementById("transferStudentForm")?.reset();
+        }
+
+        document.getElementById("transferStudentForm")?.addEventListener("submit", async event => {
+          event.preventDefault();
+          const form = event.currentTarget;
+          const submitButton = document.getElementById("transferStudentSubmit");
+          const label = submitButton.querySelector("span");
+          const spinner = submitButton.querySelector("i");
+          const formData = new FormData(form);
+          formData.set(
+            "targetSchoolCode",
+            String(formData.get("targetSchoolCode") || "").trim().toUpperCase()
+          );
+
+          submitButton.disabled = true;
+          label.textContent = "Envoi...";
+          spinner.classList.remove("hidden");
+
+          try {
+            const response = await fetch("/schools/transfers/request", {
               method: "POST",
               headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrfToken }}"
+                "X-CSRF-TOKEN": "{{ csrfToken }}",
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
               },
-              body: JSON.stringify({
-                studentId: studentId,
-                targetSchoolCode: targetSchool
-              })
-            }).then(res => res.json()).then(data => {
-              if (data.success) {
-                alert(`Demande de transfert envoyée. Code: ${data.authorizationCode}`);
-                location.reload();
-              } else {
-                alert("Erreur: " + data.message);
-              }
+              body: formData
             });
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+              throw new Error(data.message || "Impossible d'envoyer la demande de transfert.");
+            }
+
+            closeTransferModal();
+            window.dispatchEvent(new CustomEvent("show-toast", {
+              detail: {
+                message: `${data.message}. Code : ${data.authorizationCode}`,
+                type: "success"
+              }
+            }));
+          } catch (error) {
+            window.dispatchEvent(new CustomEvent("show-toast", {
+              detail: {
+                message: error instanceof Error ? error.message : "Impossible d'envoyer la demande de transfert.",
+                type: "error"
+              }
+            }));
+          } finally {
+            submitButton.disabled = false;
+            label.textContent = "Envoyer la demande";
+            spinner.classList.add("hidden");
           }
-        }
+        });
         // Initialisation des stats
 
         updateStats();

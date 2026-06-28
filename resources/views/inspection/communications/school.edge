@@ -87,14 +87,50 @@
 
             <div class="mb-4">
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataires spécifiques (optionnel)</label>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="targetRole" value="all" x-model="targetRole" checked class="w-4 h-4" />
                   <span>Tous les utilisateurs de l'école</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="targetRole" value="director" x-model="targetRole" class="w-4 h-4" />
-                  <span>Directeur uniquement</span>
+                  <input type="radio" name="targetRole" value="promoter" x-model="targetRole" class="w-4 h-4" />
+                  <span>Promoteur uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="preschool_director" x-model="targetRole" class="w-4 h-4" />
+                  <span>Directeur de la maternelle uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="primary_director" x-model="targetRole" class="w-4 h-4" />
+                  <span>Directeur du primaire uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="prefect" x-model="targetRole" class="w-4 h-4" />
+                  <span>Pr&eacute;fet des &eacute;tudes uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="studies_director" x-model="targetRole" class="w-4 h-4" />
+                  <span>Directeur des &eacute;tudes uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="pedagogical_advisor" x-model="targetRole" class="w-4 h-4" />
+                  <span>Conseiller p&eacute;dagogique uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="discipline_director" x-model="targetRole" class="w-4 h-4" />
+                  <span>Directeur de discipline titulaire uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="deputy_discipline_director" x-model="targetRole" class="w-4 h-4" />
+                  <span>Directeur de discipline adjoint uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="finance_director" x-model="targetRole" class="w-4 h-4" />
+                  <span>Directeur financier uniquement</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="targetRole" value="secretary" x-model="targetRole" class="w-4 h-4" />
+                  <span>Secr&eacute;taire uniquement</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="targetRole" value="teacher" x-model="targetRole" class="w-4 h-4" />
@@ -165,7 +201,16 @@
               <span
                 x-text="({
                   all: 'Tous les utilisateurs de cette ecole',
-                  director: 'Directeur uniquement',
+                  promoter: 'Promoteur uniquement',
+                  preschool_director: 'Directeur de la maternelle uniquement',
+                  primary_director: 'Directeur du primaire uniquement',
+                  prefect: 'Prefet des etudes uniquement',
+                  studies_director: 'Directeur des etudes uniquement',
+                  pedagogical_advisor: 'Conseiller pedagogique uniquement',
+                  discipline_director: 'Directeur de discipline titulaire uniquement',
+                  deputy_discipline_director: 'Directeur de discipline adjoint uniquement',
+                  finance_director: 'Directeur financier uniquement',
+                  secretary: 'Secretaire uniquement',
                   teacher: 'Enseignants uniquement',
                   parent: 'Parents uniquement'
                 }[targetRole] || 'Tous les utilisateurs de cette ecole')"
@@ -242,47 +287,47 @@
       // Charger les informations de l'école
       async function loadSchoolInfo(schoolId) {
         if (!schoolId) {
-          document.getElementById("schoolInfo").innerHTML = "SÃ©lectionnez une Ã©cole pour voir ses informations";
+          document.getElementById("schoolInfo").innerHTML = window.AppTranslations?.translate("Sélectionnez une école pour voir ses informations") || "Sélectionnez une école pour voir ses informations";
           document.getElementById("historyContainer").innerHTML = `
                   <div class="p-8 text-center text-gray-500">
-                    SÃ©lectionnez une Ã©cole pour voir l'historique des communications
+                    ${window.AppTranslations?.translate("Sélectionnez une école pour voir l'historique des communications") || "Sélectionnez une école pour voir l'historique des communications"}
                   </div>
                 `;
           return;
         }
         const infoContainer = document.getElementById("schoolInfo");
-        infoContainer.innerHTML = '<div class="text-center py-4">Chargement...</div>';
+        infoContainer.innerHTML = `<div class="text-center py-4">${window.AppTranslations?.translate("Chargement...") || "Chargement..."}</div>`;
         const res = await fetch(`/api/schools/${schoolId}/info`);
         if (!res.ok) {
-          infoContainer.innerHTML = '<div class="text-red-500 text-center py-4">Impossible de charger les informations de cette Ã©cole</div>';
+          infoContainer.innerHTML = `<div class="text-red-500 text-center py-4">${window.AppTranslations?.translate("Impossible de charger les informations de cette école") || "Impossible de charger les informations de cette école"}</div>`;
           return;
         }
         const data = await res.json();
         const infoHtml = `
                 <div class="space-y-2 text-sm">
                   <div class="flex justify-between">
-                    <span class="text-gray-500">Nom</span>
+                    <span class="text-gray-500">${window.AppTranslations?.translate("Nom de l'école") || "Nom de l'école"}</span>
                     <span class="font-medium">${data.name || "-"}</span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-500">Province</span>
+                    <span class="text-gray-500">${window.AppTranslations?.translate("Province") || "Province"}</span>
                     <span>${data.province || "-"}</span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-500">Directeur</span>
+                    <span class="text-gray-500">${window.AppTranslations?.translate("Promoteur") || "Promoteur"}</span>
                     <span>${data.directorName || "-"}</span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-500">Email</span>
+                    <span class="text-gray-500">${window.AppTranslations?.translate("Email") || "Email"}</span>
                     <span>${data.email || "-"}</span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-500">Téléphone</span>
+                    <span class="text-gray-500">${window.AppTranslations?.translate("Téléphone") || "Téléphone"}</span>
                     <span>${data.phone || "-"}</span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-500">Statut</span>
-                    <span class="px-2 py-0.5 rounded-full text-xs ${data.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">${data.status === "active" ? "Actif" : "En attente"}</span>
+                    <span class="text-gray-500">${window.AppTranslations?.translate("Statut") || "Statut"}</span>
+                    <span class="px-2 py-0.5 rounded-full text-xs ${data.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">${data.status === "active" ? (window.AppTranslations?.translate("Actif") || "Actif") : (window.AppTranslations?.translate("En attente") || "En attente")}</span>
                   </div>
                 </div>
               `;
@@ -294,12 +339,12 @@
 
       async function loadHistory(schoolId) {
         const container = document.getElementById("historyContainer");
-        container.innerHTML = '<div class="p-8 text-center text-gray-500">Chargement de l historique...</div>';
+        container.innerHTML = `<div class="p-8 text-center text-gray-500">${window.AppTranslations?.translate("Chargement de l'historique...") || "Chargement de l'historique..."}</div>`;
         const res = await fetch(`/api/schools/${schoolId}/communications`);
         if (!res.ok) {
           container.innerHTML = `
                   <div class="p-8 text-center text-red-500">
-                    Impossible de charger l'historique des communications
+                    ${window.AppTranslations?.translate("Impossible de charger l'historique des communications") || "Impossible de charger l'historique des communications"}
                   </div>
                 `;
           return;
@@ -314,13 +359,13 @@
                         <div class="flex-1">
                           <div class="flex items-center gap-2">
                             <p class="font-medium">${comm.subject}</p>
-                            ${comm.urgent ? '<span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Urgent</span>' : ""}
+                            ${comm.urgent ? `<span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">${window.AppTranslations?.translate("Urgent") || "Urgent"}</span>` : ""}
                           </div>
                           <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${(comm.content || "").substring(0, 150)}${(comm.content || "").length > 150 ? "..." : ""}</p>
                           <div class="flex gap-3 mt-2 text-xs text-gray-400">
                             <span><i class="fas fa-calendar mr-1"></i> ${formatDate(comm.createdAt)}</span>
-                            <span><i class="fas fa-envelope mr-1"></i> Destinataires: ${comm.recipientType === "all" ? "Tous" : comm.recipientType}</span>
-                            ${comm.acknowledged ? '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> Accusé reçu</span>' : ""}
+                            <span><i class="fas fa-envelope mr-1"></i> ${window.AppTranslations?.translate("Destinataires") || "Destinataires"}: ${comm.recipientType === "all" ? (window.AppTranslations?.translate("Tous") || "Tous") : comm.recipientType}</span>
+                            ${comm.acknowledged ? `<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> ${window.AppTranslations?.translate("Accusé reçu") || "Accusé reçu"}</span>` : ""}
                           </div>
                         </div>
                         <button onclick="viewCommunication('${comm.id}')" class="text-primary text-sm hover:underline">Détails</button>
@@ -333,7 +378,7 @@
           container.innerHTML = `
                   <div class="p-8 text-center text-gray-500">
                     <i class="fas fa-history text-3xl mb-2 block"></i>
-                    Aucune communication antérieure avec cette école
+                    ${window.AppTranslations?.translate("Aucune communication antérieure avec cette école") || "Aucune communication antérieure avec cette école"}
                   </div>
                 `;
         }

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="{{ appLanguage || 'fr' }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrfToken }}" />
+    <title>Créer un compte - Gestion Éducative RDC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --auth-emblem-url: url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png');
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: #111827;
+        background: #ffffff;
+      }
+
+      .auth-header {
+        height: calc(64px + 2rem);
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #ffffff;
+      }
+
+      .brand-logo {
+        width: auto;
+        max-width: min(calc(276px + 2rem), calc(52vw + 2rem));
+        max-height: calc(52px + 2rem);
+        padding: 6px 8px;
+        object-fit: contain;
+      }
+
+      .auth-nav {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .nav-button {
+        padding: 0.65rem 1rem;
+        border: 1px solid #111827;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .nav-button-primary {
+        border-color: #1d4ed8;
+        background: #1d4ed8;
+        color: #ffffff;
+      }
+
+      .nav-button-outline {
+        color: #111827;
+      }
+
+      main {
+        position: relative;
+        min-height: calc(100vh - (64px + 2rem));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+        padding: 2rem 1rem;
+        background:
+          linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(30, 64, 175, 0.98)),
+          var(--auth-emblem-url) center / min(calc(520px + 25rem), 94vw) no-repeat;
+      }
+
+      main::before {
+        position: absolute;
+        inset: 0;
+        content: '';
+        background: var(--auth-emblem-url) center / min(calc(520px + 25rem), 94vw) no-repeat;
+        opacity: 0.08;
+        pointer-events: none;
+      }
+
+      .auth-panel {
+        position: relative;
+        width: min(520px, calc(100vw - 2rem));
+        padding: 2rem;
+        border-radius: 0.375rem;
+        background: #1f2937;
+        color: #ffffff;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.35);
+      }
+
+      .auth-panel-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .auth-emblem {
+        display: block;
+        width: 86px;
+        height: auto;
+        margin: 0 auto 1rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        line-height: 1.2;
+      }
+
+      p {
+        color: #cbd5e1;
+      }
+
+      label {
+        display: block;
+        margin: 0.9rem 0 0.45rem;
+        color: #d1d5db;
+        font-size: 0.875rem;
+        font-weight: 700;
+      }
+
+      input,
+      select {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.68rem 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.72);
+        border-radius: 0.5rem;
+        background: #f8fafc;
+        color: #0f172a !important;
+        font-size: 1rem;
+        line-height: 1.25;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
+        outline: none;
+        -webkit-text-fill-color: #0f172a !important;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #60a5fa;
+        background: #ffffff;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        box-shadow:
+          inset 0 1px 2px rgba(15, 23, 42, 0.06),
+          0 0 0 3px rgba(96, 165, 250, 0.28);
+      }
+
+      input::placeholder {
+        color: #64748b;
+        opacity: 1;
+        -webkit-text-fill-color: #64748b;
+      }
+
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus,
+      select:-webkit-autofill,
+      select:-webkit-autofill:hover,
+      select:-webkit-autofill:focus {
+        border-color: #60a5fa;
+        box-shadow:
+          inset 0 1px 2px rgba(15, 23, 42, 0.06),
+          0 0 0 1000px #f8fafc inset;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+      }
+
+      .button {
+        width: 100%;
+        margin-top: 1.4rem;
+        padding: 0.68rem 1rem;
+        border: 0;
+        border-radius: 0.45rem;
+        background: #2563eb;
+        color: #ffffff;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .helper-link {
+        display: block;
+        margin-top: 1rem;
+        text-align: center;
+        color: #dbeafe;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .alert {
+        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 0.5rem;
+        background: rgba(239, 68, 68, 0.18);
+        color: #fecaca;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="auth-header">
+      <a href="/">
+        <img
+          class="brand-logo"
+          src="/images/logo-gouve-minepst.jpg"
+          alt="Logo du Ministère de l'Enseignement Primaire, Secondaire et Technique"
+        />
+      </a>
+      <nav class="auth-nav">
+        <a href="/signup" class="nav-button nav-button-primary">Créer un compte</a>
+        <a href="/login" class="nav-button nav-button-outline">Connexion</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="auth-panel">
+        <div class="auth-panel-header">
+          <img
+            class="auth-emblem"
+            src="https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png"
+            alt="Armoiries de la République démocratique du Congo"
+          />
+          <h1>Créer un compte</h1>
+          <p>Renseignez vos informations pour rejoindre la plateforme</p>
+        </div>
+
+        @if(flashMessages?.error)
+          <div class="alert">{{ flashMessages.error }}</div>
+        @endif
+
+        <form method="POST" action="/signup">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+
+          <label for="fullName">Nom complet</label>
+          <input
+            type="text"
+            name="fullName"
+            id="fullName"
+            placeholder="Prénom Nom Postnom"
+            autocomplete="name"
+            required
+          />
+
+          <label for="email">Email</label>
+          <input type="email" name="email" id="email" autocomplete="email" required />
+
+          <label for="role">Rôle</label>
+          <select name="role" id="role" required>
+            <option value="inspection" selected>Inspection</option>
+          </select>
+
+          <label for="password">Mot de passe</label>
+          <input type="password" name="password" id="password" autocomplete="new-password" required />
+
+          <label for="passwordConfirmation">Confirmer le mot de passe</label>
+          <input
+            type="password"
+            name="passwordConfirmation"
+            id="passwordConfirmation"
+            autocomplete="new-password"
+            required
+          />
+
+          <button type="submit" class="button">Créer le compte</button>
+        </form>
+
+        <a href="/login" class="helper-link">J'ai déjà un compte</a>
+      </section>
+    </main>
+  </body>
+</html>

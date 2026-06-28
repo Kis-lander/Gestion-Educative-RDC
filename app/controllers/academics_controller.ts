@@ -14,6 +14,11 @@ import {
   createSubjectValidator,
 } from '#validators/academic'
 import { DateTime } from 'luxon'
+import { getClassSchoolOption } from '#services/school_class_service'
+import {
+  getGovernanceContext,
+  resolveSectionIdForLevel,
+} from '#services/school_governance_service'
 
 export default class AcademicController {
   private getPaginationMeta(paginator: { toJSON: () => any }) {
@@ -65,7 +70,9 @@ export default class AcademicController {
     const published = request.input('published')
 
     const gradesQuery = Grade.query()
-      .whereHas('class', (classQuery) => classQuery.where('schoolId', user.schoolId))
+      .whereHas('class', (classQuery) =>
+        classQuery.where('schoolId', user.schoolId).whereNull('archivedAt')
+      )
       .preload('student', (studentQuery) => studentQuery.preload('user'))
       .preload('class')
       .preload('subject')
@@ -77,7 +84,10 @@ export default class AcademicController {
       .orderBy('examDate', 'desc')
 
     const paginator = await gradesQuery.paginate(page, 20)
-    const classes = await Class.query().where('schoolId', user.schoolId).orderBy('name', 'asc')
+    const classes = await Class.query()
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .orderBy('name', 'asc')
     const subjects = await Subject.query().orderBy('name', 'asc')
     const stats = await db
       .from('grades')
@@ -120,7 +130,10 @@ export default class AcademicController {
 
   public async addGradesPage({ auth, request, view }: HttpContext) {
     const user = auth.getUserOrFail()
-    const classes = await Class.query().where('schoolId', user.schoolId).orderBy('name', 'asc')
+    const classes = await Class.query()
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .orderBy('name', 'asc')
 
     return view.render('academic/grades/add', {
       school: this.getFallbackSchool(user),
@@ -134,6 +147,7 @@ export default class AcademicController {
     const currentYear = DateTime.now().year
     const classes = await Class.query()
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
       .orderBy('gradeLevel', 'asc')
       .orderBy('name', 'asc')
 
@@ -152,6 +166,7 @@ export default class AcademicController {
     const [classes, teachers] = await Promise.all([
       Class.query()
         .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
         .orderBy('gradeLevel', 'asc')
         .orderBy('name', 'asc'),
       Teacher.query()
@@ -183,6 +198,9 @@ export default class AcademicController {
    */
   public async classesPage({ auth, request, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const requestedSectionId = String(request.input('section_id', '')).trim() || null
+    const sectionId = governance.canManageAllSections ? requestedSectionId : governance.sectionId
     const page = Number(request.input('page', 1))
     const level = request.input('level')
     const shift = request.input('shift')
@@ -190,6 +208,11 @@ export default class AcademicController {
 
     const query = Class.query()
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(sectionId, (classQuery) => classQuery.where('schoolSectionId', sectionId))
+      .if(!governance.canManageAllSections && !sectionId, (classQuery) =>
+        classQuery.whereRaw('1 = 0')
+      )
       .preload('teacher', (teacherQuery) => teacherQuery.preload('user'))
       .if(level, (classQuery) => classQuery.where('level', level))
       .if(shift, (classQuery) => classQuery.where('shift', shift))
@@ -212,12 +235,21 @@ export default class AcademicController {
     const studentsByClass = new Map(
       studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
     )
-    const allClasses = await Class.query().where('schoolId', user.schoolId)
-    const totalStudentsRow = await Student.query()
+    const allClasses = await Class.query()
       .where('schoolId', user.schoolId)
-      .where('academicStatus', 'active')
-      .count('* as total')
-      .first()
+      .whereNull('archivedAt')
+      .if(sectionId, (classQuery) => classQuery.where('schoolSectionId', sectionId))
+      .if(!governance.canManageAllSections && !sectionId, (classQuery) =>
+        classQuery.whereRaw('1 = 0')
+      )
+    const allClassIds = allClasses.map((classObj) => classObj.id)
+    const totalStudentsRow = allClassIds.length
+      ? await Student.query()
+          .whereIn('classId', allClassIds)
+          .where('academicStatus', 'active')
+          .count('* as total')
+          .first()
+      : null
     const totalStudents = Number(totalStudentsRow?.$extras.total || 0)
     const totalCapacity = allClasses.reduce(
       (sum, classObj) => sum + Number(classObj.maxCapacity || 0),
@@ -259,6 +291,47 @@ export default class AcademicController {
       rdcClassCatalog: this.getRdcDasClassCatalog(),
       pagination: this.getPaginationMeta(paginator),
       url: '/academic/classes',
+      selectedSectionId: sectionId || '',
+    })
+  }
+
+  public async archivedClassesPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const page = Number(request.input('page', 1))
+    const paginator = await db
+      .from('classes')
+      .leftJoin('users', 'classes.archived_by', 'users.id')
+      .where('classes.school_id', user.schoolId)
+      .whereNotNull('classes.archived_at')
+      .select(
+        'classes.id',
+        'classes.name',
+        'classes.level',
+        'classes.grade_level as grade_level',
+        'classes.academic_year as academic_year',
+        'classes.archived_at',
+        'users.first_name',
+        'users.postnom',
+        'users.last_name'
+      )
+      .orderBy('classes.archived_at', 'desc')
+      .paginate(page, 20)
+
+    return view.render('schools/classes/archives', {
+      school: this.getFallbackSchool(user),
+      classes: paginator.all().map((classObj) => ({
+        id: classObj.id,
+        name: classObj.name,
+        level: classObj.level,
+        gradeLevel: classObj.grade_level,
+        academicYear: classObj.academic_year,
+        archivedAt: DateTime.fromJSDate(new Date(classObj.archived_at)),
+        archivedBy:
+          [classObj.first_name, classObj.last_name, classObj.postnom].filter(Boolean).join(' ') ||
+          'Directeur',
+      })),
+      pagination: this.getPaginationMeta(paginator),
+      url: '/schools/classes-archives',
     })
   }
 
@@ -279,12 +352,20 @@ export default class AcademicController {
 
   public async seedRdcDasClasses({ auth, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const currentYear = DateTime.now().year.toString()
     let created = 0
 
     for (const classItem of this.getRdcDasClassCatalog()) {
+      const schoolSectionId = await resolveSectionIdForLevel(
+        user.schoolId,
+        classItem.level,
+        classItem.gradeLevel
+      )
+      if (!governance.canManageAllSections && schoolSectionId !== governance.sectionId) continue
       const existingClass = await Class.query()
         .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
         .where('name', classItem.name)
         .where('academicYear', currentYear)
         .first()
@@ -301,6 +382,7 @@ export default class AcademicController {
         academicYear: currentYear,
         shift: 'morning',
         teacherId: null,
+        schoolSectionId,
       })
       created += 1
     }
@@ -317,9 +399,14 @@ export default class AcademicController {
 
   public async showClassPage({ auth, params, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const classObj = await Class.query()
       .where('id', params.id)
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
       .preload('teacher', (teacherQuery) => teacherQuery.preload('user'))
       .firstOrFail()
     const studentsCount = await Student.query()
@@ -339,12 +426,51 @@ export default class AcademicController {
         'users.last_name as teacher_last_name'
       )
     const assignedSubjectIds = subjects.map((subject) => subject.subject_id)
-    const [availableSubjects, teachers] = await Promise.all([
-      Subject.query()
-        .if(assignedSubjectIds.length > 0, (query) => query.whereNotIn('id', assignedSubjectIds))
-        .orderBy('name', 'asc'),
+    const classOption = getClassSchoolOption(classObj)
+    const [subjectPrograms, teachers] = await Promise.all([
+      db
+        .from('subject_programs')
+        .where('grade_level_min', '<=', classObj.gradeLevel)
+        .where('grade_level_max', '>=', classObj.gradeLevel)
+        .where((query) => {
+          query.where('level', 'Tous').orWhere('level', classObj.level)
+        })
+        .where((query) => {
+          query.whereNull('school_option')
+          if (classOption) query.orWhere('school_option', classOption)
+        })
+        .select(
+          'subject_id',
+          'school_option',
+          'default_coefficient',
+          'default_hours_per_week'
+        )
+        .orderByRaw('case when school_option is null then 1 else 0 end'),
       Teacher.query().where('schoolId', user.schoolId).where('status', 'active').preload('user'),
     ])
+    const programBySubject = new Map<string, (typeof subjectPrograms)[number]>()
+    for (const program of subjectPrograms) {
+      if (!programBySubject.has(program.subject_id)) {
+        programBySubject.set(program.subject_id, program)
+      }
+    }
+    const availableSubjectIds = Array.from(programBySubject.keys()).filter(
+      (subjectId) => !assignedSubjectIds.includes(subjectId)
+    )
+    const availableSubjectModels = availableSubjectIds.length
+      ? await Subject.query()
+          .where('isStandard', true)
+          .whereIn('id', availableSubjectIds)
+          .orderBy('name', 'asc')
+      : []
+    const availableSubjects = availableSubjectModels.map((subject) => {
+      const program = programBySubject.get(subject.id)
+      return {
+        ...subject.serialize(),
+        defaultCoefficient: Number(program?.default_coefficient || subject.coefficient || 1),
+        defaultHoursPerWeek: Number(program?.default_hours_per_week || 2),
+      }
+    })
 
     return view.render('schools/classes/show', {
       school: this.getFallbackSchool(user),
@@ -363,8 +489,16 @@ export default class AcademicController {
 
   public async editClassPage({ auth, params, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const [classObj, teachers] = await Promise.all([
-      Class.query().where('id', params.id).where('schoolId', user.schoolId).firstOrFail(),
+      Class.query()
+        .where('id', params.id)
+        .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
+        .if(!governance.canManageAllSections, (query) =>
+          query.where('schoolSectionId', governance.sectionId)
+        )
+        .firstOrFail(),
       Teacher.query().where('schoolId', user.schoolId).where('status', 'active').preload('user'),
     ])
 
@@ -377,10 +511,15 @@ export default class AcademicController {
 
   public async classStudentsPage({ auth, params, request, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const page = Number(request.input('page', 1))
     const classObj = await Class.query()
       .where('id', params.id)
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
       .firstOrFail()
     const paginator = await Student.query()
       .where('classId', classObj.id)
@@ -407,7 +546,7 @@ export default class AcademicController {
     const academicYear = request.input('academic_year')
     const level = request.input('level')
 
-    const query = Class.query().where('schoolId', user.schoolId)
+    const query = Class.query().where('schoolId', user.schoolId).whereNull('archivedAt')
 
     if (academicYear) {
       query.where('academicYear', academicYear)
@@ -462,6 +601,7 @@ export default class AcademicController {
   public async getClassById({ params, response }: HttpContext) {
     const classObj = await Class.query()
       .where('id', params.id)
+      .whereNull('archivedAt')
       .preload('teacher', (teacherQuery) => {
         teacherQuery.preload('user')
       })
@@ -493,6 +633,19 @@ export default class AcademicController {
   public async createClass({ request, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(createClassValidator)
+    const governance = await getGovernanceContext(user)
+    const schoolSectionId = await resolveSectionIdForLevel(
+      user.schoolId,
+      payload.level,
+      payload.gradeLevel
+    )
+
+    if (!governance.canManageAllSections && schoolSectionId !== governance.sectionId) {
+      return response.forbidden({
+        success: false,
+        message: "Vous ne pouvez créer une classe que dans votre section scolaire.",
+      })
+    }
 
     // Vérifier qu'une classe avec le même nom n'existe pas pour cette année
     const currentYear = DateTime.now().year.toString()
@@ -500,12 +653,13 @@ export default class AcademicController {
       .where('schoolId', user.schoolId)
       .where('name', payload.name)
       .where('academicYear', currentYear)
+      .whereNull('archivedAt')
       .first()
 
     if (existingClass) {
       return response.conflict({
         success: false,
-        message: 'Une classe avec ce nom existe déjà pour cette année académique',
+        message: 'Une classe avec ce nom existe déjà pour cette année scolaire',
       })
     }
 
@@ -519,6 +673,7 @@ export default class AcademicController {
     classObj.academicYear = currentYear
     classObj.shift = payload.shift || 'morning'
     classObj.teacherId = payload.teacherId ?? null
+    classObj.schoolSectionId = schoolSectionId
 
     await classObj.save()
 
@@ -539,10 +694,15 @@ export default class AcademicController {
   public async updateClass({ request, params, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const payload = await request.validateUsing(updateClassValidator)
+    const governance = await getGovernanceContext(user)
 
     const classObj = await Class.query()
       .where('id', params.id)
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
       .firstOrFail()
 
     classObj.merge(payload)
@@ -562,33 +722,104 @@ export default class AcademicController {
   /**
    * Supprimer une classe
    */
-  public async deleteClass({ params, auth, response }: HttpContext) {
+  public async deleteClass({ params, auth, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+
+    if (user.role !== 'director') {
+      return response.forbidden({
+        success: false,
+        message: 'Seul le directeur peut supprimer une classe.',
+      })
+    }
 
     const classObj = await Class.query()
       .where('id', params.id)
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
       .firstOrFail()
 
-    // Vérifier s'il y a des élèves dans la classe
-    const studentsCountResult = await Student.query()
-      .where('classId', classObj.id)
-      .where('academicStatus', 'active')
-      .count('*', 'total')
+    classObj.archivedAt = DateTime.now()
+    classObj.archivedBy = user.id
+    await classObj.save()
 
-    if (Number(studentsCountResult[0].$extras.total) > 0) {
-      return response.badRequest({
-        success: false,
-        message: 'Impossible de supprimer une classe qui contient des élèves',
-      })
+    if (request.header('accept')?.includes('text/html')) {
+      session.flash(
+        'success',
+        `La classe ${classObj.name} a été archivée. Ses dossiers historiques sont conservés.`
+      )
+      return response.redirect('/schools/classes')
     }
-
-    await classObj.delete()
 
     return response.ok({
       success: true,
-      message: 'Classe supprimée avec succès',
+      message: 'Classe archivée avec succès',
     })
+  }
+
+  public async restoreClass({ params, auth, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const archivedClass = await db
+      .from('classes')
+      .where('id', params.id)
+      .where('school_id', user.schoolId)
+      .whereNotNull('archived_at')
+      .first()
+
+    if (!archivedClass) {
+      session.flash('error', 'Cette classe archivée est introuvable.')
+      return response.redirect('/schools/classes-archives')
+    }
+
+    await db
+      .from('classes')
+      .where('id', archivedClass.id)
+      .update({ archived_at: null, archived_by: null, updated_at: new Date() })
+
+    session.flash('success', `La classe ${archivedClass.name} a été restaurée.`)
+    return response.redirect('/schools/classes-archives')
+  }
+
+  public async permanentlyDeleteClass({ params, auth, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    if (user.role !== 'director') {
+      return response.forbidden({
+        success: false,
+        message: 'Seul le directeur peut supprimer définitivement une classe.',
+      })
+    }
+
+    const archivedClass = await db
+      .from('classes')
+      .where('id', params.id)
+      .where('school_id', user.schoolId)
+      .whereNotNull('archived_at')
+      .first()
+
+    if (!archivedClass) {
+      session.flash('error', 'Cette classe archivée est introuvable.')
+      return response.redirect('/schools/classes-archives')
+    }
+
+    await db.transaction(async (trx) => {
+      // Ces deux relations n'ont pas de suppression en cascade dans leur migration.
+      await trx.from('grades').where('class_id', archivedClass.id).delete()
+      await trx.from('assignments').where('class_id', archivedClass.id).delete()
+
+      // Les autres relations sont configurées en CASCADE. Les élèves sont conservés
+      // et leur class_id devient NULL grâce à la contrainte SET NULL.
+      await trx.from('classes').where('id', archivedClass.id).delete()
+    })
+
+    session.flash(
+      'success',
+      `La classe ${archivedClass.name} et ses données pédagogiques ont été supprimées définitivement.`
+    )
+    return response.redirect('/schools/classes-archives')
   }
 
   /**
@@ -642,11 +873,353 @@ export default class AcademicController {
    * ==================== GESTION DES MATIÈRES ====================
    */
 
+  public async subjectsPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const page = Number(request.input('page', 1))
+    const schoolSubjectRows = await db
+      .from('class_subject')
+      .join('classes', 'class_subject.class_id', 'classes.id')
+      .where('classes.school_id', user.schoolId)
+      .whereNull('classes.archived_at')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('classes.school_section_id', governance.sectionId)
+      )
+      .select('class_subject.subject_id')
+      .avg('class_subject.coefficient as average_coefficient')
+      .groupBy('class_subject.subject_id')
+    const schoolSubjectIds = schoolSubjectRows.map((row) => row.subject_id)
+    const localCoefficientBySubject = new Map(
+      schoolSubjectRows.map((row) => [
+        String(row.subject_id),
+        Number(row.average_coefficient || 1),
+      ])
+    )
+    const paginator = await Subject.query()
+      .where('isStandard', true)
+      .if(schoolSubjectIds.length > 0, (query) => query.whereIn('id', schoolSubjectIds))
+      .if(schoolSubjectIds.length === 0, (query) => query.whereRaw('1 = 0'))
+      .orderBy('name', 'asc')
+      .paginate(page, 20)
+    const subjects = paginator.all()
+    const subjectIds = subjects.map((subject) => subject.id)
+
+    const assignmentRows = subjectIds.length
+      ? await db
+          .from('class_subject')
+          .join('classes', 'class_subject.class_id', 'classes.id')
+          .where('classes.school_id', user.schoolId)
+          .whereNull('classes.archived_at')
+          .if(!governance.canManageAllSections, (query) =>
+            query.where('classes.school_section_id', governance.sectionId)
+          )
+          .whereIn('class_subject.subject_id', subjectIds)
+          .select('class_subject.subject_id', 'class_subject.class_id', 'class_subject.teacher_id')
+      : []
+
+    const assignmentsBySubject = new Map<string, { classes: Set<string>; teachers: Set<string> }>()
+    for (const row of assignmentRows) {
+      const current = assignmentsBySubject.get(row.subject_id) || {
+        classes: new Set<string>(),
+        teachers: new Set<string>(),
+      }
+      if (row.class_id) current.classes.add(row.class_id)
+      if (row.teacher_id) current.teachers.add(row.teacher_id)
+      assignmentsBySubject.set(row.subject_id, current)
+    }
+
+    const [schoolAssignments, equippedClasses] = await Promise.all([
+      db
+        .from('class_subject')
+        .join('classes', 'class_subject.class_id', 'classes.id')
+        .where('classes.school_id', user.schoolId)
+        .whereNull('classes.archived_at')
+        .if(!governance.canManageAllSections, (query) =>
+          query.where('classes.school_section_id', governance.sectionId)
+        )
+        .select('class_subject.coefficient'),
+      db
+        .from('class_subject')
+        .join('classes', 'class_subject.class_id', 'classes.id')
+        .where('classes.school_id', user.schoolId)
+        .whereNull('classes.archived_at')
+        .if(!governance.canManageAllSections, (query) =>
+          query.where('classes.school_section_id', governance.sectionId)
+        )
+        .countDistinct('classes.id as total')
+        .first(),
+    ])
+    const averageCoefficient =
+      schoolAssignments.length > 0
+        ? Number(
+            (
+              schoolAssignments.reduce(
+                (sum, assignment) => sum + Number(assignment.coefficient || 0),
+                0
+              ) / schoolAssignments.length
+            ).toFixed(1)
+          )
+        : 0
+
+    return view.render('schools/subjects/index', {
+      school: this.getFallbackSchool(user),
+      subjects: subjects.map((subject) => ({
+        ...subject.serialize(),
+        coefficient: localCoefficientBySubject.get(subject.id) || subject.coefficient,
+        classesCount: assignmentsBySubject.get(subject.id)?.classes.size || 0,
+        teachersCount: assignmentsBySubject.get(subject.id)?.teachers.size || 0,
+      })),
+      stats: {
+        total: schoolSubjectIds.length,
+        assigned: schoolSubjectIds.length,
+        averageCoefficient,
+        classesWithSubjects: Number(equippedClasses?.total || 0),
+      },
+      pagination: this.getPaginationMeta(paginator),
+      url: '/schools/subjects',
+    })
+  }
+
+  public async nationalSubjectsPage({ auth, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const [subjects, programs] = await Promise.all([
+      Subject.query().where('isStandard', true).orderBy('name', 'asc'),
+      db
+        .from('subject_programs')
+        .select(
+          'subject_id',
+          'level',
+          'grade_level_min',
+          'grade_level_max',
+          'school_option',
+          'default_coefficient',
+          'default_hours_per_week'
+        )
+        .orderBy('level', 'asc')
+        .orderBy('school_option', 'asc'),
+    ])
+    const programsBySubject = new Map<string, any[]>()
+
+    for (const program of programs) {
+      const subjectPrograms = programsBySubject.get(program.subject_id) || []
+      subjectPrograms.push({
+        level: program.level,
+        gradeLevelMin: Number(program.grade_level_min),
+        gradeLevelMax: Number(program.grade_level_max),
+        schoolOption: program.school_option,
+        coefficient: Number(program.default_coefficient || 1),
+        hoursPerWeek: Number(program.default_hours_per_week || 2),
+      })
+      programsBySubject.set(program.subject_id, subjectPrograms)
+    }
+
+    return view.render('schools/subjects/catalog', {
+      school: this.getFallbackSchool(user),
+      subjects: subjects.map((subject) => {
+        const subjectPrograms = programsBySubject.get(subject.id) || []
+
+        return {
+          ...subject.serialize(),
+          programs: subjectPrograms,
+          searchText: [
+            subject.code,
+            subject.name,
+            subject.description,
+            ...subjectPrograms.flatMap((program) => [program.level, program.schoolOption]),
+          ]
+            .filter(Boolean)
+            .join(' '),
+        }
+      }),
+    })
+  }
+
+  public async editSubjectPage({ auth, params, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const subject = await Subject.findOrFail(params.id)
+    const assignments = await db
+      .from('class_subject')
+      .join('classes', 'class_subject.class_id', 'classes.id')
+      .leftJoin('teachers', 'class_subject.teacher_id', 'teachers.id')
+      .leftJoin('users', 'teachers.user_id', 'users.id')
+      .where('class_subject.subject_id', subject.id)
+      .where('classes.school_id', user.schoolId)
+      .whereNull('classes.archived_at')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('classes.school_section_id', governance.sectionId)
+      )
+      .select(
+        'class_subject.id',
+        'class_subject.class_id',
+        'class_subject.hours_per_week',
+        'class_subject.coefficient',
+        'classes.name as class_name',
+        'users.first_name',
+        'users.postnom',
+        'users.last_name'
+      )
+      .orderBy('classes.grade_level', 'asc')
+      .orderBy('classes.name', 'asc')
+
+    const classIds = assignments.map((assignment) => assignment.class_id)
+    const [studentsCount, averageGrade] = await Promise.all([
+      classIds.length
+        ? db
+            .from('students')
+            .where('school_id', user.schoolId)
+            .where('academic_status', 'active')
+            .whereIn('class_id', classIds)
+            .countDistinct('id as total')
+            .first()
+        : Promise.resolve({ total: 0 }),
+      db
+        .from('grades')
+        .join('classes', 'grades.class_id', 'classes.id')
+        .where('grades.subject_id', subject.id)
+        .where('classes.school_id', user.schoolId)
+        .avg('grades.score as average')
+        .first(),
+    ])
+
+    return view.render('schools/subjects/edit', {
+      school: this.getFallbackSchool(user),
+      subject,
+      classes: assignments.map((assignment) => ({
+        assignmentId: assignment.id,
+        classId: assignment.class_id,
+        className: assignment.class_name,
+        teacherName:
+          [assignment.first_name, assignment.last_name, assignment.postnom]
+            .filter(Boolean)
+            .join(' ') || null,
+        hoursPerWeek: Number(assignment.hours_per_week || 0),
+        coefficient: Number(assignment.coefficient || subject.coefficient || 1),
+      })),
+      stats: {
+        classesCount: assignments.length,
+        teachersCount: new Set(
+          assignments
+            .map((assignment) =>
+              [assignment.first_name, assignment.last_name, assignment.postnom]
+                .filter(Boolean)
+                .join(' ')
+            )
+            .filter(Boolean)
+        ).size,
+        studentsCount: Number(studentsCount?.total || 0),
+        averageGrade:
+          averageGrade?.average === null || averageGrade?.average === undefined
+            ? null
+            : Number(averageGrade.average).toFixed(1),
+      },
+    })
+  }
+
+  public async assignSubjectsPage({ auth, request, view }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const [classes, subjects, teachers, rows, subjectPrograms] = await Promise.all([
+      Class.query()
+        .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
+        .if(!governance.canManageAllSections, (query) =>
+          query.where('schoolSectionId', governance.sectionId)
+        )
+        .orderBy('gradeLevel', 'asc')
+        .orderBy('name', 'asc'),
+      Subject.query().where('isStandard', true).orderBy('name', 'asc'),
+      Teacher.query()
+        .where('schoolId', user.schoolId)
+        .where('status', 'active')
+        .preload('user')
+        .orderBy('createdAt', 'desc'),
+      db
+        .from('class_subject')
+        .join('classes', 'class_subject.class_id', 'classes.id')
+        .join('subjects', 'class_subject.subject_id', 'subjects.id')
+        .leftJoin('teachers', 'class_subject.teacher_id', 'teachers.id')
+        .leftJoin('users', 'teachers.user_id', 'users.id')
+        .where('classes.school_id', user.schoolId)
+        .whereNull('classes.archived_at')
+        .if(!governance.canManageAllSections, (query) =>
+          query.where('classes.school_section_id', governance.sectionId)
+        )
+        .select(
+          'class_subject.id',
+          'class_subject.class_id',
+          'class_subject.subject_id',
+          'class_subject.hours_per_week',
+          'class_subject.coefficient',
+          'classes.name as class_name',
+          'subjects.name as subject_name',
+          'users.first_name',
+          'users.postnom',
+          'users.last_name'
+        )
+        .orderBy('classes.grade_level', 'asc')
+        .orderBy('classes.name', 'asc')
+        .orderBy('subjects.name', 'asc'),
+      db
+        .from('subject_programs')
+        .select(
+          'subject_id',
+          'level',
+          'grade_level_min',
+          'grade_level_max',
+          'school_option',
+          'default_coefficient',
+          'default_hours_per_week'
+        ),
+    ])
+
+    const assignments = rows.map((row) => ({
+      id: row.id,
+      classId: row.class_id,
+      subjectId: row.subject_id,
+      className: row.class_name,
+      subjectName: row.subject_name,
+      teacherName:
+        [row.first_name, row.last_name, row.postnom].filter(Boolean).join(' ') || 'Non assigné',
+      hoursPerWeek: Number(row.hours_per_week || 0),
+      coefficient: Number(row.coefficient || 1),
+    }))
+    const summaries = new Map<string, any>()
+    for (const assignment of assignments) {
+      const summary = summaries.get(assignment.classId) || {
+        className: assignment.className,
+        subjects: [],
+        totalHours: 0,
+      }
+      summary.subjects.push({
+        name: assignment.subjectName,
+        hours: assignment.hoursPerWeek,
+        coefficient: assignment.coefficient,
+      })
+      summary.totalHours += assignment.hoursPerWeek
+      summaries.set(assignment.classId, summary)
+    }
+
+    return view.render('schools/subjects/assign', {
+      school: this.getFallbackSchool(user),
+      classes: classes.map((classObj) => ({
+        ...classObj.serialize(),
+        schoolOption: getClassSchoolOption(classObj),
+      })),
+      subjects,
+      subjectPrograms,
+      teachers,
+      assignments,
+      classSummaries: Array.from(summaries.values()),
+      selectedSubjectId: String(request.input('subject_id', '')),
+    })
+  }
+
   /**
    * Obtenir toutes les matières
    */
   public async getSubjects({ response }: HttpContext) {
-    const subjects = await Subject.query().orderBy('name', 'asc')
+    const subjects = await Subject.query().where('isStandard', true).orderBy('name', 'asc')
 
     return response.ok({
       success: true,
@@ -657,20 +1230,21 @@ export default class AcademicController {
   /**
    * Créer une nouvelle matière
    */
-  public async createSubject({ request, response }: HttpContext) {
+  public async createSubject({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(createSubjectValidator)
+    const subject = await Subject.query()
+      .where('id', payload.subjectId)
+      .where('isStandard', true)
+      .firstOrFail()
 
-    const subject = new Subject()
-    subject.name = payload.name
-    subject.code = payload.code.toUpperCase()
-    subject.description = payload.description || ''
-    subject.coefficient = payload.coefficient || 1
-
-    await subject.save()
+    if (request.header('accept')?.includes('text/html')) {
+      session.flash('success', `La matière ${subject.name} est prête à être assignée.`)
+      return response.redirect(`/schools/subjects/assign?subject_id=${subject.id}`)
+    }
 
     return response.created({
       success: true,
-      message: 'Matière créée avec succès',
+      message: 'Matière du référentiel sélectionnée',
       subject: subject,
     })
   }
@@ -678,23 +1252,20 @@ export default class AcademicController {
   /**
    * Mettre à jour une matière
    */
-  public async updateSubject({ request, params, response }: HttpContext) {
-    const updateSubjectSchema = vine.compile(
-      vine.object({
-        name: vine.string().trim().maxLength(100).optional(),
-        description: vine.string().trim().optional(),
-        coefficient: vine.number().range([1, 5]).optional(),
-      })
-    )
-    const payload = await request.validateUsing(updateSubjectSchema)
-
+  public async updateSubject({ request, params, response, session }: HttpContext) {
     const subject = await Subject.findOrFail(params.id)
-    subject.merge(payload)
-    await subject.save()
+
+    if (request.header('accept')?.includes('text/html')) {
+      session.flash(
+        'error',
+        "Le nom et le code sont imposés par le référentiel national des matières."
+      )
+      return response.redirect(`/schools/subjects/${subject.id}/edit`)
+    }
 
     return response.ok({
-      success: true,
-      message: 'Matière mise à jour avec succès',
+      success: false,
+      message: 'Cette matière est protégée par le référentiel national.',
       subject: subject,
     })
   }
@@ -702,49 +1273,112 @@ export default class AcademicController {
   /**
    * Supprimer une matière
    */
-  public async deleteSubject({ params, response }: HttpContext) {
+  public async deleteSubject({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const subject = await Subject.findOrFail(params.id)
 
-    // Vérifier si la matière est utilisée dans des notes
-    const gradesCountResult = await Grade.query().where('subjectId', subject.id).count('*', 'total')
+    const gradesCountResult = await db
+      .from('grades')
+      .join('classes', 'grades.class_id', 'classes.id')
+      .where('grades.subject_id', subject.id)
+      .where('classes.school_id', user.schoolId)
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('classes.school_section_id', governance.sectionId)
+      )
+      .count('* as total')
+      .first()
 
-    if (Number(gradesCountResult[0].$extras.total) > 0) {
+    if (Number(gradesCountResult?.total || 0) > 0) {
       return response.badRequest({
         success: false,
         message: 'Impossible de supprimer une matière qui a des notes associées',
       })
     }
 
-    await subject.delete()
+    await db
+      .from('class_subject')
+      .where('subject_id', subject.id)
+      .whereIn(
+        'class_id',
+        db
+          .from('classes')
+          .where('school_id', user.schoolId)
+          .if(!governance.canManageAllSections, (query) =>
+            query.where('school_section_id', governance.sectionId)
+          )
+          .select('id')
+      )
+      .delete()
 
     return response.ok({
       success: true,
-      message: 'Matière supprimée avec succès',
+      message: 'Matière retirée du programme de cet établissement',
     })
   }
 
   /**
    * Assigner une matière à une classe
    */
-  public async addSubjectToClass({ auth, request, params, response }: HttpContext) {
+  public async addSubjectToClass({
+    auth,
+    request,
+    params,
+    response,
+    session,
+  }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const wantsHtml = request.accepts(['html', 'json']) === 'html'
     const assignmentSchema = vine.compile(
       vine.object({
         subjectId: vine.string().exists({ table: 'subjects', column: 'id' }),
         teacherId: vine.string().exists({ table: 'teachers', column: 'id' }),
         hoursPerWeek: vine.number().range([1, 20]).optional(),
+        coefficient: vine.number().range([1, 5]).optional(),
       })
     )
     const payload = await request.validateUsing(assignmentSchema)
 
+    const classId = params.classId || request.input('classId')
     const classObj = await Class.query()
-      .where('id', params.classId)
+      .where('id', classId)
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
       .firstOrFail()
     await Teacher.query()
       .where('id', payload.teacherId)
       .where('schoolId', user.schoolId)
       .firstOrFail()
+    const subject = await Subject.query()
+      .where('id', payload.subjectId)
+      .where('isStandard', true)
+      .firstOrFail()
+    const classOption = getClassSchoolOption(classObj)
+    const program = await db
+      .from('subject_programs')
+      .where('subject_id', subject.id)
+      .where('grade_level_min', '<=', classObj.gradeLevel)
+      .where('grade_level_max', '>=', classObj.gradeLevel)
+      .where((query) => {
+        query.where('level', 'Tous').orWhere('level', classObj.level)
+      })
+      .where((query) => {
+        query.whereNull('school_option')
+        if (classOption) query.orWhere('school_option', classOption)
+      })
+      .orderByRaw('case when school_option is null then 1 else 0 end')
+      .first()
+
+    if (!program) {
+      return response.badRequest({
+        success: false,
+        message: `Cette matière ne fait pas partie du programme prévu pour ${classObj.name}.`,
+      })
+    }
 
     // Vérifier si la matière est déjà assignée
     const existingAssignment = await db
@@ -754,6 +1388,11 @@ export default class AcademicController {
       .first()
 
     if (existingAssignment) {
+      if (wantsHtml) {
+        session.flash('error', 'Cette matière est déjà assignée à cette classe.')
+        return response.redirect('/schools/subjects/assign')
+      }
+
       return response.conflict({
         success: false,
         message: 'Cette matière est déjà assignée à cette classe',
@@ -764,9 +1403,16 @@ export default class AcademicController {
       class_id: classObj.id,
       subject_id: payload.subjectId,
       teacher_id: payload.teacherId,
-      hours_per_week: payload.hoursPerWeek || 4,
+      hours_per_week: payload.hoursPerWeek || program.default_hours_per_week || 2,
+      coefficient:
+        payload.coefficient || program.default_coefficient || subject.coefficient || 1,
       created_at: DateTime.now().toSQL(),
     })
+
+    if (wantsHtml) {
+      session.flash('success', 'Matière assignée à la classe avec succès.')
+      return response.redirect('/schools/subjects/assign')
+    }
 
     return response.created({
       success: true,
@@ -779,9 +1425,14 @@ export default class AcademicController {
    */
   public async removeSubjectFromClass({ auth, params, response }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const classObj = await Class.query()
       .where('id', params.classId)
       .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
       .firstOrFail()
 
     const deleted = await db
@@ -814,7 +1465,7 @@ export default class AcademicController {
         'class_subject.*',
         'subjects.name as subject_name',
         'subjects.code as subject_code',
-        'subjects.coefficient',
+        'class_subject.coefficient',
         'users.first_name as teacher_first_name',
         'users.last_name as teacher_last_name'
       )
@@ -937,6 +1588,66 @@ export default class AcademicController {
       grades: grades,
       subjectsSummary: Array.from(subjectsMap.values()),
       overallAverage: overallAverage,
+    })
+  }
+
+  public async removeSubjectAssignment({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const assignment = await db
+      .from('class_subject')
+      .join('classes', 'class_subject.class_id', 'classes.id')
+      .where('class_subject.id', params.id)
+      .where('classes.school_id', user.schoolId)
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('classes.school_section_id', governance.sectionId)
+      )
+      .select('class_subject.id')
+      .first()
+
+    if (!assignment) {
+      return response.notFound({ success: false, message: 'Assignation introuvable.' })
+    }
+
+    await db.from('class_subject').where('id', assignment.id).delete()
+    return response.ok({ success: true, message: 'Assignation retirée avec succès.' })
+  }
+
+  public async getSubjectClasses({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const classes = await db
+      .from('class_subject')
+      .join('classes', 'class_subject.class_id', 'classes.id')
+      .leftJoin('teachers', 'class_subject.teacher_id', 'teachers.id')
+      .leftJoin('users', 'teachers.user_id', 'users.id')
+      .where('class_subject.subject_id', params.id)
+      .where('classes.school_id', user.schoolId)
+      .whereNull('classes.archived_at')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('classes.school_section_id', governance.sectionId)
+      )
+      .select(
+        'classes.id',
+        'classes.name',
+        'class_subject.hours_per_week',
+        'users.first_name',
+        'users.postnom',
+        'users.last_name'
+      )
+      .orderBy('classes.name', 'asc')
+
+    return response.ok({
+      success: true,
+      classes: classes.map((classObj) => ({
+        id: classObj.id,
+        name: classObj.name,
+        hoursPerWeek: Number(classObj.hours_per_week || 0),
+        teacherName:
+          [classObj.first_name, classObj.last_name, classObj.postnom]
+            .filter(Boolean)
+            .join(' ') || null,
+      })),
     })
   }
 
@@ -1356,11 +2067,11 @@ export default class AcademicController {
   }
 
   /**
-   * ==================== STATISTIQUES ACADÉMIQUES ====================
+   * ==================== STATISTIQUES SCOLAIRES ====================
    */
 
   /**
-   * Obtenir les statistiques académiques
+   * Obtenir les statistiques scolaires
    */
   public async getAcademicStats({ auth, request, response }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -1375,6 +2086,7 @@ export default class AcademicController {
     const totalClassesResult = await Class.query()
       .where('schoolId', user.schoolId)
       .where('academicYear', academicYear)
+      .whereNull('archivedAt')
       .count('*', 'total')
 
     const averageGradeResult = await Grade.query()

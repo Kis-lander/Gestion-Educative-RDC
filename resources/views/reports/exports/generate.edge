@@ -28,7 +28,7 @@
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Type de rapport *</label>
               <select name="reportType" required x-model="reportType" class="w-full px-3 py-2 border rounded-lg">
                 <option value="academic">
-                  Académique
+                  Scolaire
                 </option>
                 <option value="financial">
                   Financier
@@ -45,7 +45,7 @@
               </select>
             </div>
 
-            <!-- Options Académique -->
+            <!-- Options Scolaire -->
             <div x-show="reportType === 'academic'" x-cloak>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

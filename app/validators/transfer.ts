@@ -17,7 +17,7 @@ const transferMessages = {
 export const requestTransferValidator = vine.create(
   vine.object({
     studentId: vine.string().exists({ table: 'students', column: 'id' }),
-    targetSchoolCode: vine.string().trim().exists({ table: 'schools', column: 'code' }),
+    targetSchoolCode: vine.string().trim().minLength(3).maxLength(100),
     reason: vine.string().trim().optional(),
   })
 )

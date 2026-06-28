@@ -21,7 +21,10 @@ import {
 
 export default class TeacherController {
   private async getAttendanceClassesForUser(user: any) {
-    const query = Class.query().orderBy('gradeLevel', 'asc').orderBy('name', 'asc')
+    const query = Class.query()
+      .whereNull('archivedAt')
+      .orderBy('gradeLevel', 'asc')
+      .orderBy('name', 'asc')
 
     if (['director', 'discipline_director'].includes(user.role)) {
       return query.where('schoolId', user.schoolId)
@@ -33,11 +36,19 @@ export default class TeacherController {
 
   private async authorizeAttendanceClass(user: any, classId: string) {
     if (['director', 'discipline_director'].includes(user.role)) {
-      return Class.query().where('id', classId).where('schoolId', user.schoolId).firstOrFail()
+      return Class.query()
+        .where('id', classId)
+        .where('schoolId', user.schoolId)
+        .whereNull('archivedAt')
+        .firstOrFail()
     }
 
     const teacher = await Teacher.findByOrFail('user_id', user.id)
-    return Class.query().where('id', classId).where('teacher_id', teacher.id).firstOrFail()
+    return Class.query()
+      .where('id', classId)
+      .where('teacher_id', teacher.id)
+      .whereNull('archivedAt')
+      .firstOrFail()
   }
 
   public async attendanceMarkPage(ctx: HttpContext) {
@@ -182,6 +193,7 @@ export default class TeacherController {
 
     const query = Class.query()
       .where('teacher_id', teacher.id)
+      .whereNull('archivedAt')
 
     if (academicYear) {
       query.where('academic_year', academicYear)

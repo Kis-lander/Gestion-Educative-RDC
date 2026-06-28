@@ -79,10 +79,7 @@ export const updateGradeValidator = vine.create(
  */
 export const createSubjectValidator = vine.create(
   vine.object({
-    name: vine.string().trim().maxLength(100).unique({ table: 'subjects', column: 'name' }),
-    code: vine.string().trim().maxLength(20).unique({ table: 'subjects', column: 'code' }),
-    description: vine.string().trim().optional(),
-    coefficient: vine.number().range([1, 5]).optional(),
+    subjectId: vine.string().exists({ table: 'subjects', column: 'id' }),
   })
 )
 

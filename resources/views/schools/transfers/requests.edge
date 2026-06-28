@@ -140,10 +140,11 @@
                 'bg-yellow-100 text-yellow-800': '{{ request.status }}' === 'pending',
                 'bg-green-100 text-green-800': '{{ request.status }}' === 'approved',
                 'bg-blue-100 text-blue-800': '{{ request.status }}' === 'used',
-                'bg-red-100 text-red-800': '{{ request.status }}' === 'rejected'
+                'bg-red-100 text-red-800': '{{ request.status }}' === 'rejected',
+                'bg-gray-100 text-gray-700': '{{ request.status }}' === 'cancelled'
               }"
                     >
-                      {{ request.status === 'pending' ? 'En attente' : (request.status === 'approved' ? 'Approuvé' : (request.status === 'used' ? 'Complété' : 'Rejeté')) }}
+                      {{ request.status === 'pending' ? 'En attente' : (request.status === 'approved' ? 'Approuvé' : (request.status === 'used' ? 'Complété' : (request.status === 'cancelled' ? 'Annulé' : 'Rejeté'))) }}
               </span>
                   </td>
                   <td class="px-4 py-3 text-center font-mono text-xs">
@@ -152,6 +153,13 @@
                   <td class="px-4 py-3 text-center">
                     <div class="flex justify-center gap-2">
                       @if(request.status === 'pending')
+                        <button
+                          onclick="editReason('{{ request.id }}', {{ JSON.stringify(request.reason || '') }})"
+                          class="text-amber-500 hover:text-amber-700"
+                          title="Modifier la raison"
+                        >
+                          <i class="fas fa-pen"></i>
+                        </button>
                         <button
                           onclick="cancelRequest('{{ request.id }}')"
                           class="text-red-500 hover:text-red-700"
@@ -168,6 +176,15 @@
                         >
                           <i class="fas fa-download"></i>
                         </button>
+                      @endif
+                      @if(request.status === 'used')
+                        <a
+                          href="/schools/transfers/history/{{ request.id }}"
+                          class="text-purple-500 hover:text-purple-700"
+                          title="Dossier historique"
+                        >
+                          <i class="fas fa-box-archive"></i>
+                        </a>
                       @endif
                       <button
                         onclick="viewDetails('{{ request.id }}')"
@@ -250,10 +267,11 @@
                 'bg-yellow-100 text-yellow-800': '{{ request.status }}' === 'pending',
                 'bg-green-100 text-green-800': '{{ request.status }}' === 'approved',
                 'bg-blue-100 text-blue-800': '{{ request.status }}' === 'used',
-                'bg-red-100 text-red-800': '{{ request.status }}' === 'rejected'
+                'bg-red-100 text-red-800': '{{ request.status }}' === 'rejected',
+                'bg-gray-100 text-gray-700': '{{ request.status }}' === 'cancelled'
               }"
                     >
-                      {{ request.status === 'pending' ? 'En attente' : (request.status === 'approved' ? 'Approuvé' : (request.status === 'used' ? 'Complété' : 'Rejeté')) }}
+                      {{ request.status === 'pending' ? 'En attente' : (request.status === 'approved' ? 'Approuvé' : (request.status === 'used' ? 'Complété' : (request.status === 'cancelled' ? 'Annulé' : 'Rejeté'))) }}
               </span>
                   </td>
                   <td class="px-4 py-3 text-center font-mono text-xs">
@@ -376,6 +394,41 @@
       </div>
     </div>
 
+    <div id="editReasonModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">Modifier la raison du transfert</h3>
+          <button type="button" onclick="closeEditReasonModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="editReasonForm" onsubmit="event.preventDefault(); saveReason()">
+          <input type="hidden" id="editTransferId" />
+          <label for="editTransferReason" class="block text-gray-700 dark:text-gray-300 mb-2">
+            Raison du transfert *
+          </label>
+          <textarea
+            id="editTransferReason"
+            rows="5"
+            maxlength="2000"
+            required
+            class="w-full px-3 py-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600"
+          ></textarea>
+          <p class="text-xs text-gray-500 mt-1">
+            La modification est possible tant que la demande est en attente.
+          </p>
+          <div class="flex gap-3 mt-5">
+            <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+              Enregistrer
+            </button>
+            <button type="button" onclick="closeEditReasonModal()" class="flex-1 px-4 py-2 border rounded-lg">
+              Fermer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script>
       let currentTab = "outgoing";
 
@@ -407,46 +460,104 @@
         document.getElementById("detailsModal").classList.remove("flex");
       }
 
+      function editReason(requestId, reason) {
+        document.getElementById("editTransferId").value = requestId;
+        document.getElementById("editTransferReason").value = reason || "";
+        document.getElementById("editReasonModal").classList.remove("hidden");
+        document.getElementById("editReasonModal").classList.add("flex");
+      }
+
+      function closeEditReasonModal() {
+        document.getElementById("editReasonModal").classList.add("hidden");
+        document.getElementById("editReasonModal").classList.remove("flex");
+      }
+
+      async function saveReason() {
+        const requestId = document.getElementById("editTransferId").value;
+        const reason = document.getElementById("editTransferReason").value.trim();
+        const res = await fetch(`/schools/transfers/${requestId}/reason`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ reason })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          closeEditReasonModal();
+          window.dispatchEvent(new CustomEvent("show-toast", {
+            detail: { message: data.message, type: "success" }
+          }));
+          setTimeout(() => location.reload(), 500);
+        } else {
+          window.dispatchEvent(new CustomEvent("show-toast", {
+            detail: { message: data.message || "Modification impossible.", type: "error" }
+          }));
+        }
+      }
+
       async function submitTransfer() {
         const form = document.getElementById("transferForm");
         const formData = new FormData(form);
-        const res = await fetch("/api/transfers/request", {
+        const res = await fetch("/schools/transfers/request", {
           method: "POST",
           headers: {
-            "X-CSRF-TOKEN": "{{ csrfToken }}"
+            "X-CSRF-TOKEN": "{{ csrfToken }}",
+            "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
           },
           body: formData
         });
         const data = await res.json();
-        if (data.success) {
-          alert(`Demande soumise avec succès. Code: ${data.authorizationCode}`);
-          location.reload();
+        if (res.ok && data.success) {
+          closeModal();
+          window.dispatchEvent(new CustomEvent("show-toast", {
+            detail: {
+              message: `${data.message}. Code : ${data.authorizationCode}`,
+              type: "success"
+            }
+          }));
+          setTimeout(() => location.reload(), 1000);
         } else {
-          alert("Erreur: " + data.message);
+          window.dispatchEvent(new CustomEvent("show-toast", {
+            detail: {
+              message: data.message || "Impossible d'envoyer la demande.",
+              type: "error"
+            }
+          }));
         }
       }
 
       async function cancelRequest(requestId) {
         if (confirm("Annuler cette demande de transfert ?")) {
-          const res = await fetch(`/api/transfers/${requestId}/cancel`, {
+          const res = await fetch(`/schools/transfers/${requestId}/cancel`, {
             method: "POST",
             headers: {
-              "X-CSRF-TOKEN": "{{ csrfToken }}"
+              "X-CSRF-TOKEN": "{{ csrfToken }}",
+              "Accept": "application/json"
             }
           });
           const data = await res.json();
-          if (data.success) {
+          if (res.ok && data.success) {
             location.reload();
           } else {
-            alert("Erreur: " + data.message);
+            window.dispatchEvent(new CustomEvent("show-toast", {
+              detail: { message: data.message || "Annulation impossible.", type: "error" }
+            }));
           }
         }
       }
 
       async function viewDetails(requestId) {
-        const res = await fetch(`/api/transfers/${requestId}`);
+        const res = await fetch(`/schools/transfers/${requestId}`, {
+          headers: { "Accept": "application/json" }
+        });
         const data = await res.json();
         const content = document.getElementById("detailsContent");
+        const schoolLabel = currentTab === "incoming" ? "École de provenance" : "École de destination";
+        const schoolName = currentTab === "incoming" ? data.fromSchoolName : data.targetSchoolName;
         content.innerHTML = `
                 <div class="space-y-3 text-sm">
                   <div class="flex justify-between">
@@ -458,8 +569,8 @@
                     <span>${data.className}</span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-500">École destination:</span>
-                    <span>${data.targetSchoolName}</span>
+                    <span class="text-gray-500">${schoolLabel}:</span>
+                    <span>${schoolName}</span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-500">Date demande:</span>
@@ -467,8 +578,8 @@
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-500">Statut:</span>
-                    <span class="px-2 py-0.5 rounded-full text-xs ${data.status === "pending" ? "bg-yellow-100 text-yellow-800" : data.status === "approved" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}">
-                      ${data.status === "pending" ? "En attente" : data.status === "approved" ? "Approuvé" : "Rejeté"}
+                    <span class="px-2 py-0.5 rounded-full text-xs ${data.status === "pending" ? "bg-yellow-100 text-yellow-800" : data.status === "approved" ? "bg-green-100 text-green-800" : data.status === "cancelled" ? "bg-gray-100 text-gray-700" : "bg-red-100 text-red-800"}">
+                      ${data.status === "pending" ? "En attente" : data.status === "approved" ? "Approuvé" : data.status === "used" ? "Complété" : data.status === "cancelled" ? "Annulé" : "Rejeté"}
                     </span>
                   </div>
                   <div class="flex justify-between">

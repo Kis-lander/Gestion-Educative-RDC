@@ -5,7 +5,7 @@
   @endsection
   
   @section('dashboardTitle')
-    Modifier la matière
+    Référentiel de la matière
   @endsection
   @section('dashboardSubtitle')
     {{ subject.name }} ({{ subject.code }})
@@ -15,79 +15,53 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Formulaire principal -->
       <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <form
-          method="POST"
-          action="/schools/subjects/{{ subject.id }}"
-          x-data="{ loading: false }"
-          @submit="loading = true"
-        >
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
-          <input type="hidden" name="_method" value="PUT" />
-
+        <div>
+          <div class="mb-5 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
+            <i class="fas fa-lock mr-2"></i>
+            Le nom et le code sont imposés par le référentiel national et sont identiques dans toutes les écoles.
+          </div>
           <div class="space-y-4">
             <div>
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom de la matière *</label>
               <input
                 type="text"
-                name="name"
                 value="{{ subject.name }}"
-                required
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                readonly
+                class="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700"
               />
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Code</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Code *</label>
               <input
                 type="text"
-                name="code"
                 value="{{ subject.code }}"
-                class="w-full px-4 py-2 border rounded-lg font-mono bg-gray-50 dark:bg-gray-700"
                 readonly
-                disabled
+                maxlength="20"
+                class="w-full px-4 py-2 border rounded-lg font-mono uppercase bg-gray-100 dark:bg-gray-700"
               />
               <p class="text-xs text-gray-500 mt-1">
-                Le code ne peut pas être modifié
+                Code unique de la matière, par exemple MATH ou FR
               </p>
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Coefficient *</label>
-              <select name="coefficient" required class="w-full px-4 py-2 border rounded-lg">
-                <option value="1" {{ subject.coefficient == 1 ? 'selected' : '' }}>
-                  Coefficient 1
-                </option>
-                <option value="2" {{ subject.coefficient == 2 ? 'selected' : '' }}>
-                  Coefficient 2
-                </option>
-                <option value="3" {{ subject.coefficient == 3 ? 'selected' : '' }}>
-                  Coefficient 3
-                </option>
-                <option value="4" {{ subject.coefficient == 4 ? 'selected' : '' }}>
-                  Coefficient 4
-                </option>
-                <option value="5" {{ subject.coefficient == 5 ? 'selected' : '' }}>
-                  Coefficient 5
-                </option>
-              </select>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2">Coefficient national indicatif</label>
+              <input value="{{ subject.coefficient }}" readonly class="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700" />
+              <p class="text-xs text-gray-500 mt-1">Le coefficient appliqué est défini lors de l'assignation à chaque classe.</p>
             </div>
 
             <div>
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
-              <textarea name="description" rows="3" class="w-full px-4 py-2 border rounded-lg">{{ subject.description || '' }}</textarea>
+              <textarea rows="3" readonly class="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700">{{ subject.description || '' }}</textarea>
             </div>
           </div>
 
           <div class="flex justify-between mt-8 pt-4 border-t dark:border-gray-700">
             <div class="flex gap-3">
-              <button
-                type="submit"
-                :disabled="loading"
-                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
-              >
-                <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-                Sauvegarder
-          </button>
+              <a href="/schools/subjects/assign?subject_id={{ subject.id }}" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+                <i class="fas fa-link mr-2"></i>Assigner à une classe
+              </a>
               <a
                 href="/schools/subjects"
                 class="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -101,10 +75,10 @@
               onclick="deleteSubject()"
               class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
             >
-              <i class="fas fa-trash mr-2"></i>Supprimer
+              <i class="fas fa-minus-circle mr-2"></i>Retirer du programme
         </button>
           </div>
-        </form>
+        </div>
       </div>
 
       <!-- Informations statistiques -->
@@ -148,7 +122,7 @@
                     Enseignant: {{ assigned.teacherName || 'Non assigné' }}
                   </p>
                   <p class="text-xs text-gray-400">
-                    {{ assigned.hoursPerWeek }}h/semaine
+                    Coefficient {{ assigned.coefficient }} · {{ assigned.hoursPerWeek }}h/semaine
                   </p>
                 </div>
                 <button onclick="removeFromClass('{{ assigned.classId }}')" class="text-red-500 hover:text-red-700">
@@ -175,7 +149,7 @@
 
     <script>
       function deleteSubject() {
-        if (confirm(`⚠️ Supprimer définitivement la matière "${subject.name}" ?\n\nCette action supprimera :\n- Toutes les notes associées\n- Tous les devoirs liés\n- Les assignations aux classes\n\nCette action est IRREVERSIBLE.`)) {
+        if (confirm(`Retirer la matière "{{ subject.name }}" du programme de cet établissement ?`)) {
           fetch("/schools/subjects/{{ subject.id }}", {
             method: "DELETE",
             headers: {
@@ -193,7 +167,7 @@
 
       function removeFromClass(classId) {
         if (confirm("Retirer cette matière de la classe ?")) {
-          fetch("/api/subjects/{{ subject.id }}/class/" + classId, {
+          fetch("/schools/subjects/{{ subject.id }}/classes/" + classId, {
             method: "DELETE",
             headers: {
               "X-CSRF-TOKEN": "{{ csrfToken }}"

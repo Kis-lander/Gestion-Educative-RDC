@@ -7,7 +7,7 @@ const financialMessages = {
   'feeType.required': 'Le type de frais est requis',
   'amount.required': 'Le montant est requis',
   'amount.min': 'Le montant doit être positif',
-  'academicYear.required': "L'année académique est requise",
+  'academicYear.required': "L'année scolaire est requise",
   'studentId.exists': "L'élève spécifié n'existe pas",
   'feeId.exists': "Le type de frais spécifié n'existe pas",
   'amountPaid.range': 'Le montant doit être compris entre 0.01 et 999999.99',

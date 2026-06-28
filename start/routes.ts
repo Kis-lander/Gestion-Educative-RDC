@@ -325,6 +325,11 @@ router
   .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
 
 router
+  .post('/schools/accounts/:id/credentials', [controllers.Schools, 'resetAccountCredentials'])
+  .as('schools.accounts.credentials')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
+
+router
   .get('/communication/messages', ({ response }) => {
     return response.redirect('/communication/messages/inbox')
   })
@@ -562,11 +567,20 @@ router
     router.get('/:id', [controllers.Students, 'showPage']).as('students.show')
   })
   .prefix('/students')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director'] })])
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director', 'secretary'] })])
 
 router
   .group(() => {
     router.get('/classes', [controllers.Academics, 'classesPage']).as('schools.classes.index')
+    router
+      .get('/classes-archives', [controllers.Academics, 'archivedClassesPage'])
+      .as('schools.classes.archives')
+    router
+      .post('/classes-archives/:id/restore', [controllers.Academics, 'restoreClass'])
+      .as('schools.classes.restore')
+    router
+      .post('/classes-archives/:id/delete', [controllers.Academics, 'permanentlyDeleteClass'])
+      .as('schools.classes.destroy_permanently')
     router
       .get('/classes/create', [controllers.Academics, 'createClassPage'])
       .as('schools.classes.create')
@@ -579,13 +593,31 @@ router
       .as('schools.classes.students')
     router.get('/classes/:id/edit', [controllers.Academics, 'editClassPage']).as('schools.classes.edit')
     router.get('/classes/:id', [controllers.Academics, 'showClassPage']).as('schools.classes.show')
+    router
+      .post('/classes/:classId/subjects', [controllers.Academics, 'addSubjectToClass'])
+      .as('schools.classes.subjects.store')
+    router
+      .delete('/classes/:classId/subjects/:subjectId', [
+        controllers.Academics,
+        'removeSubjectFromClass',
+      ])
+      .as('schools.classes.subjects.destroy')
     router.post('/classes/:id', [controllers.Academics, 'updateClass']).as('schools.classes.update.post')
     router.put('/classes/:id', [controllers.Academics, 'updateClass']).as('schools.classes.update')
+    router
+      .post('/classes/:id/delete', [controllers.Academics, 'deleteClass'])
+      .as('schools.classes.destroy.post')
     router.delete('/classes/:id', [controllers.Academics, 'deleteClass']).as('schools.classes.destroy')
     router.get('/timetable', [controllers.Academics, 'timetablePage']).as('schools.timetable.index')
     router
       .get('/timetable/create', [controllers.Academics, 'createTimetablePage'])
       .as('schools.timetable.create')
+    router
+      .post('/timetable', [controllers.Pedagogicals, 'createTimetable'])
+      .as('schools.timetable.store')
+    router
+      .post('/transfers/request', [controllers.Transfers, 'requestTransfer'])
+      .as('schools.transfers.request')
   })
   .prefix('/schools')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
@@ -600,8 +632,14 @@ router
     router
       .get('/:id/schedule', [controllers.Schools, 'scheduleTeacherPage'])
       .as('schools.teachers.schedule')
+    router
+      .post('/:id/credentials', [controllers.Schools, 'resetTeacherPassword'])
+      .as('schools.teachers.credentials')
     router.post('/:id', [controllers.Schools, 'updateTeacher']).as('schools.teachers.update.post')
     router.put('/:id', [controllers.Schools, 'updateTeacher']).as('schools.teachers.update')
+    router
+      .post('/:id/replace', [controllers.Schools, 'replaceTeacher'])
+      .as('schools.teachers.replace')
     router.delete('/:id', [controllers.Schools, 'deleteTeacher']).as('schools.teachers.destroy')
   })
   .prefix('/schools/teachers')
@@ -610,6 +648,11 @@ router
 router
   .post('/api/teachers/:id/reset-password', [controllers.Schools, 'resetTeacherPassword'])
   .as('api.teachers.reset_password')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
+
+router
+  .get('/api/teachers/list', [controllers.Schools, 'listActiveTeachers'])
+  .as('api.teachers.list')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
 
 router
@@ -798,36 +841,64 @@ router
     router
       .post('/profile/update', [controllers.Schools, 'updateSchoolProfile'])
       .as('schools.profile.update.web')
-    router.get('/subjects', async (ctx) =>
-      ctx.view.render('schools/subjects/index', await edgePageContext(ctx))
+    router.get('/subjects', [controllers.Academics, 'subjectsPage']).as('schools.subjects.index')
+    router.get('/subjects/create', ({ response }) =>
+      response.redirect('/schools/subjects/assign')
     )
-    router.get('/subjects/create', async (ctx) =>
-      ctx.view.render('schools/subjects/create', await edgePageContext(ctx))
-    )
-    router.get('/subjects/:id/edit', async (ctx) =>
-      ctx.view.render('schools/subjects/edit', await edgePageContext(ctx))
-    )
-    router.get('/subjects/assign', async (ctx) =>
-      ctx.view.render('schools/subjects/assign', await edgePageContext(ctx))
-    )
+    router
+      .post('/subjects', [controllers.Academics, 'createSubject'])
+      .as('schools.subjects.store')
+    router
+      .get('/subjects/assign', [controllers.Academics, 'assignSubjectsPage'])
+      .as('schools.subjects.assign')
+    router
+      .get('/subjects/catalog', [controllers.Academics, 'nationalSubjectsPage'])
+      .as('schools.subjects.catalog')
+    router
+      .post('/subjects/assign', [controllers.Academics, 'addSubjectToClass'])
+      .as('schools.subjects.assign.store')
+    router
+      .delete('/subjects/assignments/:id', [controllers.Academics, 'removeSubjectAssignment'])
+      .as('schools.subjects.assignments.destroy')
+    router
+      .get('/subjects/:id/classes', [controllers.Academics, 'getSubjectClasses'])
+      .as('schools.subjects.classes')
+    router
+      .delete('/subjects/:subjectId/classes/:classId', [
+        controllers.Academics,
+        'removeSubjectFromClass',
+      ])
+      .as('schools.subjects.classes.destroy')
+    router
+      .get('/subjects/:id/edit', [controllers.Academics, 'editSubjectPage'])
+      .as('schools.subjects.edit')
+    router
+      .post('/subjects/:id', [controllers.Academics, 'updateSubject'])
+      .as('schools.subjects.update.post')
+    router
+      .put('/subjects/:id', [controllers.Academics, 'updateSubject'])
+      .as('schools.subjects.update')
+    router
+      .delete('/subjects/:id', [controllers.Academics, 'deleteSubject'])
+      .as('schools.subjects.destroy')
     router.get('/timetable/:id/edit', async (ctx) =>
       ctx.view.render('schools/timetable/edit', await edgePageContext(ctx))
     )
     router.get('/timetable/print', async (ctx) =>
       ctx.view.render('schools/timetable/print', await edgePageContext(ctx))
     )
-    router.get('/transfers/authorize', async (ctx) =>
-      ctx.view.render('schools/transfers/authorize', await edgePageContext(ctx))
-    )
+    router.get('/transfers/authorize', [controllers.Transfers, 'authorizeTransferPage'])
     router.get('/transfers/history', async (ctx) =>
       ctx.view.render('schools/transfers/history', await edgePageContext(ctx))
     )
-    router.get('/transfers/pending', async (ctx) =>
-      ctx.view.render('schools/transfers/pending', await edgePageContext(ctx))
-    )
-    router.get('/transfers/requests', async (ctx) =>
-      ctx.view.render('schools/transfers/requests', await edgePageContext(ctx))
-    )
+    router.get('/transfers/pending', [controllers.Transfers, 'pendingTransfersPage'])
+    router.get('/transfers/requests', [controllers.Transfers, 'requestsPage'])
+    router.get('/transfers/history/:id', [controllers.Transfers, 'transferHistoryPage'])
+    router.get('/transfers/:id', [controllers.Transfers, 'transferDetails'])
+    router.put('/transfers/:id/reason', [controllers.Transfers, 'updateReason'])
+    router.post('/transfers/:id/cancel', [controllers.Transfers, 'cancelTransfer'])
+    router.post('/transfers/:id/authorize', [controllers.Transfers, 'authorizeTransfer'])
+    router.post('/transfers/:id/reject', [controllers.Transfers, 'rejectIncomingTransfer'])
   })
   .prefix('/schools')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['director'] })])
@@ -1507,15 +1578,52 @@ router
 
 router
   .group(() => {
+    router.get('/', ({ response }) => response.redirect('/reports/academic/school'))
     router.get('/academic/class', async (ctx) =>
       ctx.view.render('reports/academic/class-report', await edgePageContext(ctx))
     )
     router.get('/academic/performance', async (ctx) =>
       ctx.view.render('reports/academic/performance', await edgePageContext(ctx))
     )
-    router.get('/academic/school', async (ctx) =>
-      ctx.view.render('reports/academic/school-report', await edgePageContext(ctx))
-    )
+    router.get('/academic/school', async (ctx) => {
+      const context = await edgePageContext(ctx)
+      const contextSchool = context.school as any
+      const currentYear = Number(context.currentYear || DateTime.now().year)
+      const school = {
+        ...contextSchool,
+        id: contextSchool?.id || ctx.auth.user?.schoolId || '',
+        name: contextSchool?.name || 'Gestion Éducative RDC',
+      }
+
+      return ctx.view.render('reports/academic/school-report', {
+        ...context,
+        school,
+        schoolName: school.name,
+        documentTitle: "Rapport scolaire de l'établissement",
+        academicYear: `${currentYear - 1}-${currentYear}`,
+        termLabel: context.selectedTermLabel || 'Année scolaire',
+        generationDate: DateTime.now().toLocaleString(DateTime.DATE_SHORT),
+        stats: {
+          totalStudents: 0,
+          totalClasses: 0,
+          overallAverage: 0,
+          successRate: 0,
+          passedCount: 0,
+          failedCount: 0,
+        },
+        classesData: [],
+        topStudents: [],
+        subjectsPerformance: [],
+        trend: {
+          y1: 0,
+          y2: 0,
+          y3: 0,
+          y3Percent: 0,
+        },
+        recommendations:
+          'Les statistiques détaillées seront disponibles dès que les notes et bulletins seront consolidés.',
+      })
+    })
     router.get('/academic/student-progress', async (ctx) =>
       ctx.view.render('reports/academic/student-progress', await edgePageContext(ctx))
     )
@@ -1554,7 +1662,7 @@ router
     )
   })
   .prefix('/reports')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director'] })])
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director', 'secretary'] })])
 
 router
   .group(() => {
@@ -1655,7 +1763,7 @@ router
             router.post('/transfers/reject', [controllers.Transfers, 'rejectTransfer'])
             router.post('/transfers/:id/complete', [controllers.Transfers, 'completeTransfer'])
 
-            // Statistiques academiques
+            // Statistiques scolaires
             router.get('/stats/academic', [controllers.Academics, 'getAcademicStats'])
             router.get('/stats/progress', [controllers.Academics, 'getProgressStats'])
           })
@@ -1679,7 +1787,7 @@ router
             router.post('/calendar', [controllers.Pedagogicals, 'createAcademicCalendar'])
             router.post('/exam-schedules', [controllers.Pedagogicals, 'createExamSchedule'])
 
-            // Suivi academique
+            // Suivi scolaire
             router.post('/students/progress', [controllers.Pedagogicals, 'getStudentProgress'])
           })
           .prefix('/pedagogical')
@@ -1762,7 +1870,7 @@ router
         // ==================== ROUTES ELEVES ====================
         router
           .group(() => {
-            // Mon profil academique
+            // Mon profil scolaire
             router.get('/my-profile', [controllers.Students, 'getMyProfile'])
             router.get('/my-grades', [controllers.Students, 'getMyGrades'])
             router.get('/my-report-card', [controllers.Students, 'getMyReportCard'])

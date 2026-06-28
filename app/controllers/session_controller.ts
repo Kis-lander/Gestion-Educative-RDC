@@ -71,7 +71,7 @@ export default class SessionController {
   }
 
   /**
-   * Créer une session académique
+   * Créer une session scolaire
    */
   public async createAcademicSession({ request, response }: HttpContext) {
     const payload = await request.validateUsing(createAcademicSessionValidator)
@@ -117,13 +117,13 @@ export default class SessionController {
 
     return response.created({
       success: true,
-      message: 'Session académique créée avec succès',
+      message: 'Session scolaire créée avec succès',
       session: sessionData,
     })
   }
 
   /**
-   * Obtenir toutes les sessions académiques
+   * Obtenir toutes les sessions scolaires
    */
   public async getAcademicSessions({ response }: HttpContext) {
     const sessions = await db.from('academic_sessions').orderBy('start_date', 'desc')
@@ -143,7 +143,7 @@ export default class SessionController {
   }
 
   /**
-   * Mettre à jour une session académique
+   * Mettre à jour une session scolaire
    */
   public async updateAcademicSession({ request, params, response }: HttpContext) {
     const payload = await request.validateUsing(updateAcademicSessionValidator)
@@ -153,7 +153,7 @@ export default class SessionController {
     if (!session) {
       return response.notFound({
         success: false,
-        message: 'Session académique non trouvée',
+        message: 'Session scolaire non trouvée',
       })
     }
 
@@ -180,7 +180,7 @@ export default class SessionController {
 
     return response.ok({
       success: true,
-      message: 'Session académique mise à jour avec succès',
+      message: 'Session scolaire mise à jour avec succès',
     })
   }
 
@@ -195,7 +195,7 @@ export default class SessionController {
     if (!session) {
       return response.notFound({
         success: false,
-        message: 'Session académique non trouvée',
+        message: 'Session scolaire non trouvée',
       })
     }
 
@@ -298,7 +298,10 @@ export default class SessionController {
 
       // Transférer les classes
       if (payload.transferData.classes) {
-        const classes = await trx.from('classes').where('school_id', payload.schoolId)
+        const classes = await trx
+          .from('classes')
+          .where('school_id', payload.schoolId)
+          .whereNull('archived_at')
 
         if (classes.length > 0) {
           const classSessions = classes.map((c) => ({
@@ -378,7 +381,7 @@ export default class SessionController {
     if (!session) {
       return response.notFound({
         success: false,
-        message: 'Session académique non trouvée',
+        message: 'Session scolaire non trouvée',
       })
     }
 

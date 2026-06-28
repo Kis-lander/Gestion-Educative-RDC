@@ -10,6 +10,22 @@ const messageErrorMessages = {
   'schoolId.exists': "L'école spécifiée n'existe pas",
 }
 
+const communicationTargets = [
+  'all',
+  'promoter',
+  'preschool_director',
+  'primary_director',
+  'prefect',
+  'studies_director',
+  'pedagogical_advisor',
+  'discipline_director',
+  'deputy_discipline_director',
+  'finance_director',
+  'secretary',
+  'teacher',
+  'parent',
+] as const
+
 /**
  * Validateur pour l'envoi d'un message direct
  */
@@ -29,7 +45,7 @@ export const sendGlobalCommunicationValidator = vine.create(
   vine.object({
     subject: vine.string().trim().maxLength(255),
     content: vine.string().trim(),
-    targetRole: vine.enum(['director', 'teacher', 'parent', 'all']).optional(),
+    targetRole: vine.enum(communicationTargets).optional(),
     targetProvince: vine.string().trim().optional(),
   })
 )
@@ -42,7 +58,7 @@ export const sendSchoolCommunicationValidator = vine.create(
     schoolId: vine.string().exists({ table: 'schools', column: 'id' }),
     subject: vine.string().trim().maxLength(255),
     content: vine.string().trim(),
-    targetRole: vine.enum(['director', 'teacher', 'parent', 'all']).optional(),
+    targetRole: vine.enum(communicationTargets).optional(),
   })
 )
 

@@ -105,10 +105,12 @@ export class AttendanceSchema extends BaseModel {
 }
 
 export class ClassSubjectSchema extends BaseModel {
-  static $columns = ['classId', 'createdAt', 'hoursPerWeek', 'id', 'subjectId', 'teacherId', 'updatedAt'] as const
+  static $columns = ['classId', 'coefficient', 'createdAt', 'hoursPerWeek', 'id', 'subjectId', 'teacherId', 'updatedAt'] as const
   $columns = ClassSubjectSchema.$columns
   @column()
   declare classId: string | null
+  @column()
+  declare coefficient: number
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()
@@ -124,10 +126,14 @@ export class ClassSubjectSchema extends BaseModel {
 }
 
 export class ClassSchema extends BaseModel {
-  static $columns = ['academicYear', 'createdAt', 'currentEnrollment', 'gradeLevel', 'id', 'level', 'maxCapacity', 'name', 'schoolId', 'shift', 'teacherId', 'updatedAt'] as const
+  static $columns = ['academicYear', 'archivedAt', 'archivedBy', 'createdAt', 'currentEnrollment', 'gradeLevel', 'id', 'level', 'maxCapacity', 'name', 'schoolId', 'schoolSectionId', 'shift', 'teacherId', 'updatedAt'] as const
   $columns = ClassSchema.$columns
   @column()
   declare academicYear: string
+  @column.dateTime()
+  declare archivedAt: DateTime | null
+  @column()
+  declare archivedBy: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
   @column()
@@ -144,6 +150,8 @@ export class ClassSchema extends BaseModel {
   declare name: string
   @column()
   declare schoolId: string | null
+  @column()
+  declare schoolSectionId: string | null
   @column()
   declare shift: string | null
   @column()
@@ -500,6 +508,52 @@ export class SchoolInspectionSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class SchoolSectionSchema extends BaseModel {
+  static $columns = ['code', 'createdAt', 'displayOrder', 'id', 'isActive', 'name', 'schoolId', 'updatedAt'] as const
+  $columns = SchoolSectionSchema.$columns
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare displayOrder: number
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isActive: boolean
+  @column()
+  declare name: string
+  @column()
+  declare schoolId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class SchoolStaffAssignmentSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'id', 'isActive', 'isPrimary', 'position', 'schoolId', 'schoolSectionId', 'updatedAt', 'userId'] as const
+  $columns = SchoolStaffAssignmentSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isActive: boolean
+  @column()
+  declare isPrimary: boolean
+  @column()
+  declare position: string
+  @column()
+  declare schoolId: string
+  @column()
+  declare schoolSectionId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
 export class SchoolSchema extends BaseModel {
   static $columns = ['address', 'approvedAt', 'code', 'createdAt', 'directorEmail', 'directorName', 'directorPhone', 'email', 'hasElectricity', 'hasInternet', 'hasLibrary', 'id', 'logoUrl', 'name', 'phone', 'province', 'status', 'teacherId', 'territory', 'updatedAt'] as const
   $columns = SchoolSchema.$columns
@@ -545,8 +599,51 @@ export class SchoolSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class StudentSchoolHistorySchema extends BaseModel {
+  static $columns = ['academicSnapshot', 'academicYear', 'classId', 'className', 'createdAt', 'destinationClassId', 'destinationSchoolId', 'enrolledAt', 'id', 'leftAt', 'personalSnapshot', 'registrationNumber', 'schoolId', 'schoolOption', 'studentId', 'studentName', 'transferAuthorizationId', 'transferReason', 'updatedAt'] as const
+  $columns = StudentSchoolHistorySchema.$columns
+  @column()
+  declare academicSnapshot: any
+  @column()
+  declare academicYear: string | null
+  @column()
+  declare classId: string | null
+  @column()
+  declare className: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare destinationClassId: string | null
+  @column()
+  declare destinationSchoolId: string
+  @column.date()
+  declare enrolledAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column.date()
+  declare leftAt: DateTime
+  @column()
+  declare personalSnapshot: any
+  @column()
+  declare registrationNumber: string
+  @column()
+  declare schoolId: string
+  @column()
+  declare schoolOption: string | null
+  @column()
+  declare studentId: string | null
+  @column()
+  declare studentName: string
+  @column()
+  declare transferAuthorizationId: string
+  @column()
+  declare transferReason: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class StudentSchema extends BaseModel {
-  static $columns = ['academicStatus', 'address', 'birthDate', 'birthPlace', 'classId', 'createdAt', 'gender', 'id', 'medicalInfo', 'nationality', 'parentPhone', 'registrationNumber', 'schoolId', 'schoolOption', 'shift', 'updatedAt', 'userId'] as const
+  static $columns = ['academicStatus', 'address', 'birthDate', 'birthPlace', 'classId', 'createdAt', 'enrollmentDate', 'gender', 'id', 'medicalInfo', 'nationality', 'parentPhone', 'registrationNumber', 'schoolId', 'schoolOption', 'shift', 'updatedAt', 'userId'] as const
   $columns = StudentSchema.$columns
   @column()
   declare academicStatus: string | null
@@ -560,6 +657,8 @@ export class StudentSchema extends BaseModel {
   declare classId: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column.date()
+  declare enrollmentDate: DateTime
   @column()
   declare gender: string | null
   @column({ isPrimary: true })
@@ -584,8 +683,33 @@ export class StudentSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class SubjectProgramSchema extends BaseModel {
+  static $columns = ['createdAt', 'defaultCoefficient', 'defaultHoursPerWeek', 'gradeLevelMax', 'gradeLevelMin', 'id', 'level', 'schoolOption', 'subjectId', 'updatedAt'] as const
+  $columns = SubjectProgramSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare defaultCoefficient: number
+  @column()
+  declare defaultHoursPerWeek: number
+  @column()
+  declare gradeLevelMax: number
+  @column()
+  declare gradeLevelMin: number
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare level: string
+  @column()
+  declare schoolOption: string | null
+  @column()
+  declare subjectId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class SubjectSchema extends BaseModel {
-  static $columns = ['code', 'coefficient', 'createdAt', 'description', 'id', 'name', 'updatedAt'] as const
+  static $columns = ['code', 'coefficient', 'createdAt', 'description', 'id', 'isStandard', 'name', 'updatedAt'] as const
   $columns = SubjectSchema.$columns
   @column()
   declare code: string
@@ -597,6 +721,8 @@ export class SubjectSchema extends BaseModel {
   declare description: string | null
   @column({ isPrimary: true })
   declare id: string
+  @column()
+  declare isStandard: boolean
   @column()
   declare name: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })

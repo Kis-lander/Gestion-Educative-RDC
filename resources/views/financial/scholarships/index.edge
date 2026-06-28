@@ -73,7 +73,7 @@
               Tous
             </option>
             <option value="academic">
-              Bourse académique
+              Bourse scolaire
             </option>
             <option value="sports">
               Bourse sportive
@@ -186,7 +186,7 @@
                   <span
                     class="px-2 py-1 rounded-full text-xs {{ scholarship.type === 'academic' ? 'bg-blue-100 text-blue-800' : (scholarship.type === 'sports' ? 'bg-green-100 text-green-800' : (scholarship.type === 'social' ? 'bg-purple-100 text-purple-800' : 'bg-yellow-100 text-yellow-800')) }}"
                   >
-                    {{ scholarship.type === 'academic' ? 'Académique' : (scholarship.type === 'sports' ? 'Sportive' : (scholarship.type === 'social' ? 'Sociale' : 'Au mérite')) }}
+                    {{ scholarship.type === 'academic' ? 'Scolaire' : (scholarship.type === 'sports' ? 'Sportive' : (scholarship.type === 'social' ? 'Sociale' : 'Au mérite')) }}
             </span>
                 </td>
                 <td class="px-4 py-3 text-center">
@@ -250,7 +250,7 @@
           {{ stats.byType?.academic || 0 }}
         </p>
         <p class="text-sm">
-          Académiques
+          Scolaires
         </p>
       </div>
       <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">

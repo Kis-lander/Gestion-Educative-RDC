@@ -1075,6 +1075,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateAccount']>>>
     }
   }
+  'schools.accounts.credentials': {
+    methods: ["POST"]
+    pattern: '/schools/accounts/:id/credentials'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetAccountCredentials']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetAccountCredentials']>>>
+    }
+  }
   'inspection.messages': {
     methods: ["GET","HEAD"]
     pattern: '/communication/messages'
@@ -1819,6 +1831,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['classesPage']>>>
     }
   }
+  'schools.classes.archives': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/classes-archives'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['archivedClassesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['archivedClassesPage']>>>
+    }
+  }
+  'schools.classes.restore': {
+    methods: ["POST"]
+    pattern: '/schools/classes-archives/:id/restore'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['restoreClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['restoreClass']>>>
+    }
+  }
+  'schools.classes.destroy_permanently': {
+    methods: ["POST"]
+    pattern: '/schools/classes-archives/:id/delete'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['permanentlyDeleteClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['permanentlyDeleteClass']>>>
+    }
+  }
   'schools.classes.create': {
     methods: ["GET","HEAD"]
     pattern: '/schools/classes/create'
@@ -1891,6 +1939,30 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['showClassPage']>>>
     }
   }
+  'schools.classes.subjects.store': {
+    methods: ["POST"]
+    pattern: '/schools/classes/:classId/subjects'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { classId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['addSubjectToClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['addSubjectToClass']>>>
+    }
+  }
+  'schools.classes.subjects.destroy': {
+    methods: ["DELETE"]
+    pattern: '/schools/classes/:classId/subjects/:subjectId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { classId: ParamValue; subjectId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectFromClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectFromClass']>>>
+    }
+  }
   'schools.classes.update.post': {
     methods: ["POST"]
     pattern: '/schools/classes/:id'
@@ -1913,6 +1985,18 @@ export interface Registry {
       query: ExtractQuery<InferInput<(typeof import('#validators/academic').updateClassValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateClass']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateClass']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'schools.classes.destroy.post': {
+    methods: ["POST"]
+    pattern: '/schools/classes/:id/delete'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['deleteClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['deleteClass']>>>
     }
   }
   'schools.classes.destroy': {
@@ -1949,6 +2033,30 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['createTimetablePage']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['createTimetablePage']>>>
+    }
+  }
+  'schools.timetable.store': {
+    methods: ["POST"]
+    pattern: '/schools/timetable'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/pedagogicals_controller').default['createTimetable']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/pedagogicals_controller').default['createTimetable']>>>
+    }
+  }
+  'schools.transfers.request': {
+    methods: ["POST"]
+    pattern: '/schools/transfers/request'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/transfer').requestTransferValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/transfer').requestTransferValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['requestTransfer']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['requestTransfer']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'schools.teachers.index': {
@@ -2023,6 +2131,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['scheduleTeacherPage']>>>
     }
   }
+  'schools.teachers.credentials': {
+    methods: ["POST"]
+    pattern: '/schools/teachers/:id/credentials'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetTeacherPassword']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetTeacherPassword']>>>
+    }
+  }
   'schools.teachers.update.post': {
     methods: ["POST"]
     pattern: '/schools/teachers/:id'
@@ -2047,6 +2167,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateTeacher']>>>
     }
   }
+  'schools.teachers.replace': {
+    methods: ["POST"]
+    pattern: '/schools/teachers/:id/replace'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['replaceTeacher']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['replaceTeacher']>>>
+    }
+  }
   'schools.teachers.destroy': {
     methods: ["DELETE"]
     pattern: '/schools/teachers/:id'
@@ -2069,6 +2201,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetTeacherPassword']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['resetTeacherPassword']>>>
+    }
+  }
+  'api.teachers.list': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/teachers/list'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['listActiveTeachers']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['listActiveTeachers']>>>
     }
   }
   'discipline.dashboard': {
@@ -2501,6 +2645,258 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateSchoolProfile']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/schools_controller').default['updateSchoolProfile']>>>
+    }
+  }
+  'schools.subjects.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/subjects'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['subjectsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['subjectsPage']>>>
+    }
+  }
+  'schools.subjects.store': {
+    methods: ["POST"]
+    pattern: '/schools/subjects'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/academic').createSubjectValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#validators/academic').createSubjectValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['createSubject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['createSubject']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'schools.subjects.assign': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/subjects/assign'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['assignSubjectsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['assignSubjectsPage']>>>
+    }
+  }
+  'schools.subjects.catalog': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/subjects/catalog'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['nationalSubjectsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['nationalSubjectsPage']>>>
+    }
+  }
+  'schools.subjects.assign.store': {
+    methods: ["POST"]
+    pattern: '/schools/subjects/assign'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['addSubjectToClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['addSubjectToClass']>>>
+    }
+  }
+  'schools.subjects.assignments.destroy': {
+    methods: ["DELETE"]
+    pattern: '/schools/subjects/assignments/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectAssignment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectAssignment']>>>
+    }
+  }
+  'schools.subjects.classes': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/subjects/:id/classes'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['getSubjectClasses']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['getSubjectClasses']>>>
+    }
+  }
+  'schools.subjects.classes.destroy': {
+    methods: ["DELETE"]
+    pattern: '/schools/subjects/:subjectId/classes/:classId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { subjectId: ParamValue; classId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectFromClass']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['removeSubjectFromClass']>>>
+    }
+  }
+  'schools.subjects.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/subjects/:id/edit'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['editSubjectPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['editSubjectPage']>>>
+    }
+  }
+  'schools.subjects.update.post': {
+    methods: ["POST"]
+    pattern: '/schools/subjects/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateSubject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateSubject']>>>
+    }
+  }
+  'schools.subjects.update': {
+    methods: ["PUT"]
+    pattern: '/schools/subjects/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateSubject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateSubject']>>>
+    }
+  }
+  'schools.subjects.destroy': {
+    methods: ["DELETE"]
+    pattern: '/schools/subjects/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['deleteSubject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['deleteSubject']>>>
+    }
+  }
+  'transfers.authorize_transfer_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/transfers/authorize'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['authorizeTransferPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['authorizeTransferPage']>>>
+    }
+  }
+  'transfers.pending_transfers_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/transfers/pending'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['pendingTransfersPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['pendingTransfersPage']>>>
+    }
+  }
+  'transfers.requests_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/transfers/requests'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['requestsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['requestsPage']>>>
+    }
+  }
+  'transfers.transfer_history_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/transfers/history/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['transferHistoryPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['transferHistoryPage']>>>
+    }
+  }
+  'transfers.transfer_details': {
+    methods: ["GET","HEAD"]
+    pattern: '/schools/transfers/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['transferDetails']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['transferDetails']>>>
+    }
+  }
+  'transfers.update_reason': {
+    methods: ["PUT"]
+    pattern: '/schools/transfers/:id/reason'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['updateReason']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['updateReason']>>>
+    }
+  }
+  'transfers.cancel_transfer': {
+    methods: ["POST"]
+    pattern: '/schools/transfers/:id/cancel'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['cancelTransfer']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['cancelTransfer']>>>
+    }
+  }
+  'transfers.authorize_transfer': {
+    methods: ["POST"]
+    pattern: '/schools/transfers/:id/authorize'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['authorizeTransfer']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['authorizeTransfer']>>>
+    }
+  }
+  'transfers.reject_incoming_transfer': {
+    methods: ["POST"]
+    pattern: '/schools/transfers/:id/reject'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['rejectIncomingTransfer']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/transfers_controller').default['rejectIncomingTransfer']>>>
     }
   }
   'settings.account_page': {

@@ -52,6 +52,7 @@ export default class User extends UserSchema {
     | 'parent'
     | 'student'
     | 'discipline_director'
+    | 'secretary'
 
   @column()
   declare status: 'active' | 'inactive' | 'suspended' | 'pending'

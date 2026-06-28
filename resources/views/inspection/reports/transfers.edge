@@ -123,21 +123,21 @@
 
     <!-- Graphiques -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <div class="inspection-chart-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-4">
           Évolution des transferts
         </h3>
-        <div class="relative min-h-72 w-full">
-          <canvas id="trendChart" height="288">
+        <div class="inspection-chart-body">
+          <canvas id="trendChart">
           </canvas>
         </div>
       </div>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+      <div class="inspection-chart-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
         <h3 class="font-semibold mb-4">
           Top provinces d'origine
         </h3>
-        <div class="relative min-h-72 w-full">
-          <canvas id="originChart" height="288">
+        <div class="inspection-chart-body">
+          <canvas id="originChart">
           </canvas>
         </div>
       </div>

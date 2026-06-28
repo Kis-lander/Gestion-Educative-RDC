@@ -24,7 +24,7 @@ export const getDashboardStatsValidator = vine.create(
 )
 
 /**
- * Validateur pour les statistiques académiques
+ * Validateur pour les statistiques scolaires
  */
 export const getAcademicStatsValidator = vine.create(
   vine.object({

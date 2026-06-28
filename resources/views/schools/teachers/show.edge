@@ -25,6 +25,16 @@
       >
         <i class="fas fa-calendar-alt mr-2"></i>Emploi du temps
   </a>
+      <form
+        method="POST"
+        action="/schools/teachers/{{ teacher.id }}/credentials"
+        onsubmit="return confirm('Générer un nouveau mot de passe temporaire pour cet enseignant ?')"
+      >
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+        <button type="submit" class="px-4 py-2 border border-yellow-500 text-yellow-600 rounded-lg hover:bg-yellow-50">
+          <i class="fas fa-key mr-2"></i>Générer les identifiants
+        </button>
+      </form>
     </div>
   @endsection
   

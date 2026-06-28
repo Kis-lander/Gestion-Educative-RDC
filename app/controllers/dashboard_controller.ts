@@ -15,6 +15,11 @@ import {
   getFinancialStatsValidator,
   getPerformanceStatsValidator,
 } from '#validators/dashboard'
+import {
+  getGovernanceContext,
+  listSchoolSections,
+  positionLabel,
+} from '#services/school_governance_service'
 
 export default class DashboardController {
   public async workspace({ auth, request, response, view }: HttpContext) {
@@ -24,12 +29,16 @@ export default class DashboardController {
       return response.redirect('/inspection/dashboard')
     }
 
-    if (user.role === 'director') return this.directorDashboardPage({ auth, view })
+    if (user.role === 'director' && request.input('legacy_dashboard') === '1') {
+      return this.directorDashboardPage({ auth, view })
+    }
+    if (user.role === 'director') return this.governanceDashboardPage({ auth, view })
     if (user.role === 'teacher') return this.teacherDashboardPage({ auth, view })
     if (user.role === 'parent') return this.parentDashboardPage({ auth, view })
     if (user.role === 'student') return this.studentDashboardPage({ auth, view })
     if (user.role === 'finance_director') return this.financeDashboardPage({ auth, request, view })
     if (user.role === 'discipline_director') return response.redirect('/discipline')
+    if (user.role === 'secretary') return this.governanceDashboardPage({ auth, view })
 
     const roleLabels: Record<string, string> = {
       director: "Direction d'école",
@@ -38,6 +47,7 @@ export default class DashboardController {
       teacher: 'Enseignant',
       parent: 'Parent',
       student: 'Élève',
+      secretary: 'Secrétariat',
     }
 
     return view.render('dashboard/index', {
@@ -65,6 +75,182 @@ export default class DashboardController {
     }
   }
 
+  private async governanceDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
+    const user = auth.getUserOrFail()
+    const schoolId = user.schoolId
+    const [school, context, sections] = await Promise.all([
+      School.find(schoolId),
+      getGovernanceContext(user),
+      listSchoolSections(schoolId),
+    ])
+    const visibleSections = context.canManageAllSections
+      ? sections
+      : sections.filter((section) => section.id === context.sectionId)
+    const visibleSectionIds = visibleSections.map((section) => section.id)
+    const classQuery = Class.query()
+      .where('schoolId', schoolId)
+      .whereNull('archivedAt')
+      .if(visibleSectionIds.length > 0, (query) =>
+        query.whereIn('schoolSectionId', visibleSectionIds)
+      )
+      .if(!context.canManageAllSections && visibleSectionIds.length === 0, (query) =>
+        query.whereRaw('1 = 0')
+      )
+    const classes = await classQuery.orderBy('gradeLevel', 'asc').orderBy('name', 'asc')
+    const classIds = classes.map((classObj) => classObj.id)
+    const [studentRows, teacherRows, staffRows] = await Promise.all([
+      classIds.length
+        ? db
+            .from('students')
+            .whereIn('class_id', classIds)
+            .where('academic_status', 'active')
+            .select('class_id')
+            .count('* as total')
+            .groupBy('class_id')
+        : [],
+      visibleSectionIds.length
+        ? db
+            .from('class_subject')
+            .join('classes', 'class_subject.class_id', 'classes.id')
+            .whereIn('classes.school_section_id', visibleSectionIds)
+            .whereNotNull('class_subject.teacher_id')
+            .countDistinct('class_subject.teacher_id as total')
+            .first()
+        : Promise.resolve({ total: 0 }),
+      db
+        .from('school_staff_assignments')
+        .leftJoin('users', 'school_staff_assignments.user_id', 'users.id')
+        .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+        .where('school_staff_assignments.school_id', schoolId)
+        .where('school_staff_assignments.is_active', true)
+        .if(!context.canManageAllSections, (query) =>
+          query.where('school_staff_assignments.school_section_id', context.sectionId)
+        )
+        .select(
+          'school_staff_assignments.position',
+          'school_sections.name as section_name',
+          'users.id as user_id',
+          'users.first_name',
+          'users.postnom',
+          'users.last_name'
+        ),
+    ])
+    const studentsByClass = new Map(
+      studentRows.map((row) => [String(row.class_id), Number(row.total || 0)])
+    )
+    const sectionCards = visibleSections.map((section) => {
+      const sectionClasses = classes.filter((classObj) => classObj.schoolSectionId === section.id)
+      const sectionClassIds = new Set(sectionClasses.map((classObj) => classObj.id))
+
+      return {
+        id: section.id,
+        code: section.code,
+        name: section.name,
+        classesCount: sectionClasses.length,
+        studentsCount: studentRows
+          .filter((row) => sectionClassIds.has(String(row.class_id)))
+          .reduce((sum, row) => sum + Number(row.total || 0), 0),
+      }
+    })
+    const quickActionsByPosition: Record<string, { label: string; href: string; icon: string }[]> = {
+      promoter: [
+        { label: 'Gérer les responsables', href: '/schools/accounts', icon: 'fa-users-gear' },
+        { label: 'Consulter les classes', href: '/academic/classes', icon: 'fa-chalkboard' },
+        { label: 'Suivre les finances', href: '/financial', icon: 'fa-coins' },
+        { label: 'Rapports de l’établissement', href: '/reports/academic/school', icon: 'fa-chart-line' },
+      ],
+      preschool_director: [
+        { label: 'Gérer les classes', href: '/academic/classes', icon: 'fa-shapes' },
+        { label: 'Gérer les élèves', href: '/students', icon: 'fa-children' },
+        { label: 'Gérer les enseignants', href: '/teachers', icon: 'fa-chalkboard-user' },
+        { label: 'Suivre les présences', href: '/teacher/attendance', icon: 'fa-calendar-check' },
+      ],
+      primary_director: [
+        { label: 'Gérer les classes', href: '/academic/classes', icon: 'fa-chalkboard' },
+        { label: 'Gérer les élèves', href: '/students', icon: 'fa-users' },
+        { label: 'Notes et bulletins', href: '/academic/grades', icon: 'fa-star' },
+        { label: 'Gérer les enseignants', href: '/teachers', icon: 'fa-chalkboard-user' },
+      ],
+      prefect: [
+        { label: 'Direction des études', href: '/schools/accounts', icon: 'fa-user-tie' },
+        { label: 'Classes du secondaire', href: '/academic/classes', icon: 'fa-school' },
+        { label: 'Examens et résultats', href: '/academic/exams', icon: 'fa-file-signature' },
+        { label: 'Discipline scolaire', href: '/discipline', icon: 'fa-gavel' },
+      ],
+      studies_director: [
+        { label: 'Organiser les classes', href: '/academic/classes', icon: 'fa-chalkboard' },
+        { label: 'Emplois du temps', href: '/schools/timetable', icon: 'fa-calendar-days' },
+        { label: 'Notes et bulletins', href: '/academic/grades', icon: 'fa-star' },
+        { label: 'Examens', href: '/academic/exams', icon: 'fa-file-circle-check' },
+      ],
+      pedagogical_advisor: [
+        { label: 'Référentiel des matières', href: '/schools/subjects/catalog', icon: 'fa-book-open' },
+        { label: 'Suivi des enseignants', href: '/teachers', icon: 'fa-person-chalkboard' },
+        { label: 'Performances scolaires', href: '/reports/academic/performance', icon: 'fa-chart-column' },
+        { label: 'Documentation pédagogique', href: '/help/documentation', icon: 'fa-book' },
+      ],
+      discipline_director: [
+        { label: 'Tableau de discipline', href: '/discipline', icon: 'fa-gavel' },
+        { label: 'Incidents disciplinaires', href: '/discipline/incidents', icon: 'fa-triangle-exclamation' },
+        { label: 'Suivi des élèves', href: '/discipline/students', icon: 'fa-user-shield' },
+        { label: 'Rapports de discipline', href: '/discipline/reports/statistics', icon: 'fa-chart-pie' },
+      ],
+      deputy_discipline_director: [
+        { label: 'Suivi des élèves', href: '/discipline/students', icon: 'fa-user-shield' },
+        { label: 'Signaler un incident', href: '/discipline/incidents/report', icon: 'fa-clipboard-list' },
+        { label: 'Incidents disciplinaires', href: '/discipline/incidents', icon: 'fa-triangle-exclamation' },
+        { label: 'Sanctions', href: '/discipline/sanctions', icon: 'fa-scale-balanced' },
+      ],
+      finance_director: [
+        { label: 'Tableau financier', href: '/financial', icon: 'fa-coins' },
+        { label: 'Frais scolaires', href: '/financial/fees', icon: 'fa-file-invoice-dollar' },
+        { label: 'Paiements', href: '/financial/payments', icon: 'fa-money-check-dollar' },
+        { label: 'Rapports financiers', href: '/reports/exports', icon: 'fa-chart-line' },
+      ],
+      secretary: [
+        { label: 'Dossiers des élèves', href: '/students', icon: 'fa-folder-open' },
+        { label: 'Correspondances', href: '/communication/messages', icon: 'fa-envelope' },
+        { label: 'Documents scolaires', href: '/reports/exports', icon: 'fa-file-lines' },
+        { label: 'Archives et exports', href: '/reports/exports/downloads', icon: 'fa-box-archive' },
+      ],
+    }
+    const supervisor = context.supervisorPosition
+      ? staffRows.find((staff) => {
+          if (staff.position !== context.supervisorPosition) return false
+          if (context.supervisorPosition === 'promoter') return true
+          if (context.sectionName) return staff.section_name === context.sectionName
+          return true
+        })
+      : null
+    const supervisorName = supervisor
+      ? [supervisor.first_name, supervisor.last_name, supervisor.postnom].filter(Boolean).join(' ')
+      : null
+
+    return view.render('dashboard/governance', {
+      school: school || this.getFallbackSchool(user),
+      governance: context,
+      stats: {
+        sections: visibleSections.length,
+        classes: classes.length,
+        students: studentRows.reduce((sum, row) => sum + Number(row.total || 0), 0),
+        teachers: Number(teacherRows?.total || 0),
+      },
+      sectionCards,
+      quickActions: quickActionsByPosition[context.position] || [],
+      supervisorName,
+      staff: staffRows.map((staff) => ({
+        fullName: [staff.first_name, staff.last_name, staff.postnom].filter(Boolean).join(' '),
+        positionLabel: positionLabel(staff.position),
+        sectionName: staff.section_name || 'Toutes les sections',
+      })),
+      classes: classes.slice(0, 8).map((classObj) => ({
+        id: classObj.id,
+        name: classObj.name,
+        studentsCount: studentsByClass.get(classObj.id) || 0,
+      })),
+    })
+  }
+
   private async directorDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
     const user = auth.getUserOrFail()
     const schoolId = user.schoolId
@@ -74,7 +260,11 @@ export default class DashboardController {
       Student.query().where('schoolId', schoolId).where('academicStatus', 'active').count('* as total').first(),
       Student.query().where('schoolId', schoolId).where('createdAt', '>=', monthStart).count('* as total').first(),
       User.query().where('schoolId', schoolId).where('role', 'teacher').where('status', 'active').count('* as total').first(),
-      Class.query().where('schoolId', schoolId).orderBy('gradeLevel', 'asc').orderBy('name', 'asc'),
+      Class.query()
+        .where('schoolId', schoolId)
+        .whereNull('archivedAt')
+        .orderBy('gradeLevel', 'asc')
+        .orderBy('name', 'asc'),
     ])
     const classIds = classes.map((classObj) => classObj.id)
     const studentRows = classIds.length
@@ -152,7 +342,12 @@ export default class DashboardController {
   private async teacherDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
     const user = auth.getUserOrFail()
     const teacher = await Teacher.query().where('userId', user.id).first()
-    const classes = teacher ? await Class.query().where('teacherId', teacher.id).orderBy('name', 'asc') : []
+    const classes = teacher
+      ? await Class.query()
+          .where('teacherId', teacher.id)
+          .whereNull('archivedAt')
+          .orderBy('name', 'asc')
+      : []
     const classIds = classes.map((classObj) => classObj.id)
     const [assignments, studentRows] = await Promise.all([
       classIds.length
@@ -455,7 +650,12 @@ export default class DashboardController {
         .where('status', 'active')
         .count('* as total')
         .first(),
-      db.from('classes').where('school_id', schoolId!).count('* as total').first(),
+      db
+        .from('classes')
+        .where('school_id', schoolId!)
+        .whereNull('archived_at')
+        .count('* as total')
+        .first(),
       db
         .from('grades')
         .innerJoin('students', 'grades.student_id', 'students.id')
@@ -498,7 +698,11 @@ export default class DashboardController {
   private async getTeacherDashboard({ auth, response }: HttpContext) {
     const userId = auth.user!.id
 
-    const myClasses = await db.from('classes').where('teacher_id', userId).select('id')
+    const myClasses = await db
+      .from('classes')
+      .where('teacher_id', userId)
+      .whereNull('archived_at')
+      .select('id')
     const classIds = myClasses.map((c) => c.id)
 
     const [students, assignments, pendingSubmissions] = await Promise.all([
@@ -602,7 +806,7 @@ export default class DashboardController {
   }
 
   /**
-   * Statistiques académiques détaillées
+   * Statistiques scolaires détaillées
    */
   public async getAcademicStats({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(getAcademicStatsValidator)

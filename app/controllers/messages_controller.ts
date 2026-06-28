@@ -2,6 +2,7 @@ import { type HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 import Message from '#models/message'
 import User from '#models/user'
+import TransferNotificationService from '#services/transfer_notification_service'
 import {
   sendMessageValidator,
   sendGlobalCommunicationValidator,
@@ -10,6 +11,21 @@ import {
 import { DateTime } from 'luxon'
 
 export default class MessageController {
+  private transferNotifications = new TransferNotificationService()
+  private governanceTargets = new Set([
+    'promoter',
+    'preschool_director',
+    'primary_director',
+    'prefect',
+    'studies_director',
+    'pedagogical_advisor',
+    'discipline_director',
+    'deputy_discipline_director',
+    'finance_director',
+    'secretary',
+    'teacher',
+  ])
+
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
 
@@ -30,6 +46,28 @@ export default class MessageController {
     }
   }
 
+  private async getGovernanceTargetUserIds(targetRole: string, schoolId?: string, province?: string) {
+    const query = db
+      .from('school_staff_assignments')
+      .join('users', 'school_staff_assignments.user_id', 'users.id')
+      .join('schools', 'school_staff_assignments.school_id', 'schools.id')
+      .where('school_staff_assignments.position', targetRole)
+      .where('school_staff_assignments.is_active', true)
+      .where('users.status', 'active')
+      .select('users.id')
+
+    if (schoolId) {
+      query.where('school_staff_assignments.school_id', schoolId)
+    }
+
+    if (province) {
+      query.where('schools.province', province)
+    }
+
+    const rows = await query
+    return [...new Set(rows.map((row) => String(row.id)))]
+  }
+
   private getRoleLabel(role?: string) {
     const labels: Record<string, string> = {
       inspection: 'Inspection',
@@ -39,6 +77,7 @@ export default class MessageController {
       parent: 'Parent',
       student: 'Élève',
       discipline_director: 'Direction de discipline',
+      secretary: 'Secrétariat',
     }
 
     return role ? labels[role] || role : 'Destinataire'
@@ -48,13 +87,25 @@ export default class MessageController {
     const senderName = message.sender?.fullName || 'Expéditeur supprimé'
     const preview =
       message.content.length > 120 ? `${message.content.slice(0, 120)}...` : message.content
+    const isIncomingTransfer = message.subject === 'Demande de transfert entrante'
+    const isTransferNotification = [
+      'Transfert accepté',
+      'Transfert approuvé',
+      'Transfert rejeté',
+      'Demande de transfert annulée',
+      'Motif de transfert modifié',
+    ].includes(message.subject)
 
     return {
       id: message.id,
-      type: 'message',
+      type: isIncomingTransfer || isTransferNotification ? 'transfer' : 'message',
       title: message.subject,
       message: `${senderName}: ${preview}`,
-      link: `/communication/messages/read/${message.id}`,
+      link: isIncomingTransfer
+        ? '/schools/transfers/pending'
+        : isTransferNotification
+          ? '/schools/transfers/requests'
+        : `/communication/messages/read/${message.id}`,
       read: message.isRead,
       isRead: message.isRead,
       time: message.createdAt.toFormat('dd/MM/yyyy HH:mm'),
@@ -275,6 +326,8 @@ export default class MessageController {
 
   public async notificationsApi({ auth, response }: HttpContext) {
     const user = auth.user!
+    await this.transferNotifications.syncPendingForDirector(user)
+
     const messages = await Message.query()
       .where('receiver_id', user.id)
       .preload('sender')
@@ -629,9 +682,16 @@ export default class MessageController {
       })
     }
 
-    const query = User.query().where('status', 'active')
+    const query = User.query().where('status', 'active').whereNotNull('schoolId')
 
-    if (payload.targetRole && payload.targetRole !== 'all') {
+    if (payload.targetRole && this.governanceTargets.has(payload.targetRole)) {
+      const targetUserIds = await this.getGovernanceTargetUserIds(
+        payload.targetRole,
+        undefined,
+        payload.targetProvince
+      )
+      query.whereIn('id', targetUserIds)
+    } else if (payload.targetRole && payload.targetRole !== 'all') {
       query.where('role', payload.targetRole)
     }
 
@@ -673,12 +733,18 @@ export default class MessageController {
       })
     }
 
-    const targetUsers = await User.query()
+    const targetUsersQuery = User.query()
       .where('school_id', payload.schoolId)
       .where('status', 'active')
-      .if(payload.targetRole && payload.targetRole !== 'all', (q) => {
-        q.where('role', payload.targetRole!)
-      })
+
+    if (payload.targetRole && this.governanceTargets.has(payload.targetRole)) {
+      const targetUserIds = await this.getGovernanceTargetUserIds(payload.targetRole, payload.schoolId)
+      targetUsersQuery.whereIn('id', targetUserIds)
+    } else if (payload.targetRole && payload.targetRole !== 'all') {
+      targetUsersQuery.where('role', payload.targetRole)
+    }
+
+    const targetUsers = await targetUsersQuery
 
     const messagesData = targetUsers.map((target) => ({
       senderId: user.id,

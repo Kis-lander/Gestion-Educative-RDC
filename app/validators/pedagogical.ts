@@ -16,7 +16,7 @@ const pedagogicalMessages = {
   'teacherId.exists': "L'enseignant spécifié n'existe pas",
   'schoolId.exists': "L'école spécifiée n'existe pas",
   'term.required': 'Le trimestre est requis',
-  'academicYear.required': "L'année académique est requise",
+  'academicYear.required': "L'année scolaire est requise",
   'dayOfWeek.range': 'Le jour de la semaine doit être entre 1 (Lundi) et 7 (Dimanche)',
   'examDate.afterField': "La date d'examen doit être postérieure à la date de début de période",
 }
@@ -71,7 +71,7 @@ export const publishGradesValidator = vine.create(
 )
 
 /**
- * Validateur pour le calendrier académique
+ * Validateur pour le calendrier scolaire
  */
 export const createAcademicCalendarValidator = vine.create(
   vine.object({

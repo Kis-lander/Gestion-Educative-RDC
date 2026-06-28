@@ -107,6 +107,36 @@
     />
 
     <style>
+      .inspection-chart-card {
+        height: 490px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .inspection-chart-body {
+        position: relative;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      .inspection-chart-body canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      @media (max-width: 1023px) {
+        .inspection-chart-card {
+          height: 420px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .inspection-chart-card {
+          height: 360px;
+        }
+      }
+
       * {
         font-family: 'Inter', sans-serif;
       }
@@ -364,13 +394,22 @@
       :class="sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'"
     >
       <div class="p-4 md:p-6">
+        <div class="mb-6" data-page-header>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
+            {{ pageHeader(request.url()).title }}
+          </h1>
+          <p class="text-gray-500 dark:text-gray-400 mt-1">
+            {{ pageHeader(request.url()).subtitle }}
+          </p>
+        </div>
+
         @section('content')
         @endsection
       </div>
     </main>
 
     @!include('partials/footer')
-    <script src="/js/app-translations.js?v=20260608-1" defer></script>
+    <script src="/js/app-translations.js?v=20260627-1" defer></script>
     @!include('partials/scripts')
 
   </body>
