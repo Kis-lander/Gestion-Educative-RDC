@@ -10,8 +10,16 @@ import {
   updateFeesValidator,
 } from '#validators/financial'
 import { DateTime } from 'luxon'
+import { edgePageContext } from '#start/view_context'
 
 export default class FinancialController {
+  private async renderWithContext(ctx: HttpContext, template: string, data: Record<string, any>) {
+    return ctx.view.render(template, {
+      ...(await edgePageContext(ctx)),
+      ...data,
+    })
+  }
+
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
 
@@ -42,7 +50,8 @@ export default class FinancialController {
       .join('\n')
   }
 
-  public async paymentsPage({ auth, request, view }: HttpContext) {
+  public async paymentsPage(ctx: HttpContext) {
+    const { auth, request } = ctx
     const user = auth.user!
     const page = Number(request.input('page', 1))
     const startDate = request.input('start_date')
@@ -100,7 +109,7 @@ export default class FinancialController {
       .groupBy('fee_type')
       .orderBy('fee_type', 'asc')
 
-    return view.render('financial/payments/index', {
+    return this.renderWithContext(ctx, 'financial/payments/index', {
       school: this.getFallbackSchool(user),
       payments: paginator.all().map((payment) => ({
         id: payment.id,
@@ -130,7 +139,8 @@ export default class FinancialController {
     })
   }
 
-  public async feesPage({ auth, request, view }: HttpContext) {
+  public async feesPage(ctx: HttpContext) {
+    const { auth, request } = ctx
     const user = auth.user!
     const page = Number(request.input('page', 1))
     const type = request.input('type')
@@ -167,7 +177,7 @@ export default class FinancialController {
     )
     const feeTypes = Object.keys(typeSummaryMap).sort((left, right) => left.localeCompare(right))
 
-    return view.render('financial/fees/index', {
+    return this.renderWithContext(ctx, 'financial/fees/index', {
       school: this.getFallbackSchool(user),
       fees: paginator.all().map((fee) => {
         const collected = collectedByFee[fee.id] || 0
@@ -204,21 +214,23 @@ export default class FinancialController {
     })
   }
 
-  public async createFeePage({ auth, view }: HttpContext) {
-    return view.render('financial/fees/create', {
+  public async createFeePage(ctx: HttpContext) {
+    const { auth } = ctx
+    return this.renderWithContext(ctx, 'financial/fees/create', {
       school: this.getFallbackSchool(auth.user!),
       currentYear: DateTime.now().year,
     })
   }
 
-  public async feesStructurePage({ auth, view }: HttpContext) {
+  public async feesStructurePage(ctx: HttpContext) {
+    const { auth } = ctx
     const feeTypes = await SchoolFee.query()
       .where('school_id', auth.user!.schoolId!)
       .select('fee_type')
       .groupBy('fee_type')
       .orderBy('fee_type', 'asc')
 
-    return view.render('financial/fees/structure', {
+    return this.renderWithContext(ctx, 'financial/fees/structure', {
       school: this.getFallbackSchool(auth.user!),
       currentYear: DateTime.now().year,
       feeTypes: feeTypes.map((fee) => fee.feeType).filter(Boolean),
@@ -226,20 +238,22 @@ export default class FinancialController {
     })
   }
 
-  public async incomeReportPage({ auth, view }: HttpContext) {
+  public async incomeReportPage(ctx: HttpContext) {
+    const { auth } = ctx
     const feeTypes = await SchoolFee.query()
       .where('school_id', auth.user!.schoolId!)
       .select('fee_type')
       .groupBy('fee_type')
       .orderBy('fee_type', 'asc')
 
-    return view.render('financial/reports/income', {
+    return this.renderWithContext(ctx, 'financial/reports/income', {
       school: this.getFallbackSchool(auth.user!),
       feeTypes: feeTypes.map((fee) => fee.feeType).filter(Boolean),
     })
   }
 
-  public async outstandingReportPage({ auth, view }: HttpContext) {
+  public async outstandingReportPage(ctx: HttpContext) {
+    const { auth } = ctx
     const classes = await db
       .from('classes')
       .where('school_id', auth.user!.schoolId!)
@@ -247,14 +261,15 @@ export default class FinancialController {
       .select('id', 'name')
       .orderBy('name', 'asc')
 
-    return view.render('financial/reports/outstanding', {
+    return this.renderWithContext(ctx, 'financial/reports/outstanding', {
       school: this.getFallbackSchool(auth.user!),
       classes,
     })
   }
 
-  public async statisticsReportPage({ auth, view }: HttpContext) {
-    return view.render('financial/reports/statistics', {
+  public async statisticsReportPage(ctx: HttpContext) {
+    const { auth } = ctx
+    return this.renderWithContext(ctx, 'financial/reports/statistics', {
       school: this.getFallbackSchool(auth.user!),
       currentYear: DateTime.now().year,
     })
@@ -313,7 +328,8 @@ export default class FinancialController {
     return response.send(this.toCsv(rows))
   }
 
-  public async editFeePage({ auth, params, view }: HttpContext) {
+  public async editFeePage(ctx: HttpContext) {
+    const { auth, params } = ctx
     const fee = await SchoolFee.query()
       .where('id', params.id)
       .where('school_id', auth.user!.schoolId!)
@@ -322,7 +338,7 @@ export default class FinancialController {
     const totalCollected = Number(totalCollectedResult[0]?.$extras.total || 0)
     const collectionRate = fee.amount ? Math.min(100, Math.round((totalCollected / fee.amount) * 100)) : 0
 
-    return view.render('financial/fees/edit', {
+    return this.renderWithContext(ctx, 'financial/fees/edit', {
       school: this.getFallbackSchool(auth.user!),
       fee: {
         id: fee.id,
@@ -345,7 +361,8 @@ export default class FinancialController {
     })
   }
 
-  public async recordPaymentPage({ auth, request, view }: HttpContext) {
+  public async recordPaymentPage(ctx: HttpContext) {
+    const { auth, request } = ctx
     const user = auth.user!
     const [students, fees] = await Promise.all([
       Student.query()
@@ -357,7 +374,7 @@ export default class FinancialController {
       SchoolFee.query().where('school_id', user.schoolId!).orderBy('created_at', 'desc'),
     ])
 
-    return view.render('financial/payments/record', {
+    return this.renderWithContext(ctx, 'financial/payments/record', {
       school: this.getFallbackSchool(user),
       students: students.map((student) => ({
         id: student.id,
@@ -401,7 +418,8 @@ export default class FinancialController {
     return method ? labels[method] || method : '-'
   }
 
-  public async receiptPage({ params, view }: HttpContext) {
+  public async receiptPage(ctx: HttpContext) {
+    const { params } = ctx
     const payment = await FeePayment.query()
       .where('id', params.id)
       .preload('fee', (feeQuery) => feeQuery.preload('school'))
@@ -418,7 +436,7 @@ export default class FinancialController {
     const totalDue = fees.reduce((sum, fee) => sum + Number(fee.amount || 0), 0)
     const totalPaid = payments.reduce((sum, item) => sum + Number(item.amountPaid || 0), 0)
 
-    return view.render('financial/payments/receipt', {
+    return this.renderWithContext(ctx, 'financial/payments/receipt', {
       school: payment.fee.school,
       payment: {
         id: payment.id,
@@ -447,7 +465,8 @@ export default class FinancialController {
   /**
    * Définir les frais scolaires
    */
-  public async printReceiptPage({ params, view }: HttpContext) {
+  public async printReceiptPage(ctx: HttpContext) {
+    const { params } = ctx
     const payment = await FeePayment.query()
       .where('id', params.id)
       .preload('fee', (feeQuery) => feeQuery.preload('school'))
@@ -464,7 +483,7 @@ export default class FinancialController {
     const totalDue = fees.reduce((sum, fee) => sum + Number(fee.amount || 0), 0)
     const totalPaid = payments.reduce((sum, item) => sum + Number(item.amountPaid || 0), 0)
 
-    return view.render('financial/payments/print-receipt', {
+    return this.renderWithContext(ctx, 'financial/payments/print-receipt', {
       school: payment.fee.school,
       payment: {
         id: payment.id,

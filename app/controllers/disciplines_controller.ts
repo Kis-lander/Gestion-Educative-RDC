@@ -10,8 +10,16 @@ import {
   notifyParentValidator,
 } from '#validators/discipline'
 import { DateTime } from 'luxon'
+import { edgePageContext } from '#start/view_context'
 
 export default class DisciplineController {
+  private async renderWithContext(ctx: HttpContext, template: string, data: Record<string, any>) {
+    return ctx.view.render(template, {
+      ...(await edgePageContext(ctx)),
+      ...data,
+    })
+  }
+
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
 
@@ -93,7 +101,8 @@ export default class DisciplineController {
     }
   }
 
-  public async dashboardPage({ auth, view }: HttpContext) {
+  public async dashboardPage(ctx: HttpContext) {
+    const { auth } = ctx
     const user = auth.getUserOrFail()
     const incidents = await Discipline.query()
       .whereHas('student', (studentQuery) => studentQuery.where('schoolId', user.schoolId))
@@ -114,7 +123,7 @@ export default class DisciplineController {
       .count('* as total')
       .first()
 
-    return view.render('discipline/dashboard', {
+    return this.renderWithContext(ctx, 'discipline/dashboard', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       stats: {
         totalIncidents: Number(totalIncidents?.$extras.total || 0),
@@ -140,7 +149,8 @@ export default class DisciplineController {
     })
   }
 
-  public async incidentsPage({ auth, request, view }: HttpContext) {
+  public async incidentsPage(ctx: HttpContext) {
+    const { auth, request } = ctx
     const user = auth.getUserOrFail()
     const page = Number(request.input('page', 1))
     const type = request.input('type')
@@ -174,7 +184,7 @@ export default class DisciplineController {
       .count('* as total')
       .first()
 
-    return view.render('discipline/incidents/index', {
+    return this.renderWithContext(ctx, 'discipline/incidents/index', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       incidents: paginator.all().map((incident) => this.serializeIncident(incident)),
       stats: {
@@ -188,7 +198,8 @@ export default class DisciplineController {
     })
   }
 
-  public async reportIncidentPage({ auth, request, view }: HttpContext) {
+  public async reportIncidentPage(ctx: HttpContext) {
+    const { auth, request } = ctx
     const user = auth.getUserOrFail()
     const selectedStudentId = request.input('student_id', '')
     const students = await Student.query()
@@ -198,7 +209,7 @@ export default class DisciplineController {
       .preload('class')
       .orderBy('createdAt', 'desc')
 
-    return view.render('discipline/incidents/report', {
+    return this.renderWithContext(ctx, 'discipline/incidents/report', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       students: students.map((student) => ({
         id: student.id,
@@ -234,7 +245,8 @@ export default class DisciplineController {
     return response.redirect('/discipline/incidents')
   }
 
-  public async showIncidentPage({ auth, params, view }: HttpContext) {
+  public async showIncidentPage(ctx: HttpContext) {
+    const { auth, params } = ctx
     const user = auth.getUserOrFail()
     const incident = await Discipline.query()
       .where('id', params.id)
@@ -246,14 +258,15 @@ export default class DisciplineController {
       .preload('reporter')
       .firstOrFail()
 
-    return view.render('discipline/incidents/show', {
+    return this.renderWithContext(ctx, 'discipline/incidents/show', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       incident: this.serializeIncident(incident),
       previousIncidents: [],
     })
   }
 
-  public async editIncidentPage({ auth, params, view }: HttpContext) {
+  public async editIncidentPage(ctx: HttpContext) {
+    const { auth, params } = ctx
     const user = auth.getUserOrFail()
     const incident = await Discipline.query()
       .where('id', params.id)
@@ -265,7 +278,7 @@ export default class DisciplineController {
       .preload('reporter')
       .firstOrFail()
 
-    return view.render('discipline/incidents/edit', {
+    return this.renderWithContext(ctx, 'discipline/incidents/edit', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       incident: this.serializeIncident(incident),
     })
@@ -294,7 +307,8 @@ export default class DisciplineController {
     return response.redirect(`/discipline/incidents/${incident.id}/show`)
   }
 
-  public async applySanctionPage({ auth, request, view }: HttpContext) {
+  public async applySanctionPage(ctx: HttpContext) {
+    const { auth, request } = ctx
     const user = auth.getUserOrFail()
     const incident = await Discipline.query()
       .where('id', request.input('incident_id'))
@@ -306,7 +320,7 @@ export default class DisciplineController {
       .preload('reporter')
       .firstOrFail()
 
-    return view.render('discipline/sanctions/apply', {
+    return this.renderWithContext(ctx, 'discipline/sanctions/apply', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       incident: this.serializeIncident(incident),
       previousSanctions: [],
@@ -329,7 +343,8 @@ export default class DisciplineController {
     return response.redirect(`/discipline/incidents/${incident.id}/show`)
   }
 
-  public async studentsPage({ auth, request, view }: HttpContext) {
+  public async studentsPage(ctx: HttpContext) {
+    const { auth, request } = ctx
     const user = auth.getUserOrFail()
     const page = Number(request.input('page', 1))
     const classId = request.input('class_id')
@@ -356,7 +371,7 @@ export default class DisciplineController {
       .select('id', 'name')
       .orderBy('name', 'asc')
 
-    return view.render('discipline/students/index', {
+    return this.renderWithContext(ctx, 'discipline/students/index', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       classes,
       students: paginator.all().map((student) => ({

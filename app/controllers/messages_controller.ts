@@ -3,6 +3,7 @@ import db from '@adonisjs/lucid/services/db'
 import Message from '#models/message'
 import User from '#models/user'
 import TransferNotificationService from '#services/transfer_notification_service'
+import { isSchoolWidePosition, positionLabel } from '#services/school_governance_service'
 import {
   sendMessageValidator,
   sendGlobalCommunicationValidator,
@@ -474,10 +475,43 @@ export default class MessageController {
     }
 
     const recipients = await recipientsQuery
+    const recipientIds = recipients.map((recipient) => recipient.id)
+    const staffAssignments = recipientIds.length
+      ? await db
+          .from('school_staff_assignments')
+          .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+          .whereIn('school_staff_assignments.user_id', recipientIds)
+          .where('school_staff_assignments.is_active', true)
+          .select(
+            'school_staff_assignments.user_id',
+            'school_staff_assignments.position',
+            'school_staff_assignments.school_section_id',
+            'school_sections.name as section_name'
+          )
+          .orderBy('school_staff_assignments.is_primary', 'desc')
+      : []
+    const assignmentByUserId = new Map(
+      staffAssignments.map((assignment) => [String(assignment.user_id), assignment])
+    )
+    const staffRoleLabel = (recipient: User) => {
+      const assignment = assignmentByUserId.get(String(recipient.id))
+
+      if (!assignment) {
+        return recipient.role === 'director'
+          ? 'Direction d’école — section non précisée'
+          : this.getRoleLabel(recipient.role)
+      }
+
+      const scope = isSchoolWidePosition(assignment.position)
+        ? "Toute l'école"
+        : assignment.section_name || 'Section non précisée'
+
+      return `${positionLabel(assignment.position)} — ${scope}`
+    }
     const toRecipient = (recipient: User) => ({
       id: recipient.id,
       name: recipient.fullName,
-      subject: this.getRoleLabel(recipient.role),
+      subject: staffRoleLabel(recipient),
     })
     const replyReceiverId = replyMessage
       ? replyMessage.senderId === user.id

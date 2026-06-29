@@ -21,7 +21,7 @@
           <div class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Prénom *</label>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Prénom *</label>
                 <input
                   type="text"
                   name="firstName"
@@ -30,17 +30,17 @@
                 />
               </div>
               <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Nom *</label>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Nom *</label>
                 <input type="text" name="lastName" required class="w-full px-4 py-2 border rounded-lg" />
               </div>
               <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Postnom *</label>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Postnom *</label>
                 <input type="text" name="postnom" required class="w-full px-4 py-2 border rounded-lg" />
               </div>
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Email *</label>
               <input
                 type="email"
                 name="email"
@@ -51,7 +51,7 @@
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Téléphone</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Téléphone</label>
               <input
                 type="tel"
                 name="phone"
@@ -62,7 +62,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Qualification *</label>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Qualification *</label>
                 <select name="qualification" required class="w-full px-4 py-2 border rounded-lg">
                   <option value="">
                     Sélectionner
@@ -85,7 +85,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-gray-700 dark:text-gray-300 mb-2">Spécialisation</label>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Spécialisation</label>
                 <input
                   type="text"
                   name="specialization"
@@ -96,12 +96,12 @@
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Date d'embauche *</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Date d'embauche *</label>
               <input type="date" name="hireDate" required class="w-full px-4 py-2 border rounded-lg" />
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Matières enseignées</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Matières enseignées</label>
               <select name="subjects[]" multiple class="w-full px-4 py-2 border rounded-lg" size="5">
                 @each(subject in subjects)
                   <option value="{{ subject.id }}">
@@ -110,7 +110,7 @@
                 @end
               </select>
               <p class="text-xs text-gray-500 mt-1">
-                Maintenez Ctrl/Cmd pour sélectionner plusieurs matières
+                <span data-i18n>Maintenez Ctrl/Cmd pour sélectionner plusieurs matières</span>
               </p>
             </div>
           </div>
@@ -122,13 +122,13 @@
               class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
             >
               <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              Ajouter l'enseignant
+              <span data-i18n>Ajouter l'enseignant</span>
         </button>
             <a
               href="/schools/teachers"
               class="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              Annuler
+              <span data-i18n>Annuler</span>
         </a>
           </div>
         </form>
@@ -138,33 +138,33 @@
       <div class="space-y-6">
         <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
           <h3 class="font-semibold mb-2">
-            Note importante
+            <span data-i18n>Note importante</span>
           </h3>
           <ul class="text-sm space-y-2">
             <li class="flex gap-2">
               <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-              <span>Un compte utilisateur sera automatiquement créé pour l'enseignant</span>
+              <span data-i18n>Un compte utilisateur sera automatiquement créé pour l'enseignant</span>
             </li>
             <li class="flex gap-2">
               <i class="fas fa-envelope text-blue-500 mt-0.5"></i>
-              <span>Les identifiants de connexion seront envoyés à l'adresse email fournie</span>
+              <span data-i18n>Les identifiants de connexion seront envoyés à l'adresse email fournie</span>
             </li>
             <li class="flex gap-2">
               <i class="fas fa-chalkboard text-blue-500 mt-0.5"></i>
-              <span>L'enseignant pourra accéder à ses classes et matières après assignation</span>
+              <span data-i18n>L'enseignant pourra accéder à ses classes et matières après assignation</span>
             </li>
           </ul>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
           <h3 class="font-semibold mb-2">
-            Exemple de numéro employé
+            <span data-i18n>Exemple de numéro employé</span>
           </h3>
           <p class="font-mono text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded">
             TCH-{{ new Date().getFullYear() }}-XXXX
           </p>
           <p class="text-xs text-gray-500 mt-2">
-            Généré automatiquement lors de la création
+            <span data-i18n>Généré automatiquement lors de la création</span>
           </p>
         </div>
       </div>

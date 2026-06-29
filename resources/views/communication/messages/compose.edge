@@ -56,8 +56,8 @@
                   --- Direction ---
                 </option>
                 @each(director in directors)
-                  <option value="{{ director.id }}" data-role="Directeur" {{ selectedReceiverId === director.id ? 'selected' : '' }}>
-                    {{ director.name }} (Directeur)
+                  <option value="{{ director.id }}" data-role="{{ director.subject }}" {{ selectedReceiverId === director.id ? 'selected' : '' }}>
+                    {{ director.name }} ({{ director.subject }})
                   </option>
                 @end
                 <option value="" disabled>

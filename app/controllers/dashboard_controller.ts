@@ -36,8 +36,11 @@ export default class DashboardController {
     if (user.role === 'teacher') return this.teacherDashboardPage({ auth, view })
     if (user.role === 'parent') return this.parentDashboardPage({ auth, view })
     if (user.role === 'student') return this.studentDashboardPage({ auth, view })
-    if (user.role === 'finance_director') return this.financeDashboardPage({ auth, request, view })
-    if (user.role === 'discipline_director') return response.redirect('/discipline')
+    if (user.role === 'finance_director' && request.input('legacy_finance_dashboard') === '1') {
+      return this.financeDashboardPage({ auth, request, view })
+    }
+    if (user.role === 'finance_director') return this.governanceDashboardPage({ auth, view })
+    if (user.role === 'discipline_director') return this.governanceDashboardPage({ auth, view })
     if (user.role === 'secretary') return this.governanceDashboardPage({ auth, view })
 
     const roleLabels: Record<string, string> = {
@@ -172,16 +175,16 @@ export default class DashboardController {
         { label: 'Gérer les enseignants', href: '/teachers', icon: 'fa-chalkboard-user' },
       ],
       prefect: [
-        { label: 'Direction des études', href: '/schools/accounts', icon: 'fa-user-tie' },
+        { label: 'Superviser les responsables', href: '/schools/accounts', icon: 'fa-user-tie' },
         { label: 'Classes du secondaire', href: '/academic/classes', icon: 'fa-school' },
-        { label: 'Examens et résultats', href: '/academic/exams', icon: 'fa-file-signature' },
+        { label: 'Examens et résultats', href: '/academic/exams/schedule', icon: 'fa-file-signature' },
         { label: 'Discipline scolaire', href: '/discipline', icon: 'fa-gavel' },
       ],
       studies_director: [
-        { label: 'Organiser les classes', href: '/academic/classes', icon: 'fa-chalkboard' },
+        { label: 'Organisation des classes', href: '/academic/classes', icon: 'fa-chalkboard' },
         { label: 'Emplois du temps', href: '/schools/timetable', icon: 'fa-calendar-days' },
         { label: 'Notes et bulletins', href: '/academic/grades', icon: 'fa-star' },
-        { label: 'Examens', href: '/academic/exams', icon: 'fa-file-circle-check' },
+        { label: 'Examens et délibérations', href: '/academic/exams/schedule', icon: 'fa-file-circle-check' },
       ],
       pedagogical_advisor: [
         { label: 'Référentiel des matières', href: '/schools/subjects/catalog', icon: 'fa-book-open' },
@@ -190,7 +193,7 @@ export default class DashboardController {
         { label: 'Documentation pédagogique', href: '/help/documentation', icon: 'fa-book' },
       ],
       discipline_director: [
-        { label: 'Tableau de discipline', href: '/discipline', icon: 'fa-gavel' },
+        { label: 'Pilotage de la discipline', href: '/discipline', icon: 'fa-gavel' },
         { label: 'Incidents disciplinaires', href: '/discipline/incidents', icon: 'fa-triangle-exclamation' },
         { label: 'Suivi des élèves', href: '/discipline/students', icon: 'fa-user-shield' },
         { label: 'Rapports de discipline', href: '/discipline/reports/statistics', icon: 'fa-chart-pie' },
@@ -225,6 +228,20 @@ export default class DashboardController {
     const supervisorName = supervisor
       ? [supervisor.first_name, supervisor.last_name, supervisor.postnom].filter(Boolean).join(' ')
       : null
+    const quickActions = (quickActionsByPosition[context.position] || []).filter((action) => {
+      if (action.href.startsWith('/discipline')) return context.navigation.canViewDiscipline
+      if (action.href.startsWith('/financial')) return context.navigation.canViewFinance
+      if (action.href.startsWith('/schools/transfers')) return context.navigation.canViewTransfers
+      if (action.href.startsWith('/schools/accounts')) return context.navigation.canViewAccounts
+      if (action.href.startsWith('/schools/subjects')) return context.navigation.canViewSubjects
+      if (action.href.startsWith('/students')) return context.navigation.canViewStudents
+      if (action.href.startsWith('/teachers')) return context.navigation.canViewTeachers
+      if (action.href.startsWith('/academic/grades')) return context.navigation.canViewGrades
+      if (action.href.startsWith('/academic/classes')) return context.navigation.canViewClasses
+      if (action.href.startsWith('/academic')) return context.navigation.canViewClasses || context.navigation.canViewGrades
+
+      return true
+    })
 
     return view.render('dashboard/governance', {
       school: school || this.getFallbackSchool(user),
@@ -236,8 +253,9 @@ export default class DashboardController {
         teachers: Number(teacherRows?.total || 0),
       },
       sectionCards,
-      quickActions: quickActionsByPosition[context.position] || [],
+      quickActions,
       supervisorName,
+      navigation: context.navigation,
       staff: staffRows.map((staff) => ({
         fullName: [staff.first_name, staff.last_name, staff.postnom].filter(Boolean).join(' '),
         positionLabel: positionLabel(staff.position),

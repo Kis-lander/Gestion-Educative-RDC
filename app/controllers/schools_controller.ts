@@ -68,6 +68,67 @@ export default class SchoolController {
     return labels[role]
   }
 
+  private isSectionAccountEditor(position?: string | null) {
+    return ['preschool_director', 'primary_director', 'prefect'].includes(String(position || ''))
+  }
+
+  private async isStudentAccountInSection(accountId: string, sectionId: string) {
+    const student = await db
+      .from('students')
+      .join('classes', 'students.class_id', 'classes.id')
+      .where('students.user_id', accountId)
+      .where('classes.school_section_id', sectionId)
+      .first()
+
+    return Boolean(student)
+  }
+
+  private async isParentAccountInSection(accountId: string, sectionId: string) {
+    const parent = await db
+      .from('parents')
+      .join('parent_student', 'parents.id', 'parent_student.parent_id')
+      .join('students', 'parent_student.student_id', 'students.id')
+      .join('classes', 'students.class_id', 'classes.id')
+      .where('parents.user_id', accountId)
+      .where('classes.school_section_id', sectionId)
+      .first()
+
+    return Boolean(parent)
+  }
+
+  private async canEditAccount(
+    governance: Awaited<ReturnType<typeof getGovernanceContext>>,
+    account: User
+  ) {
+    if (governance.isPromoter) return true
+    if (!this.isSectionAccountEditor(governance.position) || !governance.sectionId) return false
+
+    if (account.role === 'student') {
+      return this.isStudentAccountInSection(account.id, governance.sectionId)
+    }
+
+    if (account.role === 'parent') {
+      return this.isParentAccountInSection(account.id, governance.sectionId)
+    }
+
+    return false
+  }
+
+  private async ensureCanEditAccount(
+    governance: Awaited<ReturnType<typeof getGovernanceContext>>,
+    account: User,
+    session: HttpContext['session'],
+    response: HttpContext['response']
+  ) {
+    if (await this.canEditAccount(governance, account)) return null
+
+    session.flash(
+      'error',
+      'Modification refusée : seul le Promoteur peut modifier les comptes du personnel. Les directions de section ne peuvent modifier que les parents et élèves de leur section.'
+    )
+    return response.redirect('/schools/accounts')
+  }
+
   private async getSchoolName(schoolId?: string | null) {
     if (!schoolId) return 'Gestion Éducative RDC'
     const school = await School.find(schoolId)
@@ -1246,7 +1307,13 @@ export default class SchoolController {
       sectionCodes: Object.entries({
         maternelle: ['preschool_director'],
         primaire: ['primary_director'],
-        secondaire: ['prefect', 'studies_director', 'pedagogical_advisor'],
+        secondaire: [
+          'prefect',
+          'studies_director',
+          'pedagogical_advisor',
+          'discipline_director',
+          'deputy_discipline_director',
+        ],
         all_sections: ['finance_director', 'secretary'],
       })
         .filter(([, positions]) => positions.includes(position))
@@ -1290,6 +1357,7 @@ export default class SchoolController {
       schoolOptions: RDC_SCHOOL_OPTIONS,
       sections: visibleSections,
       governance,
+      navigation: governance.navigation,
       roles: [
         ...governanceRoles,
         ...(canCreateLearnerAccounts
@@ -1365,25 +1433,29 @@ export default class SchoolController {
       })
       .orderBy('createdAt', 'desc')
 
+    const accountRows = await Promise.all(
+      accounts.map(async (account) => {
+        const assignment = assignmentByUser.get(account.id)
+        return {
+          id: account.id,
+          fullName: account.fullName,
+          email: account.email,
+          phone: account.phone || '-',
+          role: assignment?.position || account.role,
+          roleLabel: assignment ? positionLabel(assignment.position) : this.getRoleLabel(account.role),
+          sectionName: assignment?.section_name || null,
+          status: account.status,
+          canEdit: await this.canEditAccount(governance, account),
+        }
+      })
+    )
+
     return view.render('schools/accounts/index', {
       school: this.getFallbackSchool(user),
-      accounts: accounts
-        .map((account) => {
-          const assignment = assignmentByUser.get(account.id)
-          return {
-            id: account.id,
-            fullName: account.fullName,
-            email: account.email,
-            phone: account.phone || '-',
-            role: assignment?.position || account.role,
-            roleLabel: assignment ? positionLabel(assignment.position) : this.getRoleLabel(account.role),
-            sectionName: assignment?.section_name || null,
-            status: account.status,
-          }
-        })
-        .filter((account) => !role || account.role === role),
+      accounts: accountRows.filter((account) => !role || account.role === role),
       selectedRole: role || '',
       search,
+      navigation: governance.navigation,
       roles: [
         ...Object.entries(SCHOOL_POSITIONS)
           .filter(([position]) => position !== 'promoter')
@@ -1394,8 +1466,9 @@ export default class SchoolController {
     })
   }
 
-  public async editAccountPage({ auth, params, view }: HttpContext) {
+  public async editAccountPage({ auth, params, response, session, view }: HttpContext) {
     const director = auth.getUserOrFail()
+    const governance = await getGovernanceContext(director)
 
     const account = await User.query()
       .where('id', params.id)
@@ -1410,16 +1483,26 @@ export default class SchoolController {
         'parent',
       ])
       .firstOrFail()
+    const denied = await this.ensureCanEditAccount(governance, account, session, response)
+    if (denied) return denied
 
     const [classes, students, teacher, student, parent] = await Promise.all([
       Class.query()
         .where('schoolId', director.schoolId)
         .whereNull('archivedAt')
+        .if(!governance.isPromoter && governance.sectionId, (query) =>
+          query.where('schoolSectionId', governance.sectionId)
+        )
         .orderBy('gradeLevel', 'asc')
         .orderBy('name', 'asc'),
       Student.query()
         .where('schoolId', director.schoolId)
         .where('academicStatus', 'active')
+        .if(!governance.isPromoter && governance.sectionId, (query) =>
+          query.whereHas('class', (classQuery) =>
+            classQuery.where('schoolSectionId', governance.sectionId)
+          )
+        )
         .preload('user')
         .preload('class')
         .orderBy('createdAt', 'desc'),
@@ -1462,6 +1545,7 @@ export default class SchoolController {
 
   public async updateAccount({ auth, params, request, response, session }: HttpContext) {
     const director = auth.getUserOrFail()
+    const governance = await getGovernanceContext(director)
     const account = await User.query()
       .where('id', params.id)
       .where('schoolId', director.schoolId)
@@ -1475,6 +1559,8 @@ export default class SchoolController {
         'parent',
       ])
       .firstOrFail()
+    const denied = await this.ensureCanEditAccount(governance, account, session, response)
+    if (denied) return denied
 
     const schema = vine.compile(
       vine.object({
@@ -1527,10 +1613,31 @@ export default class SchoolController {
           .where('id', payload.classId)
           .where('schoolId', director.schoolId)
           .whereNull('archivedAt')
+          .if(!governance.isPromoter && governance.sectionId, (query) =>
+            query.where('schoolSectionId', governance.sectionId)
+          )
           .first()
       : null
     const schoolOptions = RDC_SCHOOL_OPTIONS
     const isHumanities = isHumanitiesClass(selectedClass)
+
+    if (
+      account.role === 'student' &&
+      !governance.isPromoter &&
+      !payload.classId
+    ) {
+      session.flash('error', 'Veuillez sélectionner une classe de votre section pour cet élève.')
+      return response.redirect().back()
+    }
+
+    if (
+      account.role === 'student' &&
+      payload.classId &&
+      !selectedClass
+    ) {
+      session.flash('error', "La classe sélectionnée n'appartient pas à votre section.")
+      return response.redirect().back()
+    }
 
     if (
       account.role === 'student' &&
@@ -1591,12 +1698,36 @@ export default class SchoolController {
             const validChildren = await Student.query({ client: trx })
               .whereIn('id', payload.childrenIds)
               .where('schoolId', director.schoolId)
+              .if(!governance.isPromoter && governance.sectionId, (query) =>
+                query.whereHas('class', (classQuery) =>
+                  classQuery.where('schoolSectionId', governance.sectionId)
+                )
+              )
 
             if (validChildren.length !== payload.childrenIds.length) {
-              throw new Error("Un des élèves sélectionnés n'appartient pas à votre école.")
+              throw new Error("Un des élèves sélectionnés n'appartient pas à votre section.")
             }
 
-            await trx.from('parent_student').where('parent_id', parent.id).delete()
+            if (governance.isPromoter) {
+              await trx.from('parent_student').where('parent_id', parent.id).delete()
+            } else if (governance.sectionId) {
+              const sectionStudents = await trx
+                .from('students')
+                .join('classes', 'students.class_id', 'classes.id')
+                .where('students.school_id', director.schoolId)
+                .where('classes.school_section_id', governance.sectionId)
+                .select('students.id')
+              const sectionStudentIds = sectionStudents.map((row) => row.id)
+
+              if (sectionStudentIds.length) {
+                await trx
+                  .from('parent_student')
+                  .where('parent_id', parent.id)
+                  .whereIn('student_id', sectionStudentIds)
+                  .delete()
+              }
+            }
+
             if (validChildren.length) {
               await trx.table('parent_student').insert(
                 validChildren.map((student, index) => ({
@@ -1622,9 +1753,11 @@ export default class SchoolController {
     params,
     request,
     response,
+    session,
     view,
   }: HttpContext) {
     const director = auth.getUserOrFail()
+    const governance = await getGovernanceContext(director)
     const account = await User.query()
       .where('id', params.id)
       .where('schoolId', director.schoolId)
@@ -1638,6 +1771,8 @@ export default class SchoolController {
         'parent',
       ])
       .firstOrFail()
+    const denied = await this.ensureCanEditAccount(governance, account, session, response)
+    if (denied) return denied
     const tempPassword = crypto.randomBytes(8).toString('hex')
     const schoolName = await this.getSchoolName(director.schoolId)
 
@@ -2059,6 +2194,7 @@ export default class SchoolController {
       school: this.getFallbackSchool(director),
       credentials,
       emailDelivery,
+      navigation: governance.navigation,
     })
   }
 }

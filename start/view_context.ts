@@ -6,6 +6,11 @@ import Teacher from '#models/teacher'
 import Subject from '#models/subject'
 import User from '#models/user'
 import { resolveAppLanguage } from '#services/language_service'
+import {
+  getGovernanceContext,
+  navigationPolicyFor,
+  type NavigationPolicy,
+} from '#services/school_governance_service'
 
 export async function edgePageContext(
   { auth, request, session }: Pick<HttpContext, 'auth' | 'request' | 'session'>,
@@ -27,8 +32,15 @@ export async function edgePageContext(
   let teachers: any[] = []
   let subjects: any[] = []
   let users: any[] = []
+  let navigation: NavigationPolicy = navigationPolicyFor(user?.role || null)
+  let governance: any = null
 
   if (user?.schoolId) {
+    try {
+      governance = await getGovernanceContext(user)
+      navigation = governance.navigation
+    } catch {}
+
     try {
       classes = await Class.query()
         .where('schoolId', user.schoolId)
@@ -82,6 +94,8 @@ export async function edgePageContext(
     selectedClassId: request.input('class_id', ''),
     selectedStudentId: request.input('student_id', ''),
     user,
+    governance,
+    navigation,
     users,
     classes,
     classObj: firstClass,

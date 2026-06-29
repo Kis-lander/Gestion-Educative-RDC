@@ -19,6 +19,7 @@ import {
   getGovernanceContext,
   resolveSectionIdForLevel,
 } from '#services/school_governance_service'
+import { edgePageContext } from '#start/view_context'
 
 export default class AcademicController {
   private getPaginationMeta(paginator: { toJSON: () => any }) {
@@ -61,7 +62,8 @@ export default class AcademicController {
     ]
   }
 
-  public async gradesPage({ auth, request, view }: HttpContext) {
+  public async gradesPage(ctx: HttpContext) {
+    const { auth, request, view } = ctx
     const user = auth.getUserOrFail()
     const page = Number(request.input('page', 1))
     const classId = request.input('class_id')
@@ -102,6 +104,7 @@ export default class AcademicController {
       .first()
 
     return view.render('academic/grades/index', {
+      ...(await edgePageContext(ctx)),
       school: this.getFallbackSchool(user),
       classes,
       subjects,

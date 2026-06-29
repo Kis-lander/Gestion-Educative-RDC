@@ -1006,6 +1006,7 @@ router
     router.get('/calendar/school', async (ctx) =>
       ctx.view.render('academic/calendar/school', await edgePageContext(ctx))
     )
+    router.get('/exams', ({ response }) => response.redirect('/academic/exams/schedule'))
     router.get('/exams/create', async (ctx) =>
       ctx.view.render('academic/exams/create', await edgePageContext(ctx))
     )

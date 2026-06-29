@@ -47,7 +47,7 @@
     @endif
     
     <!-- Classes -->
-    @if(['director', 'teacher'].includes(auth?.user?.role))
+    @if(navigation ? navigation.canViewClasses : ['director', 'teacher'].includes(auth?.user?.role))
       <a
         href="/academic/classes"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -59,7 +59,7 @@
     @endif
     
     <!-- Matières -->
-    @if(auth?.user?.role === 'director')
+    @if(navigation ? navigation.canViewSubjects : auth?.user?.role === 'director')
       <a
         href="/schools/subjects"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -71,7 +71,7 @@
     @endif
 
     <!-- Élèves -->
-    @if(['director', 'teacher', 'discipline_director'].includes(auth?.user?.role))
+    @if(navigation ? navigation.canViewStudents : ['director', 'teacher', 'discipline_director'].includes(auth?.user?.role))
       <a
         href="/students"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -83,7 +83,7 @@
     @endif
     
     <!-- Enseignants -->
-    @if(['director', 'inspection'].includes(auth?.user?.role))
+    @if(navigation ? navigation.canViewTeachers : ['director', 'inspection'].includes(auth?.user?.role))
       <a
         href="{{ auth?.user?.role === 'inspection' ? '/inspection/teachers' : '/teachers' }}"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -95,7 +95,7 @@
     @endif
     
     <!-- Comptes -->
-    @if(auth?.user?.role === 'director')
+    @if(navigation ? navigation.canViewAccounts : auth?.user?.role === 'director')
       <a
         href="/schools/accounts/create"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -107,7 +107,7 @@
     @endif
 
     <!-- Notes -->
-    @if(['director', 'teacher'].includes(auth?.user?.role))
+    @if(navigation ? navigation.canViewGrades : ['director', 'teacher'].includes(auth?.user?.role))
       <a
         href="/academic/grades"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -119,7 +119,7 @@
     @endif
     
     <!-- Discipline -->
-    @if(['director', 'discipline_director'].includes(auth?.user?.role))
+    @if(navigation ? navigation.canViewDiscipline : auth?.user?.role === 'discipline_director')
       <a
         href="/discipline"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -131,7 +131,7 @@
     @endif
     
     <!-- Finances -->
-    @if(['director', 'finance_director'].includes(auth?.user?.role))
+    @if(navigation ? navigation.canViewFinance : auth?.user?.role === 'finance_director')
       <a
         href="/financial"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
@@ -143,7 +143,7 @@
     @endif
     
     <!-- Transferts -->
-    @if(auth?.user?.role === 'director')
+    @if(navigation ? navigation.canViewTransfers : false)
       <a
         href="/schools/transfers/requests"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"

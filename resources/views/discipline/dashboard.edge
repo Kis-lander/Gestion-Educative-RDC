@@ -81,8 +81,10 @@
         <h3 class="font-semibold mb-3">
           Évolution des incidents
         </h3>
-        <canvas id="incidentsTrendChart" height="200">
-        </canvas>
+        <div class="relative h-72 min-h-72">
+          <canvas id="incidentsTrendChart" class="h-full w-full">
+          </canvas>
+        </div>
       </div>
 
       <!-- Répartition par type -->
@@ -90,8 +92,10 @@
         <h3 class="font-semibold mb-3">
           Répartition par type d'incident
         </h3>
-        <canvas id="incidentsTypeChart" height="200">
-        </canvas>
+        <div class="relative h-72 min-h-72">
+          <canvas id="incidentsTypeChart" class="h-full w-full">
+          </canvas>
+        </div>
       </div>
     </div>
 
@@ -101,8 +105,10 @@
         <h3 class="font-semibold mb-3">
           Répartition par gravité
         </h3>
-        <canvas id="severityChart" height="200">
-        </canvas>
+        <div class="relative h-72 min-h-72">
+          <canvas id="severityChart" class="h-full w-full">
+          </canvas>
+        </div>
       </div>
 
       <!-- Top élèves avec incidents -->
@@ -261,7 +267,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false
           }
         });
         // Graphique par type
@@ -277,7 +283,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
               legend: {
                 position: "bottom"
@@ -300,7 +306,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false
           }
         });
       }

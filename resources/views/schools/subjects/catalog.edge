@@ -17,7 +17,7 @@
       href="/schools/subjects/assign"
       class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
     >
-      <i class="fas fa-link mr-2"></i>Assigner une matière
+      <i class="fas fa-link mr-2"></i><span data-i18n>Assigner une matière</span>
     </a>
   @endsection
 
@@ -33,7 +33,7 @@
         />
       </div>
       <p class="mt-2 text-sm text-gray-500">
-        {{ subjects.length }} matière(s) dans le référentiel.
+        <span data-i18n>{{ subjects.length }} matière(s) dans le référentiel.</span>
       </p>
     </div>
 
@@ -80,7 +80,7 @@
                 </p>
               </div>
               @else
-                <p class="text-sm text-gray-500">Aucun programme de classe configuré.</p>
+                <p class="text-sm text-gray-500" data-i18n>Aucun programme de classe configuré.</p>
             @end
           </div>
         </article>
@@ -89,7 +89,7 @@
 
     <div id="catalogEmpty" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-md p-10 text-center text-gray-500">
       <i class="fas fa-search text-3xl mb-3"></i>
-      <p>Aucune matière ne correspond à cette recherche.</p>
+      <p data-i18n>Aucune matière ne correspond à cette recherche.</p>
     </div>
 
     <script>

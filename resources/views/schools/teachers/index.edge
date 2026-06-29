@@ -17,13 +17,13 @@
         href="/schools/teachers/create"
         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
       >
-        <i class="fas fa-user-plus mr-2"></i>Nouvel enseignant
+        <i class="fas fa-user-plus mr-2"></i><span data-i18n>Nouvel enseignant</span>
   </a>
       <button
         onclick="exportTeachers()"
         class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
       >
-        <i class="fas fa-download mr-2"></i>Exporter
+        <i class="fas fa-download mr-2"></i><span data-i18n>Exporter</span>
   </button>
     </div>
   @endsection
@@ -35,7 +35,7 @@
           {{ stats.total || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          Total enseignants
+          <span data-i18n>Total enseignants</span>
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -43,7 +43,7 @@
           {{ stats.active || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          Actifs
+          <span data-i18n>Actifs</span>
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -51,7 +51,7 @@
           {{ stats.qualified || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          Qualifiés
+          <span data-i18n>Qualifiés</span>
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -59,7 +59,7 @@
           {{ stats.subjectsCount || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          Matières enseignées
+          <span data-i18n>Matières enseignées</span>
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
@@ -67,7 +67,7 @@
           {{ stats.totalHours || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          Heures/semaine
+          <span data-i18n>Heures/semaine</span>
         </p>
       </div>
     </div>
@@ -78,7 +78,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Statut</label>
           <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">
               Tous
@@ -95,7 +95,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Qualification</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Qualification</label>
           <select id="filterQualification" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">
               Toutes
@@ -115,7 +115,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Recherche</label>
           <div class="relative">
             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <input
@@ -128,7 +128,7 @@
         </div>
         <div class="flex items-end gap-2">
           <button id="applyFilters" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-            <i class="fas fa-filter mr-2"></i>Filtrer
+            <i class="fas fa-filter mr-2"></i><span data-i18n>Filtrer</span>
       </button>
           <button id="resetFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
             <i class="fas fa-undo"></i>
@@ -171,7 +171,7 @@
           'bg-gray-100 text-gray-800': '{{ teacher.status }}' === 'terminated'
         }"
               >
-                {{ teacher.status === 'active' ? 'Actif' : (teacher.status === 'on_leave' ? 'Congé' : 'Terminé') }}
+                <span data-i18n>{{ teacher.status === 'active' ? 'Actif' : (teacher.status === 'on_leave' ? 'Congé' : 'Terminé') }}</span>
         </span>
             </div>
           </div>
@@ -181,7 +181,7 @@
               {{ teacher.user.fullName }}
             </h3>
             <p class="text-sm text-gray-500">
-              {{ teacher.qualification || 'Qualification non renseignée' }}
+              <span data-i18n>{{ teacher.qualification || 'Qualification non renseignée' }}</span>
             </p>
             <p class="text-xs text-gray-400 mt-1 font-mono">
               {{ teacher.employeeNumber }}
@@ -190,7 +190,7 @@
             <div class="mt-3 grid grid-cols-2 gap-2 text-center text-sm">
               <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-1.5">
                 <p class="text-xs text-gray-500">
-                  Matières
+                  <span data-i18n>Matières</span>
                 </p>
                 <p class="font-semibold">
                   {{ teacher.subjectsCount || 0 }}
@@ -198,7 +198,7 @@
               </div>
               <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-1.5">
                 <p class="text-xs text-gray-500">
-                  Classes
+                  <span data-i18n>Classes</span>
                 </p>
                 <p class="font-semibold">
                   {{ teacher.classesCount || 0 }}
@@ -211,7 +211,7 @@
                 href="/schools/teachers/{{ teacher.id }}"
                 class="flex-1 text-center px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-blue-700"
               >
-                <i class="fas fa-eye mr-1"></i>Profil
+                <i class="fas fa-eye mr-1"></i><span data-i18n>Profil</span>
         </a>
               <a
                 href="/schools/teachers/{{ teacher.id }}/edit"
@@ -232,10 +232,10 @@
         <div class="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
           <i class="fas fa-chalkboard-user text-5xl text-gray-400 mb-3"></i>
           <p class="text-gray-500">
-            Aucun enseignant trouvé
+            <span data-i18n>Aucun enseignant trouvé</span>
           </p>
           <a href="/schools/teachers/create" class="mt-3 inline-block text-primary hover:underline">
-            Ajouter un enseignant
+            <span data-i18n>Ajouter un enseignant</span>
     </a>
         </div>
       @end
@@ -275,7 +275,7 @@
           if (!noResultMsg) {
             noResultMsg = document.createElement("div");
             noResultMsg.className = "col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl no-result-msg";
-            noResultMsg.innerHTML = '<i class="fas fa-search text-4xl text-gray-400 mb-3"></i><p class="text-gray-500">Aucun enseignant ne correspond aux critères</p>';
+            noResultMsg.innerHTML = `<i class="fas fa-search text-4xl text-gray-400 mb-3"></i><p class="text-gray-500">${window.AppTranslations?.translate("Aucun enseignant ne correspond aux critères") || "Aucun enseignant ne correspond aux critères"}</p>`;
             teachersGrid.appendChild(noResultMsg);
           }
         } else if (noResultMsg) {

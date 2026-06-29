@@ -619,6 +619,7 @@
       "Direction de l'école": 'School Management',
       'Direction Financière': 'Financial Management',
       'Espace Enseignant': 'Teacher Area',
+      'Espace enseignant': 'Teacher Area',
       'Espace Élève': 'Student Area',
       'Espace Parent': 'Parent Area',
       'Direction de la Discipline': 'Discipline Management',
@@ -741,11 +742,34 @@
       'Rapport complet': 'Full report',
       'Voir dossier complet': 'View full record',
       "Voir l'incident": 'View incident',
+      'Espace Directeur des études': 'Studies Director Area',
+      'Espace Conseiller pédagogique': 'Pedagogical Advisor Area',
+      'Espace Directeur financier': 'Finance Director Area',
+      'Espace Secrétaire': 'Secretary Area',
+      'Espace Directeur de discipline titulaire': 'Discipline Director Area',
+      'Espace Directeur de discipline adjoint': 'Deputy Discipline Director Area',
+      'Gestion transversale de l\'établissement': 'Cross-school management',
+      'Mission principale': 'Main mission',
+      'Supervision hiérarchique': 'Line supervision',
+      'Autorité principale': 'Main authority',
+      "Supervision générale de l'établissement": 'General school supervision',
+      "Attributions de l'interface": 'Interface responsibilities',
+      "Périmètre opérationnel de": 'Operational scope of',
+      "dans l'organisation scolaire.": 'in the school organization.',
+      'Superviser les responsables': 'Supervise managers',
+      'Organisation des classes': 'Class organization',
+      'Examens et délibérations': 'Exams and deliberations',
+      'Pilotage de la discipline': 'Discipline management',
+      'Dossiers des élèves': 'Student records',
+      'Correspondances': 'Correspondence',
+      'Documents scolaires': 'School documents',
+      'Archives et exports': 'Archives and exports',
     },
     ln: {
       "Direction de l'école": 'Bokambi ya eteyelo',
       'Direction Financière': 'Bokambi ya misolo',
       'Espace Enseignant': 'Esika ya molakisi',
+      'Espace enseignant': 'Esika ya molakisi',
       'Espace Élève': 'Esika ya moyekoli',
       'Espace Parent': 'Esika ya moboti',
       'Direction de la Discipline': 'Bokambi ya disipilini',
@@ -846,11 +870,24 @@
       'Définir frais': 'Tya mbongo ya kelasi',
       'Rapports': 'Baraporo',
       'Nouveau paiement': 'Lifuti ya sika',
+      "Attributions de l'interface": 'Misala ya interface',
+      'Mission principale': 'Mosala ya monene',
+      'Supervision hiérarchique': 'Bokambi ya likolo',
+      'Gestion transversale de l\'établissement': 'Bokambi ya eteyelo mobimba',
+      'Superviser les responsables': 'Kolanda bakambi',
+      'Organisation des classes': 'Bobongisi ya bakelasi',
+      'Examens et délibérations': 'Ba examen mpe bokati',
+      'Pilotage de la discipline': 'Bokambi ya disipilini',
+      'Dossiers des élèves': 'Mikanda ya bayekoli',
+      'Correspondances': 'Bansango ya mosala',
+      'Documents scolaires': 'Mikanda ya kelasi',
+      'Archives et exports': 'Bobombi mpe kobimisa',
     },
     sw: {
       "Direction de l'école": 'Uongozi wa shule',
       'Direction Financière': 'Uongozi wa fedha',
       'Espace Enseignant': 'Eneo la mwalimu',
+      'Espace enseignant': 'Eneo la mwalimu',
       'Espace Élève': 'Eneo la mwanafunzi',
       'Espace Parent': 'Eneo la mzazi',
       'Direction de la Discipline': 'Uongozi wa nidhamu',
@@ -951,11 +988,24 @@
       'Définir frais': 'Weka ada',
       'Rapports': 'Ripoti',
       'Nouveau paiement': 'Malipo mapya',
+      "Attributions de l'interface": 'Majukumu ya kiolesura',
+      'Mission principale': 'Jukumu kuu',
+      'Supervision hiérarchique': 'Usimamizi wa ngazi',
+      'Gestion transversale de l\'établissement': 'Usimamizi wa shule nzima',
+      'Superviser les responsables': 'Simamia viongozi',
+      'Organisation des classes': 'Mpangilio wa madarasa',
+      'Examens et délibérations': 'Mitihani na maamuzi',
+      'Pilotage de la discipline': 'Usimamizi wa nidhamu',
+      'Dossiers des élèves': 'Faili za wanafunzi',
+      'Correspondances': 'Mawasiliano rasmi',
+      'Documents scolaires': 'Nyaraka za shule',
+      'Archives et exports': 'Nyaraka na mauzo ya data',
     },
     kg: {
       "Direction de l'école": 'Bokambi bwa sukulu',
       'Direction Financière': 'Bokambi bwa mbongo',
       'Espace Enseignant': 'Kisika kia longi',
+      'Espace enseignant': 'Kisika kia longi',
       'Espace Élève': 'Kisika kia nlongoki',
       'Espace Parent': 'Kisika kia mubuti',
       'Direction de la Discipline': 'Bokambi bwa disipilini',
@@ -1056,11 +1106,24 @@
       'Définir frais': 'Tia mfutu',
       'Rapports': 'Baraporo',
       'Nouveau paiement': 'Mfutu ya mpa',
+      "Attributions de l'interface": 'Bisalu ya interface',
+      'Mission principale': 'Kisalu ya nene',
+      'Supervision hiérarchique': 'Bokambi ya likolo',
+      'Gestion transversale de l\'établissement': 'Bokambi ya sukulu yonso',
+      'Superviser les responsables': 'Kulanda bakambi',
+      'Organisation des classes': 'Kubongisa bakalasi',
+      'Examens et délibérations': 'Ba examen mpe mikanu',
+      'Pilotage de la discipline': 'Bokambi bwa disipilini',
+      'Dossiers des élèves': 'Mikanda ya banlongoki',
+      'Correspondances': 'Nsangu za kisalu',
+      'Documents scolaires': 'Mikanda ya kelasi',
+      'Archives et exports': 'Bobombi mpe kubasisa',
     },
     lua: {
       "Direction de l'école": 'Bukambi bwa shikola',
       'Direction Financière': 'Bukambi bwa makuta',
       'Espace Enseignant': 'Tshitupa tshia mulongeshi',
+      'Espace enseignant': 'Tshitupa tshia mulongeshi',
       'Espace Élève': 'Tshitupa tshia muyidi',
       'Espace Parent': 'Tshitupa tshia mubyeyi',
       'Direction de la Discipline': 'Bukambi bwa disipiline',
@@ -1161,6 +1224,18 @@
       'Définir frais': 'Teka mfutu',
       'Rapports': 'Maraporo',
       'Nouveau paiement': 'Malipa mapia',
+      "Attributions de l'interface": 'Midimu ya interface',
+      'Mission principale': 'Mudimu mukulu',
+      'Supervision hiérarchique': 'Bukambi bwa pa mutu',
+      'Gestion transversale de l\'établissement': 'Bukambi bwa shikola dionso',
+      'Superviser les responsables': 'Kulondolola bakambi',
+      'Organisation des classes': 'Kulongolola makalasa',
+      'Examens et délibérations': 'Examen ne mikanu',
+      'Pilotage de la discipline': 'Bukambi bwa disipiline',
+      'Dossiers des élèves': 'Mikanda ya bayidi',
+      'Correspondances': 'Nsumu ya mudimu',
+      'Documents scolaires': 'Mikanda ya kalasa',
+      'Archives et exports': 'Mabika ne kufumisha',
     },
   }
 
@@ -1906,8 +1981,8 @@
         'Supervises the school as owner, appoints school leaders and monitors major administrative, pedagogical and financial decisions.',
       "Dirige la section secondaire comme chef d'établissement, supervise les études, la pédagogie, la discipline, le personnel et les rapports de gestion.":
         'Leads the secondary section as head of institution and supervises studies, pedagogy, discipline, staff and management reports.',
-      'Organise les activités académiques du secondaire : classes, horaires, examens, bulletins, suivi des résultats et dossiers scolaires, sous la supervision du Préfet des études.':
-        'Organizes secondary academic activities: classes, timetables, exams, report cards, results tracking and school records, under the supervision of the Secondary school principal.',
+      'Organise les activités scolaires du secondaire : classes, horaires, examens, bulletins, suivi des résultats et dossiers scolaires, sous la supervision du Préfet des études.':
+        'Organizes secondary school activities: classes, timetables, exams, report cards, results tracking and school records, under the supervision of the Secondary school principal.',
       'Accompagne les enseignants, suit les méthodes pédagogiques, les préparations, les programmes et les performances scolaires, sous la supervision du Préfet des études.':
         'Supports teachers and monitors teaching methods, lesson preparation, curricula and school performance, under the supervision of the Secondary school principal.',
       'Assure l’ordre, la discipline, le suivi des présences, incidents, sanctions et mesures éducatives, sous la supervision du Préfet des études.':
@@ -1920,6 +1995,61 @@
         'Manages the school secretariat: correspondence, administrative files, archives, certificates and administrative support for all sections.',
       "Supervision générale de l'établissement et de ses sections scolaires":
         'Overall supervision of the school and its sections',
+      "Gestion transversale de l'établissement": 'Cross-school management',
+      "Attributions de l'interface": 'Interface responsibilities',
+      "Périmètre opérationnel de": 'Operational scope of',
+      "dans l'organisation scolaire.": 'in the school organization.',
+      'Nommer les responsables de section et les fonctions transversales.':
+        'Appoint section leaders and cross-school roles.',
+      "Suivre l'administration, la pédagogie, la discipline et les finances de toute l'école.":
+        'Monitor administration, pedagogy, discipline and finances across the whole school.',
+      'Contrôler les rapports de gestion et les grandes décisions institutionnelles.':
+        'Review management reports and major institutional decisions.',
+      'Gérer les classes, les élèves et les enseignants de la section maternelle.':
+        'Manage classes, students and teachers in the preschool section.',
+      'Suivre les présences, les activités et les dossiers scolaires de sa section.':
+        'Monitor attendance, activities and school records in the section.',
+      'Rendre compte au Promoteur.': 'Report to the school owner.',
+      'Gérer les classes, les élèves et les enseignants de la section primaire.':
+        'Manage classes, students and teachers in the primary section.',
+      'Suivre les notes, les bulletins et le fonctionnement pédagogique de sa section.':
+        'Monitor grades, report cards and pedagogical operations in the section.',
+      'Diriger la section secondaire comme responsable hiérarchique.':
+        'Lead the secondary section as line manager.',
+      'Superviser le Directeur des études, le Conseiller pédagogique et la Direction de discipline.':
+        'Supervise the Director of studies, Pedagogical adviser and Discipline office.',
+      'Valider le suivi des classes, des examens, de la discipline et des rapports du secondaire.':
+        'Validate monitoring of classes, exams, discipline and secondary reports.',
+      'Organiser les classes, les horaires, les examens, les bulletins et les dossiers scolaires.':
+        'Organize classes, timetables, exams, report cards and school records.',
+      'Coordonner le travail scolaire des enseignants du secondaire.':
+        'Coordinate the school work of secondary teachers.',
+      'Rendre compte au Préfet des études.': 'Report to the Secondary school principal.',
+      'Accompagner les enseignants dans les méthodes, les préparations et les programmes.':
+        'Support teachers with methods, preparation and programs.',
+      'Analyser les performances scolaires et proposer des améliorations pédagogiques.':
+        'Analyze school performance and suggest pedagogical improvements.',
+      'Organiser le suivi de l’ordre, des présences, des incidents et des sanctions.':
+        'Organize monitoring of order, attendance, incidents and sanctions.',
+      'Encadrer le Directeur de discipline adjoint lorsqu’il est nommé.':
+        'Supervise the Deputy discipline director when appointed.',
+      'Assister le Directeur de discipline titulaire.': 'Assist the Head discipline director.',
+      'Suivre les présences, signalements, incidents et mesures disciplinaires.':
+        'Monitor attendance, reports, incidents and disciplinary measures.',
+      'Rendre compte au Directeur de discipline titulaire.': 'Report to the Head discipline director.',
+      'Gérer les frais scolaires, paiements, recettes et dépenses.':
+        'Manage school fees, payments, income and expenses.',
+      "Produire les rapports financiers pour l'ensemble de l'établissement.":
+        'Produce financial reports for the whole school.',
+      'Tenir les correspondances, dossiers administratifs, archives et documents scolaires.':
+        'Maintain correspondence, administrative files, archives and school documents.',
+      'Appuyer les directions de section dans le suivi administratif.':
+        'Support section leadership in administrative follow-up.',
+      'Gérer ses cours, devoirs, présences et notes.':
+        'Manage lessons, assignments, attendance and grades.',
+      'Suivre les élèves de ses classes.': 'Monitor students in assigned classes.',
+      'Rendre compte à la direction pédagogique compétente.':
+        'Report to the appropriate pedagogical leadership.',
       'Le compte ne pourra consulter et gérer que les données de cette section, sauf le Promoteur qui supervise toute l’école.':
         'The account may only view and manage data from this section, except the school owner who supervises the whole school.',
       "Le compte ne pourra consulter et gérer que les données de cette section. Le Directeur financier et le Secrétaire sont affectés à toute l'école.":
@@ -1979,6 +2109,62 @@
       'Suivi des enseignants': 'Bolandi ya balakisi',
       'Performances scolaires': 'Mbano ya eteyelo',
       'Documentation pédagogique': 'Mikanda ya mateya',
+      "Attributions de l'interface": 'Misala ya esika ya mosala',
+      "Périmètre opérationnel de": 'Eteni ya mosala ya',
+      "dans l'organisation scolaire.": 'na bobongisi ya eteyelo.',
+      "Gestion transversale de l'établissement": 'Bokambi ya eteyelo mobimba',
+      'Nommer les responsables de section et les fonctions transversales.':
+        'Kopona bakambi ya biteni mpe misala ya eteyelo mobimba.',
+      "Suivre l'administration, la pédagogie, la discipline et les finances de toute l'école.":
+        'Kolanda administration, mateya, disipilini mpe misolo ya eteyelo mobimba.',
+      'Contrôler les rapports de gestion et les grandes décisions institutionnelles.':
+        'Kotala balapolo ya bokambi mpe mikano minene ya eteyelo.',
+      'Gérer les classes, les élèves et les enseignants de la section maternelle.':
+        'Kotambwisa bakelasi, bayekoli mpe balakisi ya maternelle.',
+      'Suivre les présences, les activités et les dossiers scolaires de sa section.':
+        'Kolanda boyei, misala mpe mikanda ya eteni na ye.',
+      'Rendre compte au Promoteur.': 'Kopesa lapolo epai ya Promoteur.',
+      'Gérer les classes, les élèves et les enseignants de la section primaire.':
+        'Kotambwisa bakelasi, bayekoli mpe balakisi ya primaire.',
+      'Suivre les notes, les bulletins et le fonctionnement pédagogique de sa section.':
+        'Kolanda banoti, babuletɛ mpe ndenge mateya ezali kotambola na eteni na ye.',
+      'Diriger la section secondaire comme responsable hiérarchique.':
+        'Kokamba eteni ya secondaire lokola mokambi ya likolo.',
+      'Superviser le Directeur des études, le Conseiller pédagogique et la Direction de discipline.':
+        'Kolandela Directeur des études, Conseiller pédagogique mpe bokambi ya disipilini.',
+      'Valider le suivi des classes, des examens, de la discipline et des rapports du secondaire.':
+        'Kondima bolandi ya bakelasi, mimekano, disipilini mpe balapolo ya secondaire.',
+      'Organiser les classes, les horaires, les examens, les bulletins et les dossiers scolaires.':
+        'Kobongisa bakelasi, programme, mimekano, babuletɛ mpe mikanda ya kelasi.',
+      'Coordonner le travail scolaire des enseignants du secondaire.':
+        'Koyokanisa mosala ya kelasi ya balakisi ya secondaire.',
+      'Rendre compte au Préfet des études.': 'Kopesa lapolo epai ya Préfet des études.',
+      'Accompagner les enseignants dans les méthodes, les préparations et les programmes.':
+        'Kosunga balakisi na mayele, kobongisa mateya mpe programme.',
+      'Analyser les performances scolaires et proposer des améliorations pédagogiques.':
+        'Kotala mbano ya kelasi mpe kopesa makanisi ya kobongisa mateya.',
+      'Organiser le suivi de l’ordre, des présences, des incidents et des sanctions.':
+        'Kobongisa bolandi ya molongo, boyei, makambo mpe bitumbu.',
+      'Encadrer le Directeur de discipline adjoint lorsqu’il est nommé.':
+        'Kokamba mosungi ya discipline soki aponami.',
+      'Assister le Directeur de discipline titulaire.': 'Kosunga mokambi monene ya disipilini.',
+      'Suivre les présences, signalements, incidents et mesures disciplinaires.':
+        'Kolanda boyei, maloba ya koyebisa, makambo mpe bibongiseli ya disipilini.',
+      'Rendre compte au Directeur de discipline titulaire.':
+        'Kopesa lapolo epai ya mokambi monene ya disipilini.',
+      'Gérer les frais scolaires, paiements, recettes et dépenses.':
+        'Kotambwisa mbongo ya kelasi, bafuti, bokotisi mpe kobimisa mbongo.',
+      "Produire les rapports financiers pour l'ensemble de l'établissement.":
+        'Kobimisa balapolo ya misolo ya eteyelo mobimba.',
+      'Tenir les correspondances, dossiers administratifs, archives et documents scolaires.':
+        'Kobatela mikanda ya nsango, mikanda ya administration, archives mpe mikanda ya kelasi.',
+      'Appuyer les directions de section dans le suivi administratif.':
+        'Kosunga bakambi ya biteni na bolandi ya administration.',
+      'Gérer ses cours, devoirs, présences et notes.':
+        'Kotambwisa mateya, badevoir, boyei mpe banoti na ye.',
+      'Suivre les élèves de ses classes.': 'Kolanda bayekoli ya bakelasi na ye.',
+      'Rendre compte à la direction pédagogique compétente.':
+        'Kopesa lapolo epai ya bokambi ya mateya oyo etali ye.',
       'Le compte ne pourra consulter et gérer que les données de cette section, sauf le Promoteur qui supervise toute l’école.':
         'Konti ekotala mpe ekotambwisa kaka makambo ya eteni oyo; nkolo ya eteyelo nde atalaka eteyelo mobimba.',
     },
@@ -2036,6 +2222,62 @@
       'Suivi des enseignants': 'Ufuatiliaji wa walimu',
       'Performances scolaires': 'Utendaji wa shule',
       'Documentation pédagogique': 'Nyaraka za ufundishaji',
+      "Attributions de l'interface": 'Majukumu ya kiolesura',
+      "Périmètre opérationnel de": 'Eneo la kazi la',
+      "dans l'organisation scolaire.": 'katika mpangilio wa shule.',
+      "Gestion transversale de l'établissement": 'Usimamizi wa shule nzima',
+      'Nommer les responsables de section et les fonctions transversales.':
+        'Teua viongozi wa sehemu na majukumu ya shule nzima.',
+      "Suivre l'administration, la pédagogie, la discipline et les finances de toute l'école.":
+        'Fuatilia utawala, ufundishaji, nidhamu na fedha za shule nzima.',
+      'Contrôler les rapports de gestion et les grandes décisions institutionnelles.':
+        'Kagua ripoti za usimamizi na maamuzi makubwa ya taasisi.',
+      'Gérer les classes, les élèves et les enseignants de la section maternelle.':
+        'Simamia madarasa, wanafunzi na walimu wa chekechea.',
+      'Suivre les présences, les activités et les dossiers scolaires de sa section.':
+        'Fuatilia mahudhurio, shughuli na faili za shule za sehemu yake.',
+      'Rendre compte au Promoteur.': 'Toa taarifa kwa mmiliki wa shule.',
+      'Gérer les classes, les élèves et les enseignants de la section primaire.':
+        'Simamia madarasa, wanafunzi na walimu wa msingi.',
+      'Suivre les notes, les bulletins et le fonctionnement pédagogique de sa section.':
+        'Fuatilia alama, ripoti na uendeshaji wa ufundishaji wa sehemu yake.',
+      'Diriger la section secondaire comme responsable hiérarchique.':
+        'Ongoza sehemu ya sekondari kama msimamizi mkuu.',
+      'Superviser le Directeur des études, le Conseiller pédagogique et la Direction de discipline.':
+        'Simamia Mkurugenzi wa masomo, Mshauri wa ufundishaji na uongozi wa nidhamu.',
+      'Valider le suivi des classes, des examens, de la discipline et des rapports du secondaire.':
+        'Thibitisha ufuatiliaji wa madarasa, mitihani, nidhamu na ripoti za sekondari.',
+      'Organiser les classes, les horaires, les examens, les bulletins et les dossiers scolaires.':
+        'Panga madarasa, ratiba, mitihani, ripoti na faili za shule.',
+      'Coordonner le travail scolaire des enseignants du secondaire.':
+        'Ratibu kazi ya shule ya walimu wa sekondari.',
+      'Rendre compte au Préfet des études.': 'Toa taarifa kwa Mkuu wa shule ya sekondari.',
+      'Accompagner les enseignants dans les méthodes, les préparations et les programmes.':
+        'Saidia walimu katika mbinu, maandalizi na programu.',
+      'Analyser les performances scolaires et proposer des améliorations pédagogiques.':
+        'Chambua ufaulu wa shule na pendekeza maboresho ya ufundishaji.',
+      'Organiser le suivi de l’ordre, des présences, des incidents et des sanctions.':
+        'Panga ufuatiliaji wa utaratibu, mahudhurio, matukio na adhabu.',
+      'Encadrer le Directeur de discipline adjoint lorsqu’il est nommé.':
+        'Simamia Naibu mkurugenzi wa nidhamu anapoteuliwa.',
+      'Assister le Directeur de discipline titulaire.': 'Msaidie Mkurugenzi mkuu wa nidhamu.',
+      'Suivre les présences, signalements, incidents et mesures disciplinaires.':
+        'Fuatilia mahudhurio, taarifa, matukio na hatua za nidhamu.',
+      'Rendre compte au Directeur de discipline titulaire.':
+        'Toa taarifa kwa Mkurugenzi mkuu wa nidhamu.',
+      'Gérer les frais scolaires, paiements, recettes et dépenses.':
+        'Simamia ada, malipo, mapato na matumizi.',
+      "Produire les rapports financiers pour l'ensemble de l'établissement.":
+        'Andaa ripoti za fedha za shule nzima.',
+      'Tenir les correspondances, dossiers administratifs, archives et documents scolaires.':
+        'Tunza mawasiliano, faili za utawala, kumbukumbu na nyaraka za shule.',
+      'Appuyer les directions de section dans le suivi administratif.':
+        'Saidia uongozi wa sehemu katika ufuatiliaji wa kiutawala.',
+      'Gérer ses cours, devoirs, présences et notes.':
+        'Simamia masomo, kazi, mahudhurio na alama.',
+      'Suivre les élèves de ses classes.': 'Fuatilia wanafunzi wa madarasa yake.',
+      'Rendre compte à la direction pédagogique compétente.':
+        'Toa taarifa kwa uongozi husika wa ufundishaji.',
       'Le compte ne pourra consulter et gérer que les données de cette section, sauf le Promoteur qui supervise toute l’école.':
         'Akaunti itaona na kusimamia taarifa za sehemu hii pekee, isipokuwa mmiliki wa shule anayesimamia shule nzima.',
     },
@@ -2092,6 +2334,62 @@
       'Suivi des enseignants': 'Kulanda balongi',
       'Performances scolaires': 'Bambano ya nzo-nkanda',
       'Documentation pédagogique': 'Mikanda ya ndongisila',
+      "Attributions de l'interface": 'Bisalu ya interface',
+      "Périmètre opérationnel de": 'Kitini ya kisalu ya',
+      "dans l'organisation scolaire.": 'na kuyidika ya nzo-nkanda.',
+      "Gestion transversale de l'établissement": 'Bokambi ya nzo-nkanda nyonso',
+      'Nommer les responsables de section et les fonctions transversales.':
+        'Pona bantwadisi ya bitini mpe bisalu ya nzo-nkanda nyonso.',
+      "Suivre l'administration, la pédagogie, la discipline et les finances de toute l'école.":
+        'Landa administration, ndongisila, disipline mpe mbongo ya nzo-nkanda nyonso.',
+      'Contrôler les rapports de gestion et les grandes décisions institutionnelles.':
+        'Tala balapolo ya bokambi mpe mikanu ya nene ya nzo-nkanda.',
+      'Gérer les classes, les élèves et les enseignants de la section maternelle.':
+        'Twadisa bakela, balongoki mpe balongi ya maternelle.',
+      'Suivre les présences, les activités et les dossiers scolaires de sa section.':
+        'Landa kukwiza, bisalu mpe mikanda ya kelasi ya kitini na yandi.',
+      'Rendre compte au Promoteur.': 'Pesa lapolo na Promoteur.',
+      'Gérer les classes, les élèves et les enseignants de la section primaire.':
+        'Twadisa bakela, balongoki mpe balongi ya primaire.',
+      'Suivre les notes, les bulletins et le fonctionnement pédagogique de sa section.':
+        'Landa banoti, babuletɛ mpe ndongisila ya kitini na yandi.',
+      'Diriger la section secondaire comme responsable hiérarchique.':
+        'Twadisa kitini ya secondaire bonso ntwadisi ya likolo.',
+      'Superviser le Directeur des études, le Conseiller pédagogique et la Direction de discipline.':
+        'Landa Directeur des études, Conseiller pédagogique mpe bokambi ya discipline.',
+      'Valider le suivi des classes, des examens, de la discipline et des rapports du secondaire.':
+        'Ndima bolandi ya bakela, mimekano, discipline mpe balapolo ya secondaire.',
+      'Organiser les classes, les horaires, les examens, les bulletins et les dossiers scolaires.':
+        'Yidika bakela, programme, mimekano, babuletɛ mpe mikanda ya kelasi.',
+      'Coordonner le travail scolaire des enseignants du secondaire.':
+        'Yokanisa kisalu ya kelasi ya balongi ya secondaire.',
+      'Rendre compte au Préfet des études.': 'Pesa lapolo na Préfet des études.',
+      'Accompagner les enseignants dans les méthodes, les préparations et les programmes.':
+        'Sadisa balongi na mitindu, kuyidika malongi mpe programme.',
+      'Analyser les performances scolaires et proposer des améliorations pédagogiques.':
+        'Tala bambano ya kelasi mpe pesa makanisi ya kubongisa ndongisila.',
+      'Organiser le suivi de l’ordre, des présences, des incidents et des sanctions.':
+        'Yidika bolandi ya ndonga, kukwiza, mambu mpe bitumbu.',
+      'Encadrer le Directeur de discipline adjoint lorsqu’il est nommé.':
+        'Twadisa nsadisi ya discipline kana me ponama.',
+      'Assister le Directeur de discipline titulaire.': 'Sadisa ntwadisi ya nene ya discipline.',
+      'Suivre les présences, signalements, incidents et mesures disciplinaires.':
+        'Landa kukwiza, bansangu, mambu mpe bitumbu ya discipline.',
+      'Rendre compte au Directeur de discipline titulaire.':
+        'Pesa lapolo na ntwadisi ya nene ya discipline.',
+      'Gérer les frais scolaires, paiements, recettes et dépenses.':
+        'Twadisa mfutu ya kelasi, bafuti, mbongo ya kukota mpe ya kubima.',
+      "Produire les rapports financiers pour l'ensemble de l'établissement.":
+        'Bimisa balapolo ya mbongo ya nzo-nkanda nyonso.',
+      'Tenir les correspondances, dossiers administratifs, archives et documents scolaires.':
+        'Bumba mikanda ya bansangu, mikanda ya administration, archives mpe mikanda ya kelasi.',
+      'Appuyer les directions de section dans le suivi administratif.':
+        'Sadisa bakambi ya bitini na bolandi ya administration.',
+      'Gérer ses cours, devoirs, présences et notes.':
+        'Twadisa malongi, badevoir, kukwiza mpe banoti na yandi.',
+      'Suivre les élèves de ses classes.': 'Landa balongoki ya bakela na yandi.',
+      'Rendre compte à la direction pédagogique compétente.':
+        'Pesa lapolo na bokambi ya ndongisila yina metala yandi.',
       'Le compte ne pourra consulter et gérer que les données de cette section, sauf le Promoteur qui supervise toute l’école.':
         'Konti yai ketala mpi ketwadisa kaka mambu ma kitini yai; mfumu ya nzo-nkanda ketala nzo-nkanda nyonso.',
     },
@@ -2148,12 +2446,365 @@
       'Suivi des enseignants': 'Kulonda balongeshi',
       'Performances scolaires': 'Bipeta bia tulasa',
       'Documentation pédagogique': 'Mikanda ya dilonga',
+      "Attributions de l'interface": 'Midimu ya interface',
+      "Périmètre opérationnel de": 'Dibanga dia mudimu dia',
+      "dans l'organisation scolaire.": 'mu kulongolola kua tulasa.',
+      "Gestion transversale de l'établissement": 'Bukokeshi bua tulasa tuonso',
+      'Nommer les responsables de section et les fonctions transversales.':
+        'Sungula bakokeshi ba mabanga ne midimu ya tulasa tuonso.',
+      "Suivre l'administration, la pédagogie, la discipline et les finances de toute l'école.":
+        'Londa administration, malu a dilonga, disiplina ne makuta a tulasa tuonso.',
+      'Contrôler les rapports de gestion et les grandes décisions institutionnelles.':
+        'Tala miyanda ya bukokeshi ne mikanu minene ya tulasa.',
+      'Gérer les classes, les élèves et les enseignants de la section maternelle.':
+        'Lombola tulasa, bayidi ne balongeshi ba maternelle.',
+      'Suivre les présences, les activités et les dossiers scolaires de sa section.':
+        'Londa difika, midimu ne mikanda ya dibanga diandi.',
+      'Rendre compte au Promoteur.': 'Pesha lapolo ku Promoteur.',
+      'Gérer les classes, les élèves et les enseignants de la section primaire.':
+        'Lombola tulasa, bayidi ne balongeshi ba primaire.',
+      'Suivre les notes, les bulletins et le fonctionnement pédagogique de sa section.':
+        'Londa bipeta, bulletins ne mudimu wa dilonga wa dibanga diandi.',
+      'Diriger la section secondaire comme responsable hiérarchique.':
+        'Kokesha dibanga dia secondaire bu mukokeshi wa pa mutu.',
+      'Superviser le Directeur des études, le Conseiller pédagogique et la Direction de discipline.':
+        'Kengela Directeur des études, Conseiller pédagogique ne bukokeshi bua disiplina.',
+      'Valider le suivi des classes, des examens, de la discipline et des rapports du secondaire.':
+        'Ndima kulonda tulasa, mekalu, disiplina ne miyanda ya secondaire.',
+      'Organiser les classes, les horaires, les examens, les bulletins et les dossiers scolaires.':
+        'Longolola tulasa, programme, mekalu, bulletins ne mikanda ya tulasa.',
+      'Coordonner le travail scolaire des enseignants du secondaire.':
+        'Yidika pamo mudimu wa tulasa wa balongeshi ba secondaire.',
+      'Rendre compte au Préfet des études.': 'Pesha lapolo ku Préfet des études.',
+      'Accompagner les enseignants dans les méthodes, les préparations et les programmes.':
+        'Kuata balongeshi mu mayele, kulongolola malongi ne programme.',
+      'Analyser les performances scolaires et proposer des améliorations pédagogiques.':
+        'Tala bipeta bia tulasa ne pesa makanisi a kubongolola dilonga.',
+      'Organiser le suivi de l’ordre, des présences, des incidents et des sanctions.':
+        'Longolola kulonda ndonga, difika, mambu ne bitumbu.',
+      'Encadrer le Directeur de discipline adjoint lorsqu’il est nommé.':
+        'Kokesha mukuatshishi wa disiplina padi musungula.',
+      'Assister le Directeur de discipline titulaire.': 'Kuata mukokeshi munene wa disiplina.',
+      'Suivre les présences, signalements, incidents et mesures disciplinaires.':
+        'Londa difika, mayebisha, mambu ne mikanu ya disiplina.',
+      'Rendre compte au Directeur de discipline titulaire.':
+        'Pesha lapolo ku mukokeshi munene wa disiplina.',
+      'Gérer les frais scolaires, paiements, recettes et dépenses.':
+        'Lombola mfutu ya tulasa, malipa, makuta a kubuela ne a kufuma.',
+      "Produire les rapports financiers pour l'ensemble de l'établissement.":
+        'Bimisha miyanda ya makuta ya tulasa tuonso.',
+      'Tenir les correspondances, dossiers administratifs, archives et documents scolaires.':
+        'Lama nsumu, mikanda ya administration, archives ne mikanda ya tulasa.',
+      'Appuyer les directions de section dans le suivi administratif.':
+        'Kuata bakokeshi ba mabanga mu kulonda administration.',
+      'Gérer ses cours, devoirs, présences et notes.':
+        'Lombola malongi andi, midevua, difika ne bipeta.',
+      'Suivre les élèves de ses classes.': 'Londa bayidi ba tulasa tuandi.',
+      'Rendre compte à la direction pédagogique compétente.':
+        'Pesha lapolo ku bukokeshi bua dilonga budi bumutala.',
       'Le compte ne pourra consulter et gérer que les données de cette section, sauf le Promoteur qui supervise toute l’école.':
         'Mukanda ewu udi umona ne kulombola malu a dibanga edi nkayadi; mwenena wa tulasa udi ulombola tulasa tuonso.',
     },
   }
 
   Object.entries(schoolGovernanceExtensions).forEach(([language, translations]) => {
+    Object.assign(dictionaries[language], translations)
+  })
+
+  const governanceDynamicExtensions = {
+    en: {
+      'Espace Directeur financier': 'Finance director workspace',
+      'Espace Conseiller pédagogique': 'Pedagogical adviser workspace',
+      'Espace Directeur des études': 'Director of studies workspace',
+      'Espace Directeur de la maternelle': 'Preschool headteacher workspace',
+      'Espace Directeur du primaire': 'Primary school headteacher workspace',
+      'Espace Préfet des études': 'Secondary school principal workspace',
+      'Espace Directeur de discipline titulaire': 'Head discipline director workspace',
+      'Espace Directeur de discipline adjoint': 'Deputy discipline director workspace',
+      'Espace Secrétaire': 'Secretary workspace',
+      'Périmètre opérationnel de Directeur financier dans l’organisation scolaire.':
+        'Operational scope of the finance director in the school organization.',
+      "Périmètre opérationnel de Directeur financier dans l'organisation scolaire.":
+        'Operational scope of the finance director in the school organization.',
+      'Périmètre opérationnel de Conseiller pédagogique dans l’organisation scolaire.':
+        'Operational scope of the pedagogical adviser in the school organization.',
+      "Périmètre opérationnel de Conseiller pédagogique dans l'organisation scolaire.":
+        'Operational scope of the pedagogical adviser in the school organization.',
+      'Périmètre opérationnel de Directeur des études dans l’organisation scolaire.':
+        'Operational scope of the director of studies in the school organization.',
+      "Périmètre opérationnel de Directeur des études dans l'organisation scolaire.":
+        'Operational scope of the director of studies in the school organization.',
+      'Périmètre opérationnel de Directeur de la maternelle dans l’organisation scolaire.':
+        'Operational scope of the preschool headteacher in the school organization.',
+      "Périmètre opérationnel de Directeur de la maternelle dans l'organisation scolaire.":
+        'Operational scope of the preschool headteacher in the school organization.',
+      'Périmètre opérationnel de Directeur du primaire dans l’organisation scolaire.':
+        'Operational scope of the primary school headteacher in the school organization.',
+      "Périmètre opérationnel de Directeur du primaire dans l'organisation scolaire.":
+        'Operational scope of the primary school headteacher in the school organization.',
+      'Périmètre opérationnel de Préfet des études dans l’organisation scolaire.':
+        'Operational scope of the secondary school principal in the school organization.',
+      "Périmètre opérationnel de Préfet des études dans l'organisation scolaire.":
+        'Operational scope of the secondary school principal in the school organization.',
+      'Périmètre opérationnel de Directeur de discipline titulaire dans l’organisation scolaire.':
+        'Operational scope of the head discipline director in the school organization.',
+      "Périmètre opérationnel de Directeur de discipline titulaire dans l'organisation scolaire.":
+        'Operational scope of the head discipline director in the school organization.',
+      'Périmètre opérationnel de Directeur de discipline adjoint dans l’organisation scolaire.':
+        'Operational scope of the deputy discipline director in the school organization.',
+      "Périmètre opérationnel de Directeur de discipline adjoint dans l'organisation scolaire.":
+        'Operational scope of the deputy discipline director in the school organization.',
+      'Périmètre opérationnel de Secrétaire dans l’organisation scolaire.':
+        'Operational scope of the secretary in the school organization.',
+      "Périmètre opérationnel de Secrétaire dans l'organisation scolaire.":
+        'Operational scope of the secretary in the school organization.',
+      "Gestion de l'établissement": 'School management',
+      'Gestion de votre section scolaire': 'Management of your school section',
+      'Gestion de Section maternelle': 'Preschool section management',
+      'Gestion de Section primaire': 'Primary section management',
+      'Gestion de Section secondaire': 'Secondary section management',
+      'Organisation des classes': 'Class organization',
+      'Emplois du temps': 'Timetables',
+      'Examens et délibérations': 'Exams and deliberations',
+      'Superviser les responsables': 'Supervise leaders',
+      'Suivi des élèves': 'Student monitoring',
+      'élève(s)': 'student(s)',
+    },
+    ln: {
+      'Espace Directeur financier': 'Esika ya mokambi ya misolo',
+      'Espace Conseiller pédagogique': 'Esika ya mopesi-toli ya mateya',
+      'Espace Directeur des études': 'Esika ya mokambi ya boyekoli',
+      'Espace Directeur de la maternelle': 'Esika ya mokambi ya maternelle',
+      'Espace Directeur du primaire': 'Esika ya mokambi ya primaire',
+      'Espace Préfet des études': 'Esika ya préfet ya kelasi',
+      'Espace Directeur de discipline titulaire': 'Esika ya mokambi monene ya disipilini',
+      'Espace Directeur de discipline adjoint': 'Esika ya mosungi ya disipilini',
+      'Espace Secrétaire': 'Esika ya sekretere',
+      'Périmètre opérationnel de Directeur financier dans l’organisation scolaire.':
+        'Eteni ya mosala ya mokambi ya misolo na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Directeur financier dans l'organisation scolaire.":
+        'Eteni ya mosala ya mokambi ya misolo na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Conseiller pédagogique dans l’organisation scolaire.':
+        'Eteni ya mosala ya mopesi-toli ya mateya na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Conseiller pédagogique dans l'organisation scolaire.":
+        'Eteni ya mosala ya mopesi-toli ya mateya na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Directeur des études dans l’organisation scolaire.':
+        'Eteni ya mosala ya mokambi ya boyekoli na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Directeur des études dans l'organisation scolaire.":
+        'Eteni ya mosala ya mokambi ya boyekoli na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Directeur de la maternelle dans l’organisation scolaire.':
+        'Eteni ya mosala ya mokambi ya maternelle na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Directeur de la maternelle dans l'organisation scolaire.":
+        'Eteni ya mosala ya mokambi ya maternelle na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Directeur du primaire dans l’organisation scolaire.':
+        'Eteni ya mosala ya mokambi ya primaire na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Directeur du primaire dans l'organisation scolaire.":
+        'Eteni ya mosala ya mokambi ya primaire na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Préfet des études dans l’organisation scolaire.':
+        'Eteni ya mosala ya préfet ya kelasi na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Préfet des études dans l'organisation scolaire.":
+        'Eteni ya mosala ya préfet ya kelasi na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Directeur de discipline titulaire dans l’organisation scolaire.':
+        'Eteni ya mosala ya mokambi monene ya disipilini na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Directeur de discipline titulaire dans l'organisation scolaire.":
+        'Eteni ya mosala ya mokambi monene ya disipilini na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Directeur de discipline adjoint dans l’organisation scolaire.':
+        'Eteni ya mosala ya mosungi ya disipilini na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Directeur de discipline adjoint dans l'organisation scolaire.":
+        'Eteni ya mosala ya mosungi ya disipilini na bobongisi ya eteyelo.',
+      'Périmètre opérationnel de Secrétaire dans l’organisation scolaire.':
+        'Eteni ya mosala ya sekretere na bobongisi ya eteyelo.',
+      "Périmètre opérationnel de Secrétaire dans l'organisation scolaire.":
+        'Eteni ya mosala ya sekretere na bobongisi ya eteyelo.',
+      "Gestion de l'établissement": 'Bokambi ya eteyelo',
+      'Gestion de votre section scolaire': 'Bokambi ya eteni na yo',
+      'Gestion de Section maternelle': 'Bokambi ya eteni ya maternelle',
+      'Gestion de Section primaire': 'Bokambi ya eteni ya primaire',
+      'Gestion de Section secondaire': 'Bokambi ya eteni ya secondaire',
+      'Organisation des classes': 'Bobongisi ya bakelasi',
+      'Emplois du temps': 'Programme ya ntango',
+      'Examens et délibérations': 'Mimekano mpe mikano ya suka',
+      'Superviser les responsables': 'Kolandela bakambi',
+      'Suivi des élèves': 'Bolandi ya bayekoli',
+      'élève(s)': 'bayekoli',
+    },
+    sw: {
+      'Espace Directeur financier': 'Eneo la mkurugenzi wa fedha',
+      'Espace Conseiller pédagogique': 'Eneo la mshauri wa ufundishaji',
+      'Espace Directeur des études': 'Eneo la mkurugenzi wa masomo',
+      'Espace Directeur de la maternelle': 'Eneo la mkuu wa chekechea',
+      'Espace Directeur du primaire': 'Eneo la mkuu wa msingi',
+      'Espace Préfet des études': 'Eneo la mkuu wa sekondari',
+      'Espace Directeur de discipline titulaire': 'Eneo la mkurugenzi mkuu wa nidhamu',
+      'Espace Directeur de discipline adjoint': 'Eneo la naibu mkurugenzi wa nidhamu',
+      'Espace Secrétaire': 'Eneo la katibu',
+      'Périmètre opérationnel de Directeur financier dans l’organisation scolaire.':
+        'Wigo wa kazi wa mkurugenzi wa fedha katika mpangilio wa shule.',
+      "Périmètre opérationnel de Directeur financier dans l'organisation scolaire.":
+        'Wigo wa kazi wa mkurugenzi wa fedha katika mpangilio wa shule.',
+      'Périmètre opérationnel de Conseiller pédagogique dans l’organisation scolaire.':
+        'Wigo wa kazi wa mshauri wa ufundishaji katika mpangilio wa shule.',
+      "Périmètre opérationnel de Conseiller pédagogique dans l'organisation scolaire.":
+        'Wigo wa kazi wa mshauri wa ufundishaji katika mpangilio wa shule.',
+      'Périmètre opérationnel de Directeur des études dans l’organisation scolaire.':
+        'Wigo wa kazi wa mkurugenzi wa masomo katika mpangilio wa shule.',
+      "Périmètre opérationnel de Directeur des études dans l'organisation scolaire.":
+        'Wigo wa kazi wa mkurugenzi wa masomo katika mpangilio wa shule.',
+      'Périmètre opérationnel de Directeur de la maternelle dans l’organisation scolaire.':
+        'Wigo wa kazi wa mkuu wa chekechea katika mpangilio wa shule.',
+      "Périmètre opérationnel de Directeur de la maternelle dans l'organisation scolaire.":
+        'Wigo wa kazi wa mkuu wa chekechea katika mpangilio wa shule.',
+      'Périmètre opérationnel de Directeur du primaire dans l’organisation scolaire.':
+        'Wigo wa kazi wa mkuu wa msingi katika mpangilio wa shule.',
+      "Périmètre opérationnel de Directeur du primaire dans l'organisation scolaire.":
+        'Wigo wa kazi wa mkuu wa msingi katika mpangilio wa shule.',
+      'Périmètre opérationnel de Préfet des études dans l’organisation scolaire.':
+        'Wigo wa kazi wa mkuu wa sekondari katika mpangilio wa shule.',
+      "Périmètre opérationnel de Préfet des études dans l'organisation scolaire.":
+        'Wigo wa kazi wa mkuu wa sekondari katika mpangilio wa shule.',
+      'Périmètre opérationnel de Directeur de discipline titulaire dans l’organisation scolaire.':
+        'Wigo wa kazi wa mkurugenzi mkuu wa nidhamu katika mpangilio wa shule.',
+      "Périmètre opérationnel de Directeur de discipline titulaire dans l'organisation scolaire.":
+        'Wigo wa kazi wa mkurugenzi mkuu wa nidhamu katika mpangilio wa shule.',
+      'Périmètre opérationnel de Directeur de discipline adjoint dans l’organisation scolaire.':
+        'Wigo wa kazi wa naibu mkurugenzi wa nidhamu katika mpangilio wa shule.',
+      "Périmètre opérationnel de Directeur de discipline adjoint dans l'organisation scolaire.":
+        'Wigo wa kazi wa naibu mkurugenzi wa nidhamu katika mpangilio wa shule.',
+      'Périmètre opérationnel de Secrétaire dans l’organisation scolaire.':
+        'Wigo wa kazi wa katibu katika mpangilio wa shule.',
+      "Périmètre opérationnel de Secrétaire dans l'organisation scolaire.":
+        'Wigo wa kazi wa katibu katika mpangilio wa shule.',
+      "Gestion de l'établissement": 'Usimamizi wa shule',
+      'Gestion de votre section scolaire': 'Usimamizi wa sehemu yako ya shule',
+      'Gestion de Section maternelle': 'Usimamizi wa sehemu ya chekechea',
+      'Gestion de Section primaire': 'Usimamizi wa sehemu ya msingi',
+      'Gestion de Section secondaire': 'Usimamizi wa sehemu ya sekondari',
+      'Organisation des classes': 'Mpangilio wa madarasa',
+      'Emplois du temps': 'Ratiba',
+      'Examens et délibérations': 'Mitihani na maamuzi',
+      'Superviser les responsables': 'Simamia viongozi',
+      'Suivi des élèves': 'Ufuatiliaji wa wanafunzi',
+      'élève(s)': 'mwanafunzi/wanafunzi',
+    },
+    kg: {
+      'Espace Directeur financier': 'Kisika ya ntwadisi ya mbongo',
+      'Espace Conseiller pédagogique': 'Kisika ya mupesi ya ndongisila',
+      'Espace Directeur des études': 'Kisika ya ntwadisi ya malongi',
+      'Espace Directeur de la maternelle': 'Kisika ya ntwadisi ya maternelle',
+      'Espace Directeur du primaire': 'Kisika ya ntwadisi ya primaire',
+      'Espace Préfet des études': 'Kisika ya mfumu ya secondaire',
+      'Espace Directeur de discipline titulaire': 'Kisika ya ntwadisi ya nene ya discipline',
+      'Espace Directeur de discipline adjoint': 'Kisika ya nsadisi ya discipline',
+      'Espace Secrétaire': 'Kisika ya sekretere',
+      'Périmètre opérationnel de Directeur financier dans l’organisation scolaire.':
+        'Kitini ya kisalu ya ntwadisi ya mbongo na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Directeur financier dans l'organisation scolaire.":
+        'Kitini ya kisalu ya ntwadisi ya mbongo na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Conseiller pédagogique dans l’organisation scolaire.':
+        'Kitini ya kisalu ya mupesi ya ndongisila na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Conseiller pédagogique dans l'organisation scolaire.":
+        'Kitini ya kisalu ya mupesi ya ndongisila na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Directeur des études dans l’organisation scolaire.':
+        'Kitini ya kisalu ya ntwadisi ya malongi na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Directeur des études dans l'organisation scolaire.":
+        'Kitini ya kisalu ya ntwadisi ya malongi na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Directeur de la maternelle dans l’organisation scolaire.':
+        'Kitini ya kisalu ya ntwadisi ya maternelle na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Directeur de la maternelle dans l'organisation scolaire.":
+        'Kitini ya kisalu ya ntwadisi ya maternelle na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Directeur du primaire dans l’organisation scolaire.':
+        'Kitini ya kisalu ya ntwadisi ya primaire na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Directeur du primaire dans l'organisation scolaire.":
+        'Kitini ya kisalu ya ntwadisi ya primaire na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Préfet des études dans l’organisation scolaire.':
+        'Kitini ya kisalu ya mfumu ya secondaire na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Préfet des études dans l'organisation scolaire.":
+        'Kitini ya kisalu ya mfumu ya secondaire na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Directeur de discipline titulaire dans l’organisation scolaire.':
+        'Kitini ya kisalu ya ntwadisi ya nene ya discipline na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Directeur de discipline titulaire dans l'organisation scolaire.":
+        'Kitini ya kisalu ya ntwadisi ya nene ya discipline na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Directeur de discipline adjoint dans l’organisation scolaire.':
+        'Kitini ya kisalu ya nsadisi ya discipline na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Directeur de discipline adjoint dans l'organisation scolaire.":
+        'Kitini ya kisalu ya nsadisi ya discipline na kuyidika ya nzo-nkanda.',
+      'Périmètre opérationnel de Secrétaire dans l’organisation scolaire.':
+        'Kitini ya kisalu ya sekretere na kuyidika ya nzo-nkanda.',
+      "Périmètre opérationnel de Secrétaire dans l'organisation scolaire.":
+        'Kitini ya kisalu ya sekretere na kuyidika ya nzo-nkanda.',
+      "Gestion de l'établissement": 'Kutwadisa nzo-nkanda',
+      'Gestion de votre section scolaire': 'Kutwadisa kitini na nge',
+      'Gestion de Section maternelle': 'Kutwadisa kitini ya maternelle',
+      'Gestion de Section primaire': 'Kutwadisa kitini ya primaire',
+      'Gestion de Section secondaire': 'Kutwadisa kitini ya secondaire',
+      'Organisation des classes': 'Kuyidika bakela',
+      'Emplois du temps': 'Programme ya ntangu',
+      'Examens et délibérations': 'Mimekano mpe mikanu',
+      'Superviser les responsables': 'Landa bantwadisi',
+      'Suivi des élèves': 'Kulanda balongoki',
+      'élève(s)': 'balongoki',
+    },
+    lua: {
+      'Espace Directeur financier': 'Tshitupa tshia mukokeshi wa makuta',
+      'Espace Conseiller pédagogique': 'Tshitupa tshia mufundi wa malu a dilonga',
+      'Espace Directeur des études': 'Tshitupa tshia mukokeshi wa dilonga',
+      'Espace Directeur de la maternelle': 'Tshitupa tshia mukokeshi wa maternelle',
+      'Espace Directeur du primaire': 'Tshitupa tshia mukokeshi wa primaire',
+      'Espace Préfet des études': 'Tshitupa tshia mukokeshi wa secondaire',
+      'Espace Directeur de discipline titulaire': 'Tshitupa tshia mukokeshi munene wa disiplina',
+      'Espace Directeur de discipline adjoint': 'Tshitupa tshia mukuatshishi wa disiplina',
+      'Espace Secrétaire': 'Tshitupa tshia secretaire',
+      'Périmètre opérationnel de Directeur financier dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mukokeshi wa makuta mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Directeur financier dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mukokeshi wa makuta mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Conseiller pédagogique dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mufundi wa malu a dilonga mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Conseiller pédagogique dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mufundi wa malu a dilonga mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Directeur des études dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mukokeshi wa dilonga mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Directeur des études dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mukokeshi wa dilonga mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Directeur de la maternelle dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mukokeshi wa maternelle mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Directeur de la maternelle dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mukokeshi wa maternelle mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Directeur du primaire dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mukokeshi wa primaire mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Directeur du primaire dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mukokeshi wa primaire mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Préfet des études dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mukokeshi wa secondaire mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Préfet des études dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mukokeshi wa secondaire mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Directeur de discipline titulaire dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mukokeshi munene wa disiplina mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Directeur de discipline titulaire dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mukokeshi munene wa disiplina mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Directeur de discipline adjoint dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia mukuatshishi wa disiplina mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Directeur de discipline adjoint dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia mukuatshishi wa disiplina mu kulongolola kua tulasa.',
+      'Périmètre opérationnel de Secrétaire dans l’organisation scolaire.':
+        'Dibanga dia mudimu dia secretaire mu kulongolola kua tulasa.',
+      "Périmètre opérationnel de Secrétaire dans l'organisation scolaire.":
+        'Dibanga dia mudimu dia secretaire mu kulongolola kua tulasa.',
+      "Gestion de l'établissement": 'Kulombola tulasa',
+      'Gestion de votre section scolaire': 'Kulombola dibanga diebe',
+      'Gestion de Section maternelle': 'Kulombola dibanga dia maternelle',
+      'Gestion de Section primaire': 'Kulombola dibanga dia primaire',
+      'Gestion de Section secondaire': 'Kulombola dibanga dia secondaire',
+      'Organisation des classes': 'Kulongolola tulasa',
+      'Emplois du temps': 'Programme wa diba',
+      'Examens et délibérations': 'Mekalu ne mikanu',
+      'Superviser les responsables': 'Kengela bakokeshi',
+      'Suivi des élèves': 'Kulonda bayidi',
+      'élève(s)': 'bayidi',
+    },
+  }
+
+  Object.entries(governanceDynamicExtensions).forEach(([language, translations]) => {
     Object.assign(dictionaries[language], translations)
   })
 
@@ -2521,6 +3172,7 @@
       'Rechercher': 'Search',
       'Modifier': 'Edit',
       'Identifiants': 'Credentials',
+      'Modification réservée': 'Editing restricted',
       'Aucun compte trouvé': 'No account found',
       'Statut': 'Status',
       'Actif': 'Active',
@@ -2597,6 +3249,7 @@
       'Rechercher': 'Koluka',
       'Modifier': 'Kobongisa',
       'Identifiants': 'Ba identifiants',
+      'Modification réservée': 'Bobongisi epekisami',
       'Aucun compte trouvé': 'Konti moko te emonani',
       'Statut': 'Ezaleli',
       'Actif': 'Ezali kosala',
@@ -2654,6 +3307,7 @@
       'Rechercher': 'Tafuta',
       'Modifier': 'Hariri',
       'Identifiants': 'Vitambulisho',
+      'Modification réservée': 'Uhariri umezuiwa',
       'Aucun compte trouvé': 'Hakuna akaunti iliyopatikana',
       'Statut': 'Hali',
       'Actif': 'Inatumika',
@@ -2700,6 +3354,7 @@
       'Rechercher': 'Sosa',
       'Modifier': 'Sobika',
       'Identifiants': 'Ba identifiants',
+      'Modification réservée': 'Kusobika kele ya bantu ya nswa',
       'Aucun compte trouvé': 'Konti kele ve',
       'Statut': 'Mutindu',
       'Actif': 'Ke sala',
@@ -2746,6 +3401,7 @@
       'Rechercher': 'Kusaka',
       'Modifier': 'Shintulula',
       'Identifiants': 'Identifiants',
+      'Modification réservée': 'Kushintulula kudi kwa bantu ba nswa',
       'Aucun compte trouvé': 'Compte kayena',
       'Statut': 'Muaba',
       'Actif': 'Udi wenza',
@@ -2768,6 +3424,843 @@
     Object.assign(dictionaries[language], translations)
   })
 
+  const pageHeaderAndAccountComplements = {
+    en: {
+      'Créez les comptes et gérez les accès des utilisateurs.':
+        'Create accounts and manage user access.',
+      'Créez les matières puis assignez-les aux classes et aux enseignants.':
+        'Create subjects, then assign them to classes and teachers.',
+      'Organisez les classes, leurs élèves, leurs matières et leurs enseignants.':
+        'Organize classes, their students, subjects and teachers.',
+      'Consultez les dossiers des élèves et gérez leur parcours scolaire.':
+        'View student records and manage their school path.',
+      'Gérez les enseignants, leurs cours, leurs classes et leurs activités.':
+        'Manage teachers, their courses, classes and activities.',
+      'Saisissez, consultez et analysez les résultats scolaires.':
+        'Enter, view and analyze school results.',
+      'Générez et consultez les bulletins des élèves.': 'Generate and view student report cards.',
+      'Planifiez les examens et consultez leurs résultats.': 'Plan exams and view their results.',
+      'Planifiez les événements et les activités de l’année scolaire.':
+        'Plan events and activities for the school year.',
+      "Planifiez les événements et les activités de l'année scolaire.":
+        'Plan events and activities for the school year.',
+      'Configurez et suivez les périodes de l’année scolaire.':
+        'Configure and track school-year periods.',
+      "Configurez et suivez les périodes de l'année scolaire.":
+        'Configure and track school-year periods.',
+      'Organisez et consultez les horaires de cours.': 'Organize and view class schedules.',
+      'Suivez les incidents, les sanctions et les mesures disciplinaires.':
+        'Track incidents, sanctions and disciplinary measures.',
+      'Suivez les frais scolaires, les paiements et les rapports financiers.':
+        'Track school fees, payments and financial reports.',
+      'Échangez des messages avec les membres de la communauté scolaire.':
+        'Exchange messages with members of the school community.',
+      'Consultez et mettez à jour les informations du profil.':
+        'View and update profile information.',
+      'Configurez les préférences et les règles de fonctionnement.':
+        'Configure preferences and operating rules.',
+      'Consultez les indicateurs et générez les rapports de suivi.':
+        'View indicators and generate monitoring reports.',
+      'Consultez les informations essentielles et gérez vos activités.':
+        'View key information and manage your activities.',
+      'Mettez à jour les informations puis enregistrez vos modifications.':
+        'Update the information, then save your changes.',
+      'Analysez les données disponibles et consultez les indicateurs détaillés.':
+        'Analyze available data and view detailed indicators.',
+      'Aucune classe enregistrée dans cet établissement': 'No class registered in this school',
+      'Créer votre première classe': 'Create your first class',
+      'Enseignants': 'Teachers',
+      'Gérez le corps professoral de l’établissement': 'Manage the teaching staff',
+      "Gérez le corps professoral de l'établissement": 'Manage the teaching staff',
+      'Nouvel enseignant': 'New teacher',
+      'Total enseignants': 'Total teachers',
+      'Actifs': 'Active',
+      'Qualifiés': 'Qualified',
+      'Heures/semaine': 'Hours/week',
+      'Nom, prénom, matricule...': 'Last name, first name, employee no...',
+      'Congé': 'On leave',
+      'Terminé': 'Terminated',
+      'Qualification non renseignée': 'Qualification not provided',
+      'Profil': 'Profile',
+      'Aucun enseignant trouvé': 'No teacher found',
+      'Ajouter un enseignant': 'Add a teacher',
+      'Aucun enseignant ne correspond aux critères': 'No teacher matches the criteria',
+      'Ajouter l’enseignant': 'Add teacher',
+      "Ajouter l'enseignant": 'Add teacher',
+      'Nouvel enseignant': 'New teacher',
+      'Ajoutez un enseignant à l’établissement': 'Add a teacher to the school',
+      "Ajoutez un enseignant à l'établissement": 'Add a teacher to the school',
+      "Date d'embauche *": 'Hire date *',
+      'Maintenez Ctrl/Cmd pour sélectionner plusieurs matières':
+        'Hold Ctrl/Cmd to select multiple subjects',
+      'Note importante': 'Important note',
+      "Un compte utilisateur sera automatiquement créé pour l'enseignant":
+        'A user account will automatically be created for the teacher',
+      "Les identifiants de connexion seront envoyés à l'adresse email fournie":
+        'Login credentials will be sent to the provided email address',
+      "L'enseignant pourra accéder à ses classes et matières après assignation":
+        'The teacher will be able to access classes and subjects after assignment',
+      'Exemple de numéro employé': 'Employee number example',
+      'Généré automatiquement lors de la création': 'Generated automatically during creation',
+      'Matières enseignées': 'Taught subjects',
+      'Gérez les matières de l’établissement': 'Manage the school subjects',
+      "Gérez les matières de l'établissement": 'Manage the school subjects',
+      'Référentiel national': 'National catalogue',
+      'Assigner une matière': 'Assign a subject',
+      'Total matières': 'Total subjects',
+      'Matières assignées': 'Assigned subjects',
+      'Coefficient moyen': 'Average coefficient',
+      'Classes équipées': 'Classes covered',
+      'Nom, code, description...': 'Name, code, description...',
+      'Classes assignées': 'Assigned classes',
+      "Aucune matière n'est encore assignée dans cet établissement":
+        'No subject has been assigned in this school yet',
+      'Assigner une matière du référentiel national': 'Assign a subject from the national catalogue',
+      'Aucune matière ne correspond aux critères': 'No subject matches the criteria',
+      'Référentiel national des matières': 'National subject catalogue',
+      'Consultez les matières officielles et leurs paramètres recommandés':
+        'View official subjects and their recommended settings',
+      'Rechercher par code, nom, niveau ou option...': 'Search by code, name, level or option...',
+      'Aucun programme de classe configuré.': 'No class program configured.',
+      'Aucune matière ne correspond à cette recherche.': 'No subject matches this search.',
+      'Initialiser RDC/DAS': 'Initialize DRC/DAS',
+      'Total classes': 'Total classes',
+      'Classes actives': 'Active classes',
+      'Moyenne/ classe': 'Average/class',
+      'Taux occupation': 'Occupancy rate',
+      'Enseignant:': 'Teacher:',
+      'Aucune classe trouvée': 'No class found',
+      'Cette liste provient uniquement des classes existantes de votre établissement.':
+        'This list only comes from existing classes in your school.',
+      'La classe absente sera créée une seule fois. Après 50 élèves, la section B, puis C, sera ouverte automatiquement.':
+        'The missing class will be created only once. After 50 students, section B, then C, will open automatically.',
+      'Père': 'Father',
+      'Mère': 'Mother',
+      'Tutrice': 'Female guardian',
+    },
+    ln: {
+      'Créez les comptes et gérez les accès des utilisateurs.':
+        'Sala bakonti mpe tambwisa bokoti ya basaleli.',
+      'Créez les matières puis assignez-les aux classes et aux enseignants.':
+        'Sala mateya mpe pesa yango na bakelasi mpe balakisi.',
+      'Organisez les classes, leurs élèves, leurs matières et leurs enseignants.':
+        'Bongisa bakelasi, bayekoli, mateya mpe balakisi na yango.',
+      'Consultez les dossiers des élèves et gérez leur parcours scolaire.':
+        'Tala mikanda ya bayekoli mpe tambwisa nzela na bango ya kelasi.',
+      'Gérez les enseignants, leurs cours, leurs classes et leurs activités.':
+        'Tambwisa balakisi, mateya, bakelasi mpe misala na bango.',
+      'Saisissez, consultez et analysez les résultats scolaires.':
+        'Kotisa, tala mpe sekola mbano ya kelasi.',
+      'Générez et consultez les bulletins des élèves.': 'Bimisa mpe tala bulletins ya bayekoli.',
+      'Planifiez les examens et consultez leurs résultats.': 'Bongisa mimekano mpe tala mbano na yango.',
+      'Planifiez les événements et les activités de l’année scolaire.':
+        'Bongisa makambo mpe misala ya mbula ya kelasi.',
+      "Planifiez les événements et les activités de l'année scolaire.":
+        'Bongisa makambo mpe misala ya mbula ya kelasi.',
+      'Configurez et suivez les périodes de l’année scolaire.':
+        'Bongisa mpe landa bileko ya mbula ya kelasi.',
+      "Configurez et suivez les périodes de l'année scolaire.":
+        'Bongisa mpe landa bileko ya mbula ya kelasi.',
+      'Organisez et consultez les horaires de cours.': 'Bongisa mpe tala programme ya mateya.',
+      'Suivez les incidents, les sanctions et les mesures disciplinaires.':
+        'Landa makambo, bitumbu mpe mikano ya disipilini.',
+      'Suivez les frais scolaires, les paiements et les rapports financiers.':
+        'Landa mbongo ya kelasi, bafuti mpe balapolo ya misolo.',
+      'Échangez des messages avec les membres de la communauté scolaire.':
+        'Tindelanani bansango na bato ya eteyelo.',
+      'Consultez et mettez à jour les informations du profil.':
+        'Tala mpe bongisa makambo ya profil.',
+      'Configurez les préférences et les règles de fonctionnement.':
+        'Bongisa maponi mpe mibeko ya mosala.',
+      'Consultez les indicateurs et générez les rapports de suivi.':
+        'Tala bilembo mpe bimisa balapolo ya bolandi.',
+      'Consultez les informations essentielles et gérez vos activités.':
+        'Tala makambo ya ntina mpe tambwisa misala na yo.',
+      'Mettez à jour les informations puis enregistrez vos modifications.':
+        'Bongisa makambo mpe bomba mbongwana.',
+      'Analysez les données disponibles et consultez les indicateurs détaillés.':
+        'Sekola ba données oyo ezali mpe tala bilembo na bozindo.',
+      'Aucune classe enregistrée dans cet établissement': 'Kelasi moko te ekomami na eteyelo oyo',
+      'Créer votre première classe': 'Sala kelasi na yo ya liboso',
+      'Enseignants': 'Balakisi',
+      'Gérez le corps professoral de l’établissement': 'Tambwisa lisanga ya balakisi',
+      "Gérez le corps professoral de l'établissement": 'Tambwisa lisanga ya balakisi',
+      'Nouvel enseignant': 'Molakisi ya sika',
+      'Total enseignants': 'Motango ya balakisi',
+      'Actifs': 'Bazali kosala',
+      'Qualifiés': 'Bazali na diplome',
+      'Heures/semaine': 'Bangonga/poso',
+      'Nom, prénom, matricule...': 'Nkombo, prenom, matricule...',
+      'Congé': 'Konje',
+      'Terminé': 'Esili',
+      'Qualification non renseignée': 'Qualification etondisami te',
+      'Profil': 'Profil',
+      'Aucun enseignant trouvé': 'Molakisi moko te amonani',
+      'Ajouter un enseignant': 'Bakisa molakisi',
+      'Aucun enseignant ne correspond aux critères': 'Molakisi moko te akokani na ba critère',
+      'Ajouter l’enseignant': 'Bakisa molakisi',
+      "Ajouter l'enseignant": 'Bakisa molakisi',
+      'Ajoutez un enseignant à l’établissement': 'Bakisa molakisi na eteyelo',
+      "Ajoutez un enseignant à l'établissement": 'Bakisa molakisi na eteyelo',
+      "Date d'embauche *": 'Mokolo ya kobanda mosala *',
+      'Maintenez Ctrl/Cmd pour sélectionner plusieurs matières':
+        'Simbá Ctrl/Cmd mpo na kopona mateya ebele',
+      'Note importante': 'Liyebisi ya ntina',
+      "Un compte utilisateur sera automatiquement créé pour l'enseignant":
+        'Konti ya mosaleli ekosalema yango moko mpo na molakisi',
+      "Les identifiants de connexion seront envoyés à l'adresse email fournie":
+        'Ba identifiants ekotindama na email oyo epesami',
+      "L'enseignant pourra accéder à ses classes et matières après assignation":
+        'Molakisi akokota na bakelasi mpe mateya na ye sima ya assignation',
+      'Exemple de numéro employé': 'Ndakisa ya nimero ya mosali',
+      'Généré automatiquement lors de la création': 'Esalemaka yango moko tango ya kosala',
+      'Matières enseignées': 'Mateya oyo eteyami',
+      'Gérez les matières de l’établissement': 'Tambwisa mateya ya eteyelo',
+      "Gérez les matières de l'établissement": 'Tambwisa mateya ya eteyelo',
+      'Référentiel national': 'Mokanda ya ekolo',
+      'Assigner une matière': 'Pesa liteya',
+      'Total matières': 'Motango ya mateya',
+      'Matières assignées': 'Mateya epesami',
+      'Coefficient moyen': 'Coefficient ya moyenne',
+      'Classes équipées': 'Bakelasi oyo ezali na mateya',
+      'Nom, code, description...': 'Nkombo, code, ndimbola...',
+      'Classes assignées': 'Bakelasi epesami',
+      "Aucune matière n'est encore assignée dans cet établissement":
+        'Liteya moko te epesami naino na eteyelo oyo',
+      'Assigner une matière du référentiel national': 'Pesa liteya ya mokanda ya ekolo',
+      'Aucune matière ne correspond aux critères': 'Liteya moko te ekokani na ba critère',
+      'Référentiel national des matières': 'Mokanda ya ekolo ya mateya',
+      'Consultez les matières officielles et leurs paramètres recommandés':
+        'Tala mateya ya officiel mpe ba paramètres oyo epesami.',
+      'Rechercher par code, nom, niveau ou option...': 'Luka na code, nkombo, niveau to option...',
+      'Aucun programme de classe configuré.': 'Programme ya kelasi moko te ebongisami.',
+      'Aucune matière ne correspond à cette recherche.': 'Liteya moko te ekokani na boluki oyo.',
+      'Initialiser RDC/DAS': 'Bandisa RDC/DAS',
+      'Total classes': 'Motango ya bakelasi',
+      'Classes actives': 'Bakelasi oyo ezali kosala',
+      'Moyenne/ classe': 'Mwayene/kelasi',
+      'Taux occupation': 'Taux ya kotonda',
+      'Enseignant:': 'Molakisi:',
+      'Aucune classe trouvée': 'Kelasi moko te emonani',
+      'Cette liste provient uniquement des classes existantes de votre établissement.':
+        'Liste oyo ewuti kaka na bakelasi oyo ezali na eteyelo na yo.',
+      'La classe absente sera créée une seule fois. Après 50 élèves, la section B, puis C, sera ouverte automatiquement.':
+        'Kelasi oyo ezangi ekosalema kaka mbala moko. Sima ya bayekoli 50, eteni B, sima C, ekofungwama yango moko.',
+      'Père': 'Tata',
+      'Mère': 'Mama',
+      'Tutrice': 'Mobateli mwasi',
+    },
+    sw: {
+      'Créez les comptes et gérez les accès des utilisateurs.':
+        'Unda akaunti na simamia ufikiaji wa watumiaji.',
+      'Créez les matières puis assignez-les aux classes et aux enseignants.':
+        'Unda masomo kisha yapangie madarasa na walimu.',
+      'Organisez les classes, leurs élèves, leurs matières et leurs enseignants.':
+        'Panga madarasa, wanafunzi, masomo na walimu wake.',
+      'Consultez les dossiers des élèves et gérez leur parcours scolaire.':
+        'Tazama faili za wanafunzi na simamia safari yao ya shule.',
+      'Gérez les enseignants, leurs cours, leurs classes et leurs activités.':
+        'Simamia walimu, masomo, madarasa na shughuli zao.',
+      'Saisissez, consultez et analysez les résultats scolaires.':
+        'Ingiza, tazama na chambua matokeo ya shule.',
+      'Générez et consultez les bulletins des élèves.': 'Tengeneza na tazama ripoti za wanafunzi.',
+      'Planifiez les examens et consultez leurs résultats.': 'Panga mitihani na tazama matokeo yake.',
+      'Planifiez les événements et les activités de l’année scolaire.':
+        'Panga matukio na shughuli za mwaka wa shule.',
+      "Planifiez les événements et les activités de l'année scolaire.":
+        'Panga matukio na shughuli za mwaka wa shule.',
+      'Configurez et suivez les périodes de l’année scolaire.':
+        'Sanidi na fuatilia vipindi vya mwaka wa shule.',
+      "Configurez et suivez les périodes de l'année scolaire.":
+        'Sanidi na fuatilia vipindi vya mwaka wa shule.',
+      'Organisez et consultez les horaires de cours.': 'Panga na tazama ratiba za masomo.',
+      'Suivez les incidents, les sanctions et les mesures disciplinaires.':
+        'Fuatilia matukio, adhabu na hatua za nidhamu.',
+      'Suivez les frais scolaires, les paiements et les rapports financiers.':
+        'Fuatilia ada, malipo na ripoti za fedha.',
+      'Échangez des messages avec les membres de la communauté scolaire.':
+        'Badilishana ujumbe na wanajamii wa shule.',
+      'Consultez et mettez à jour les informations du profil.':
+        'Tazama na sasisha taarifa za wasifu.',
+      'Configurez les préférences et les règles de fonctionnement.':
+        'Sanidi mapendeleo na kanuni za uendeshaji.',
+      'Consultez les indicateurs et générez les rapports de suivi.':
+        'Tazama viashiria na tengeneza ripoti za ufuatiliaji.',
+      'Consultez les informations essentielles et gérez vos activités.':
+        'Tazama taarifa muhimu na simamia shughuli zako.',
+      'Mettez à jour les informations puis enregistrez vos modifications.':
+        'Sasisha taarifa kisha hifadhi mabadiliko.',
+      'Analysez les données disponibles et consultez les indicateurs détaillés.':
+        'Chambua data iliyopo na tazama viashiria vya kina.',
+      'Aucune classe enregistrée dans cet établissement': 'Hakuna darasa lililosajiliwa katika shule hii',
+      'Créer votre première classe': 'Unda darasa lako la kwanza',
+      'Enseignants': 'Walimu',
+      'Gérez le corps professoral de l’établissement': 'Simamia wafanyakazi wa kufundisha',
+      "Gérez le corps professoral de l'établissement": 'Simamia wafanyakazi wa kufundisha',
+      'Nouvel enseignant': 'Mwalimu mpya',
+      'Total enseignants': 'Jumla ya walimu',
+      'Actifs': 'Hai',
+      'Qualifiés': 'Wenye sifa',
+      'Heures/semaine': 'Saa/wiki',
+      'Nom, prénom, matricule...': 'Jina, jina la kwanza, namba...',
+      'Congé': 'Likizo',
+      'Terminé': 'Amesitishwa',
+      'Qualification non renseignée': 'Sifa hazijawekwa',
+      'Profil': 'Wasifu',
+      'Aucun enseignant trouvé': 'Hakuna mwalimu aliyepatikana',
+      'Ajouter un enseignant': 'Ongeza mwalimu',
+      'Aucun enseignant ne correspond aux critères': 'Hakuna mwalimu anayelingana na vigezo',
+      'Ajouter l’enseignant': 'Ongeza mwalimu',
+      "Ajouter l'enseignant": 'Ongeza mwalimu',
+      'Ajoutez un enseignant à l’établissement': 'Ongeza mwalimu katika shule',
+      "Ajoutez un enseignant à l'établissement": 'Ongeza mwalimu katika shule',
+      "Date d'embauche *": 'Tarehe ya kuajiriwa *',
+      'Maintenez Ctrl/Cmd pour sélectionner plusieurs matières':
+        'Shikilia Ctrl/Cmd kuchagua masomo mengi',
+      'Note importante': 'Dokezo muhimu',
+      "Un compte utilisateur sera automatiquement créé pour l'enseignant":
+        'Akaunti ya mtumiaji itaundwa kiotomatiki kwa mwalimu',
+      "Les identifiants de connexion seront envoyés à l'adresse email fournie":
+        'Vitambulisho vya kuingia vitatumwa kwa barua pepe iliyotolewa',
+      "L'enseignant pourra accéder à ses classes et matières après assignation":
+        'Mwalimu ataweza kufikia madarasa na masomo baada ya kupangiwa',
+      'Exemple de numéro employé': 'Mfano wa namba ya mfanyakazi',
+      'Généré automatiquement lors de la création': 'Hutengenezwa kiotomatiki wakati wa kuunda',
+      'Matières enseignées': 'Masomo yanayofundishwa',
+      'Gérez les matières de l’établissement': 'Simamia masomo ya shule',
+      "Gérez les matières de l'établissement": 'Simamia masomo ya shule',
+      'Référentiel national': 'Katalogi ya taifa',
+      'Assigner une matière': 'Pangia somo',
+      'Total matières': 'Jumla ya masomo',
+      'Matières assignées': 'Masomo yaliyopangiwa',
+      'Coefficient moyen': 'Mgawo wa wastani',
+      'Classes équipées': 'Madarasa yaliyofunikwa',
+      'Nom, code, description...': 'Jina, msimbo, maelezo...',
+      'Classes assignées': 'Madarasa yaliyopangiwa',
+      "Aucune matière n'est encore assignée dans cet établissement":
+        'Hakuna somo lililopangiwa katika shule hii bado',
+      'Assigner une matière du référentiel national': 'Pangia somo kutoka katalogi ya taifa',
+      'Aucune matière ne correspond aux critères': 'Hakuna somo linalolingana na vigezo',
+      'Référentiel national des matières': 'Katalogi ya taifa ya masomo',
+      'Consultez les matières officielles et leurs paramètres recommandés':
+        'Tazama masomo rasmi na mipangilio inayopendekezwa.',
+      'Rechercher par code, nom, niveau ou option...': 'Tafuta kwa msimbo, jina, ngazi au chaguo...',
+      'Aucun programme de classe configuré.': 'Hakuna programu ya darasa iliyosanidiwa.',
+      'Aucune matière ne correspond à cette recherche.': 'Hakuna somo linalolingana na utafutaji huu.',
+      'Initialiser RDC/DAS': 'Anzisha RDC/DAS',
+      'Total classes': 'Jumla ya madarasa',
+      'Classes actives': 'Madarasa yanayotumika',
+      'Moyenne/ classe': 'Wastani/darasa',
+      'Taux occupation': 'Kiwango cha kujazwa',
+      'Enseignant:': 'Mwalimu:',
+      'Aucune classe trouvée': 'Hakuna darasa lililopatikana',
+      'Cette liste provient uniquement des classes existantes de votre établissement.':
+        'Orodha hii inatoka tu kwenye madarasa yaliyopo katika shule yako.',
+      'La classe absente sera créée une seule fois. Après 50 élèves, la section B, puis C, sera ouverte automatiquement.':
+        'Darasa lisilokuwepo litawezeshwa mara moja tu. Baada ya wanafunzi 50, sehemu B, kisha C, itafunguliwa kiotomatiki.',
+      'Père': 'Baba',
+      'Mère': 'Mama',
+      'Tutrice': 'Mlezi wa kike',
+    },
+    kg: {
+      'Créez les comptes et gérez les accès des utilisateurs.':
+        'Sala bakonti mpe twadisa kukota ya bansadisi.',
+      'Créez les matières puis assignez-les aux classes et aux enseignants.':
+        'Sala malongi mpe pesa yo na bakela mpe balongi.',
+      'Organisez les classes, leurs élèves, leurs matières et leurs enseignants.':
+        'Yidika bakela, balongoki, malongi mpe balongi na yo.',
+      'Consultez les dossiers des élèves et gérez leur parcours scolaire.':
+        'Tala mikanda ya balongoki mpe twadisa nzila na bo ya kelasi.',
+      'Gérez les enseignants, leurs cours, leurs classes et leurs activités.':
+        'Twadisa balongi, malongi, bakela mpe bisalu na bo.',
+      'Saisissez, consultez et analysez les résultats scolaires.':
+        'Kotisa, tala mpe sekola bambano ya kelasi.',
+      'Générez et consultez les bulletins des élèves.': 'Bimisa mpe tala bulletin ya balongoki.',
+      'Planifiez les examens et consultez leurs résultats.': 'Yidika mimekano mpe tala bambano na yo.',
+      'Planifiez les événements et les activités de l’année scolaire.':
+        'Yidika mambu mpe bisalu ya mvula ya kelasi.',
+      "Planifiez les événements et les activités de l'année scolaire.":
+        'Yidika mambu mpe bisalu ya mvula ya kelasi.',
+      'Configurez et suivez les périodes de l’année scolaire.':
+        'Yidika mpe landa bileko ya mvula ya kelasi.',
+      "Configurez et suivez les périodes de l'année scolaire.":
+        'Yidika mpe landa bileko ya mvula ya kelasi.',
+      'Organisez et consultez les horaires de cours.': 'Yidika mpe tala programme ya malongi.',
+      'Suivez les incidents, les sanctions et les mesures disciplinaires.':
+        'Landa mambu, bitumbu mpe mikanu ya discipline.',
+      'Suivez les frais scolaires, les paiements et les rapports financiers.':
+        'Landa mfutu ya kelasi, bafuti mpe balapolo ya mbongo.',
+      'Échangez des messages avec les membres de la communauté scolaire.':
+        'Tindana nsangu na bantu ya nzo-nkanda.',
+      'Consultez et mettez à jour les informations du profil.':
+        'Tala mpe sobika mambu ya profil.',
+      'Configurez les préférences et les règles de fonctionnement.':
+        'Yidika maponi mpe bansiku ya kisalu.',
+      'Consultez les indicateurs et générez les rapports de suivi.':
+        'Tala bilembo mpe bimisa balapolo ya kulanda.',
+      'Consultez les informations essentielles et gérez vos activités.':
+        'Tala mambu ya mfunu mpe twadisa bisalu na nge.',
+      'Mettez à jour les informations puis enregistrez vos modifications.':
+        'Sobika mambu mpe bumba bansobolo.',
+      'Analysez les données disponibles et consultez les indicateurs détaillés.':
+        'Sekola ba données yina kele mpe tala bilembo na bozindo.',
+      'Aucune classe enregistrée dans cet établissement': 'Kadi kelasi ve ya kusonama na nzo-nkanda yayi',
+      'Créer votre première classe': 'Sala kelasi na nge ya ntete',
+      'Enseignants': 'Balongi',
+      'Gérez le corps professoral de l’établissement': 'Twadisa kimvuka ya balongi',
+      "Gérez le corps professoral de l'établissement": 'Twadisa kimvuka ya balongi',
+      'Nouvel enseignant': 'Longi ya mpa',
+      'Total enseignants': 'Ntalu ya balongi',
+      'Actifs': 'Ke sala',
+      'Qualifiés': 'Badi na diplome',
+      'Heures/semaine': 'Bangunga/poso',
+      'Nom, prénom, matricule...': 'Nkumbu, prenom, matricule...',
+      'Congé': 'Konje',
+      'Terminé': 'Me sukila',
+      'Qualification non renseignée': 'Qualification me tondisama ve',
+      'Profil': 'Profil',
+      'Aucun enseignant trouvé': 'Longi moko ve monanaka',
+      'Ajouter un enseignant': 'Yika longi',
+      'Aucun enseignant ne correspond aux critères': 'Longi moko ve me fwanana na ba critère',
+      'Ajouter l’enseignant': 'Yika longi',
+      "Ajouter l'enseignant": 'Yika longi',
+      'Ajoutez un enseignant à l’établissement': 'Yika longi na nzo-nkanda',
+      "Ajoutez un enseignant à l'établissement": 'Yika longi na nzo-nkanda',
+      "Date d'embauche *": 'Dati ya kubanda kisalu *',
+      'Maintenez Ctrl/Cmd pour sélectionner plusieurs matières':
+        'Kanga Ctrl/Cmd sambu na kusola malongi mingi',
+      'Note importante': 'Nsangu ya mfunu',
+      "Un compte utilisateur sera automatiquement créé pour l'enseignant":
+        'Konti ya nsadisi tasalama yo mosi sambu na longi',
+      "Les identifiants de connexion seront envoyés à l'adresse email fournie":
+        'Ba identifiants tatindama na email yina me pesama',
+      "L'enseignant pourra accéder à ses classes et matières après assignation":
+        'Longi takota na bakela mpe malongi na yandi na nima ya assignation',
+      'Exemple de numéro employé': 'Mbandu ya nimero ya kisadi',
+      'Généré automatiquement lors de la création': 'Ke salamaka yo mosi na ntangu ya kusala',
+      'Matières enseignées': 'Malongi yina kelongama',
+      'Gérez les matières de l’établissement': 'Twadisa malongi ya nzo-nkanda',
+      "Gérez les matières de l'établissement": 'Twadisa malongi ya nzo-nkanda',
+      'Référentiel national': 'Mukanda ya ekolo',
+      'Assigner une matière': 'Pesa dilongi',
+      'Total matières': 'Ntalu ya malongi',
+      'Matières assignées': 'Malongi me pesama',
+      'Coefficient moyen': 'Coefficient ya moyenne',
+      'Classes équipées': 'Bakela yina kele na malongi',
+      'Nom, code, description...': 'Nkumbu, code, ntendula...',
+      'Classes assignées': 'Bakela me pesama',
+      "Aucune matière n'est encore assignée dans cet établissement":
+        'Dilongi moko ve me pesama ntete na nzo-nkanda yayi',
+      'Assigner une matière du référentiel national': 'Pesa dilongi ya mukanda ya ekolo',
+      'Aucune matière ne correspond aux critères': 'Dilongi moko ve me fwanana na ba critère',
+      'Référentiel national des matières': 'Mukanda ya ekolo ya malongi',
+      'Consultez les matières officielles et leurs paramètres recommandés':
+        'Tala malongi ya officiel mpe ba paramètres ya kupesama.',
+      'Rechercher par code, nom, niveau ou option...': 'Sosa na code, nkumbu, niveau to option...',
+      'Aucun programme de classe configuré.': 'Programme ya kelasi moko ve me yidika.',
+      'Aucune matière ne correspond à cette recherche.': 'Dilongi moko ve me fwanana na kusosa yayi.',
+      'Initialiser RDC/DAS': 'Bandisa RDC/DAS',
+      'Total classes': 'Ntalu ya bakela',
+      'Classes actives': 'Bakela ke sala',
+      'Moyenne/ classe': 'Mwayene/kelasi',
+      'Taux occupation': 'Ntalu ya kufuluka',
+      'Enseignant:': 'Longi:',
+      'Aucune classe trouvée': 'Kelasi kele ve',
+      'Cette liste provient uniquement des classes existantes de votre établissement.':
+        'Liste yai me katuka kaka na bakela yina kele na nzo-nkanda na nge.',
+      'La classe absente sera créée une seule fois. Après 50 élèves, la section B, puis C, sera ouverte automatiquement.':
+        'Kelasi yina kele ve tasalama kaka mbala mosi. Na nima ya balongoki 50, kitini B, na nima C, tafunguka yo mosi.',
+      'Père': 'Tata',
+      'Mère': 'Mama',
+      'Tutrice': 'Mubati ya nkento',
+    },
+    lua: {
+      'Créez les comptes et gérez les accès des utilisateurs.':
+        'Bumba mikanda ya bantu ne lombola milowa ya badi basadila.',
+      'Créez les matières puis assignez-les aux classes et aux enseignants.':
+        'Bumba malu a dilonga ne apesha ku tulasa ne balongeshi.',
+      'Organisez les classes, leurs élèves, leurs matières et leurs enseignants.':
+        'Longolola tulasa, bayidi, malu a dilonga ne balongeshi.',
+      'Consultez les dossiers des élèves et gérez leur parcours scolaire.':
+        'Mona mikanda ya bayidi ne lombola njila yabo ya tulasa.',
+      'Gérez les enseignants, leurs cours, leurs classes et leurs activités.':
+        'Lombola balongeshi, malongi, tulasa ne midimu yabo.',
+      'Saisissez, consultez et analysez les résultats scolaires.':
+        'Kotisha, mona ne konka bipeta bia tulasa.',
+      'Générez et consultez les bulletins des élèves.': 'Bimisha ne mona bulletins ya bayidi.',
+      'Planifiez les examens et consultez leurs résultats.': 'Longolola mekalu ne mona bipeta biayo.',
+      'Planifiez les événements et les activités de l’année scolaire.':
+        'Longolola malu ne midimu ya tshidimu tshia tulasa.',
+      "Planifiez les événements et les activités de l'année scolaire.":
+        'Longolola malu ne midimu ya tshidimu tshia tulasa.',
+      'Configurez et suivez les périodes de l’année scolaire.':
+        'Longolola ne londa bipindi bia tshidimu tshia tulasa.',
+      "Configurez et suivez les périodes de l'année scolaire.":
+        'Longolola ne londa bipindi bia tshidimu tshia tulasa.',
+      'Organisez et consultez les horaires de cours.': 'Longolola ne mona programme wa malongi.',
+      'Suivez les incidents, les sanctions et les mesures disciplinaires.':
+        'Londa mambu, bitumbu ne mikanu ya disiplina.',
+      'Suivez les frais scolaires, les paiements et les rapports financiers.':
+        'Londa mfutu ya tulasa, malipa ne miyanda ya makuta.',
+      'Échangez des messages avec les membres de la communauté scolaire.':
+        'Tuma ne amba nsumu ne bantu ba tulasa.',
+      'Consultez et mettez à jour les informations du profil.':
+        'Mona ne shintulula malu a profil.',
+      'Configurez les préférences et les règles de fonctionnement.':
+        'Longolola masungula ne mikenji ya mudimu.',
+      'Consultez les indicateurs et générez les rapports de suivi.':
+        'Mona bilejelu ne bimisha miyanda ya kulonda.',
+      'Consultez les informations essentielles et gérez vos activités.':
+        'Mona malu a mushinga ne lombola midimu yebe.',
+      'Mettez à jour les informations puis enregistrez vos modifications.':
+        'Shintulula malu ne bika banshintululu.',
+      'Analysez les données disponibles et consultez les indicateurs détaillés.':
+        'Konka ba données adiwo ne mona bilejelu bia mu bule.',
+      'Aucune classe enregistrée dans cet établissement': 'Kakuena tulasa tusonama mu tulasa etu',
+      'Créer votre première classe': 'Bumba tulasa tuebe tua kumpala',
+      'Enseignants': 'Balongeshi',
+      'Gérez le corps professoral de l’établissement': 'Lombola tshisumbu tshia balongeshi',
+      "Gérez le corps professoral de l'établissement": 'Lombola tshisumbu tshia balongeshi',
+      'Nouvel enseignant': 'Mulongeshi mupia',
+      'Total enseignants': 'Bungi bua balongeshi',
+      'Actifs': 'Badi basala',
+      'Qualifiés': 'Badi ne diplome',
+      'Heures/semaine': 'Diba/lumingu',
+      'Nom, prénom, matricule...': 'Dina, prenom, matricule...',
+      'Congé': 'Konje',
+      'Terminé': 'Mujikija',
+      'Qualification non renseignée': 'Qualification kayena',
+      'Profil': 'Profil',
+      'Aucun enseignant trouvé': 'Mulongeshi kadi mumonika',
+      'Ajouter un enseignant': 'Yisha mulongeshi',
+      'Aucun enseignant ne correspond aux critères': 'Mulongeshi kadi ufuanangana ne malu asungula',
+      'Ajouter l’enseignant': 'Yisha mulongeshi',
+      "Ajouter l'enseignant": 'Yisha mulongeshi',
+      'Ajoutez un enseignant à l’établissement': 'Yisha mulongeshi ku tulasa',
+      "Ajoutez un enseignant à l'établissement": 'Yisha mulongeshi ku tulasa',
+      "Date d'embauche *": 'Dituku dia kubanda mudimu *',
+      'Maintenez Ctrl/Cmd pour sélectionner plusieurs matières':
+        'Kuata Ctrl/Cmd bua kusungula malu a dilonga a bungi',
+      'Note importante': 'Luyuki lua mushinga',
+      "Un compte utilisateur sera automatiquement créé pour l'enseignant":
+        'Compte wa musadidi udi ubumbibua wawu bua mulongeshi',
+      "Les identifiants de connexion seront envoyés à l'adresse email fournie":
+        'Identifiants ya kulowa idi itumibua ku email mupeshibua',
+      "L'enseignant pourra accéder à ses classes et matières après assignation":
+        'Mulongeshi udi ukoka kulowa mu tulasa ne malu a dilonga pashishe pa assignation',
+      'Exemple de numéro employé': 'Tshilejilu tshia numero wa musadi',
+      'Généré automatiquement lors de la création': 'Udi ubumbibua wawu mu dibumba',
+      'Matières enseignées': 'Malu a dilonga adi alongeshibua',
+      'Gérez les matières de l’établissement': 'Lombola malu a dilonga a tulasa',
+      "Gérez les matières de l'établissement": 'Lombola malu a dilonga a tulasa',
+      'Référentiel national': 'Mukanda wa ditunga',
+      'Assigner une matière': 'Pesha dilonga',
+      'Total matières': 'Bungi bua malu a dilonga',
+      'Matières assignées': 'Malu a dilonga apeshibua',
+      'Coefficient moyen': 'Coefficient wa mwayene',
+      'Classes équipées': 'Tulasa tudi ne malu a dilonga',
+      'Nom, code, description...': 'Dina, code, nlongolodi...',
+      'Classes assignées': 'Tulasa tupeshibua',
+      "Aucune matière n'est encore assignée dans cet établissement":
+        'Kakuena dilonga dipeshibua mu tulasa etu',
+      'Assigner une matière du référentiel national': 'Pesha dilonga dia mukanda wa ditunga',
+      'Aucune matière ne correspond aux critères': 'Kakuena dilonga didi difuanangana ne malu asungula',
+      'Référentiel national des matières': 'Mukanda wa ditunga wa malu a dilonga',
+      'Consultez les matières officielles et leurs paramètres recommandés':
+        'Mona malu a dilonga a officiel ne bipimo bidi bisengelelwa.',
+      'Rechercher par code, nom, niveau ou option...': 'Saka ku code, dina, niveau anyi option...',
+      'Aucun programme de classe configuré.': 'Kakuena programme wa tulasa ulongolodibua.',
+      'Aucune matière ne correspond à cette recherche.': 'Kakuena dilonga didi difuanangana ne kusaka eku.',
+      'Initialiser RDC/DAS': 'Tshintulula RDC/DAS',
+      'Total classes': 'Bungi bua tulasa',
+      'Classes actives': 'Tulasa tudi tusala',
+      'Moyenne/ classe': 'Mwayene/tulasa',
+      'Taux occupation': 'Bungi bua kujala',
+      'Enseignant:': 'Mulongeshi:',
+      'Aucune classe trouvée': 'Kakuena tulasa tumueneka',
+      'Cette liste provient uniquement des classes existantes de votre établissement.':
+        'Liste ewu udi ufuma kaka ku tulasa tudiwo mu tulasa yebe.',
+      'La classe absente sera créée une seule fois. Après 50 élèves, la section B, puis C, sera ouverte automatiquement.':
+        'Tulasa tuditabuja tudi tubumbibua lumue. Pakadi bayidi 50, dibanga B, pashishe C, bidi bifunguka byaku.',
+      'Père': 'Tatu',
+      'Mère': 'Mamu',
+      'Tutrice': 'Mulami mukaji',
+    },
+  }
+
+  Object.entries(pageHeaderAndAccountComplements).forEach(([language, translations]) => {
+    Object.assign(dictionaries[language], translations)
+  })
+
+  const gradesPageExtensions = {
+    en: {
+      'Notes scolaires': 'School grades',
+      'Gestion des notes': 'Grade management',
+      'Gérez les notes des élèves': 'Manage student grades',
+      'Consultez et gérez les notes de vos classes': 'View and manage grades for your classes',
+      'Saisir des notes': 'Enter grades',
+      'Ajouter des notes': 'Add grades',
+      'Import massif': 'Bulk import',
+      'Notes saisies': 'Grades entered',
+      'Notes publiées': 'Published grades',
+      'Publiées': 'Published',
+      'Publiée': 'Published',
+      'Moyenne générale': 'Overall average',
+      'Élèves concernés': 'Students concerned',
+      'Liste des notes': 'Grade list',
+      'Aucune note trouvée': 'No note found',
+      'Saisir les premières notes': 'Enter the first grades',
+    },
+    ln: {
+      'Notes scolaires': 'Banote ya kelasi',
+      'Gestion des notes': 'Bokambi ya banote',
+      'Gérez les notes des élèves': 'Tambwisa banote ya bayekoli',
+      'Consultez et gérez les notes de vos classes': 'Tala mpe tambwisa banote ya bakelasi na yo',
+      'Saisir des notes': 'Kotisa banote',
+      'Ajouter des notes': 'Bakisa banote',
+      'Import massif': 'Kokotisa ebele',
+      'Notes saisies': 'Banote ekotisami',
+      'Notes publiées': 'Banote ebimisami',
+      'Publiées': 'Ebimisami',
+      'Publiée': 'Ebimisami',
+      'Moyenne générale': 'Mwayene ya monene',
+      'Élèves concernés': 'Bayekoli etali',
+      'Liste des notes': 'Liste ya banote',
+      'Aucune note trouvée': 'Note moko te emonani',
+      'Saisir les premières notes': 'Kotisa banote ya liboso',
+    },
+    sw: {
+      'Notes scolaires': 'Alama za shule',
+      'Gestion des notes': 'Usimamizi wa alama',
+      'Gérez les notes des élèves': 'Simamia alama za wanafunzi',
+      'Consultez et gérez les notes de vos classes': 'Tazama na simamia alama za madarasa yako',
+      'Saisir des notes': 'Ingiza alama',
+      'Ajouter des notes': 'Ongeza alama',
+      'Import massif': 'Uingizaji wa wingi',
+      'Notes saisies': 'Alama zilizoingizwa',
+      'Notes publiées': 'Alama zilizochapishwa',
+      'Publiées': 'Zimechapishwa',
+      'Publiée': 'Imechapishwa',
+      'Moyenne générale': 'Wastani wa jumla',
+      'Élèves concernés': 'Wanafunzi husika',
+      'Liste des notes': 'Orodha ya alama',
+      'Aucune note trouvée': 'Hakuna alama iliyopatikana',
+      'Saisir les premières notes': 'Ingiza alama za kwanza',
+    },
+    kg: {
+      'Notes scolaires': 'Banoti ya kelasi',
+      'Gestion des notes': 'Kutambwisa banoti',
+      'Gérez les notes des élèves': 'Tambwisa banoti ya banlongoki',
+      'Consultez et gérez les notes de vos classes': 'Tala mpe tambwisa banoti ya bakalasi na nge',
+      'Saisir des notes': 'Kotisa banoti',
+      'Ajouter des notes': 'Yika banoti',
+      'Import massif': 'Kukotisa mingi',
+      'Notes saisies': 'Banoti me kotisama',
+      'Notes publiées': 'Banoti me basama',
+      'Publiées': 'Me basama',
+      'Publiée': 'Me basama',
+      'Moyenne générale': 'Mwayene ya nene',
+      'Élèves concernés': 'Banlongoki yina metala',
+      'Liste des notes': 'Liste ya banoti',
+      'Aucune note trouvée': 'Noti mosi ve me monana',
+      'Saisir les premières notes': 'Kotisa banoti ya ntete',
+    },
+    lua: {
+      'Notes scolaires': 'Manota a kalasa',
+      'Gestion des notes': 'Bukambi bwa manota',
+      'Gérez les notes des élèves': 'Kamba manota a bayidi',
+      'Consultez et gérez les notes de vos classes': 'Mona ne kamba manota a makalasa ebe',
+      'Saisir des notes': 'Bika manota',
+      'Ajouter des notes': 'Enzela manota',
+      'Import massif': 'Kukotisha kwa bungi',
+      'Notes saisies': 'Manota abikibua',
+      'Notes publiées': 'Manota asambakanyibua',
+      'Publiées': 'Asambakanyibua',
+      'Publiée': 'Asambakanyibua',
+      'Moyenne générale': 'Moyenne wa monene',
+      'Élèves concernés': 'Bayidi badi batangila',
+      'Liste des notes': 'Liste ya manota',
+      'Aucune note trouvée': 'Kakuena nota umueneka',
+      'Saisir les premières notes': 'Bika manota a kumpala',
+    },
+  }
+
+  Object.entries(gradesPageExtensions).forEach(([language, translations]) => {
+    Object.assign(dictionaries[language], translations)
+  })
+
+  const financialPaymentsPageExtensions = {
+    en: {
+      'Paiements': 'Payments',
+      'Gérez tous les paiements de l’établissement': 'Manage all school payments',
+      "Gérez tous les paiements de l'établissement": 'Manage all school payments',
+      'Montant total': 'Total amount',
+      'Paiement moyen': 'Average payment',
+      "Aujourd'hui": 'Today',
+      'Date début': 'Start date',
+      'Date fin': 'End date',
+      'Mode': 'Method',
+      'Type frais': 'Fee type',
+      'Recherche': 'Search',
+      'Élève, reçu...': 'Student, receipt...',
+      'Reçu n°': 'Receipt no.',
+      'Élève': 'Student',
+      'Type': 'Type',
+      'Montant': 'Amount',
+      'Enregistré par': 'Recorded by',
+      'Aucun paiement trouvé': 'No payment found',
+      'Enregistrer le premier paiement': 'Record the first payment',
+      'Par mode de paiement': 'By payment method',
+      'Par type de frais': 'By fee type',
+      'Tendance': 'Trend',
+      'par rapport au mois précédent': 'compared with the previous month',
+      'Espèces': 'Cash',
+      'Virement': 'Bank transfer',
+      'Virement bancaire': 'Bank transfer',
+      'Chèque': 'Cheque',
+      'Carte': 'Card',
+      'Voir reçu': 'View receipt',
+      'Imprimer reçu': 'Print receipt',
+      'Retour': 'Back',
+    },
+    ln: {
+      'Paiements': 'Bafuti',
+      'Gérez tous les paiements de l’établissement': 'Tambwisa bafuti nyonso ya eteyelo',
+      "Gérez tous les paiements de l'établissement": 'Tambwisa bafuti nyonso ya eteyelo',
+      'Montant total': 'Motango mobimba',
+      'Paiement moyen': 'Lifuti ya mwayene',
+      "Aujourd'hui": 'Lelo',
+      'Date début': 'Mokolo ya kobanda',
+      'Date fin': 'Mokolo ya kosuka',
+      'Mode': 'Lolenge',
+      'Type frais': 'Lolenge ya mbongo ya kelasi',
+      'Recherche': 'Boluki',
+      'Élève, reçu...': 'Moyekoli, reçu...',
+      'Reçu n°': 'Reçu n°',
+      'Élève': 'Moyekoli',
+      'Type': 'Lolenge',
+      'Montant': 'Motango',
+      'Enregistré par': 'Ebombami na',
+      'Aucun paiement trouvé': 'Lifuti moko te emonani',
+      'Enregistrer le premier paiement': 'Bomba lifuti ya liboso',
+      'Par mode de paiement': 'Na lolenge ya kofuta',
+      'Par type de frais': 'Na lolenge ya mbongo ya kelasi',
+      'Tendance': 'Nzela',
+      'par rapport au mois précédent': 'soki tokokanisi na sanza eleki',
+      'Espèces': 'Mbongo ya maboko',
+      'Virement': 'Virement bancaire',
+      'Virement bancaire': 'Virement bancaire',
+      'Chèque': 'Chèque',
+      'Carte': 'Carte',
+      'Voir reçu': 'Tala reçu',
+      'Imprimer reçu': 'Imprimer reçu',
+      'Retour': 'Zonga',
+    },
+    sw: {
+      'Paiements': 'Malipo',
+      'Gérez tous les paiements de l’établissement': 'Simamia malipo yote ya shule',
+      "Gérez tous les paiements de l'établissement": 'Simamia malipo yote ya shule',
+      'Montant total': 'Jumla ya kiasi',
+      'Paiement moyen': 'Wastani wa malipo',
+      "Aujourd'hui": 'Leo',
+      'Date début': 'Tarehe ya kuanza',
+      'Date fin': 'Tarehe ya mwisho',
+      'Mode': 'Njia',
+      'Type frais': 'Aina ya ada',
+      'Recherche': 'Tafuta',
+      'Élève, reçu...': 'Mwanafunzi, risiti...',
+      'Reçu n°': 'Risiti namba',
+      'Élève': 'Mwanafunzi',
+      'Type': 'Aina',
+      'Montant': 'Kiasi',
+      'Enregistré par': 'Imesajiliwa na',
+      'Aucun paiement trouvé': 'Hakuna malipo yaliyopatikana',
+      'Enregistrer le premier paiement': 'Sajili malipo ya kwanza',
+      'Par mode de paiement': 'Kwa njia ya malipo',
+      'Par type de frais': 'Kwa aina ya ada',
+      'Tendance': 'Mwelekeo',
+      'par rapport au mois précédent': 'ikilinganishwa na mwezi uliopita',
+      'Espèces': 'Taslimu',
+      'Virement': 'Uhamisho wa benki',
+      'Virement bancaire': 'Uhamisho wa benki',
+      'Chèque': 'Hundi',
+      'Carte': 'Kadi',
+      'Voir reçu': 'Tazama risiti',
+      'Imprimer reçu': 'Chapisha risiti',
+      'Retour': 'Rudi',
+    },
+    kg: {
+      'Paiements': 'Bafuti',
+      'Gérez tous les paiements de l’établissement': 'Tambwisa bafuti nyonso ya sukulu',
+      "Gérez tous les paiements de l'établissement": 'Tambwisa bafuti nyonso ya sukulu',
+      'Montant total': 'Mfunu yonso',
+      'Paiement moyen': 'Mfutu ya mwayene',
+      "Aujourd'hui": 'Bubu',
+      'Date début': 'Kilumbu ya ntete',
+      'Date fin': 'Kilumbu ya nsuka',
+      'Mode': 'Mutindu',
+      'Type frais': 'Mutindu ya mfutu',
+      'Recherche': 'Kusosa',
+      'Élève, reçu...': 'Nlongoki, reçu...',
+      'Reçu n°': 'Reçu n°',
+      'Élève': 'Nlongoki',
+      'Type': 'Mutindu',
+      'Montant': 'Mfunu',
+      'Enregistré par': 'Yabumbama na',
+      'Aucun paiement trouvé': 'Mfutu mosi ve monana',
+      'Enregistrer le premier paiement': 'Bumba mfutu ya ntete',
+      'Par mode de paiement': 'Na mutindu ya kufuta',
+      'Par type de frais': 'Na mutindu ya mfutu',
+      'Tendance': 'Nzila',
+      'par rapport au mois précédent': 'kana tufwanisi na ngonda meluta',
+      'Espèces': 'Mbongo ya maboko',
+      'Virement': 'Virement bancaire',
+      'Virement bancaire': 'Virement bancaire',
+      'Chèque': 'Chèque',
+      'Carte': 'Carte',
+      'Voir reçu': 'Tala reçu',
+      'Imprimer reçu': 'Imprimer reçu',
+      'Retour': 'Vutuka',
+    },
+    lua: {
+      'Paiements': 'Malipa',
+      'Gérez tous les paiements de l’établissement': 'Kamba malipa onso a shikola',
+      "Gérez tous les paiements de l'établissement": 'Kamba malipa onso a shikola',
+      'Montant total': 'Mubalu wonso',
+      'Paiement moyen': 'Malipa a moyenne',
+      "Aujourd'hui": 'Lelu',
+      'Date début': 'Dituku dia kutuadija',
+      'Date fin': 'Dituku dia kupelelela',
+      'Mode': 'Mutindu',
+      'Type frais': 'Mutindu wa mfutu',
+      'Recherche': 'Kusaka',
+      'Élève, reçu...': 'Muyidi, reçu...',
+      'Reçu n°': 'Reçu n°',
+      'Élève': 'Muyidi',
+      'Type': 'Mutindu',
+      'Montant': 'Mubalu',
+      'Enregistré par': 'Bibikibua kudi',
+      'Aucun paiement trouvé': 'Kakuena malipa amueneka',
+      'Enregistrer le premier paiement': 'Bika malipa a kumpala',
+      'Par mode de paiement': 'Ku mutindu wa malipa',
+      'Par type de frais': 'Ku mutindu wa mfutu',
+      'Tendance': 'Nzila',
+      'par rapport au mois précédent': 'tufuanikija ne ngondo mupite',
+      'Espèces': 'Makuta a muanza',
+      'Virement': 'Virement bancaire',
+      'Virement bancaire': 'Virement bancaire',
+      'Chèque': 'Chèque',
+      'Carte': 'Carte',
+      'Voir reçu': 'Mona reçu',
+      'Imprimer reçu': 'Imprimer reçu',
+      'Retour': 'Kupingana',
+    },
+  }
+
+  Object.entries(financialPaymentsPageExtensions).forEach(([language, translations]) => {
+    Object.assign(dictionaries[language], translations)
+  })
+
   Object.entries(directorInterfaceExtensions).forEach(([language, translations]) => {
     Object.assign(dictionaries[language], translations)
   })
@@ -2776,6 +4269,8 @@
     en: [
       [/^(.+) ce mois$/i, '$1 this month'],
       [/^(.+) élèves$/i, '$1 students'],
+      [/^(.+) élève\(s\)$/i, '$1 student(s)'],
+      [/^(.+) matière\(s\) dans le référentiel\.$/i, '$1 subject(s) in the catalogue.'],
       [/^(.+) présents$/i, '$1 present'],
       [/^(.+) jours restants$/i, '$1 days left'],
       [/^Rendu:\s*(.+)$/i, 'Due: $1'],
@@ -2798,6 +4293,8 @@
     ln: [
       [/^(.+) ce mois$/i, '$1 sanza oyo'],
       [/^(.+) élèves$/i, '$1 bayekoli'],
+      [/^(.+) élève\(s\)$/i, '$1 bayekoli'],
+      [/^(.+) matière\(s\) dans le référentiel\.$/i, '$1 mateya na mokanda.'],
       [/^(.+) présents$/i, '$1 bayei'],
       [/^(.+) jours restants$/i, '$1 mikolo etikali'],
       [/^Rendu:\s*(.+)$/i, 'Kozongisa: $1'],
@@ -2806,6 +4303,8 @@
     sw: [
       [/^(.+) ce mois$/i, '$1 mwezi huu'],
       [/^(.+) élèves$/i, '$1 wanafunzi'],
+      [/^(.+) élève\(s\)$/i, '$1 mwanafunzi/wanafunzi'],
+      [/^(.+) matière\(s\) dans le référentiel\.$/i, '$1 somo/masomo katika katalogi.'],
       [/^(.+) présents$/i, '$1 waliopo'],
       [/^(.+) jours restants$/i, '$1 siku zimesalia'],
       [/^Rendu:\s*(.+)$/i, 'Mwisho: $1'],
@@ -2814,6 +4313,8 @@
     kg: [
       [/^(.+) ce mois$/i, '$1 ngonda yayi'],
       [/^(.+) élèves$/i, '$1 banlongoki'],
+      [/^(.+) élève\(s\)$/i, '$1 balongoki'],
+      [/^(.+) matière\(s\) dans le référentiel\.$/i, '$1 malongi na mukanda.'],
       [/^(.+) présents$/i, '$1 bavandaka'],
       [/^(.+) jours restants$/i, '$1 bilumbu bitikali'],
       [/^Rendu:\s*(.+)$/i, 'Kuvutula: $1'],
@@ -2822,6 +4323,8 @@
     lua: [
       [/^(.+) ce mois$/i, '$1 ngondo ewu'],
       [/^(.+) élèves$/i, '$1 bayidi'],
+      [/^(.+) élève\(s\)$/i, '$1 bayidi'],
+      [/^(.+) matière\(s\) dans le référentiel\.$/i, '$1 malu a dilonga mu mukanda.'],
       [/^(.+) présents$/i, '$1 badi pano'],
       [/^(.+) jours restants$/i, '$1 matuku atshala'],
       [/^Rendu:\s*(.+)$/i, 'Kupingaja: $1'],
@@ -2924,10 +4427,11 @@
 
     document
       .querySelectorAll(
-        'option, button, input[placeholder], textarea[placeholder], input[type="submit"], input[type="button"], [title], [aria-label]'
+        '[data-i18n], option, button, input[placeholder], textarea[placeholder], input[type="submit"], input[type="button"], [title], [aria-label]'
       )
       .forEach((element) => {
         if (shouldSkipElement(element) && !['INPUT', 'TEXTAREA'].includes(element.tagName)) return
+        if (element.hasAttribute('data-i18n')) translateElementText(element, dictionary, language)
         if (element.placeholder) translateAttribute(element, 'placeholder', dictionary, language)
         if (
           element.tagName === 'INPUT' &&
