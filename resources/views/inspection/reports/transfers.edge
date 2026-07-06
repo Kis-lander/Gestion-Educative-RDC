@@ -218,6 +218,22 @@
     <script>
       let chart1, chart2;
 
+      function t(text) {
+        return window.AppTranslations?.translate(text) || text;
+      }
+
+      function getTransferStatusLabel(status) {
+        const labels = {
+          completed: "Complété",
+          pending: "En attente",
+          approved: "Approuvé",
+          rejected: "Rejeté",
+          used: "Complété"
+        };
+
+        return t(labels[status] || status);
+      }
+
       async function loadReport() {
         const startDate = document.getElementById("startDate").value;
         const endDate = document.getElementById("endDate").value;
@@ -243,7 +259,7 @@
           data: {
             labels: data.trend?.labels || [],
             datasets: [ {
-              label: "Nombre de transferts",
+              label: t("Nombre de transferts"),
               data: data.trend?.values || [],
               borderColor: "#2563eb",
               fill: true,
@@ -296,14 +312,14 @@
                     <td class="px-4 py-2">${t.toSchool}</td>
                     <td class="px-4 py-2 text-center">
                       <span class="px-2 py-0.5 rounded-full text-xs ${t.status === "completed" ? "bg-green-100 text-green-800" : t.status === "pending" ? "bg-yellow-100 text-yellow-800" : "bg-gray-100 text-gray-800"}">
-                        ${t.status === "completed" ? "Complété" : t.status === "pending" ? "En attente" : t.status}
+                        ${getTransferStatusLabel(t.status)}
                       </span>
                     </td>
                     <td class="px-4 py-2 text-center">${t.processingDays || "-"} j</td>
                   </tr>
                 `).join("");
         } else {
-          document.getElementById("transfersList").innerHTML = '<tr><td colspan="6" class="text-center py-8">Aucun transfert trouvé</td></tr>';
+          document.getElementById("transfersList").innerHTML = `<tr><td colspan="6" class="text-center py-8">${t("Aucun transfert trouvé")}</td></tr>`;
         }
       }
 

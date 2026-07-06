@@ -143,6 +143,11 @@ export interface ApiDefinition {
       security: {
         store: typeof routes['inspection.settings.security.store']
       }
+      carousel: {
+        store: typeof routes['inspection.settings.carousel.store']
+        update: typeof routes['inspection.settings.carousel.update']
+        delete: typeof routes['inspection.settings.carousel.delete']
+      }
     }
     messages: typeof routes['inspection.messages']
     users: {

@@ -133,6 +133,30 @@
       .testimonial-form-toggle summary::-webkit-details-marker {
         display: none;
       }
+
+      .inspection-carousel-track {
+        animation: inspection-carousel-scroll 34s linear infinite;
+      }
+
+      .inspection-carousel-shell:hover .inspection-carousel-track {
+        animation-play-state: paused;
+      }
+
+      @keyframes inspection-carousel-scroll {
+        from {
+          transform: translateX(-50%);
+        }
+
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .inspection-carousel-track {
+          animation: none;
+        }
+      }
     </style>
   </head>
   <body class="antialiased bg-gray-50 text-gray-900">
@@ -208,6 +232,69 @@
     </div>
 
     <!-- Fonctionnalités -->
+    @if(carouselImages && carouselImages.length > 0)
+      <!-- Vitrine inspection -->
+      <section class="bg-white dark:bg-gray-800 py-8 scroll-reveal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button
+            type="button"
+            onclick="openInspectionCarouselModal()"
+            class="inspection-carousel-shell group w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
+            aria-label="Voir les images publiées par l'inspection"
+          >
+            <div class="flex inspection-carousel-track w-max gap-4 py-4">
+              @each(image in carouselImages)
+                <div class="w-64 sm:w-80 shrink-0 overflow-hidden rounded-lg bg-white shadow-sm dark:bg-gray-800">
+                  <img src="{{ image.image_url }}" alt="{{ image.description }}" class="h-36 w-full object-cover" />
+                  <p class="line-clamp-2 px-3 py-2 text-left text-sm text-gray-600 dark:text-gray-300">
+                    {{ image.description }}
+                  </p>
+                </div>
+              @end
+              @each(image in carouselImages)
+                <div class="w-64 sm:w-80 shrink-0 overflow-hidden rounded-lg bg-white shadow-sm dark:bg-gray-800" aria-hidden="true">
+                  <img src="{{ image.image_url }}" alt="" class="h-36 w-full object-cover" />
+                  <p class="line-clamp-2 px-3 py-2 text-left text-sm text-gray-600 dark:text-gray-300">
+                    {{ image.description }}
+                  </p>
+                </div>
+              @end
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <div id="inspectionCarouselModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 px-4 py-6">
+        <div class="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900">
+          <div class="flex items-center justify-between border-b px-5 py-4 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+              Images publiées par l'inspection
+            </h2>
+            <button
+              type="button"
+              onclick="closeInspectionCarouselModal()"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              aria-label="Fermer"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="max-h-[75vh] overflow-y-auto p-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              @each(image in carouselImages)
+                <article class="overflow-hidden rounded-lg border bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                  <img src="{{ image.image_url }}" alt="{{ image.description }}" class="h-56 w-full object-cover" />
+                  <p class="p-4 text-gray-700 dark:text-gray-200">
+                    {{ image.description }}
+                  </p>
+                </article>
+              @end
+            </div>
+          </div>
+        </div>
+      </div>
+    @endif
+
     <div class="py-16 bg-gray-50 dark:bg-gray-900 scroll-reveal">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12 scroll-reveal">
@@ -516,6 +603,28 @@
 
     <script>
       (() => {
+        const carouselModal = document.getElementById("inspectionCarouselModal");
+
+        window.openInspectionCarouselModal = () => {
+          carouselModal?.classList.remove("hidden");
+          carouselModal?.classList.add("flex");
+          document.body.classList.add("overflow-hidden");
+        };
+
+        window.closeInspectionCarouselModal = () => {
+          carouselModal?.classList.add("hidden");
+          carouselModal?.classList.remove("flex");
+          document.body.classList.remove("overflow-hidden");
+        };
+
+        carouselModal?.addEventListener("click", (event) => {
+          if (event.target === carouselModal) window.closeInspectionCarouselModal();
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") window.closeInspectionCarouselModal();
+        });
+
         const revealItems = Array.from(document.querySelectorAll(".scroll-reveal"));
         revealItems.forEach((item, index) => {
           item.style.setProperty("--reveal-delay", `${Math.min(index % 6, 5) * 90}ms`);

@@ -65,10 +65,25 @@ async function getWelcomeTestimonials() {
   }
 }
 
+async function getWelcomeCarouselImages() {
+  try {
+    return await db
+      .from('public_carousel_images')
+      .select('id', 'image_url', 'description')
+      .where('status', 'active')
+      .orderBy('display_order', 'asc')
+      .orderBy('created_at', 'desc')
+      .limit(24)
+  } catch {
+    return []
+  }
+}
+
 async function getWelcomePageData(request?: { input: (key: string) => unknown }) {
   return {
     title: 'Gestion Educative RDC - Plateforme nationale',
     stats: await getWelcomeStats(),
+    carouselImages: await getWelcomeCarouselImages(),
     testimonials: await getWelcomeTestimonials(),
     testimonialSubmitted: request?.input('testimonial') === 'sent',
     appLanguage: await getDefaultAppLanguage(),
@@ -210,6 +225,15 @@ router
     router
       .post('/settings/security', [controllers.Inspections, 'saveSettings'])
       .as('inspection.settings.security.store')
+    router
+      .post('/settings/carousel', [controllers.Inspections, 'storeCarouselImage'])
+      .as('inspection.settings.carousel.store')
+    router
+      .post('/settings/carousel/:id', [controllers.Inspections, 'updateCarouselImage'])
+      .as('inspection.settings.carousel.update')
+    router
+      .post('/settings/carousel/:id/delete', [controllers.Inspections, 'deleteCarouselImage'])
+      .as('inspection.settings.carousel.delete')
     router.get('/schools/export', [controllers.Inspections, 'exportSchools'])
   })
   .prefix('/inspection')

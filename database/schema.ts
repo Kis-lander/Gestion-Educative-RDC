@@ -414,6 +414,25 @@ export class ParentSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class PublicCarouselImageSchema extends BaseModel {
+  static $columns = ['createdAt', 'description', 'displayOrder', 'id', 'imageUrl', 'status', 'updatedAt'] as const
+  $columns = PublicCarouselImageSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string
+  @column()
+  declare displayOrder: number
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare imageUrl: string
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class PublicTestimonialSchema extends BaseModel {
   static $columns = ['authorName', 'authorRole', 'content', 'createdAt', 'id', 'province', 'rating', 'schoolName', 'status', 'updatedAt'] as const
   $columns = PublicTestimonialSchema.$columns

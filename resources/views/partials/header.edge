@@ -153,7 +153,12 @@
         }"
         x-init="fetchNotifications(); setInterval(() => fetchNotifications(), 30000)"
       >
-        <button @click="open = !open; fetchNotifications()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative">
+        <button
+          @click="open = !open; fetchNotifications()"
+          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative"
+          aria-label="Voir les notifications"
+          title="Voir les notifications"
+        >
           <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
           <span
             x-show="unreadCount > 0"
@@ -243,6 +248,8 @@
           <a
             href="/settings"
             class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            aria-label="Ouvrir les paramètres"
+            title="Ouvrir les paramètres"
           >
             <i class="fas fa-cog w-4"></i>Paramètres
           </a>

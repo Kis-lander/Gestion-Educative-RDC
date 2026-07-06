@@ -3,6 +3,44 @@
   let activeLanguage = 'fr'
 
   const dictionaries = {
+    fr: {
+      'Start date': 'Date début',
+      'End date': 'Date fin',
+      Status: 'Statut',
+      Pending: 'En attente',
+      'Total transfers': 'Total transferts',
+      'Completed transfers': 'Transferts complétés',
+      'Average delay (days)': 'Délai moyen (jours)',
+      'Analyze available data and view detailed indicators.':
+        'Analysez les données disponibles et consultez les indicateurs détaillés.',
+      'Reports and analytics': 'Rapports et analyses',
+      'Report — Reports and analytics': 'Rapport — Rapports et analyses',
+      All: 'Tous',
+      Search: 'Rechercher',
+      Save: 'Enregistrer',
+      Cancel: 'Annuler',
+      Close: 'Fermer',
+      Confirm: 'Confirmer',
+      Delete: 'Supprimer',
+      Edit: 'Modifier',
+      Create: 'Créer',
+      Update: 'Mettre à jour',
+      Loading: 'Chargement',
+      Back: 'Retour',
+      Next: 'Suivant',
+      Previous: 'Précédent',
+      Submit: 'Soumettre',
+      Reset: 'Réinitialiser',
+      Filter: 'Filtrer',
+      Filters: 'Filtres',
+      Dashboard: 'Tableau de bord',
+      Report: 'Rapport',
+      Reports: 'Rapports',
+      Total: 'Total',
+      Completed: 'Complété',
+      Average: 'Moyenne',
+      days: 'jours',
+    },
     en: {
       'Chargement...': 'Loading...',
       'Tableau de bord': 'Dashboard',
@@ -15,12 +53,24 @@
       'Discipline': 'Discipline',
       'Finances': 'Finance',
       'Messages': 'Messages',
+      'Ouvrir les paramètres': 'Open settings',
       'Paramètres': 'Settings',
       'Paramètres généraux': 'General settings',
       'Configuration': 'Configuration',
       'Général': 'General',
       'Inspection': 'Inspection',
       'Notifications': 'Notifications',
+      'Voir les notifications': 'View notifications',
+      'Vitrine publique': 'Public showcase',
+      "Images de la vitrine publique": 'Public showcase images',
+      "Images publiées par l'inspection": 'Images published by inspection',
+      "Voir les images publiées par l'inspection": 'View images published by inspection',
+      "Aucune image publiée pour la vitrine publique.": 'No image has been published for the public showcase.',
+      "Décrivez l'image publiée par l'inspection": 'Describe the image published by inspection',
+      'JPG, PNG ou WebP. Taille maximale : 5 Mo.': 'JPG, PNG or WebP. Maximum size: 5 MB.',
+      'Ordre': 'Order',
+      'Visible': 'Visible',
+      'Masquée': 'Hidden',
       'Sauvegarde': 'Backup',
       'Sécurité': 'Security',
       'Journaux': 'Logs',
@@ -158,11 +208,17 @@
       'Finances': 'Misolo',
       'Messages': 'Bansango',
       'Paramètres': 'Mibeko',
+      'Ouvrir les paramètres': 'Fungola mibeko',
       'Paramètres généraux': 'Mibeko ya monene',
       'Configuration': 'Bobongisi',
       'Général': 'Ya monene',
       'Inspection': 'Botali',
       'Notifications': 'Mayebisi',
+      'Voir les notifications': 'Tala mayebisi',
+      'Vitrine publique': 'Vitrine ya bato nyonso',
+      "Images de la vitrine publique": 'Bilili ya vitrine ya bato nyonso',
+      "Images publiées par l'inspection": 'Bilili oyo botali ebimisi',
+      "Voir les images publiées par l'inspection": 'Tala bilili oyo botali ebimisi',
       'Sauvegarde': 'Bobombi',
       'Sécurité': 'Bobateli',
       'Journaux': 'Mikanda ya makambo',
@@ -215,11 +271,17 @@
       'Finances': 'Fedha',
       'Messages': 'Ujumbe',
       'Paramètres': 'Mipangilio',
+      'Ouvrir les paramètres': 'Fungua mipangilio',
       'Paramètres généraux': 'Mipangilio ya jumla',
       'Configuration': 'Usanidi',
       'Général': 'Jumla',
       'Inspection': 'Ukaguzi',
       'Notifications': 'Taarifa',
+      'Voir les notifications': 'Tazama taarifa',
+      'Vitrine publique': 'Onyesho la umma',
+      "Images de la vitrine publique": 'Picha za onyesho la umma',
+      "Images publiées par l'inspection": 'Picha zilizochapishwa na ukaguzi',
+      "Voir les images publiées par l'inspection": 'Tazama picha zilizochapishwa na ukaguzi',
       'Sauvegarde': 'Hifadhi',
       'Sécurité': 'Usalama',
       'Journaux': 'Kumbukumbu',
@@ -274,11 +336,17 @@
       'Finances': 'Mbongo',
       'Messages': 'Nsangu',
       'Paramètres': 'Bubongisi',
+      'Ouvrir les paramètres': 'Fungula bubongisi',
       'Paramètres généraux': 'Bubongisi bwa nene',
       'Configuration': 'Bubongisi',
       'Général': 'Ya nene',
       'Inspection': 'Tala-tala',
       'Notifications': 'Nsangu za kebila',
+      'Voir les notifications': 'Tala bansangu za kebila',
+      'Vitrine publique': 'Vitrine ya bantu yonso',
+      "Images de la vitrine publique": 'Bifwanisu ya vitrine ya bantu yonso',
+      "Images publiées par l'inspection": 'Bifwanisu yina inspection me basisa',
+      "Voir les images publiées par l'inspection": 'Tala bifwanisu yina inspection me basisa',
       'Sauvegarde': 'Kubumba',
       'Sécurité': 'Lutaninu',
       'Journaux': 'Mikanda mia bisalu',
@@ -318,11 +386,17 @@
       'Finances': 'Makuta',
       'Messages': 'Nsumu',
       'Paramètres': 'Bilongolola',
+      'Ouvrir les paramètres': 'Fungula bilongolola',
       'Paramètres généraux': 'Bilongolola bia bonso',
       'Configuration': 'Kulonga',
       'Général': 'Bonso',
       'Inspection': 'Kutala',
       'Notifications': 'Mayebisha',
+      'Voir les notifications': 'Mona mayebisha',
+      'Vitrine publique': 'Vitrine wa bantu bonso',
+      "Images de la vitrine publique": 'Bifwanisu bia vitrine wa bantu bonso',
+      "Images publiées par l'inspection": 'Bifwanisu bimisambakanyibua kudi inspection',
+      "Voir les images publiées par l'inspection": 'Mona bifwanisu bimisambakanyibua kudi inspection',
       'Sauvegarde': 'Kubika',
       'Sécurité': 'Lukasa',
       'Journaux': 'Mikanda ya midimu',
@@ -4261,6 +4335,155 @@
     Object.assign(dictionaries[language], translations)
   })
 
+  const reportsInterfaceExtensions = {
+    en: {
+      'Rapport — Rapports et analyses': 'Report — Reports and analytics',
+      'Rapport des transferts - Inspection RDC': 'Transfers report - DRC Inspection',
+      "Rapport des transferts d'élèves": 'Student transfers report',
+      'Suivi des mobilités scolaires inter-écoles': 'Tracking inter-school mobility',
+      'Date début': 'Start date',
+      'Date fin': 'End date',
+      Province: 'Province',
+      Statut: 'Status',
+      Toutes: 'All',
+      Tous: 'All',
+      'En attente': 'Pending',
+      Approuvé: 'Approved',
+      Complété: 'Completed',
+      Rejeté: 'Rejected',
+      Analyser: 'Analyze',
+      'Total transferts': 'Total transfers',
+      'Transferts complétés': 'Completed transfers',
+      'Délai moyen (jours)': 'Average delay (days)',
+      'Évolution des transferts': 'Transfer trend',
+      "Top provinces d'origine": 'Top origin provinces',
+      'Flux de transferts entre provinces': 'Transfer flows between provinces',
+      'De / Vers': 'From / To',
+      'Détail des transferts': 'Transfer details',
+      Date: 'Date',
+      Élève: 'Student',
+      'École origine': 'Origin school',
+      'École destination': 'Destination school',
+      Délai: 'Delay',
+      'Nombre de transferts': 'Number of transfers',
+      'Aucun transfert trouvé': 'No transfer found',
+      'Non renseignée': 'Not specified',
+      'Rapport des écoles - Inspection RDC': 'Schools report - DRC Inspection',
+      'Rapport des écoles': 'Schools report',
+      'Analyse complète des établissements scolaires': 'Full school analysis',
+      'Rapport performance - Inspection RDC': 'Performance report - DRC Inspection',
+      'Rapport des performances scolaires': 'School performance report',
+      'Analyse des résultats académiques par province': 'Analysis of academic results by province',
+      'Rapport statistiques - Inspection RDC': 'Statistics report - DRC Inspection',
+      'Statistiques nationales': 'National statistics',
+      'Vue globale des indicateurs éducatifs': 'Global view of education indicators',
+    },
+    ln: {
+      'Rapport — Rapports et analyses': 'Raporo — Balapolo mpe botalisi',
+      "Rapport des transferts d'élèves": 'Raporo ya bobongoli biteyelo ya bayekoli',
+      'Suivi des mobilités scolaires inter-écoles': 'Bolandi ya kokende ya bayekoli kati ya biteyelo',
+      'Date début': 'Mokolo ya kobanda',
+      'Date fin': 'Mokolo ya kosuka',
+      Province: 'Etuka',
+      Statut: 'Ezaleli',
+      Toutes: 'Nyonso',
+      Tous: 'Nyonso',
+      'En attente': 'Ezali kozela',
+      Approuvé: 'Endimami',
+      Complété: 'Esili',
+      Rejeté: 'Ebwakami',
+      Analyser: 'Tala',
+      'Total transferts': 'Bobongoli nyonso',
+      'Transferts complétés': 'Bobongoli esili',
+      'Délai moyen (jours)': 'Ntango ya mwayene (mikolo)',
+      'Évolution des transferts': 'Bokoli ya bobongoli',
+      "Top provinces d'origine": 'Bituka ya ebandeli ya liboso',
+      'Flux de transferts entre provinces': 'Bobongoli kati ya bituka',
+      'De / Vers': 'Uta / Kino',
+      'Détail des transferts': 'Makambo ya bobongoli',
+      Élève: 'Moyekoli',
+      'École origine': 'Eteyelo ya ebandeli',
+      'École destination': 'Eteyelo ya kokoma',
+      Délai: 'Ntango',
+      'Nombre de transferts': 'Motango ya bobongoli',
+      'Aucun transfert trouvé': 'Bobongoli moko te emonani',
+    },
+    sw: {
+      'Rapport — Rapports et analyses': 'Ripoti — Ripoti na uchambuzi',
+      "Rapport des transferts d'élèves": 'Ripoti ya uhamisho wa wanafunzi',
+      'Suivi des mobilités scolaires inter-écoles': 'Ufuatiliaji wa uhamaji kati ya shule',
+      'Date début': 'Tarehe ya kuanza',
+      'Date fin': 'Tarehe ya mwisho',
+      Province: 'Mkoa',
+      Statut: 'Hali',
+      Toutes: 'Zote',
+      Tous: 'Zote',
+      'En attente': 'Inasubiri',
+      Approuvé: 'Imeidhinishwa',
+      Complété: 'Imekamilika',
+      Rejeté: 'Imekataliwa',
+      Analyser: 'Changanua',
+      'Total transferts': 'Jumla ya uhamisho',
+      'Transferts complétés': 'Uhamisho uliokamilika',
+      'Délai moyen (jours)': 'Wastani wa muda (siku)',
+      'Évolution des transferts': 'Mwenendo wa uhamisho',
+      "Top provinces d'origine": 'Mikoa ya juu ya asili',
+      'Flux de transferts entre provinces': 'Mtiririko wa uhamisho kati ya mikoa',
+      'De / Vers': 'Kutoka / Kwenda',
+      'Détail des transferts': 'Maelezo ya uhamisho',
+      Élève: 'Mwanafunzi',
+      'École origine': 'Shule ya asili',
+      'École destination': 'Shule ya kwenda',
+      Délai: 'Muda',
+      'Nombre de transferts': 'Idadi ya uhamisho',
+      'Aucun transfert trouvé': 'Hakuna uhamisho uliopatikana',
+    },
+    kg: {
+      'Rapport — Rapports et analyses': 'Raporo — Baraporo mpe botalisi',
+      "Rapport des transferts d'élèves": 'Raporo ya kutinda banlongoki na sukulu yankaka',
+      'Date début': 'Kilumbu ya ntete',
+      'Date fin': 'Kilumbu ya nsuka',
+      Province: 'Provensi',
+      Statut: 'Kifwani',
+      Toutes: 'Yonso',
+      Tous: 'Yonso',
+      'En attente': 'Ke vingila',
+      Approuvé: 'Me ndimama',
+      Complété: 'Me manisa',
+      Rejeté: 'Me buyama',
+      Analyser: 'Tala',
+      'Total transferts': 'Batransfer nyonso',
+      'Transferts complétés': 'Batransfer me manisa',
+      'Délai moyen (jours)': 'Ntangu ya mwayene (bilumbu)',
+      'Nombre de transferts': 'Ntalu ya batransfer',
+      'Aucun transfert trouvé': 'Transfer mosi ve monana',
+    },
+    lua: {
+      'Rapport — Rapports et analyses': 'Raporo — Maraporo ne bitalu',
+      "Rapport des transferts d'élèves": 'Raporo wa kupitisha bayidi',
+      'Date début': 'Dituku dia kutuadija',
+      'Date fin': 'Dituku dia kupelelela',
+      Province: 'Provense',
+      Statut: 'Muaba',
+      Toutes: 'Bionso',
+      Tous: 'Bionso',
+      'En attente': 'Bidi bindila',
+      Approuvé: 'Banyishila',
+      Complété: 'Bimansha',
+      Rejeté: 'Bakanyina',
+      Analyser: 'Mona',
+      'Total transferts': 'Kupitisha konso',
+      'Transferts complétés': 'Kupitisha kumansha',
+      'Délai moyen (jours)': 'Diba dia moyenne (matuku)',
+      'Nombre de transferts': 'Mubalu wa kupitisha',
+      'Aucun transfert trouvé': 'Kakuena transfer umueneka',
+    },
+  }
+
+  Object.entries(reportsInterfaceExtensions).forEach(([language, translations]) => {
+    Object.assign(dictionaries[language], translations)
+  })
+
   Object.entries(directorInterfaceExtensions).forEach(([language, translations]) => {
     Object.assign(dictionaries[language], translations)
   })
@@ -4357,12 +4580,12 @@
     if (!node.__appTranslationOriginal) node.__appTranslationOriginal = node.nodeValue
 
     const original = node.__appTranslationOriginal
-    if (language === 'fr') {
+    if (language === 'fr' && !dictionary[normalize(original)]) {
       node.nodeValue = original
       return
     }
 
-    const translated = translateText(original, dictionary)
+    const translated = translateText(original, dictionary, language)
     if (translated === node.nodeValue) return
 
     const leading = original.match(/^\s*/)?.[0] || ''
@@ -4376,7 +4599,12 @@
 
     if (!original) return
     if (!element.hasAttribute(originalAttribute)) element.setAttribute(originalAttribute, original)
-    element.setAttribute(attribute, language === 'fr' ? original : translateText(original, dictionary))
+    element.setAttribute(
+      attribute,
+      language === 'fr' && !dictionary[normalize(original)]
+        ? original
+        : translateText(original, dictionary, language)
+    )
   }
 
   function translateElementText(element, dictionary, language) {
@@ -4387,7 +4615,10 @@
       element.setAttribute('data-i18n-original-text', original)
     }
 
-    element.textContent = language === 'fr' ? original : translateText(original, dictionary)
+    element.textContent =
+      language === 'fr' && !dictionary[normalize(original)]
+        ? original
+        : translateText(original, dictionary, language)
   }
 
   function shouldSkipElement(element) {
@@ -4409,7 +4640,7 @@
       document.__appTranslationOriginalTitle = document.title
     }
     document.title =
-      language === 'fr'
+      language === 'fr' && !dictionary[normalize(document.__appTranslationOriginalTitle)]
         ? document.__appTranslationOriginalTitle
         : translateText(document.__appTranslationOriginalTitle, dictionary)
 
@@ -4477,7 +4708,7 @@
     translatePage,
     translate(text, language = activeLanguage) {
       if (!supportedLanguages.includes(language)) language = 'fr'
-      if (language === 'fr') return text
+      if (language === 'fr' && !(dictionaries.fr || {})[normalize(text)]) return text
       return translateText(text, dictionaries[language] || {}, language)
     },
     setLanguage(language) {

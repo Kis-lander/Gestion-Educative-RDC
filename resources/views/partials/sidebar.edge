@@ -169,6 +169,8 @@
       href="/settings"
       class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
       :class="linkClass(['/settings', '/inspection/settings'])"
+      aria-label="Ouvrir les paramètres"
+      title="Ouvrir les paramètres"
     >
       <i class="fas fa-cog w-5" :class="iconClass(['/settings', '/inspection/settings'])"></i>
       <span x-show="sidebarOpen">Paramètres</span>

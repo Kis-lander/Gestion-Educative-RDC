@@ -631,6 +631,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['saveSettings']>>>
     }
   }
+  'inspection.settings.carousel.store': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/carousel'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['storeCarouselImage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['storeCarouselImage']>>>
+    }
+  }
+  'inspection.settings.carousel.update': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/carousel/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['updateCarouselImage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['updateCarouselImage']>>>
+    }
+  }
+  'inspection.settings.carousel.delete': {
+    methods: ["POST"]
+    pattern: '/inspection/settings/carousel/:id/delete'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['deleteCarouselImage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['deleteCarouselImage']>>>
+    }
+  }
   'inspections.export_schools': {
     methods: ["GET","HEAD"]
     pattern: '/inspection/schools/export'

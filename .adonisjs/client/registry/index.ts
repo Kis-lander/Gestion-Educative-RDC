@@ -318,6 +318,24 @@ const routes = {
     tokens: [{"old":"/inspection/settings/security","type":0,"val":"inspection","end":""},{"old":"/inspection/settings/security","type":0,"val":"settings","end":""},{"old":"/inspection/settings/security","type":0,"val":"security","end":""}],
     types: placeholder as Registry['inspection.settings.security.store']['types'],
   },
+  'inspection.settings.carousel.store': {
+    methods: ["POST"],
+    pattern: '/inspection/settings/carousel',
+    tokens: [{"old":"/inspection/settings/carousel","type":0,"val":"inspection","end":""},{"old":"/inspection/settings/carousel","type":0,"val":"settings","end":""},{"old":"/inspection/settings/carousel","type":0,"val":"carousel","end":""}],
+    types: placeholder as Registry['inspection.settings.carousel.store']['types'],
+  },
+  'inspection.settings.carousel.update': {
+    methods: ["POST"],
+    pattern: '/inspection/settings/carousel/:id',
+    tokens: [{"old":"/inspection/settings/carousel/:id","type":0,"val":"inspection","end":""},{"old":"/inspection/settings/carousel/:id","type":0,"val":"settings","end":""},{"old":"/inspection/settings/carousel/:id","type":0,"val":"carousel","end":""},{"old":"/inspection/settings/carousel/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['inspection.settings.carousel.update']['types'],
+  },
+  'inspection.settings.carousel.delete': {
+    methods: ["POST"],
+    pattern: '/inspection/settings/carousel/:id/delete',
+    tokens: [{"old":"/inspection/settings/carousel/:id/delete","type":0,"val":"inspection","end":""},{"old":"/inspection/settings/carousel/:id/delete","type":0,"val":"settings","end":""},{"old":"/inspection/settings/carousel/:id/delete","type":0,"val":"carousel","end":""},{"old":"/inspection/settings/carousel/:id/delete","type":1,"val":"id","end":""},{"old":"/inspection/settings/carousel/:id/delete","type":0,"val":"delete","end":""}],
+    types: placeholder as Registry['inspection.settings.carousel.delete']['types'],
+  },
   'inspections.export_schools': {
     methods: ["GET","HEAD"],
     pattern: '/inspection/schools/export',

@@ -63,6 +63,14 @@
               <span>Sécurité</span>
             </button>
             <button
+              onclick="showTab('carousel')"
+              id="tab-carousel"
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
+            >
+              <i class="fas fa-images w-5 text-gray-500"></i>
+              <span>Vitrine publique</span>
+            </button>
+            <button
               onclick="showTab('logs')"
               id="tab-logs"
               class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition"
@@ -590,6 +598,115 @@
             </button>
               </div>
             </form>
+          </div>
+        </div>
+
+        <!-- Tab: Vitrine publique -->
+        <div id="panel-carousel" class="tab-panel hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h3 class="font-semibold text-lg border-b pb-3 mb-4">
+              Images de la vitrine publique
+            </h3>
+
+            <form
+              method="POST"
+              action="/inspection/settings/carousel"
+              enctype="multipart/form-data"
+              x-data="{ loading: false }"
+              @submit="loading = true"
+              class="grid grid-cols-1 lg:grid-cols-5 gap-4 rounded-lg border dark:border-gray-700 p-4"
+            >
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+              <div class="lg:col-span-2">
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Image *</label>
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+                <p class="text-xs text-gray-500 mt-1">JPG, PNG ou WebP. Taille maximale : 5 Mo.</p>
+              </div>
+              <div class="lg:col-span-2">
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Description *</label>
+                <textarea
+                  name="description"
+                  required
+                  maxlength="600"
+                  rows="3"
+                  class="w-full px-3 py-2 border rounded-lg"
+                  placeholder="Décrivez l'image publiée par l'inspection"
+                ></textarea>
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2">Ordre</label>
+                <input
+                  type="number"
+                  name="display_order"
+                  value="0"
+                  class="w-full px-3 py-2 border rounded-lg"
+                />
+                <button
+                  type="submit"
+                  :disabled="loading"
+                  class="mt-4 w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+                >
+                  <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>Ajouter
+                </button>
+              </div>
+            </form>
+
+            <div class="mt-6 space-y-4">
+              @each(image in carouselImages)
+                <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 rounded-lg border dark:border-gray-700 p-4">
+                  <div class="lg:col-span-2">
+                    <img
+                      src="{{ image.image_url }}"
+                      alt="{{ image.description }}"
+                      class="h-32 w-full rounded-lg object-cover"
+                    />
+                  </div>
+                  <form method="POST" action="/inspection/settings/carousel/{{ image.id }}" class="lg:col-span-4 grid grid-cols-1 md:grid-cols-6 gap-3">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+                    <div class="md:col-span-3">
+                      <label class="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                      <textarea name="description" maxlength="600" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ image.description }}</textarea>
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 dark:text-gray-300 mb-2">Ordre</label>
+                      <input type="number" name="display_order" value="{{ image.display_order }}" class="w-full px-3 py-2 border rounded-lg" />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 dark:text-gray-300 mb-2">Statut</label>
+                      <select name="status" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="active" {{ image.status === 'active' ? 'selected' : '' }}>Visible</option>
+                        <option value="hidden" {{ image.status === 'hidden' ? 'selected' : '' }}>Masquée</option>
+                      </select>
+                    </div>
+                    <div class="flex flex-col gap-2 md:pt-8">
+                      <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
+                        Enregistrer
+                      </button>
+                    </div>
+                  </form>
+                  <form method="POST" action="/inspection/settings/carousel/{{ image.id }}/delete" class="lg:col-start-6">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+                    <button
+                      type="submit"
+                      onclick="return confirm('Supprimer cette image de la vitrine publique ?')"
+                      class="w-full px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50"
+                    >
+                      Supprimer
+                    </button>
+                  </form>
+                </div>
+              @else
+                <div class="rounded-lg border border-dashed dark:border-gray-700 p-8 text-center text-gray-500">
+                  Aucune image publiée pour la vitrine publique.
+                </div>
+              @end
+            </div>
           </div>
         </div>
 

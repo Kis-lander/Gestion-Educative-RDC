@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import School from '#models/school'
 import User from '#models/user'
@@ -11,7 +12,7 @@ import { DateTime } from 'luxon'
 import { ensureSchoolSections } from '#services/school_governance_service'
 import { randomBytes } from 'node:crypto'
 import { basename, join } from 'node:path'
-import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import {
   getSchoolsValidator,
   inspectSchoolValidator,
@@ -135,6 +136,28 @@ export default class InspectionController {
     } catch {
       return []
     }
+  }
+
+  private async listPublicCarouselImages(includeHidden = true) {
+    try {
+      const query = db
+        .from('public_carousel_images')
+        .select('id', 'image_url', 'description', 'display_order', 'status', 'created_at')
+
+      if (!includeHidden) query.where('status', 'active')
+
+      return await query.orderBy('display_order', 'asc').orderBy('created_at', 'desc')
+    } catch {
+      return []
+    }
+  }
+
+  private getCarouselUploadPath() {
+    return app.publicPath('uploads/public-carousel')
+  }
+
+  private getCarouselPublicUrl(filename: string) {
+    return `/uploads/public-carousel/${filename}`
   }
 
   private splitFullName(fullName: string) {
@@ -896,11 +919,105 @@ export default class InspectionController {
   public async settingsPage({ view }: HttpContext) {
     const settings = await this.getInspectionSettings()
     const backups = await this.listInspectionBackups()
+    const carouselImages = await this.listPublicCarouselImages()
 
     return view.render('inspection/settings/index', {
       settings,
       backups,
+      carouselImages,
     })
+  }
+
+  public async storeCarouselImage({ request, response, session }: HttpContext) {
+    const image = request.file('image', {
+      size: '5mb',
+      extnames: ['jpg', 'jpeg', 'png', 'webp'],
+    })
+    const description = String(request.input('description') ?? '').trim().slice(0, 600)
+    const displayOrder = Number(request.input('display_order', 0)) || 0
+
+    if (!image || !description) {
+      session.flash('error', "Veuillez choisir une image et renseigner sa description.")
+      return response.redirect('/inspection/settings#carousel')
+    }
+
+    if (!image.isValid) {
+      session.flash('error', image.errors[0]?.message ?? 'Image invalide')
+      return response.redirect('/inspection/settings#carousel')
+    }
+
+    const filename = `${randomBytes(8).toString('hex')}-${Date.now()}.${image.extname}`
+
+    await image.move(this.getCarouselUploadPath(), {
+      name: filename,
+      overwrite: false,
+    })
+
+    if (image.state !== 'moved') {
+      session.flash('error', "L'image n'a pas pu être enregistrée.")
+      return response.redirect('/inspection/settings#carousel')
+    }
+
+    const now = DateTime.now().toSQL()
+
+    await db.table('public_carousel_images').insert({
+      image_url: this.getCarouselPublicUrl(filename),
+      description,
+      display_order: displayOrder,
+      status: 'active',
+      created_at: now,
+      updated_at: now,
+    })
+
+    session.flash('success', 'Image ajoutée à la vitrine publique.')
+    return response.redirect('/inspection/settings#carousel')
+  }
+
+  public async updateCarouselImage({ params, request, response, session }: HttpContext) {
+    const description = String(request.input('description') ?? '').trim().slice(0, 600)
+    const displayOrder = Number(request.input('display_order', 0)) || 0
+    const status = request.input('status') === 'hidden' ? 'hidden' : 'active'
+
+    if (!description) {
+      session.flash('error', 'La description est obligatoire.')
+      return response.redirect('/inspection/settings#carousel')
+    }
+
+    await db
+      .from('public_carousel_images')
+      .where('id', params.id)
+      .update({
+        description,
+        display_order: displayOrder,
+        status,
+        updated_at: DateTime.now().toSQL(),
+      })
+
+    session.flash('success', 'Image de vitrine mise à jour.')
+    return response.redirect('/inspection/settings#carousel')
+  }
+
+  public async deleteCarouselImage({ params, response, session }: HttpContext) {
+    const image = await db.from('public_carousel_images').where('id', params.id).first()
+
+    if (!image) {
+      session.flash('error', 'Image introuvable.')
+      return response.redirect('/inspection/settings#carousel')
+    }
+
+    await db.from('public_carousel_images').where('id', params.id).delete()
+
+    const url = String(image.image_url || '')
+    const filename = basename(url)
+
+    if (filename && url.startsWith('/uploads/public-carousel/')) {
+      try {
+        await unlink(join(this.getCarouselUploadPath(), filename))
+      } catch {}
+    }
+
+    session.flash('success', 'Image supprimée de la vitrine publique.')
+    return response.redirect('/inspection/settings#carousel')
   }
 
   public async saveSettings({ request, response, session }: HttpContext) {

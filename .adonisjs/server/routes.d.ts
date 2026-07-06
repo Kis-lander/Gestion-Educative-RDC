@@ -56,6 +56,9 @@ export type ScannedRoutes = {
     'inspection.settings.notifications.store': { paramsTuple?: []; params?: {} }
     'inspection.settings.backup.store': { paramsTuple?: []; params?: {} }
     'inspection.settings.security.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.carousel.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.carousel.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspection.settings.carousel.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.export_schools': { paramsTuple?: []; params?: {} }
     'inspections.schools_report_data': { paramsTuple?: []; params?: {} }
     'inspections.performance_report_data': { paramsTuple?: []; params?: {} }
@@ -811,6 +814,9 @@ export type ScannedRoutes = {
     'inspection.settings.notifications.store': { paramsTuple?: []; params?: {} }
     'inspection.settings.backup.store': { paramsTuple?: []; params?: {} }
     'inspection.settings.security.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.carousel.store': { paramsTuple?: []; params?: {} }
+    'inspection.settings.carousel.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspection.settings.carousel.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.trigger_backup': { paramsTuple?: []; params?: {} }
     'settings.save_language': { paramsTuple?: []; params?: {} }
     'settings.save_regional': { paramsTuple?: []; params?: {} }
