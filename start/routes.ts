@@ -6,6 +6,10 @@ import { controllers } from '#generated/controllers'
 import { edgePageContext } from '#start/view_context'
 import { getDefaultAppLanguage } from '#services/language_service'
 
+const forumsController = () => import('#controllers/forums_controller')
+const reportsController = () => import('#controllers/reports_controller')
+const interSchoolController = () => import('#controllers/inter_schools_controller')
+
 async function getWelcomeStats() {
   const [schools, students, teachers, provinces] = await Promise.all([
     db.from('schools').count('* as total').first(),
@@ -401,6 +405,26 @@ router
   .use(middleware.auth())
 
 router
+  .post('/communication/messages/:id/restore', [controllers.Messages, 'restoreWebMessage'])
+  .as('communication.messages.restore')
+  .use(middleware.auth())
+
+router
+  .delete('/communication/messages/:id/permanent', [controllers.Messages, 'deleteWebMessagePermanently'])
+  .as('communication.messages.permanent_delete')
+  .use(middleware.auth())
+
+router
+  .delete('/communication/messages/empty-trash', [controllers.Messages, 'emptyTrashWeb'])
+  .as('communication.messages.empty_trash')
+  .use(middleware.auth())
+
+router
+  .post('/communication/messages/restore-all', [controllers.Messages, 'restoreAllWeb'])
+  .as('communication.messages.restore_all')
+  .use(middleware.auth())
+
+router
   .get('/communication/messages/send', [controllers.Messages, 'redirectSendToCompose'])
   .as('communication.messages.send.redirect')
   .use(middleware.auth())
@@ -408,6 +432,96 @@ router
 router
   .post('/communication/messages/send', [controllers.Messages, 'sendWebMessage'])
   .as('communication.messages.send')
+  .use(middleware.auth())
+
+router
+  .get('/api/messages/conversation/:userId', [controllers.Messages, 'getConversationWeb'])
+  .as('api.messages.conversation')
+  .use(middleware.auth())
+
+router
+  .post('/api/messages/send', [controllers.Messages, 'sendConversationWeb'])
+  .as('api.messages.send')
+  .use(middleware.auth())
+
+router
+  .put('/api/messages/:id', [controllers.Messages, 'updateConversationMessage'])
+  .as('api.messages.update_conversation')
+  .use(middleware.auth())
+
+router
+  .delete('/api/messages/:id', [controllers.Messages, 'deleteConversationMessage'])
+  .as('api.messages.delete_conversation')
+  .use(middleware.auth())
+
+router
+  .get('/api/messages/conversation/:userId/export', [controllers.Messages, 'exportConversationWeb'])
+  .as('api.messages.conversation.export')
+  .use(middleware.auth())
+
+router
+  .get('/api/messages/:id/attachment', [controllers.Messages, 'downloadAttachment'])
+  .as('api.messages.attachment')
+  .use(middleware.auth())
+
+router
+  .get('/api/forum/:type/:id/attachment', [forumsController, 'downloadAttachment'])
+  .as('api.forum.attachment')
+  .use(middleware.auth())
+
+router
+  .get('/api/student/forum/export', [forumsController, 'exportStudentForum'])
+  .as('api.student.forum.export')
+  .use(middleware.auth())
+
+router
+  .get('/api/teacher/forum/export', [forumsController, 'exportTeacherForum'])
+  .as('api.teacher.forum.export')
+  .use(middleware.auth())
+
+router
+  .post('/api/student/forum/topic/:id/resolve', [forumsController, 'resolveStudentTopic'])
+  .as('api.student.forum.topic.resolve')
+  .use(middleware.auth())
+
+router
+  .post('/api/student/forum/topic/:id/view', [forumsController, 'recordStudentTopicView'])
+  .as('api.student.forum.topic.view')
+  .use(middleware.auth())
+
+router
+  .post('/api/forum/topic/:id/view', [forumsController, 'recordTeacherTopicView'])
+  .as('api.forum.topic.view')
+  .use(middleware.auth())
+
+router
+  .get('/api/teacher/assignments/export', [controllers.Teachers, 'exportAssignments'])
+  .as('api.teacher.assignments.export')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] })])
+
+router
+  .get('/api/teacher/assignments/:id/submissions/export', [controllers.Teachers, 'exportSubmissions'])
+  .as('api.teacher.assignments.submissions.export')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] })])
+
+router
+  .post('/api/messages/:id/restore', [controllers.Messages, 'restoreWebMessage'])
+  .as('api.messages.restore')
+  .use(middleware.auth())
+
+router
+  .delete('/api/messages/:id/permanent', [controllers.Messages, 'deleteWebMessagePermanently'])
+  .as('api.messages.permanent_delete')
+  .use(middleware.auth())
+
+router
+  .delete('/api/messages/empty-trash', [controllers.Messages, 'emptyTrashWeb'])
+  .as('api.messages.empty_trash')
+  .use(middleware.auth())
+
+router
+  .post('/api/messages/restore-all', [controllers.Messages, 'restoreAllWeb'])
+  .as('api.messages.restore_all')
   .use(middleware.auth())
 
 router
@@ -447,13 +561,42 @@ router
 
 router
   .group(() => {
+    router.get('/classes/export', [controllers.Teachers, 'exportClasses']).as('api.teacher.classes.export')
+    router
+      .get('/classes/:id/my-subjects', [controllers.Teachers, 'classSubjectsData'])
+      .as('api.teacher.classes.subjects')
     router
       .get('/classes/:id/students', [controllers.Teachers, 'getClassStudentsForAttendance'])
       .as('api.teacher.attendance.classes.students')
     router
+      .get('/classes/:id/students/export', [controllers.Teachers, 'exportClassStudents'])
+      .as('api.teacher.classes.students.export')
+    router.get('/grades/export', [controllers.Teachers, 'exportGrades']).as('api.teacher.grades.export')
+    router
+      .get('/grades/class/:classId', [controllers.Teachers, 'gradeClassData'])
+      .as('api.teacher.grades.class')
+    router
+      .get('/grades/class/:classId/export', [controllers.Teachers, 'exportGrades'])
+      .as('api.teacher.grades.class.export')
+    router
+      .post('/grades/publish', [controllers.Teachers, 'publishGrades'])
+      .as('api.teacher.grades.publish')
+    router
+      .post('/grades/class/:classId/publish', [controllers.Teachers, 'publishGrades'])
+      .as('api.teacher.grades.class.publish')
+    router
       .get('/attendance/class/:id', [controllers.Teachers, 'getClassAttendance'])
       .as('api.teacher.attendance.class')
+    router.get('/attendance/export', [controllers.Teachers, 'exportAttendance']).as('api.teacher.attendance.export')
+    router
+      .get('/attendance/student/:id', [controllers.Teachers, 'attendanceStudentData'])
+      .as('api.teacher.attendance.student')
+    router
+      .get('/attendance/student/:id/export', [controllers.Teachers, 'exportAttendanceStudent'])
+      .as('api.teacher.attendance.student.export')
     router.post('/attendance', [controllers.Teachers, 'markAttendance']).as('api.teacher.attendance.store')
+    router.post('/send-message', [controllers.Teachers, 'sendTeacherMessage']).as('api.teacher.send_message')
+    router.get('/notifications/count', [controllers.Teachers, 'notificationsCount']).as('api.teacher.notifications.count')
   })
   .prefix('/api/teacher')
   .use([
@@ -938,12 +1081,8 @@ router
     router.get('/groups/:id/members', async (ctx) =>
       ctx.view.render('communication/groups/members', await edgePageContext(ctx))
     )
-    router.get('/messages/conversation/:id', async (ctx) =>
-      ctx.view.render('communication/messages/conversation', await edgePageContext(ctx))
-    )
-    router.get('/messages/trash', async (ctx) =>
-      ctx.view.render('communication/messages/trash', await edgePageContext(ctx))
-    )
+    router.get('/messages/conversation/:id', [controllers.Messages, 'conversationPage'])
+    router.get('/messages/trash', [controllers.Messages, 'trashPage'])
     router.get('/notifications/settings', async (ctx) =>
       ctx.view.render('communication/notifications/settings', await edgePageContext(ctx))
     )
@@ -1092,65 +1231,55 @@ router
 
 router
   .group(() => {
-    router.get('/classes', async (ctx) =>
-      ctx.view.render('teacher/classes/index', await edgePageContext(ctx))
-    )
-    router.get('/classes/:id', async (ctx) =>
-      ctx.view.render('teacher/classes/show', await edgePageContext(ctx))
-    )
-    router.get('/classes/:id/students', async (ctx) =>
-      ctx.view.render('teacher/classes/students', await edgePageContext(ctx))
-    )
-    router.get('/assignments', async (ctx) =>
-      ctx.view.render('teacher/assignments/index', await edgePageContext(ctx))
-    )
-    router.get('/assignments/create', async (ctx) =>
-      ctx.view.render('teacher/assignments/create', await edgePageContext(ctx))
-    )
-    router.get('/assignments/:id', async (ctx) =>
-      ctx.view.render('teacher/assignments/show', await edgePageContext(ctx))
-    )
-    router.get('/assignments/:id/edit', async (ctx) =>
-      ctx.view.render('teacher/assignments/edit', await edgePageContext(ctx))
-    )
-    router.get('/assignments/:id/submissions', async (ctx) =>
-      ctx.view.render('teacher/assignments/submissions', await edgePageContext(ctx))
-    )
-    router.get('/assignments/submissions/:id/grade', async (ctx) =>
-      ctx.view.render('teacher/assignments/grade', await edgePageContext(ctx))
-    )
+    router.get('/dashboard', [controllers.Teachers, 'dashboardPage'])
+    router.get('/classes', [controllers.Teachers, 'classesPage'])
+    router.get('/classes/:id', [controllers.Teachers, 'classShowPage'])
+    router.get('/classes/:id/students', [controllers.Teachers, 'classStudentsPage'])
+    router.get('/assignments', [controllers.Teachers, 'assignmentsPage'])
+    router.get('/assignments/create', [controllers.Teachers, 'assignmentCreatePage'])
+    router.post('/assignments/create', [controllers.Teachers, 'storeAssignmentWeb'])
+    router.get('/assignments/submissions/:id/grade', [controllers.Teachers, 'gradeSubmissionPage'])
+    router
+      .post('/assignments/submissions/:id/grade', [controllers.Teachers, 'gradeSubmissionWeb'])
+      .as('teacher.assignments.submissions.grade.store')
+    router
+      .put('/assignments/submissions/:id/grade', [controllers.Teachers, 'gradeSubmissionWeb'])
+      .as('teacher.assignments.submissions.grade.update')
+    router.get('/assignments/:id', [controllers.Teachers, 'assignmentShowPage'])
+    router.get('/assignments/:id/edit', [controllers.Teachers, 'assignmentEditPage'])
+    router
+      .post('/assignments/:id/update', [controllers.Teachers, 'updateAssignmentWeb'])
+      .as('teacher.assignments.update.post')
+    router
+      .put('/assignments/:id', [controllers.Teachers, 'updateAssignmentWeb'])
+      .as('teacher.assignments.update.put')
+    router.post('/assignments/:id/publish', [controllers.Teachers, 'publishAssignment'])
+    router.post('/assignments/:id/close', [controllers.Teachers, 'closeAssignment'])
+    router.post('/assignments/:id/remove-attachment', [controllers.Teachers, 'removeAssignmentAttachment'])
+    router.get('/assignments/:id/submissions', [controllers.Teachers, 'assignmentSubmissionsPage'])
     router.get('/attendance', [controllers.Teachers, 'attendanceIndexPage'])
     router.get('/attendance/mark', [controllers.Teachers, 'attendanceMarkPage'])
-    router.get('/attendance/report', async (ctx) =>
-      ctx.view.render('teacher/attendance/report', await edgePageContext(ctx))
-    )
-    router.get('/attendance/student/:id', async (ctx) =>
-      ctx.view.render('teacher/attendance/student', await edgePageContext(ctx))
-    )
-    router.get('/grades', async (ctx) =>
-      ctx.view.render('teacher/grades/index', await edgePageContext(ctx))
-    )
-    router.get('/grades/add', async (ctx) =>
-      ctx.view.render('teacher/grades/add', await edgePageContext(ctx))
-    )
-    router.get('/grades/class/:classId', async (ctx) =>
-      ctx.view.render('teacher/grades/class', await edgePageContext(ctx))
-    )
-    router.get('/grades/:id/edit', async (ctx) =>
-      ctx.view.render('teacher/grades/edit', await edgePageContext(ctx))
-    )
-    router.get('/forum', async (ctx) =>
-      ctx.view.render('teacher/forum/index', await edgePageContext(ctx))
-    )
-    router.get('/forum/create', async (ctx) =>
-      ctx.view.render('teacher/forum/create', await edgePageContext(ctx))
-    )
-    router.get('/forum/my-topics', async (ctx) =>
-      ctx.view.render('teacher/forum/my-topics', await edgePageContext(ctx))
-    )
-    router.get('/forum/topic/:id', async (ctx) =>
-      ctx.view.render('teacher/forum/topic', await edgePageContext(ctx))
-    )
+    router.get('/attendance/report', [controllers.Teachers, 'attendanceReportPage'])
+    router.get('/attendance/student/:id', [controllers.Teachers, 'attendanceStudentPage'])
+    router.get('/grades', [controllers.Teachers, 'gradesPage'])
+    router.get('/grades/add', [controllers.Teachers, 'gradeAddPage'])
+    router.post('/grades', [controllers.Teachers, 'storeGradeWeb'])
+    router.get('/grades/class/:classId', [controllers.Teachers, 'gradeClassPage'])
+    router.get('/grades/:id/edit', [controllers.Teachers, 'gradeEditPage'])
+    router.put('/grades/:id', [controllers.Teachers, 'updateGradeWeb']).as('teacher.grades.update')
+    router.delete('/grades/:id', [controllers.Teachers, 'deleteGradeWeb']).as('teacher.grades.delete')
+    router.get('/forum', [forumsController, 'teacherIndex'])
+    router.get('/forum/create', [forumsController, 'teacherCreate'])
+    router.post('/forum/create', [forumsController, 'storeTeacherTopic'])
+    router.get('/forum/my-topics', [forumsController, 'myTeacherTopics'])
+    router.get('/forum/topic/:id', [forumsController, 'teacherTopic'])
+    router.post('/forum/topic/:id/reply', [forumsController, 'teacherReply'])
+    router.put('/forum/topic/:id', [forumsController, 'updateTopic']).as('teacher.forum.topic.update')
+    router.delete('/forum/topic/:id', [forumsController, 'deleteTopic']).as('teacher.forum.topic.delete')
+    router.put('/forum/reply/:id', [forumsController, 'updateReply']).as('teacher.forum.reply.update')
+    router.delete('/forum/reply/:id', [forumsController, 'deleteReply']).as('teacher.forum.reply.delete')
+    router.post('/forum/topic/:id/toggle-lock', [forumsController, 'toggleLock'])
+    router.post('/forum/topic/:id/toggle-pin', [forumsController, 'togglePin'])
     router.get('/timetable', ({ response }) => response.redirect('/schools/timetable'))
   })
   .prefix('/teacher')
@@ -1161,18 +1290,16 @@ router
     router.get('/profile', async (ctx) =>
       ctx.view.render('student/profile', await edgePageContext(ctx))
     )
-    router.get('/assignments', async (ctx) =>
-      ctx.view.render('student/assignments/index', await edgePageContext(ctx))
-    )
-    router.get('/assignments/:id', async (ctx) =>
-      ctx.view.render('student/assignments/show', await edgePageContext(ctx))
-    )
-    router.get('/assignments/:id/submit', async (ctx) =>
-      ctx.view.render('student/assignments/submit', await edgePageContext(ctx))
-    )
-    router.get('/assignments/:id/submissions', async (ctx) =>
-      ctx.view.render('student/assignments/submissions', await edgePageContext(ctx))
-    )
+    router.get('/assignments', [controllers.Students, 'assignmentsPage'])
+    router
+      .get('/assignments/submissions', [controllers.Students, 'submissionsPage'])
+      .as('student.assignments.submissions.index')
+    router.get('/assignments/:id', [controllers.Students, 'assignmentShowPage'])
+    router.get('/assignments/:id/submit', [controllers.Students, 'assignmentSubmitPage'])
+    router.post('/assignments/:id/submit', [controllers.Students, 'submitAssignmentWeb'])
+    router
+      .get('/assignments/:id/submissions', [controllers.Students, 'submissionsPage'])
+      .as('student.assignments.submissions.legacy')
     router.get('/attendance', async (ctx) =>
       ctx.view.render('student/attendance/index', await edgePageContext(ctx))
     )
@@ -1185,18 +1312,16 @@ router
     router.get('/discipline/:id', async (ctx) =>
       ctx.view.render('student/discipline/details', await edgePageContext(ctx))
     )
-    router.get('/forum', async (ctx) =>
-      ctx.view.render('student/forum/index', await edgePageContext(ctx))
-    )
-    router.get('/forum/create', async (ctx) =>
-      ctx.view.render('student/forum/create', await edgePageContext(ctx))
-    )
-    router.get('/forum/my-questions', async (ctx) =>
-      ctx.view.render('student/forum/my-questions', await edgePageContext(ctx))
-    )
-    router.get('/forum/topic/:id', async (ctx) =>
-      ctx.view.render('student/forum/topic', await edgePageContext(ctx))
-    )
+    router.get('/forum', [forumsController, 'studentIndex'])
+    router.get('/forum/create', [forumsController, 'studentCreate'])
+    router.post('/forum/create', [forumsController, 'storeStudentTopic'])
+    router.get('/forum/my-questions', [forumsController, 'myStudentQuestions'])
+    router.get('/forum/topic/:id', [forumsController, 'studentTopic'])
+    router.post('/forum/topic/:id/reply', [forumsController, 'studentReply'])
+    router.put('/forum/topic/:id', [forumsController, 'updateTopic']).as('student.forum.topic.update')
+    router.delete('/forum/topic/:id', [forumsController, 'deleteTopic']).as('student.forum.topic.delete')
+    router.put('/forum/reply/:id', [forumsController, 'updateReply']).as('student.forum.reply.update')
+    router.delete('/forum/reply/:id', [forumsController, 'deleteReply']).as('student.forum.reply.delete')
     router.get('/grades', async (ctx) =>
       ctx.view.render('student/grades/index', await edgePageContext(ctx))
     )
@@ -1489,66 +1614,131 @@ router
 
 router
   .group(() => {
-    router.get('/children', async (ctx) =>
-      ctx.view.render('parent/children/index', await edgePageContext(ctx))
-    )
-    router.get('/children/:id', async (ctx) =>
-      ctx.view.render('parent/children/show', await edgePageContext(ctx))
-    )
-    router.get('/children/:id/profile', async (ctx) =>
-      ctx.view.render('parent/children/profile', await edgePageContext(ctx))
-    )
-    router.get('/grades', async (ctx) =>
-      ctx.view.render('parent/grades/index', await edgePageContext(ctx))
-    )
+    router.get('/dashboard', [controllers.Parents, 'dashboardPage'])
+    router.get('/children', [controllers.Parents, 'childrenPage'])
+    router.get('/children/:id', [controllers.Parents, 'childShowPage'])
+    router.get('/children/:id/profile', [controllers.Parents, 'childProfilePage'])
+    router.get('/grades', [controllers.Parents, 'gradesPage'])
     router.get('/grades/child/:studentId', [controllers.Parents, 'childGradesDetailsPage'])
-    router.get('/grades/report-card/:studentId', async (ctx) =>
-      ctx.view.render('parent/grades/report-card', await edgePageContext(ctx))
-    )
+    router.get('/grades/report-card/:studentId', [controllers.Parents, 'reportCardPage']).as('parent.grades.report_card')
+    router.get('/report-card/child/:studentId', [controllers.Parents, 'reportCardPage']).as('parent.report_card.child')
     router.get('/discipline', [controllers.Parents, 'disciplinePage'])
     router.get('/discipline/child/:studentId', ({ params, response }) =>
       response.redirect(`/parent/discipline?child_id=${params.studentId}`)
     )
-    router.get('/discipline/details/:id', async (ctx) =>
-      ctx.view.render('parent/discipline/details', await edgePageContext(ctx))
-    )
-    router.get('/discipline/:id', async (ctx) =>
-      ctx.view.render('parent/discipline/details', await edgePageContext(ctx))
-    )
+    router.get('/discipline/details/:id', [controllers.Parents, 'disciplineDetailsPage']).as('parent.discipline.details')
+    router.get('/discipline/:id', [controllers.Parents, 'disciplineDetailsPage']).as('parent.discipline.details.alias')
     router.get('/attendance', [controllers.Parents, 'attendancePage'])
     router.get('/attendance/child/:studentId', ({ params, response }) =>
       response.redirect(`/parent/attendance?child_id=${params.studentId}`)
     )
-    router.get('/attendance/justify', async (ctx) =>
-      ctx.view.render('parent/attendance/justify', await edgePageContext(ctx))
-    )
+    router.get('/attendance/justify', [controllers.Parents, 'attendanceJustifyPage'])
+    router.post('/attendance/justify', [controllers.Parents, 'justifyAbsence']).as('parent.attendance.justify.store')
     router.get('/payments', [controllers.Parents, 'paymentsPage'])
     router.get('/payments/child/:studentId', ({ params, response }) =>
       response.redirect(`/parent/payments?child_id=${params.studentId}`)
     )
-    router.get('/payments/history', async (ctx) =>
-      ctx.view.render('parent/payments/history', await edgePageContext(ctx))
-    )
-    router.get('/payments/status', async (ctx) =>
-      ctx.view.render('parent/payments/status', await edgePageContext(ctx))
-    )
-    router.get('/messages', ({ response }) => response.redirect('/communication/messages'))
-    router.get('/messages/send', ({ response }) => response.redirect('/communication/messages/compose'))
-    router.get('/messages/notifications', ({ response }) =>
-      response.redirect('/communication/notifications')
-    )
-    router.get('/messages/:id', ({ params, response }) =>
-      response.redirect(`/communication/messages/read/${params.id}`)
-    )
+    router.get('/payments/history', [controllers.Parents, 'paymentsHistoryPage'])
+    router.get('/payments/status', [controllers.Parents, 'paymentsStatusPage'])
+    router.get('/messages', [controllers.Parents, 'parentMessagesPage'])
+    router.get('/messages/send', [controllers.Parents, 'parentMessageSendPage'])
+    router.post('/messages/send', [controllers.Parents, 'sendParentMessage']).as('parent.messages.send.store')
+    router.get('/messages/notifications', [controllers.Parents, 'parentNotificationsPage'])
+    router.get('/messages/:id', [controllers.Parents, 'parentConversationPage'])
     router.get('/appointments', [controllers.Parents, 'appointmentsPage'])
     router.get('/appointments/request', [controllers.Parents, 'appointmentRequestPage'])
     router.post('/appointments/request', [controllers.Parents, 'requestAppointment'])
     router.get('/appointments/schedule', async (ctx) =>
       ctx.view.render('parent/appointments/schedule', await edgePageContext(ctx))
     )
+    router.get('/appointments/reschedule', [controllers.Parents, 'appointmentRequestPage']).as('parent.appointments.reschedule')
+    router.get('/appointments/:id', [controllers.Parents, 'appointmentsPage']).as('parent.appointments.show.alias')
   })
   .prefix('/parent')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['parent', 'director'] })])
+
+router
+  .group(() => {
+    router.get('/children/stats', [controllers.Parents, 'childrenStats'])
+    router.get('/grades/export', [controllers.Parents, 'exportGrades'])
+    router.get('/attendance/export', [controllers.Parents, 'exportAttendance'])
+    router.get('/payments/export', [controllers.Parents, 'exportPayments']).as('api.parent.payments.export')
+    router.get('/payments/history/export', [controllers.Parents, 'exportPayments']).as('api.parent.payments.history.export')
+    router.get('/appointments/schedule', [controllers.Parents, 'appointmentSchedule'])
+    router.delete('/appointments/:id/cancel', [controllers.Parents, 'cancelAppointment'])
+    router.get('/appointments/export', [controllers.Parents, 'exportAppointments'])
+    router.get('/messages/conversation/:userId', [controllers.Parents, 'parentConversationData'])
+    router.post('/messages/send', [controllers.Parents, 'sendParentMessage']).as('api.parent.messages.send')
+    router.post('/messages/mark-read/:userId', [controllers.Parents, 'markConversationRead'])
+    router.post('/messages/mark-all-read', [controllers.Parents, 'markAllParentMessagesRead'])
+    router.post('/discipline/:id/respond', [controllers.Parents, 'respondToIncident'])
+    router.post('/notifications/:id/read', [controllers.Parents, 'markNotificationRead'])
+    router.post('/notifications/mark-all-read', [controllers.Parents, 'markAllNotificationsRead'])
+    router.delete('/notifications/delete-all', [controllers.Parents, 'deleteAllNotifications'])
+    router.get('/unread-count', [controllers.Parents, 'parentUnreadCount'])
+  })
+  .prefix('/api/parent')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['parent', 'director'] })])
+
+router
+  .group(() => {
+    router.get('/search', [interSchoolController, 'searchPage'])
+    router.get('/search/results', [interSchoolController, 'searchResultsPage'])
+    router.get('/schools/:id', [interSchoolController, 'schoolPublicPage'])
+    router.get('/contact', [interSchoolController, 'contactSchool'])
+
+    router.get('/events', [interSchoolController, 'eventsPage'])
+    router.get('/events/create', [interSchoolController, 'eventCreatePage'])
+    router.post('/events/create', [interSchoolController, 'storeEventWeb'])
+    router.get('/events/my-events', [interSchoolController, 'myEventsPage'])
+    router.get('/events/:id', [interSchoolController, 'eventShowPage']).as('inter-school.events.show')
+    router.get('/events/:id/show', [interSchoolController, 'eventShowPage']).as('inter-school.events.show.alias')
+    router.get('/events/:id/edit', [interSchoolController, 'eventShowPage']).as('inter-school.events.edit.alias')
+    router.get('/events/:id/register', [interSchoolController, 'eventRegisterPage'])
+    router.post('/events/:id/register', [interSchoolController, 'registerEventWeb'])
+    router.post('/events/:id/cancel', [interSchoolController, 'cancelEvent'])
+
+    router.get('/exchanges', [interSchoolController, 'exchangesPage'])
+    router.get('/exchanges/start', [interSchoolController, 'exchangeStartPage'])
+    router.post('/exchanges/start', [interSchoolController, 'storeExchangeWeb'])
+    router.get('/exchanges/:id', [interSchoolController, 'exchangeShowPage']).as('inter-school.exchanges.show')
+    router.get('/exchanges/:id/show', [interSchoolController, 'exchangeShowPage']).as('inter-school.exchanges.show.alias')
+    router.get('/exchanges/:id/messages', [interSchoolController, 'exchangeMessagesPage'])
+
+    router.get('/best-practices', [interSchoolController, 'bestPracticesPage'])
+    router.get('/best-practices/categories', [interSchoolController, 'bestPracticeCategoriesPage'])
+    router.get('/best-practices/share', [interSchoolController, 'bestPracticeSharePage'])
+    router.post('/best-practices/share', [interSchoolController, 'storeBestPracticeWeb'])
+    router.get('/best-practices/:id', [interSchoolController, 'bestPracticeShowPage']).as('inter-school.best-practices.show')
+    router.get('/best-practices/:id/show', [interSchoolController, 'bestPracticeShowPage']).as('inter-school.best-practices.show.alias')
+  })
+  .prefix('/inter-school')
+  .use(middleware.auth())
+
+router
+  .group(() => {
+    router.post('/save-school', [interSchoolController, 'saveSchool'])
+    router.get('/schools/:id/info', [interSchoolController, 'getSchoolPublicInfo'])
+    router.get('/search/export', [interSchoolController, 'exportSearch'])
+
+    router.get('/events/calendar', [interSchoolController, 'calendarEvents'])
+    router.get('/events/export', [interSchoolController, 'exportEvents'])
+    router.post('/events/registrations/:id/cancel', [interSchoolController, 'cancelRegistration'])
+
+    router.get('/exchanges/export', [interSchoolController, 'exportExchanges'])
+    router.post('/exchanges/:id/accept', [interSchoolController, 'acceptExchange'])
+    router.post('/exchanges/:id/decline', [interSchoolController, 'declineExchange'])
+    router.post('/exchanges/:id/complete', [interSchoolController, 'completeExchange'])
+    router.get('/exchanges/:id/messages', [interSchoolController, 'exchangeMessages'])
+    router.post('/exchanges/:id/send', [interSchoolController, 'sendExchangeMessage'])
+    router.get('/exchanges/:id/messages/export', [interSchoolController, 'exportExchangeMessages'])
+
+    router.get('/best-practices/export', [interSchoolController, 'exportBestPractices'])
+    router.post('/best-practices/:id/like', [interSchoolController, 'likeBestPractice'])
+    router.post('/best-practices/:id/comment', [interSchoolController, 'commentBestPractice'])
+  })
+  .prefix('/api/inter-school')
+  .use(middleware.auth())
 
 router
   .group(() => {
@@ -1598,8 +1788,58 @@ router
       ctx.view.render('inter-school/best-practices/show', await edgePageContext(ctx))
     )
   })
-  .prefix('/inter-school')
+  .prefix('/inter-school-legacy')
   .use(middleware.auth())
+
+router
+  .group(() => {
+    router.get('/academic/performance', [reportsController, 'academicPerformanceData'])
+    router.get('/academic/performance/export', [reportsController, 'exportData']).as('api.reports.academic.performance.export')
+    router.get('/academic/class/:id/export', [reportsController, 'exportData']).as('api.reports.academic.class.export')
+    router.get('/academic/student/:id/export', [reportsController, 'exportData']).as('api.reports.academic.student.export')
+    router.get('/academic/subject/:id/export', [reportsController, 'exportData']).as('api.reports.academic.subject.export')
+    router.get('/financial/income', [reportsController, 'financialIncomeData'])
+    router.get('/financial/income/export', [reportsController, 'exportData']).as('api.reports.financial.income.export')
+    router.get('/financial/expenses', [reportsController, 'financialExpensesData'])
+    router.get('/financial/expenses/export', [reportsController, 'exportData']).as('api.reports.financial.expenses.export')
+    router.get('/financial/balance', [reportsController, 'financialBalanceData'])
+    router.get('/financial/balance/export', [reportsController, 'exportData']).as('api.reports.financial.balance.export')
+    router.get('/financial/forecasts', [reportsController, 'financialForecastsData'])
+    router.get('/financial/forecasts/export', [reportsController, 'exportData']).as('api.reports.financial.forecasts.export')
+    router.get('/disciplinary/summary', [reportsController, 'disciplinarySummaryData'])
+    router.get('/disciplinary/summary/export', [reportsController, 'exportData']).as('api.reports.disciplinary.summary.export')
+    router.get('/disciplinary/trends', [reportsController, 'disciplinaryTrendsData'])
+    router.get('/disciplinary/trends/export', [reportsController, 'exportData']).as('api.reports.disciplinary.trends.export')
+    router.get('/disciplinary/comparisons', [reportsController, 'disciplinaryComparisonsData'])
+    router.get('/disciplinary/comparisons/export', [reportsController, 'exportData']).as('api.reports.disciplinary.comparisons.export')
+    router.delete('/exports/:id', [reportsController, 'deleteExport'])
+  })
+  .prefix('/api/reports')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director', 'secretary'] })])
+
+router
+  .group(() => {
+    router.get('/', ({ response }) => response.redirect('/reports/academic/school'))
+    router.get('/academic/class', [reportsController, 'academicClassPage'])
+    router.get('/academic/performance', [reportsController, 'academicPerformancePage'])
+    router.get('/academic/school', [reportsController, 'academicSchoolPage'])
+    router.get('/academic/student-progress', [reportsController, 'studentProgressPage'])
+    router.get('/academic/subject', [reportsController, 'subjectReportPage'])
+    router.get('/disciplinary/comparisons', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/disciplinary/comparisons')))
+    router.get('/disciplinary/summary', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/disciplinary/summary')))
+    router.get('/disciplinary/trends', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/disciplinary/trends')))
+    router.get('/financial/balance', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/balance')))
+    router.get('/financial/expenses', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/expenses')))
+    router.get('/financial/forecasts', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/forecasts')))
+    router.get('/financial/income', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/income')))
+    router.get('/exports', [reportsController, 'exportsPage'])
+    router.get('/exports/generate', [reportsController, 'exportsGeneratePage'])
+    router.post('/exports/generate', [reportsController, 'generateExport'])
+    router.get('/exports/downloads', [reportsController, 'exportsDownloadsPage'])
+    router.get('/exports/download/:id', [reportsController, 'downloadExport'])
+  })
+  .prefix('/reports')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director', 'secretary'] })])
 
 router
   .group(() => {
@@ -1686,7 +1926,7 @@ router
       ctx.view.render('reports/exports/downloads', await edgePageContext(ctx))
     )
   })
-  .prefix('/reports')
+  .prefix('/reports-legacy')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director', 'secretary'] })])
 
 router

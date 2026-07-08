@@ -19,9 +19,9 @@
         <div class="space-y-4">
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Classe RDC/DAS</label>
-            <select id="rdcDasClassSelect" class="w-full px-4 py-2 border rounded-lg">
+            <select id="rdcDasClassSelect" class="w-full px-4 py-2 border rounded-lg" required>
               <option value="">
-                Saisie manuelle
+                Sélectionner une classe autorisée
               </option>
               @each(classItem in rdcClassCatalog)
                 <option
@@ -41,17 +41,18 @@
               type="text"
               name="name"
               required
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-              placeholder="Ex: 6ème A, 5ème B, Terminale C"
+              readonly
+              class="w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-primary"
+              placeholder="Choisissez d'abord une classe RDC/DAS"
             />
             <p class="text-xs text-gray-500 mt-1">
-              Exemple: 6ème A, 4ème B, 3ème Scientifique
+              Le nom est rempli automatiquement depuis les classes autorisées de votre section.
             </p>
           </div>
 
           <div>
             <label class="block text-gray-700 dark:text-gray-300 mb-2">Niveau *</label>
-            <select name="level" required class="w-full px-4 py-2 border rounded-lg">
+            <select name="level" required class="w-full px-4 py-2 border rounded-lg pointer-events-none bg-gray-50 dark:bg-gray-700" tabindex="-1">
               <option value="">
                 Sélectionner
               </option>
@@ -76,13 +77,14 @@
               type="number"
               name="gradeLevel"
               required
+              readonly
               min="1"
               max="12"
               class="w-full px-4 py-2 border rounded-lg"
-              placeholder="Ex: 1 pour 1ère année, 6 pour 6ème année"
+              placeholder="Choisissez d'abord une classe RDC/DAS"
             />
             <p class="text-xs text-gray-500 mt-1">
-              1=Maternelle/Primaire 1ère année, 6=6ème année, 12=Terminale
+              Le grade est rempli automatiquement selon le catalogue scolaire RDC.
             </p>
           </div>
 

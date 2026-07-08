@@ -1,7 +1,10 @@
 import Class from '#models/class'
 import Student from '#models/student'
 import { DateTime } from 'luxon'
-import { resolveSectionIdForLevel } from '#services/school_governance_service'
+import {
+  resolveSectionIdForLevel,
+  sectionCodeForLevel,
+} from '#services/school_governance_service'
 
 const CLASS_CAPACITY = 50
 
@@ -55,6 +58,22 @@ export const RDC_CLASS_CATALOG: RdcClassCatalogItem[] = [
   { name: '3ème Humanités', level: 'Humanités', gradeLevel: 11 },
   { name: '4ème Humanités', level: 'Humanités', gradeLevel: 12 },
 ]
+
+export function getClassCatalogSectionCode(classItem: RdcClassCatalogItem) {
+  return sectionCodeForLevel(classItem.level, classItem.gradeLevel)
+}
+
+export function filterClassCatalogForSection(
+  sectionCode?: string | null,
+  catalog: RdcClassCatalogItem[] = RDC_CLASS_CATALOG
+) {
+  if (!sectionCode) return catalog
+  return catalog.filter((classItem) => getClassCatalogSectionCode(classItem) === sectionCode)
+}
+
+export function getSchoolOptionsForSection(sectionCode?: string | null): readonly string[] {
+  return sectionCode === 'secondaire' ? RDC_SCHOOL_OPTIONS : []
+}
 
 export function isHumanitiesClass(classObj?: { level?: string | null; gradeLevel: number } | null) {
   return Boolean(
@@ -185,6 +204,7 @@ async function findAvailableClass(baseClass: Class, trx?: any) {
       maxCapacity: CLASS_CAPACITY,
       currentEnrollment: 0,
       academicYear: baseClass.academicYear,
+      schoolSectionId: baseClass.schoolSectionId,
       shift: baseClass.shift,
       teacherId: null,
     },

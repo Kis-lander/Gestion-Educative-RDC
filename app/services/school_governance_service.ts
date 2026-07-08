@@ -245,7 +245,10 @@ export async function getGovernanceContext(user: Pick<User, 'id' | 'schoolId' | 
 
   return {
     position,
-    positionLabel: SCHOOL_POSITIONS[position] || position,
+    positionLabel:
+      position === 'teacher'
+        ? teacherPositionLabelForSection(assignment?.section_code)
+        : SCHOOL_POSITIONS[position] || position,
     sectionId: assignment?.school_section_id || null,
     sectionCode: assignment?.section_code || null,
     sectionName: assignment?.section_name || null,
@@ -301,6 +304,16 @@ export async function ensureSchoolSections(schoolId: string, trx?: any) {
 
 export function positionLabel(position?: string | null) {
   return SCHOOL_POSITIONS[position as SchoolPosition] || position || 'Collaborateur'
+}
+
+export function teacherPositionLabelForSection(sectionCode?: string | null) {
+  const labels: Record<string, string> = {
+    maternelle: 'Éducatrice',
+    primaire: 'Enseignant',
+    secondaire: 'Professeur',
+  }
+
+  return labels[String(sectionCode || '').toLowerCase()] || 'Enseignant'
 }
 
 export function canCreatePosition(context: GovernanceContext, position: SchoolPosition) {

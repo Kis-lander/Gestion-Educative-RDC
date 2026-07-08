@@ -54,7 +54,6 @@
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Votre question *</label>
               <textarea
                 name="content"
-                required
                 rows="8"
                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
                 placeholder="Décrivez votre question en détail..."
@@ -67,13 +66,19 @@
                 class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
                 onclick="document.getElementById('fileInput').click()"
               >
-                <input type="file" name="attachment" id="fileInput" class="hidden" accept=".pdf,.jpg,.png,.doc,.txt" />
+                <input
+                  type="file"
+                  name="attachment"
+                  id="fileInput"
+                  class="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
+                />
                 <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
                 <p class="text-gray-500">
                   Cliquez pour ajouter un fichier (image, PDF, document)
                 </p>
                 <p class="text-xs text-gray-400 mt-1">
-                  Max 10MB
+                  Max 20MB
                 </p>
               </div>
               <div id="fileName" class="text-sm text-green-600 mt-1 hidden">

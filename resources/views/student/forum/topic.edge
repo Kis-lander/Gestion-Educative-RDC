@@ -1,4 +1,4 @@
-@layout('layouts/dashboard')
+﻿@layout('layouts/dashboard')
 
   @section('title')
     {{ topic.title }} - Forum
@@ -17,6 +17,11 @@
         <button onclick="scrollToReply()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
           <i class="fas fa-reply mr-2"></i>Répondre
   </button>
+      @endif
+      @if(topic.canDelete)
+        <button onclick="deleteTopic()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+          <i class="fas fa-trash mr-2"></i>Supprimer
+        </button>
       @endif
       <a href="/student/forum" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
         <i class="fas fa-arrow-left mr-2"></i>Retour au forum
@@ -62,9 +67,22 @@
   @endsection
   
   @section('content')
+    <div class="overflow-hidden rounded-[22px] border border-gray-200 bg-[#eef2f7] shadow-xl dark:border-gray-700 dark:bg-gray-950">
+      <div class="border-b border-gray-200 bg-white px-5 py-4 dark:border-gray-800 dark:bg-gray-900">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-primary">Forum de section</p>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ topic.className || 'Section' }}</h2>
+          </div>
+          <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">{{ topic.subjectName }}</span>
+        </div>
+      </div>
+
+      <div class="max-h-[62vh] space-y-4 overflow-y-auto p-5">
     <!-- Message original -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
-      <div class="p-4 border-b bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+    <div class="flex justify-start">
+      <div class="max-w-[82%]">
+      <div class="p-3 flex justify-between items-center">
         <div class="flex items-center gap-2">
           <div
             class="w-8 h-8 rounded-full {{ topic.isTeacher ? 'bg-primary' : 'bg-gray-400' }} flex items-center justify-center text-white text-sm font-bold"
@@ -78,35 +96,50 @@
         </span>
           </div>
         </div>
-        <div class="text-xs text-gray-400">
-          {{ topic.createdAt }} à {{ topic.createdTime }}
+        <div class="text-xs text-gray-500 dark:text-gray-400">
+          {{ topic.createdAt }} à {{ topic.createdTime }}{{ topic.edited ? ' · modifié' : '' }}
         </div>
       </div>
-      <div class="p-4">
+      <div class="rounded-2xl rounded-bl-md bg-white p-4 shadow-sm dark:bg-gray-800">
         <div class="prose max-w-none">
-          <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+          <p id="topicContent" class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
             {{ topic.content }}
           </p>
         </div>
         @if(topic.attachmentUrl)
-          <div class="mt-3 pt-2 border-t">
-            <a href="{{ topic.attachmentUrl }}" target="_blank" class="text-primary text-sm hover:underline">
-              <i class="fas fa-paperclip mr-1"></i>Fichier joint
-      </a>
+          <div class="mt-4 rounded-lg border bg-gray-50 dark:bg-gray-700 p-3">
+            @if(topic.attachmentIsImage)
+              <img src="{{ topic.attachmentUrl }}" alt="{{ topic.attachmentName }}" class="mb-3 max-h-80 rounded-lg object-contain" />
+            @endif
+            <a href="{{ topic.attachmentDownloadUrl }}" class="text-primary text-sm font-medium hover:underline">
+              <i class="fas fa-paperclip mr-1"></i>{{ topic.attachmentName || 'Fichier joint' }}
+            </a>
           </div>
         @endif
+      </div>
+      <div class="px-4 pb-4 flex gap-3">
+        <button onclick="replyToTopic()" class="text-primary text-xs hover:underline">
+          <i class="fas fa-reply mr-1"></i>Répondre à cette question
+        </button>
+        @if(topic.canEdit)
+          <button onclick="editTopic()" class="text-yellow-600 text-xs hover:underline">
+            <i class="fas fa-pen mr-1"></i>Modifier
+          </button>
+        @endif
+      </div>
       </div>
     </div>
 
     <!-- Liste des réponses -->
-    <div class="space-y-4 mb-6">
+    <div class="space-y-4">
       <h3 class="font-semibold text-lg">
         Réponses ({{ topic.repliesCount || 0 }})
       </h3>
 
       @each(reply in replies)
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-          <div class="p-3 border-b bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+        <div class="flex {{ reply.isMine ? 'justify-end' : 'justify-start' }}" data-reply-id="{{ reply.id }}">
+          <div class="max-w-[82%]">
+          <div class="p-3 flex justify-between items-center">
             <div class="flex items-center gap-2">
               <div
                 class="w-8 h-8 rounded-full {{ reply.isTeacher ? 'bg-primary' : 'bg-gray-400' }} flex items-center justify-center text-white text-sm font-bold"
@@ -114,27 +147,52 @@
                 {{ reply.authorName.charAt(0) }}
               </div>
               <div>
-                <span class="font-medium">{{ reply.authorName }}</span>
+                <span class="font-medium" data-reply-author>{{ reply.authorName }}</span>
                 <span class="text-xs {{ reply.isTeacher ? 'text-primary' : 'text-gray-500' }} ml-2">
                   {{ reply.userType }}
           </span>
               </div>
             </div>
             <div class="text-xs text-gray-400">
-              {{ reply.createdAt }} à {{ reply.createdTime }}
+              {{ reply.createdAt }} à {{ reply.createdTime }}{{ reply.edited ? ' · modifié' : '' }}
             </div>
           </div>
-          <div class="p-4">
-            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+          <div class="rounded-2xl {{ reply.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white' }} p-4 shadow-sm">
+            @if(reply.parentTarget)
+              <div class="mb-3 rounded border-l-4 border-primary bg-gray-50 dark:bg-gray-700 px-3 py-2 text-xs">
+                <p class="font-semibold">Réponse à {{ reply.parentTarget.authorName }}</p>
+                <p class="truncate text-gray-500 dark:text-gray-300">{{ reply.parentTarget.content || reply.parentTarget.attachmentName || 'Fichier joint' }}</p>
+              </div>
+            @endif
+            <p class="whitespace-pre-wrap" data-reply-content>
               {{ reply.content }}
             </p>
             @if(reply.attachmentUrl)
-              <div class="mt-2">
-                <a href="{{ reply.attachmentUrl }}" target="_blank" class="text-primary text-xs hover:underline">
-                  <i class="fas fa-paperclip mr-1"></i>Fichier joint
-        </a>
+              <div class="mt-3 rounded-lg border bg-gray-50 dark:bg-gray-700 p-3">
+                @if(reply.attachmentIsImage)
+                  <img src="{{ reply.attachmentUrl }}" alt="{{ reply.attachmentName }}" class="mb-3 max-h-72 rounded-lg object-contain" />
+                @endif
+                <a href="{{ reply.attachmentDownloadUrl }}" class="text-primary text-xs font-medium hover:underline">
+                  <i class="fas fa-paperclip mr-1"></i>{{ reply.attachmentName || 'Fichier joint' }}
+                </a>
               </div>
             @endif
+          </div>
+          <div class="px-4 pb-3 flex gap-3 {{ reply.isMine ? 'justify-end' : 'justify-start' }}">
+            <button onclick="replyToPost('{{ reply.id }}')" class="text-primary text-xs hover:underline">
+              <i class="fas fa-reply mr-1"></i>Répondre
+            </button>
+          @if(reply.canEdit)
+              <button onclick="editReply('{{ reply.id }}')" class="text-yellow-600 text-xs hover:underline">
+                <i class="fas fa-pen mr-1"></i>Modifier
+              </button>
+          @endif
+          @if(reply.canDelete)
+              <button onclick="deleteReply('{{ reply.id }}')" class="text-red-500 text-xs hover:underline">
+                <i class="fas fa-trash mr-1"></i>Supprimer
+              </button>
+          @endif
+          </div>
           </div>
         </div>
         @else
@@ -144,13 +202,11 @@
         </div>
       @end
     </div>
+      </div>
 
     <!-- Formulaire de réponse -->
     @if(!topic.isLocked)
-      <div id="replyForm" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg mb-4">
-          Votre réponse
-        </h3>
+      <div id="replyForm" class="border-t border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <form
           method="POST"
           action="/student/forum/topic/{{ topic.id }}/reply"
@@ -159,13 +215,15 @@
           @submit="loading = true"
         >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+          <input type="hidden" name="parentPostId" id="parentPostId" />
+          <input type="hidden" name="parentTopicId" id="parentTopicId" />
+          <div id="replyTargetPreview" class="hidden mb-4 rounded-lg border-l-4 border-primary bg-blue-50 p-3 text-sm text-blue-900 dark:bg-blue-900/20 dark:text-blue-100"></div>
 
-          <div class="mb-4">
+          <div class="mb-3">
             <textarea
               name="content"
-              required
-              rows="5"
-              class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+              rows="3"
+              class="w-full resize-none rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-800"
               placeholder="Rédigez votre réponse ici..."
             ></textarea>
           </div>
@@ -176,7 +234,13 @@
               class="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:border-primary transition"
               onclick="document.getElementById('fileInput').click()"
             >
-              <input type="file" name="attachment" id="fileInput" class="hidden" accept=".pdf,.jpg,.png,.doc,.txt" />
+              <input
+                type="file"
+                name="attachment"
+                id="fileInput"
+                class="hidden"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
+              />
               <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-1"></i>
               <p class="text-sm text-gray-500">
                 Cliquez pour ajouter un fichier
@@ -204,6 +268,7 @@
         Ce sujet est verrouillé. Vous ne pouvez plus ajouter de réponses.
       </div>
     @endif
+    </div>
     
     <script>
       const fileInput = document.getElementById("fileInput");
@@ -212,15 +277,134 @@
 
       fileInput?.addEventListener("change", function() {
         if (this.files && this.files[0]) {
-          fileName.textContent = `Fichier sélectionné: ${this.files[0].name}`;
+          const selectedLabel = window.AppTranslations?.translate("Fichier sélectionné") || "Fichier sélectionné";
+          fileName.textContent = `${selectedLabel}: ${this.files[0].name}`;
           fileName.classList.remove("hidden");
         }
       });
+
+      function setReplyTarget(author, content, postId, topicId) {
+        document.getElementById("parentPostId").value = postId || "";
+        document.getElementById("parentTopicId").value = topicId || "";
+        const preview = document.getElementById("replyTargetPreview");
+        preview.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-semibold">Réponse à ${escapeHtml(author)}</p>
+              <p class="truncate opacity-80">${escapeHtml(content || "Fichier joint")}</p>
+            </div>
+            <button type="button" onclick="clearReplyTarget()" class="rounded px-2 py-1 hover:bg-blue-100 dark:hover:bg-blue-800">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `;
+        preview.classList.remove("hidden");
+        document.querySelector('textarea[name="content"]').focus();
+      }
+
+      function clearReplyTarget() {
+        document.getElementById("parentPostId").value = "";
+        document.getElementById("parentTopicId").value = "";
+        const preview = document.getElementById("replyTargetPreview");
+        preview.classList.add("hidden");
+        preview.innerHTML = "";
+      }
+
+      function replyToTopic() {
+        setReplyTarget("{{ topic.authorName }}", document.getElementById("topicContent")?.textContent?.trim() || "", "", "{{ topic.id }}");
+      }
+
+      function getReplyData(id) {
+        const node = document.querySelector(`[data-reply-id="${id}"]`);
+        return {
+          author: node?.querySelector("[data-reply-author]")?.textContent?.trim() || "Auteur",
+          content: node?.querySelector("[data-reply-content]")?.textContent?.trim() || ""
+        };
+      }
+
+      function replyToPost(id) {
+        const data = getReplyData(id);
+        setReplyTarget(data.author, data.content, id, "");
+      }
+
+      function getTopicTitle() {
+        return document.querySelector("[data-page-header] h1")?.textContent?.trim() || "{{ topic.title }}";
+      }
+
+      function getTopicContent() {
+        return document.getElementById("topicContent")?.textContent?.trim() || "";
+      }
+
+      function replyToPostLegacy(id, author, content) {
+        setReplyTarget(author, content, id, "");
+      }
+
+      async function editTopic() {
+        const content = prompt("Modifier votre message", getTopicContent());
+        if (content === null) return;
+        const res = await fetch("/student/forum/topic/{{ topic.id }}", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({ content })
+        });
+        const data = await res.json();
+        if (data.success) location.reload(); else alert("Erreur: " + data.message);
+      }
+
+      async function editReply(replyId) {
+        const content = prompt("Modifier votre message", getReplyData(replyId).content);
+        if (content === null) return;
+        const res = await fetch(`/student/forum/reply/${replyId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({ content })
+        });
+        const data = await res.json();
+        if (data.success) location.reload(); else alert("Erreur: " + data.message);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text || "";
+        return div.innerHTML;
+      }
 
       function scrollToReply() {
         document.getElementById("replyForm").scrollIntoView({
           behavior: "smooth"
         });
+      }
+
+      function deleteTopic() {
+        if (confirm("Supprimer définitivement ce sujet ? Toutes les réponses seront également supprimées.")) {
+          fetch("/student/forum/topic/{{ topic.id }}", {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.href = "/student/forum"; else alert("Erreur: " + data.message);
+          });
+        }
+      }
+
+      function deleteReply(replyId) {
+        if (confirm("Supprimer cette réponse ?")) {
+          fetch(`/student/forum/reply/${replyId}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) location.reload(); else alert("Erreur: " + data.message);
+          });
+        }
       }
       // Incrémenter le compteur de vues
 

@@ -225,18 +225,30 @@ export class FeePaymentSchema extends BaseModel {
 }
 
 export class ForumPostSchema extends BaseModel {
-  static $columns = ['content', 'createdAt', 'id', 'isApproved', 'parentPostId', 'topicId', 'updatedAt', 'userId'] as const
+  static $columns = ['attachmentMime', 'attachmentName', 'attachmentSize', 'attachmentUrl', 'content', 'createdAt', 'editedAt', 'id', 'isApproved', 'parentPostId', 'parentTopicId', 'topicId', 'updatedAt', 'userId'] as const
   $columns = ForumPostSchema.$columns
+  @column()
+  declare attachmentMime: string | null
+  @column()
+  declare attachmentName: string | null
+  @column()
+  declare attachmentSize: number | null
+  @column()
+  declare attachmentUrl: string | null
   @column()
   declare content: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column.dateTime()
+  declare editedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: string
   @column()
   declare isApproved: boolean | null
   @column()
   declare parentPostId: string | null
+  @column()
+  declare parentTopicId: string | null
   @column()
   declare topicId: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -246,8 +258,16 @@ export class ForumPostSchema extends BaseModel {
 }
 
 export class ForumTopicSchema extends BaseModel {
-  static $columns = ['classId', 'content', 'createdAt', 'createdBy', 'id', 'isLocked', 'isPinned', 'subjectId', 'title', 'updatedAt', 'viewsCount'] as const
+  static $columns = ['attachmentMime', 'attachmentName', 'attachmentSize', 'attachmentUrl', 'classId', 'content', 'createdAt', 'createdBy', 'editedAt', 'id', 'isLocked', 'isPinned', 'isResolved', 'schoolSectionId', 'subjectId', 'title', 'updatedAt', 'viewsCount'] as const
   $columns = ForumTopicSchema.$columns
+  @column()
+  declare attachmentMime: string | null
+  @column()
+  declare attachmentName: string | null
+  @column()
+  declare attachmentSize: number | null
+  @column()
+  declare attachmentUrl: string | null
   @column()
   declare classId: string | null
   @column()
@@ -256,12 +276,18 @@ export class ForumTopicSchema extends BaseModel {
   declare createdAt: DateTime | null
   @column()
   declare createdBy: string | null
+  @column.dateTime()
+  declare editedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: string
   @column()
   declare isLocked: boolean | null
   @column()
   declare isPinned: boolean | null
+  @column()
+  declare isResolved: boolean
+  @column()
+  declare schoolSectionId: string | null
   @column()
   declare subjectId: string | null
   @column()
@@ -323,12 +349,24 @@ export class InspectionSettingSchema extends BaseModel {
 }
 
 export class MessageSchema extends BaseModel {
-  static $columns = ['content', 'createdAt', 'hasAttachment', 'id', 'isGlobal', 'isRead', 'readAt', 'receiverId', 'schoolId', 'senderId', 'subject', 'type', 'updatedAt'] as const
+  static $columns = ['attachmentMime', 'attachmentName', 'attachmentSize', 'attachmentUrl', 'content', 'createdAt', 'deletedAt', 'editedAt', 'hasAttachment', 'id', 'isGlobal', 'isRead', 'parentMessageId', 'readAt', 'receiverId', 'schoolId', 'senderId', 'subject', 'type', 'updatedAt'] as const
   $columns = MessageSchema.$columns
+  @column()
+  declare attachmentMime: string | null
+  @column()
+  declare attachmentName: string | null
+  @column()
+  declare attachmentSize: number | null
+  @column()
+  declare attachmentUrl: string | null
   @column()
   declare content: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column.dateTime()
+  declare editedAt: DateTime | null
   @column()
   declare hasAttachment: boolean | null
   @column({ isPrimary: true })
@@ -337,6 +375,8 @@ export class MessageSchema extends BaseModel {
   declare isGlobal: boolean | null
   @column()
   declare isRead: boolean | null
+  @column()
+  declare parentMessageId: string | null
   @column.dateTime()
   declare readAt: DateTime | null
   @column()

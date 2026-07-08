@@ -1,4 +1,4 @@
-import { type HttpContext } from '@adonisjs/core/http'
+﻿import { type HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 import School from '#models/school'
 import User from '#models/user'
@@ -14,7 +14,9 @@ import { DateTime } from 'luxon'
 import {
   RDC_CLASS_CATALOG,
   RDC_SCHOOL_OPTIONS,
+  filterClassCatalogForSection,
   getClassSchoolOption,
+  getSchoolOptionsForSection,
   isHumanitiesClass,
   resolveEnrollmentClass,
 } from '#services/school_class_service'
@@ -27,8 +29,10 @@ import {
   isSchoolWidePosition,
   listSchoolSections,
   positionLabel,
+  teacherPositionLabelForSection,
   type SchoolPosition,
 } from '#services/school_governance_service'
+import { getSubjectCodesForSection } from '#services/national_subject_catalog'
 
 export default class SchoolController {
   private mailService = new OtpMailService()
@@ -68,6 +72,33 @@ export default class SchoolController {
     return labels[role]
   }
 
+  private filterSubjectsBySection<T extends { code?: string | null }>(
+    subjects: T[],
+    sectionCode?: string | null
+  ) {
+    const allowedCodes = getSubjectCodesForSection(sectionCode)
+    if (!allowedCodes) return subjects
+
+    return subjects.filter((subject) => subject.code && allowedCodes.includes(subject.code))
+  }
+
+  private getTeacherSectionRoleLabel(sectionCode?: string | null) {
+    return teacherPositionLabelForSection(sectionCode)
+  }
+
+  private async getTeacherRoleLabelForUser(userId: string) {
+    const assignment = await db
+      .from('school_staff_assignments')
+      .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+      .where('school_staff_assignments.user_id', userId)
+      .where('school_staff_assignments.position', 'teacher')
+      .where('school_staff_assignments.is_active', true)
+      .select('school_sections.code')
+      .first()
+
+    return this.getTeacherSectionRoleLabel(assignment?.code || null)
+  }
+
   private isSectionAccountEditor(position?: string | null) {
     return ['preschool_director', 'primary_director', 'prefect'].includes(String(position || ''))
   }
@@ -96,6 +127,18 @@ export default class SchoolController {
     return Boolean(parent)
   }
 
+  private async isTeacherAccountInSection(accountId: string, sectionId: string) {
+    const assignment = await db
+      .from('school_staff_assignments')
+      .where('user_id', accountId)
+      .where('school_section_id', sectionId)
+      .where('position', 'teacher')
+      .where('is_active', true)
+      .first()
+
+    return Boolean(assignment)
+  }
+
   private async canEditAccount(
     governance: Awaited<ReturnType<typeof getGovernanceContext>>,
     account: User
@@ -111,6 +154,10 @@ export default class SchoolController {
       return this.isParentAccountInSection(account.id, governance.sectionId)
     }
 
+    if (account.role === 'teacher') {
+      return this.isTeacherAccountInSection(account.id, governance.sectionId)
+    }
+
     return false
   }
 
@@ -124,7 +171,7 @@ export default class SchoolController {
 
     session.flash(
       'error',
-      'Modification refusée : seul le Promoteur peut modifier les comptes du personnel. Les directions de section ne peuvent modifier que les parents et élèves de leur section.'
+      'Modification refusée : vous pouvez modifier uniquement les enseignants, élèves et parents de votre section.'
     )
     return response.redirect('/schools/accounts')
   }
@@ -316,7 +363,7 @@ export default class SchoolController {
     await school.save()
 
     if (request.header('accept')?.includes('text/html')) {
-      session.flash('success', "Profil de l'Ã©cole mis Ã  jour")
+      session.flash('success', "Profil de l'école mis à jour")
       return response.redirect('/schools/profile')
     }
 
@@ -456,7 +503,11 @@ export default class SchoolController {
 
   public async createTeacherPage({ auth, view }: HttpContext) {
     const user = auth.getUserOrFail()
-    const subjects = await Subject.query().orderBy('name', 'asc')
+    const governance = await getGovernanceContext(user)
+    const subjects = this.filterSubjectsBySection(
+      await Subject.query().orderBy('name', 'asc'),
+      governance.canManageAllSections ? null : governance.sectionCode
+    )
 
     return view.render('schools/teachers/create', {
       school: this.getFallbackSchool(user),
@@ -668,9 +719,10 @@ export default class SchoolController {
 
   public async editTeacherPage({ auth, params, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
     const assignments = await this.getTeacherAssignments(teacher)
-    const [subjects, replacementTeachers] = await Promise.all([
+    const [allSubjects, replacementTeachers] = await Promise.all([
       Subject.query().orderBy('name', 'asc'),
       Teacher.query()
         .where('schoolId', user.schoolId)
@@ -679,6 +731,10 @@ export default class SchoolController {
         .preload('user')
         .orderBy('createdAt', 'desc'),
     ])
+    const subjects = this.filterSubjectsBySection(
+      allSubjects,
+      governance.canManageAllSections ? null : governance.sectionCode
+    )
 
     ;(teacher as any).subjectIds = assignments.subjectIds
 
@@ -873,6 +929,7 @@ export default class SchoolController {
 
   public async updateTeacher({ auth, params, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
     const schema = vine.compile(
       vine.object({
@@ -888,6 +945,21 @@ export default class SchoolController {
     )
     const payload = await request.validateUsing(schema)
     const selectedSubjectIds = payload.subjects || []
+    const allowedSubjectCodes = getSubjectCodesForSection(
+      governance.canManageAllSections ? null : governance.sectionCode
+    )
+
+    if (selectedSubjectIds.length && allowedSubjectCodes) {
+      const selectedSubjects = await Subject.query().whereIn('id', selectedSubjectIds)
+      const hasOutsideSectionSubject = selectedSubjects.some(
+        (subject) => !allowedSubjectCodes.includes(subject.code)
+      )
+
+      if (hasOutsideSectionSubject) {
+        session.flash('error', 'Une ou plusieurs matières ne correspondent pas à votre section.')
+        return response.redirect(`/schools/teachers/${teacher.id}/edit`)
+      }
+    }
 
     await db.transaction(async (trx) => {
       teacher.user.useTransaction(trx)
@@ -1352,9 +1424,14 @@ export default class SchoolController {
     return view.render('schools/accounts/create', {
       school: this.getFallbackSchool(user),
       classes,
-      classCatalog: RDC_CLASS_CATALOG,
+      classCatalog: filterClassCatalogForSection(
+        governance.canManageAllSections ? null : governance.sectionCode,
+        RDC_CLASS_CATALOG
+      ),
       students,
-      schoolOptions: RDC_SCHOOL_OPTIONS,
+      schoolOptions: governance.canManageAllSections
+        ? RDC_SCHOOL_OPTIONS
+        : getSchoolOptionsForSection(governance.sectionCode),
       sections: visibleSections,
       governance,
       navigation: governance.navigation,
@@ -1442,7 +1519,11 @@ export default class SchoolController {
           email: account.email,
           phone: account.phone || '-',
           role: assignment?.position || account.role,
-          roleLabel: assignment ? positionLabel(assignment.position) : this.getRoleLabel(account.role),
+          roleLabel: assignment
+            ? assignment.position === 'teacher'
+              ? await this.getTeacherRoleLabelForUser(account.id)
+              : positionLabel(assignment.position)
+            : this.getRoleLabel(account.role),
           sectionName: assignment?.section_name || null,
           status: account.status,
           canEdit: await this.canEditAccount(governance, account),
@@ -1534,11 +1615,15 @@ export default class SchoolController {
       student,
       parent,
       classes,
-      schoolOptions: RDC_SCHOOL_OPTIONS,
+      schoolOptions: governance.canManageAllSections
+        ? RDC_SCHOOL_OPTIONS
+        : getSchoolOptionsForSection(governance.sectionCode),
       students,
       selectedChildrenIds,
       roleLabel: staffAssignment
-        ? `${positionLabel(staffAssignment.position)} — ${staffAssignment.section_name || "Toute l'école"}`
+        ? staffAssignment.position === 'teacher'
+          ? `${await this.getTeacherRoleLabelForUser(account.id)} - ${staffAssignment.section_name || "Toute l'école"}`
+          : `${positionLabel(staffAssignment.position)} - ${staffAssignment.section_name || "Toute l'école"}`
         : this.getRoleLabel(account.role),
     })
   }
@@ -1618,7 +1703,9 @@ export default class SchoolController {
           )
           .first()
       : null
-    const schoolOptions = RDC_SCHOOL_OPTIONS
+    const schoolOptions = governance.canManageAllSections
+      ? RDC_SCHOOL_OPTIONS
+      : getSchoolOptionsForSection(governance.sectionCode)
     const isHumanities = isHumanitiesClass(selectedClass)
 
     if (
@@ -1809,7 +1896,9 @@ export default class SchoolController {
       fullName: account.fullName,
       role: account.role,
       roleLabel: resetAssignment
-        ? positionLabel(resetAssignment.position)
+        ? resetAssignment.position === 'teacher'
+          ? await this.getTeacherRoleLabelForUser(account.id)
+          : positionLabel(resetAssignment.position)
         : this.getRoleLabel(account.role),
       email: account.email,
       password: tempPassword,
@@ -1988,8 +2077,8 @@ export default class SchoolController {
         session.flash(
           'error',
           isSchoolWidePosition(requestedPosition)
-            ? `${positionLabel(requestedPosition)} est dÃ©jÃ  nommÃ© pour toute l'Ã©cole.`
-            : `${positionLabel(requestedPosition)} est dÃ©jÃ  nommÃ© pour cette section.`
+            ? `${positionLabel(requestedPosition)} est déjà nommé pour toute l'école.`
+            : `${positionLabel(requestedPosition)} est déjà nommé pour cette section.`
         )
         return response.redirect().back()
       }
@@ -2122,9 +2211,18 @@ export default class SchoolController {
           const validChildren = await Student.query({ client: trx })
             .whereIn('id', payload.childrenIds!)
             .where('schoolId', director.schoolId)
+            .if(!governance.canManageAllSections && governance.sectionId, (query) =>
+              query.whereHas('class', (classQuery) =>
+                classQuery.where('schoolSectionId', governance.sectionId)
+              )
+            )
 
           if (validChildren.length !== payload.childrenIds!.length) {
-            throw new Error("Un des élèves sélectionnés n'appartient pas à votre école.")
+            throw new Error(
+              governance.canManageAllSections
+                ? "Un des élèves sélectionnés n'appartient pas à votre école."
+                : "Un des élèves sélectionnés n'appartient pas à votre section."
+            )
           }
 
           await trx.table('parent_student').insert(
@@ -2151,7 +2249,14 @@ export default class SchoolController {
       fullName: createdUser!.fullName,
       role: createdUser!.role,
       roleLabel: requestedPosition
-        ? positionLabel(requestedPosition)
+        ? requestedPosition === 'teacher'
+          ? this.getTeacherSectionRoleLabel(
+              sectionId
+                ? (await db.from('school_sections').where('id', sectionId).select('code').first())
+                    ?.code
+                : null
+            )
+          : positionLabel(requestedPosition)
         : this.getRoleLabel(createdUser!.role),
       email: createdUser!.email,
       password: tempPassword,

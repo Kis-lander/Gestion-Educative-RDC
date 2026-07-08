@@ -22,6 +22,9 @@ export default class ForumTopic extends ForumTopicSchema {
   declare classId: string
 
   @column()
+  declare schoolSectionId: string | null
+
+  @column()
   declare createdBy: string
 
   @column()
@@ -31,10 +34,25 @@ export default class ForumTopic extends ForumTopicSchema {
   declare content: string
 
   @column()
+  declare attachmentUrl: string | null
+
+  @column()
+  declare attachmentName: string | null
+
+  @column()
+  declare attachmentSize: number | null
+
+  @column()
+  declare attachmentMime: string | null
+
+  @column()
   declare isPinned: boolean
 
   @column()
   declare isLocked: boolean
+
+  @column()
+  declare isResolved: boolean
 
   @column()
   declare viewsCount: number
@@ -44,6 +62,9 @@ export default class ForumTopic extends ForumTopicSchema {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @column.dateTime()
+  declare editedAt: DateTime | null
 
   /**
    * RELATIONS
@@ -62,6 +83,6 @@ export default class ForumTopic extends ForumTopicSchema {
   declare creator: BelongsTo<typeof User>
 
   // Les réponses (posts) au sein de ce sujet
-  @hasMany(() => ForumPost)
+  @hasMany(() => ForumPost, { foreignKey: 'topicId' })
   declare posts: HasMany<typeof ForumPost>
 }

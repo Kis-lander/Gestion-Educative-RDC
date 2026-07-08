@@ -1,8 +1,11 @@
 import { type HttpContext } from '@adonisjs/core/http'
+import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 import { randomBytes } from 'node:crypto'
+import { extname } from 'node:path'
 import vine from '@vinejs/vine'
+import { edgePageContext } from '#start/view_context'
 
 // Imports des modèles (Subpath alias)
 import Student from '#models/student'
@@ -20,7 +23,9 @@ import OtpMailService from '#services/otp_mail_service'
 import {
   RDC_CLASS_CATALOG,
   RDC_SCHOOL_OPTIONS,
+  filterClassCatalogForSection,
   getClassSchoolOption,
+  getSchoolOptionsForSection,
   isHumanitiesClass,
   resolveEnrollmentClass,
 } from '#services/school_class_service'
@@ -34,6 +39,59 @@ import { submitAssignmentValidator, postForumQuestionValidator } from '#validato
 
 export default class StudentController {
   private mailService = new OtpMailService()
+
+  private async storeSubmissionAttachment(request: HttpContext['request']) {
+    const attachment = request.file('attachment', {
+      size: '20mb',
+      extnames: ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip'],
+    })
+
+    if (!attachment) return null
+    if (!attachment.isValid) {
+      throw new Error(attachment.errors[0]?.message || 'Fichier joint invalide')
+    }
+
+    const extension = extname(attachment.clientName) || `.${attachment.extname || 'bin'}`
+    const fileName = `${Date.now()}-${randomBytes(8).toString('hex')}${extension}`
+    await attachment.move(app.publicPath('uploads/submissions'), { name: fileName })
+    return `/uploads/submissions/${fileName}`
+  }
+
+  private async getCurrentStudent(user: any) {
+    return Student.query().where('userId', user.id).preload('user').preload('class').firstOrFail()
+  }
+
+  private async formatStudentAssignment(assignment: Assignment, student: Student) {
+    const submission = await AssignmentSubmission.query()
+      .where('assignmentId', assignment.id)
+      .where('studentId', student.id)
+      .first()
+
+    const daysRemaining = Math.ceil(assignment.dueDate.diff(DateTime.now(), 'days').days)
+    const status = submission ? submission.status : 'pending'
+
+    return {
+      id: assignment.id,
+      title: assignment.title,
+      description: assignment.description,
+      instructions: assignment.instructions,
+      subjectId: assignment.subjectId,
+      subjectName: assignment.subject?.name || '-',
+      className: assignment.class?.name || '-',
+      dueDate: assignment.dueDate,
+      dueTime: assignment.dueTime,
+      maxPoints: assignment.maxPoints,
+      attachmentUrl: assignment.attachmentUrl,
+      publishedAt: assignment.publishedAt,
+      status,
+      submissionId: submission?.id || null,
+      submission,
+      grade: submission?.grade ? Number(submission.grade) : null,
+      teacherFeedback: submission?.teacherFeedback || null,
+      daysRemaining,
+      isOverdue: daysRemaining < 0,
+    }
+  }
 
   private getPaginationMeta(paginator: { toJSON: () => any }) {
     const meta = paginator.toJSON().meta
@@ -170,8 +228,13 @@ export default class StudentController {
         name: 'Gestion Éducative RDC',
       },
       classes,
-      classCatalog: RDC_CLASS_CATALOG,
-      schoolOptions: RDC_SCHOOL_OPTIONS,
+      classCatalog: filterClassCatalogForSection(
+        governance.canManageAllSections ? null : governance.sectionCode,
+        RDC_CLASS_CATALOG
+      ),
+      schoolOptions: governance.canManageAllSections
+        ? RDC_SCHOOL_OPTIONS
+        : getSchoolOptionsForSection(governance.sectionCode),
       selectedClassId: request.input('class_id', ''),
     })
   }
@@ -563,6 +626,182 @@ export default class StudentController {
   /**
    * Obtenir mes devoirs
    */
+  public async assignmentsPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const student = await this.getCurrentStudent(user)
+    const subjectId = ctx.request.input('subject_id')
+    const status = ctx.request.input('status')
+    const search = String(ctx.request.input('search', '')).trim()
+
+    const assignments = await Assignment.query()
+      .where('classId', student.classId!)
+      .where('status', 'published')
+      .if(subjectId, (assignmentQuery) => assignmentQuery.where('subjectId', subjectId))
+      .if(search, (assignmentQuery) => assignmentQuery.whereILike('title', `%${search}%`))
+      .preload('subject')
+      .preload('class')
+      .orderBy('dueDate', 'asc')
+
+    let formattedAssignments = await Promise.all(
+      assignments.map((assignment) => this.formatStudentAssignment(assignment, student))
+    )
+
+    if (status) {
+      formattedAssignments = formattedAssignments.filter((assignment) => {
+        if (status === 'pending') return assignment.status === 'pending'
+        if (status === 'submitted') return assignment.status === 'submitted'
+        if (status === 'graded') return assignment.status === 'graded'
+        return true
+      })
+    }
+
+    const subjectsById = new Map(
+      assignments
+        .filter((assignment) => assignment.subject)
+        .map((assignment) => [assignment.subjectId, { id: assignment.subjectId, name: assignment.subject!.name }])
+    )
+
+    return ctx.view.render(
+      'student/assignments/index',
+      await edgePageContext(ctx, {
+        student: { name: student.user?.fullName || '' },
+        assignments: formattedAssignments,
+        subjects: [...subjectsById.values()],
+        stats: {
+          total: formattedAssignments.length,
+          pending: formattedAssignments.filter((assignment) => assignment.status === 'pending').length,
+          submitted: formattedAssignments.filter((assignment) => assignment.status === 'submitted').length,
+          graded: formattedAssignments.filter((assignment) => assignment.status === 'graded').length,
+        },
+        pagination: { total: formattedAssignments.length, perPage: 50, currentPage: 1, lastPage: 1 },
+      })
+    )
+  }
+
+  public async assignmentShowPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const student = await this.getCurrentStudent(user)
+    const assignment = await Assignment.query()
+      .where('id', ctx.params.id)
+      .where('classId', student.classId!)
+      .whereIn('status', ['published', 'closed'])
+      .preload('subject')
+      .preload('class')
+      .firstOrFail()
+
+    return ctx.view.render(
+      'student/assignments/show',
+      await edgePageContext(ctx, {
+        assignment: await this.formatStudentAssignment(assignment, student),
+      })
+    )
+  }
+
+  public async assignmentSubmitPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const student = await this.getCurrentStudent(user)
+    const assignment = await Assignment.query()
+      .where('id', ctx.params.id)
+      .where('classId', student.classId!)
+      .where('status', 'published')
+      .preload('subject')
+      .preload('class')
+      .firstOrFail()
+    const formattedAssignment = await this.formatStudentAssignment(assignment, student)
+
+    return ctx.view.render(
+      'student/assignments/submit',
+      await edgePageContext(ctx, {
+        assignment: formattedAssignment,
+        existingSubmission: formattedAssignment.submission,
+      })
+    )
+  }
+
+  public async submitAssignmentWeb({ auth, params, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const student = await this.getCurrentStudent(user)
+    const assignment = await Assignment.query()
+      .where('id', params.id)
+      .where('classId', student.classId!)
+      .where('status', 'published')
+      .firstOrFail()
+
+    let attachmentUrl: string | null = null
+    try {
+      attachmentUrl = await this.storeSubmissionAttachment(request)
+    } catch (error) {
+      session.flash('error', error instanceof Error ? error.message : 'Fichier joint invalide')
+      return response.redirect().back()
+    }
+
+    const existing = await AssignmentSubmission.query()
+      .where('assignmentId', assignment.id)
+      .where('studentId', student.id)
+      .first()
+
+    const content = String(request.input('content') || request.input('submissionContent') || '').trim()
+    if (!content && !attachmentUrl && !existing?.attachmentUrl) {
+      session.flash('error', 'Ajoutez une réponse ou un fichier avant de soumettre.')
+      return response.redirect().back()
+    }
+
+    await AssignmentSubmission.updateOrCreate(
+      {
+        assignmentId: assignment.id,
+        studentId: student.id,
+      },
+      {
+        submissionContent: content,
+        attachmentUrl: attachmentUrl || existing?.attachmentUrl || null,
+        submittedAt: DateTime.now(),
+        isLate: DateTime.now() > assignment.dueDate,
+        status: 'submitted',
+      }
+    )
+
+    return response.redirect(`/student/assignments/${assignment.id}`)
+  }
+
+  public async submissionsPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const student = await this.getCurrentStudent(user)
+    const submissions = await AssignmentSubmission.query()
+      .where('studentId', student.id)
+      .preload('assignment', (assignmentQuery) => assignmentQuery.preload('subject').preload('class'))
+      .orderBy('submittedAt', 'desc')
+
+    const formattedSubmissions = submissions.map((submission) => ({
+      id: submission.id,
+      assignmentId: submission.assignmentId,
+      assignmentTitle: submission.assignment?.title || '-',
+      subjectName: submission.assignment?.subject?.name || '-',
+      submittedAt: submission.submittedAt,
+      grade: submission.grade ? Number(submission.grade) : null,
+      maxPoints: submission.assignment?.maxPoints || 20,
+      feedback: submission.teacherFeedback,
+    }))
+    const graded = formattedSubmissions.filter((submission) => submission.grade !== null)
+    const averageGrade = graded.length
+      ? Math.round((graded.reduce((total, submission) => total + Number(submission.grade || 0), 0) / graded.length) * 10) / 10
+      : null
+
+    return ctx.view.render(
+      'student/assignments/submissions',
+      await edgePageContext(ctx, {
+        student: { name: student.user?.fullName || '' },
+        submissions: formattedSubmissions,
+        stats: {
+          total: formattedSubmissions.length,
+          graded: graded.length,
+          pending: formattedSubmissions.length - graded.length,
+          averageGrade,
+        },
+        pagination: { total: formattedSubmissions.length, perPage: 50, currentPage: 1, lastPage: 1 },
+      })
+    )
+  }
+
   public async getAssignments({ auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const student = await Student.findByOrFail('user_id', user.id)

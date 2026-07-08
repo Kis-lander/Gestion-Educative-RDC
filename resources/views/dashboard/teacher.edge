@@ -1,11 +1,11 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Espace Enseignant - Gestion Éducative RDC
+    Espace {{ governance?.positionLabel || 'Enseignant' }} - Gestion Éducative RDC
   @endsection
   
   @section('dashboardTitle')
-    Espace Enseignant
+    Espace {{ governance?.positionLabel || 'Enseignant' }}
   @endsection
   @section('dashboardSubtitle')
     Gérez vos classes, devoirs et notes

@@ -32,6 +32,9 @@ export default class Message extends MessageSchema {
   declare content: string
 
   @column()
+  declare parentMessageId: string | null
+
+  @column()
   declare type: 'official' | 'parent_teacher' | 'general' | 'system'
 
   @column()
@@ -45,6 +48,24 @@ export default class Message extends MessageSchema {
 
   @column()
   declare hasAttachment: boolean
+
+  @column()
+  declare attachmentUrl: string | null
+
+  @column()
+  declare attachmentName: string | null
+
+  @column()
+  declare attachmentSize: number | null
+
+  @column()
+  declare attachmentMime: string | null
+
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+
+  @column.dateTime()
+  declare editedAt: DateTime | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -67,4 +88,7 @@ export default class Message extends MessageSchema {
   // L'école dans laquelle le message circule
   @belongsTo(() => School)
   declare school: BelongsTo<typeof School>
+
+  @belongsTo(() => Message, { foreignKey: 'parentMessageId' })
+  declare parentMessage: BelongsTo<typeof Message>
 }

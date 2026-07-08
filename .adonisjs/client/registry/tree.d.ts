@@ -205,6 +205,8 @@ export interface ApiDefinition {
   }
   messages: {
     sendSchoolCommunication: typeof routes['messages.send_school_communication']
+    conversationPage: typeof routes['messages.conversation_page']
+    trashPage: typeof routes['messages.trash_page']
     getMessages: typeof routes['messages.get_messages']
     sendMessage: typeof routes['messages.send_message']
     markAsRead: typeof routes['messages.mark_as_read']
@@ -241,8 +243,29 @@ export interface ApiDefinition {
   teachers: {
     index: typeof routes['teachers.index']
     create: typeof routes['teachers.create']
+    dashboardPage: typeof routes['teachers.dashboard_page']
+    classesPage: typeof routes['teachers.classes_page']
+    classShowPage: typeof routes['teachers.class_show_page']
+    classStudentsPage: typeof routes['teachers.class_students_page']
+    assignmentsPage: typeof routes['teachers.assignments_page']
+    assignmentCreatePage: typeof routes['teachers.assignment_create_page']
+    storeAssignmentWeb: typeof routes['teachers.store_assignment_web']
+    gradeSubmissionPage: typeof routes['teachers.grade_submission_page']
+    assignmentShowPage: typeof routes['teachers.assignment_show_page']
+    assignmentEditPage: typeof routes['teachers.assignment_edit_page']
+    publishAssignment: typeof routes['teachers.publish_assignment']
+    closeAssignment: typeof routes['teachers.close_assignment']
+    removeAssignmentAttachment: typeof routes['teachers.remove_assignment_attachment']
+    assignmentSubmissionsPage: typeof routes['teachers.assignment_submissions_page']
     attendanceIndexPage: typeof routes['teachers.attendance_index_page']
     attendanceMarkPage: typeof routes['teachers.attendance_mark_page']
+    attendanceReportPage: typeof routes['teachers.attendance_report_page']
+    attendanceStudentPage: typeof routes['teachers.attendance_student_page']
+    gradesPage: typeof routes['teachers.grades_page']
+    gradeAddPage: typeof routes['teachers.grade_add_page']
+    storeGradeWeb: typeof routes['teachers.store_grade_web']
+    gradeClassPage: typeof routes['teachers.grade_class_page']
+    gradeEditPage: typeof routes['teachers.grade_edit_page']
     getMyClasses: typeof routes['teachers.get_my_classes']
     getAssignments: typeof routes['teachers.get_assignments']
     createAssignment: typeof routes['teachers.create_assignment']
@@ -262,6 +285,10 @@ export interface ApiDefinition {
       update: typeof routes['communication.messages.update']
       markAllRead: typeof routes['communication.messages.mark_all_read']
       delete: typeof routes['communication.messages.delete']
+      restore: typeof routes['communication.messages.restore']
+      permanentDelete: typeof routes['communication.messages.permanent_delete']
+      emptyTrash: typeof routes['communication.messages.empty_trash']
+      restoreAll: typeof routes['communication.messages.restore_all']
       send: typeof routes['communication.messages.send'] & {
         redirect: typeof routes['communication.messages.send.redirect']
       }
@@ -273,6 +300,75 @@ export interface ApiDefinition {
     sendSchoolCommunication: typeof routes['communication.send_school_communication']
   }
   api: {
+    messages: {
+      conversation: typeof routes['api.messages.conversation'] & {
+        export: typeof routes['api.messages.conversation.export']
+      }
+      send: typeof routes['api.messages.send']
+      updateConversation: typeof routes['api.messages.update_conversation']
+      deleteConversation: typeof routes['api.messages.delete_conversation']
+      attachment: typeof routes['api.messages.attachment']
+      restore: typeof routes['api.messages.restore']
+      permanentDelete: typeof routes['api.messages.permanent_delete']
+      emptyTrash: typeof routes['api.messages.empty_trash']
+      restoreAll: typeof routes['api.messages.restore_all']
+    }
+    forum: {
+      attachment: typeof routes['api.forum.attachment']
+      topic: {
+        view: typeof routes['api.forum.topic.view']
+      }
+    }
+    student: {
+      forum: {
+        export: typeof routes['api.student.forum.export']
+        topic: {
+          resolve: typeof routes['api.student.forum.topic.resolve']
+          view: typeof routes['api.student.forum.topic.view']
+        }
+      }
+    }
+    teacher: {
+      forum: {
+        export: typeof routes['api.teacher.forum.export']
+      }
+      assignments: {
+        export: typeof routes['api.teacher.assignments.export']
+        submissions: {
+          export: typeof routes['api.teacher.assignments.submissions.export']
+        }
+      }
+      classes: {
+        export: typeof routes['api.teacher.classes.export']
+        subjects: typeof routes['api.teacher.classes.subjects']
+        students: {
+          export: typeof routes['api.teacher.classes.students.export']
+        }
+      }
+      attendance: {
+        classes: {
+          students: typeof routes['api.teacher.attendance.classes.students']
+        }
+        class: typeof routes['api.teacher.attendance.class']
+        export: typeof routes['api.teacher.attendance.export']
+        student: typeof routes['api.teacher.attendance.student'] & {
+          export: typeof routes['api.teacher.attendance.student.export']
+        }
+        store: typeof routes['api.teacher.attendance.store']
+      }
+      grades: {
+        export: typeof routes['api.teacher.grades.export']
+        class: typeof routes['api.teacher.grades.class'] & {
+          export: typeof routes['api.teacher.grades.class.export']
+          publish: typeof routes['api.teacher.grades.class.publish']
+        }
+        publish: typeof routes['api.teacher.grades.publish']
+      }
+      sendMessage: typeof routes['api.teacher.send_message']
+      notifications: {
+        count: typeof routes['api.teacher.notifications.count']
+      }
+    }
     notifications: {
       index: typeof routes['api.notifications.index']
       read: typeof routes['api.notifications.read'] & {
@@ -282,19 +378,62 @@ export interface ApiDefinition {
       readAll: typeof routes['api.notifications.read_all']
       deleteAll: typeof routes['api.notifications.delete_all']
     }
-    teacher: {
-      attendance: {
-        classes: {
-          students: typeof routes['api.teacher.attendance.classes.students']
-        }
-        class: typeof routes['api.teacher.attendance.class']
-        store: typeof routes['api.teacher.attendance.store']
-      }
-    }
     teachers: {
       availableSlots: typeof routes['api.teachers.available_slots']
       resetPassword: typeof routes['api.teachers.reset_password']
       list: typeof routes['api.teachers.list']
+    }
+    parent: {
+      payments: {
+        export: typeof routes['api.parent.payments.export']
+        history: {
+          export: typeof routes['api.parent.payments.history.export']
+        }
+      }
+      messages: {
+        send: typeof routes['api.parent.messages.send']
+      }
+    }
+    reports: {
+      academic: {
+        performance: {
+          export: typeof routes['api.reports.academic.performance.export']
+        }
+        class: {
+          export: typeof routes['api.reports.academic.class.export']
+        }
+        student: {
+          export: typeof routes['api.reports.academic.student.export']
+        }
+        subject: {
+          export: typeof routes['api.reports.academic.subject.export']
+        }
+      }
+      financial: {
+        income: {
+          export: typeof routes['api.reports.financial.income.export']
+        }
+        expenses: {
+          export: typeof routes['api.reports.financial.expenses.export']
+        }
+        balance: {
+          export: typeof routes['api.reports.financial.balance.export']
+        }
+        forecasts: {
+          export: typeof routes['api.reports.financial.forecasts.export']
+        }
+      }
+      disciplinary: {
+        summary: {
+          export: typeof routes['api.reports.disciplinary.summary.export']
+        }
+        trends: {
+          export: typeof routes['api.reports.disciplinary.trends.export']
+        }
+        comparisons: {
+          export: typeof routes['api.reports.disciplinary.comparisons.export']
+        }
+      }
     }
   }
   profile: typeof routes['profile'] & {
@@ -360,6 +499,10 @@ export interface ApiDefinition {
     create: typeof routes['students.create']
     store: typeof routes['students.store']
     show: typeof routes['students.show']
+    assignmentsPage: typeof routes['students.assignments_page']
+    assignmentShowPage: typeof routes['students.assignment_show_page']
+    assignmentSubmitPage: typeof routes['students.assignment_submit_page']
+    submitAssignmentWeb: typeof routes['students.submit_assignment_web']
     getMyProfile: typeof routes['students.get_my_profile']
     getMyGrades: typeof routes['students.get_my_grades']
     getMyReportCard: typeof routes['students.get_my_report_card']
@@ -466,20 +609,213 @@ export interface ApiDefinition {
     getAcademicStats: typeof routes['academics.get_academic_stats']
     getProgressStats: typeof routes['academics.get_progress_stats']
   }
+  teacher: {
+    assignments: {
+      submissions: {
+        grade: {
+          store: typeof routes['teacher.assignments.submissions.grade.store']
+          update: typeof routes['teacher.assignments.submissions.grade.update']
+        }
+      }
+      update: {
+        post: typeof routes['teacher.assignments.update.post']
+        put: typeof routes['teacher.assignments.update.put']
+      }
+    }
+    grades: {
+      update: typeof routes['teacher.grades.update']
+      delete: typeof routes['teacher.grades.delete']
+    }
+    forum: {
+      topic: {
+        update: typeof routes['teacher.forum.topic.update']
+        delete: typeof routes['teacher.forum.topic.delete']
+      }
+      reply: {
+        update: typeof routes['teacher.forum.reply.update']
+        delete: typeof routes['teacher.forum.reply.delete']
+      }
+    }
+  }
+  forums: {
+    teacherIndex: typeof routes['forums.teacher_index']
+    teacherCreate: typeof routes['forums.teacher_create']
+    storeTeacherTopic: typeof routes['forums.store_teacher_topic']
+    myTeacherTopics: typeof routes['forums.my_teacher_topics']
+    teacherTopic: typeof routes['forums.teacher_topic']
+    teacherReply: typeof routes['forums.teacher_reply']
+    toggleLock: typeof routes['forums.toggle_lock']
+    togglePin: typeof routes['forums.toggle_pin']
+    studentIndex: typeof routes['forums.student_index']
+    studentCreate: typeof routes['forums.student_create']
+    storeStudentTopic: typeof routes['forums.store_student_topic']
+    myStudentQuestions: typeof routes['forums.my_student_questions']
+    studentTopic: typeof routes['forums.student_topic']
+    studentReply: typeof routes['forums.student_reply']
+  }
+  student: {
+    assignments: {
+      submissions: {
+        index: typeof routes['student.assignments.submissions.index']
+        legacy: typeof routes['student.assignments.submissions.legacy']
+      }
+    }
+    forum: {
+      topic: {
+        update: typeof routes['student.forum.topic.update']
+        delete: typeof routes['student.forum.topic.delete']
+      }
+      reply: {
+        update: typeof routes['student.forum.reply.update']
+        delete: typeof routes['student.forum.reply.delete']
+      }
+    }
+  }
   parents: {
+    dashboardPage: typeof routes['parents.dashboard_page']
+    childrenPage: typeof routes['parents.children_page']
+    childShowPage: typeof routes['parents.child_show_page']
+    childProfilePage: typeof routes['parents.child_profile_page']
+    gradesPage: typeof routes['parents.grades_page']
     childGradesDetailsPage: typeof routes['parents.child_grades_details_page']
     disciplinePage: typeof routes['parents.discipline_page']
     attendancePage: typeof routes['parents.attendance_page']
+    attendanceJustifyPage: typeof routes['parents.attendance_justify_page']
     paymentsPage: typeof routes['parents.payments_page']
+    paymentsHistoryPage: typeof routes['parents.payments_history_page']
+    paymentsStatusPage: typeof routes['parents.payments_status_page']
+    parentMessagesPage: typeof routes['parents.parent_messages_page']
+    parentMessageSendPage: typeof routes['parents.parent_message_send_page']
+    parentNotificationsPage: typeof routes['parents.parent_notifications_page']
+    parentConversationPage: typeof routes['parents.parent_conversation_page']
     appointmentsPage: typeof routes['parents.appointments_page']
     appointmentRequestPage: typeof routes['parents.appointment_request_page']
     requestAppointment: typeof routes['parents.request_appointment']
+    childrenStats: typeof routes['parents.children_stats']
+    exportGrades: typeof routes['parents.export_grades']
+    exportAttendance: typeof routes['parents.export_attendance']
+    appointmentSchedule: typeof routes['parents.appointment_schedule']
+    cancelAppointment: typeof routes['parents.cancel_appointment']
+    exportAppointments: typeof routes['parents.export_appointments']
+    parentConversationData: typeof routes['parents.parent_conversation_data']
+    markConversationRead: typeof routes['parents.mark_conversation_read']
+    markAllParentMessagesRead: typeof routes['parents.mark_all_parent_messages_read']
+    respondToIncident: typeof routes['parents.respond_to_incident']
+    markNotificationRead: typeof routes['parents.mark_notification_read']
+    markAllNotificationsRead: typeof routes['parents.mark_all_notifications_read']
+    deleteAllNotifications: typeof routes['parents.delete_all_notifications']
+    parentUnreadCount: typeof routes['parents.parent_unread_count']
     getChildren: typeof routes['parents.get_children']
     getChildGrades: typeof routes['parents.get_child_grades']
     sendMessageToTeacher: typeof routes['parents.send_message_to_teacher']
     getChildPayments: typeof routes['parents.get_child_payments']
     getChildAttendance: typeof routes['parents.get_child_attendance']
     justifyAbsence: typeof routes['parents.justify_absence']
+  }
+  parent: {
+    grades: {
+      reportCard: typeof routes['parent.grades.report_card']
+    }
+    reportCard: {
+      child: typeof routes['parent.report_card.child']
+    }
+    discipline: {
+      details: typeof routes['parent.discipline.details'] & {
+        alias: typeof routes['parent.discipline.details.alias']
+      }
+    }
+    attendance: {
+      justify: {
+        store: typeof routes['parent.attendance.justify.store']
+      }
+    }
+    messages: {
+      send: {
+        store: typeof routes['parent.messages.send.store']
+      }
+    }
+    appointments: {
+      reschedule: typeof routes['parent.appointments.reschedule']
+      show: {
+        alias: typeof routes['parent.appointments.show.alias']
+      }
+    }
+  }
+  interSchool: {
+    searchPage: typeof routes['inter_school.search_page']
+    searchResultsPage: typeof routes['inter_school.search_results_page']
+    schoolPublicPage: typeof routes['inter_school.school_public_page']
+    contactSchool: typeof routes['inter_school.contact_school']
+    eventsPage: typeof routes['inter_school.events_page']
+    eventCreatePage: typeof routes['inter_school.event_create_page']
+    storeEventWeb: typeof routes['inter_school.store_event_web']
+    myEventsPage: typeof routes['inter_school.my_events_page']
+    events: {
+      show: typeof routes['inter-school.events.show'] & {
+        alias: typeof routes['inter-school.events.show.alias']
+      }
+      edit: {
+        alias: typeof routes['inter-school.events.edit.alias']
+      }
+    }
+    eventRegisterPage: typeof routes['inter_school.event_register_page']
+    registerEventWeb: typeof routes['inter_school.register_event_web']
+    cancelEvent: typeof routes['inter_school.cancel_event']
+    exchangesPage: typeof routes['inter_school.exchanges_page']
+    exchangeStartPage: typeof routes['inter_school.exchange_start_page']
+    storeExchangeWeb: typeof routes['inter_school.store_exchange_web']
+    exchanges: {
+      show: typeof routes['inter-school.exchanges.show'] & {
+        alias: typeof routes['inter-school.exchanges.show.alias']
+      }
+    }
+    exchangeMessagesPage: typeof routes['inter_school.exchange_messages_page']
+    bestPracticesPage: typeof routes['inter_school.best_practices_page']
+    bestPracticeCategoriesPage: typeof routes['inter_school.best_practice_categories_page']
+    bestPracticeSharePage: typeof routes['inter_school.best_practice_share_page']
+    storeBestPracticeWeb: typeof routes['inter_school.store_best_practice_web']
+    bestPractices: {
+      show: typeof routes['inter-school.best-practices.show'] & {
+        alias: typeof routes['inter-school.best-practices.show.alias']
+      }
+    }
+    saveSchool: typeof routes['inter_school.save_school']
+    getSchoolPublicInfo: typeof routes['inter_school.get_school_public_info']
+    exportSearch: typeof routes['inter_school.export_search']
+    calendarEvents: typeof routes['inter_school.calendar_events']
+    exportEvents: typeof routes['inter_school.export_events']
+    cancelRegistration: typeof routes['inter_school.cancel_registration']
+    exportExchanges: typeof routes['inter_school.export_exchanges']
+    acceptExchange: typeof routes['inter_school.accept_exchange']
+    declineExchange: typeof routes['inter_school.decline_exchange']
+    completeExchange: typeof routes['inter_school.complete_exchange']
+    exchangeMessages: typeof routes['inter_school.exchange_messages']
+    sendExchangeMessage: typeof routes['inter_school.send_exchange_message']
+    exportExchangeMessages: typeof routes['inter_school.export_exchange_messages']
+    exportBestPractices: typeof routes['inter_school.export_best_practices']
+    likeBestPractice: typeof routes['inter_school.like_best_practice']
+    commentBestPractice: typeof routes['inter_school.comment_best_practice']
+  }
+  reports: {
+    academicPerformanceData: typeof routes['reports.academic_performance_data']
+    financialIncomeData: typeof routes['reports.financial_income_data']
+    financialExpensesData: typeof routes['reports.financial_expenses_data']
+    financialBalanceData: typeof routes['reports.financial_balance_data']
+    financialForecastsData: typeof routes['reports.financial_forecasts_data']
+    disciplinarySummaryData: typeof routes['reports.disciplinary_summary_data']
+    disciplinaryTrendsData: typeof routes['reports.disciplinary_trends_data']
+    disciplinaryComparisonsData: typeof routes['reports.disciplinary_comparisons_data']
+    deleteExport: typeof routes['reports.delete_export']
+    academicClassPage: typeof routes['reports.academic_class_page']
+    academicPerformancePage: typeof routes['reports.academic_performance_page']
+    academicSchoolPage: typeof routes['reports.academic_school_page']
+    studentProgressPage: typeof routes['reports.student_progress_page']
+    subjectReportPage: typeof routes['reports.subject_report_page']
+    exportsPage: typeof routes['reports.exports_page']
+    exportsGeneratePage: typeof routes['reports.exports_generate_page']
+    generateExport: typeof routes['reports.generate_export']
+    exportsDownloadsPage: typeof routes['reports.exports_downloads_page']
+    downloadExport: typeof routes['reports.download_export']
   }
   auth: {
     login: typeof routes['auth.login']

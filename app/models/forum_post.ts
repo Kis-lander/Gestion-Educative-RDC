@@ -22,12 +22,27 @@ export default class ForumPost extends ForumPostSchema {
   @column()
   declare content: string
 
+  @column()
+  declare attachmentUrl: string | null
+
+  @column()
+  declare attachmentName: string | null
+
+  @column()
+  declare attachmentSize: number | null
+
+  @column()
+  declare attachmentMime: string | null
+
   /**
    * ID du message auquel on répond.
    * Est null s'il s'agit d'une réponse directe au sujet (topic).
    */
   @column()
   declare parentPostId: string | null
+
+  @column()
+  declare parentTopicId: string | null
 
   @column()
   declare isApproved: boolean
@@ -38,19 +53,25 @@ export default class ForumPost extends ForumPostSchema {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
+  @column.dateTime()
+  declare editedAt: DateTime | null
+
   /**
    * RELATIONS
    */
 
   // Le sujet auquel appartient cette réponse
-  @belongsTo(() => ForumTopic)
+  @belongsTo(() => ForumTopic, { foreignKey: 'topicId' })
   declare topic: BelongsTo<typeof ForumTopic>
 
   // L'auteur de la réponse
-  @belongsTo(() => User)
+  @belongsTo(() => User, { foreignKey: 'userId' })
   declare user: BelongsTo<typeof User>
 
   // Relation réflexive : accéder au message parent
   @belongsTo(() => ForumPost, { foreignKey: 'parentPostId' })
   declare parentPost: BelongsTo<typeof ForumPost>
+
+  @belongsTo(() => ForumTopic, { foreignKey: 'parentTopicId' })
+  declare parentTopic: BelongsTo<typeof ForumTopic>
 }

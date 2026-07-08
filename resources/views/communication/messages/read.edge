@@ -27,6 +27,14 @@
           <i class="fas fa-edit mr-2"></i>Modifier
         </a>
       @endif
+      @if(message.canOpenConversation)
+        <a
+          href="/communication/messages/conversation/{{ message.conversationUserId }}"
+          class="px-4 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50"
+        >
+          <i class="fas fa-comments mr-2"></i>Conversation
+        </a>
+      @endif
       <button
         onclick="deleteMessage()"
         class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
@@ -118,15 +126,26 @@
               </p>
               <div class="flex flex-wrap gap-2">
                 @each(attachment in message.attachments)
-                  <a
-                    href="{{ attachment.url }}"
-                    target="_blank"
-                    class="flex items-center gap-2 p-2 bg-white dark:bg-gray-600 rounded-lg hover:bg-gray-100"
-                  >
-                    <i class="fas fa-file-alt text-blue-500"></i>
-                    <span class="text-sm">{{ attachment.filename }}</span>
-                    <span class="text-xs text-gray-400">({{ attachment.size }})</span>
-                  </a>
+                  <div class="rounded-lg bg-white p-2 dark:bg-gray-600">
+                    @if(attachment.isImage)
+                      <a href="{{ attachment.url }}" target="_blank" class="block">
+                        <img
+                          src="{{ attachment.url }}"
+                          alt="{{ attachment.filename }}"
+                          class="max-h-64 max-w-full rounded-lg border object-contain"
+                        />
+                      </a>
+                    @endif
+                    <a
+                      href="{{ attachment.downloadUrl }}"
+                      target="_blank"
+                      class="mt-2 flex items-center gap-2 hover:text-primary"
+                    >
+                      <i class="fas fa-download text-blue-500"></i>
+                      <span class="text-sm">{{ attachment.filename }}</span>
+                      <span class="text-xs text-gray-400">({{ attachment.size }})</span>
+                    </a>
+                  </div>
                 @end
               </div>
             </div>

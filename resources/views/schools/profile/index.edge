@@ -158,10 +158,10 @@
         </div>
       </div>
 
-      <!-- Contact directeur -->
+      <!-- Contact promoteur -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
         <h3 class="font-semibold text-lg border-b pb-2 mb-4">
-          Direction
+          Promoteur
         </h3>
         @if(director)
           <div class="flex items-center gap-3 mb-4">
@@ -183,7 +183,7 @@
                 {{ director.fullName }}
               </p>
               <p class="text-xs text-gray-500">
-                Directeur
+                Promoteur de l'école
               </p>
             </div>
           </div>
@@ -211,7 +211,7 @@
           </div>
         @else
           <p class="text-gray-500 text-center py-6">
-            Aucun directeur associé
+            Aucun promoteur associé
           </p>
         @endif
       </div>
@@ -276,7 +276,7 @@
 
     <script>
       function changeDirectorPassword() {
-        if (confirm("Réinitialiser le mot de passe du directeur ? Un email lui sera envoyé.")) {
+        if (confirm("Réinitialiser le mot de passe du promoteur ? Un email lui sera envoyé.")) {
           fetch("/api/schools/director/reset-password", {
             method: "POST",
             headers: {

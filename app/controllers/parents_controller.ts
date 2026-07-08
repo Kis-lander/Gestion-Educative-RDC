@@ -15,7 +15,7 @@ import Teacher from '#models/teacher'
 import { edgePageContext } from '#start/view_context'
 
 // Imports des validateurs VineJS
-import { sendMessageToTeacherValidator, justifyAbsenceValidator } from '#validators/parent'
+import { sendMessageToTeacherValidator } from '#validators/parent'
 
 export default class ParentController {
   private formatScore(value: number | null | undefined) {
@@ -295,6 +295,86 @@ export default class ParentController {
     const saturdaySlots = ['08:00', '09:00', '10:00']
 
     return (selectedDate.weekday === 6 ? saturdaySlots : weekdaySlots).map((time) => ({ time }))
+  }
+
+  private async getParentChildren(user: User) {
+    const childrenModels =
+      user.role === 'director'
+        ? await Student.query()
+            .where('school_id', user.schoolId)
+            .preload('user')
+            .preload('class')
+            .preload('school')
+            .orderBy('created_at', 'desc')
+            .limit(100)
+        : await (await Parent.findByOrFail('user_id', user.id))
+            .related('children')
+            .query()
+            .preload('user')
+            .preload('class')
+            .preload('school')
+
+    return Promise.all(
+      childrenModels.map(async (child) => {
+        const grades = await Grade.query().where('student_id', child.id).preload('subject')
+        const scores = grades.map((grade) => Number(grade.score)).filter((score) => Number.isFinite(score))
+        const averageGrade = this.average(scores)
+        const bestGrade = grades
+          .filter((grade) => Number.isFinite(Number(grade.score)))
+          .sort((a, b) => Number(b.score) - Number(a.score))[0]
+        const worstGrade = grades
+          .filter((grade) => Number.isFinite(Number(grade.score)))
+          .sort((a, b) => Number(a.score) - Number(b.score))[0]
+        const attendanceRows = await db.from('attendances').where('student_id', child.id)
+        const attendanceStats = this.buildAttendanceStats(attendanceRows)
+        const disciplineCount = await Discipline.query().where('student_id', child.id).count('* as total')
+
+        return {
+          id: child.id,
+          name: child.user?.fullName || child.registrationNumber,
+          className: child.class?.name || 'Non affecte',
+          registrationNumber: child.registrationNumber || '-',
+          birthDate: child.birthDate?.toFormat('dd/MM/yyyy') || '-',
+          birthPlace: child.birthPlace || '-',
+          nationality: child.nationality || 'Congolaise',
+          gender: child.gender,
+          address: child.address || '-',
+          medicalInfo: child.medicalInfo,
+          parentPhone: child.parentPhone,
+          schoolId: child.schoolId,
+          school: child.school,
+          academicStatus: child.academicStatus || 'active',
+          enrollmentDate: child.enrollmentDate?.toFormat('dd/MM/yyyy') || '-',
+          averageGrade: this.formatScore(averageGrade),
+          attendanceRate: attendanceStats.presentRate,
+          disciplineIncidents: Number(disciplineCount[0].$extras.total || 0),
+          rank: '-',
+          totalStudents: child.classId
+            ? await Student.query().where('class_id', child.classId).count('* as total').then((rows) => Number(rows[0].$extras.total || 0))
+            : 0,
+          bestSubject: bestGrade?.subject?.name || '-',
+          bestSubjectGrade: this.formatScore(bestGrade?.score),
+          worstSubject: worstGrade?.subject?.name || '-',
+          worstSubjectGrade: this.formatScore(worstGrade?.score),
+          mainTeacherId: null,
+        }
+      })
+    )
+  }
+
+  private async parentPageContext(ctx: HttpContext, extra: Record<string, any> = {}) {
+    return edgePageContext(ctx, extra)
+  }
+
+  private csv(response: HttpContext['response'], filename: string, rows: Record<string, any>[]) {
+    const headers = Object.keys(rows[0] || { message: '' })
+    const escape = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`
+    response.header('content-type', 'text/csv; charset=utf-8')
+    response.header('content-disposition', `attachment; filename="${filename}"`)
+    return response.send([
+      headers.join(','),
+      ...rows.map((row) => headers.map((header) => escape(row[header])).join(',')),
+    ].join('\n'))
   }
 
   private parseAppointmentMessage(message: Message) {
@@ -1118,11 +1198,19 @@ export default class ParentController {
    * Justifier une absence
    */
   public async justifyAbsence({ request, auth, response }: HttpContext) {
-    const payload = await request.validateUsing(justifyAbsenceValidator)
     const user = auth.getUserOrFail()
     const parent = await Parent.findByOrFail('user_id', user.id)
+    const absenceId = String(request.input('absenceId') || request.input('recordId') || '').trim()
+    const reason = String(request.input('reason') || '').trim()
+    const details = String(request.input('justification') || '').trim()
+    const justification = [reason, details].filter(Boolean).join(' - ')
+    const documentUrl = String(request.input('documentUrl') || '').trim() || null
 
-    const absence = await db.from('attendances').where('id', payload.absenceId).first()
+    if (!absenceId || !justification) {
+      return response.badRequest({ success: false, message: 'La justification est requise.' })
+    }
+
+    const absence = await db.from('attendances').where('id', absenceId).first()
 
     if (!absence) {
       return response.notFound({ success: false, message: 'Absence non trouvée' })
@@ -1131,10 +1219,10 @@ export default class ParentController {
     // Vérifier que l'enfant appartient bien au parent
     await parent.related('children').query().where('students.id', absence.student_id).firstOrFail()
 
-    await db.from('attendances').where('id', payload.absenceId).update({
+    await db.from('attendances').where('id', absenceId).update({
       status: 'excused',
-      justification: payload.justification,
-      justification_document: payload.documentUrl,
+      justification,
+      justification_document: documentUrl,
       justified_at: DateTime.now().toSQL(),
       justified_by: user.id,
     })
@@ -1176,5 +1264,653 @@ export default class ParentController {
         balance: totalDue - totalPaid,
       },
     })
+  }
+
+  public async childrenPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const children = await this.getParentChildren(user)
+    const averages = children
+      .map((child) => Number(child.averageGrade))
+      .filter((average) => Number.isFinite(average))
+    const totalPayments = await db
+      .from('fee_payments')
+      .whereIn('student_id', children.map((child) => child.id))
+      .sum('amount_paid as total')
+      .first()
+
+    return ctx.view.render(
+      'parent/children/index',
+      await this.parentPageContext(ctx, {
+        school: children[0]?.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        children,
+        stats: {
+          total: children.length,
+          averageGrade: this.formatScore(this.average(averages)),
+          attendanceRate: children.length
+            ? Math.round(children.reduce((sum, child) => sum + Number(child.attendanceRate || 0), 0) / children.length)
+            : 0,
+          totalPayments: Number(totalPayments?.total || 0),
+        },
+      })
+    )
+  }
+
+  public async dashboardPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const children = await this.getParentChildren(user)
+    const messages = await Message.query()
+      .where((query) => query.where('sender_id', user.id).orWhere('receiver_id', user.id))
+      .preload('sender')
+      .preload('receiver')
+      .orderBy('created_at', 'desc')
+      .limit(5)
+    const averages = children.map((child) => Number(child.averageGrade)).filter(Number.isFinite)
+
+    return ctx.view.render(
+      'parent/dashboard',
+      await this.parentPageContext(ctx, {
+        school: children[0]?.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        children: children.slice(0, 4),
+        recentMessages: messages.map((message) => {
+          const other = message.senderId === user.id ? message.receiver : message.sender
+          return {
+            id: other?.id || message.id,
+            senderName: other?.fullName || other?.email || 'Utilisateur',
+            subject: message.subject,
+            preview: message.content,
+            time: message.createdAt?.toFormat('dd/MM/yyyy HH:mm') || '',
+            isRead: message.isRead,
+          }
+        }),
+        alerts: [],
+        stats: {
+          childrenCount: children.length,
+          averageGrade: this.formatScore(this.average(averages)),
+          unreadMessages: messages.filter((message) => message.receiverId === user.id && !message.isRead).length,
+          pendingPayments: 0,
+        },
+      })
+    )
+  }
+
+  public async childShowPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const child = (await this.getParentChildren(user)).find((item) => item.id === ctx.params.id)
+    if (!child) return ctx.response.redirect('/parent/children')
+
+    const grades = await Grade.query()
+      .where('student_id', child.id)
+      .preload('subject')
+      .orderBy('exam_date', 'desc')
+      .limit(10)
+    const recentGrades = grades.map((grade) => ({
+      subject: grade.subject?.name || '-',
+      score: this.formatScore(grade.score),
+      date: grade.examDate?.toFormat('dd/MM/yyyy') || '-',
+      comment: grade.teacherComments || '-',
+    }))
+    const recentComments = grades
+      .filter((grade) => grade.teacherComments)
+      .slice(0, 5)
+      .map((grade) => ({
+        subject: grade.subject?.name || '-',
+        comment: grade.teacherComments,
+        teacher: '-',
+        date: grade.examDate?.toFormat('dd/MM/yyyy') || '-',
+      }))
+
+    return ctx.view.render(
+      'parent/children/show',
+      await this.parentPageContext(ctx, {
+        school: child.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        child,
+        recentGrades,
+        recentComments,
+        chartLabels: recentGrades.map((grade) => grade.subject),
+        chartDatasets: [
+          {
+            label: 'Notes',
+            data: recentGrades.map((grade) => Number(grade.score) || 0),
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, .12)',
+            tension: 0.35,
+          },
+        ],
+      })
+    )
+  }
+
+  public async childProfilePage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const child = (await this.getParentChildren(user)).find((item) => item.id === ctx.params.id)
+    if (!child) return ctx.response.redirect('/parent/children')
+
+    return ctx.view.render(
+      'parent/children/profile',
+      await this.parentPageContext(ctx, {
+        school: child.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        child,
+      })
+    )
+  }
+
+  public async gradesPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const children = await this.getParentChildren(user)
+    const selectedChildId = String(ctx.request.input('child_id', children[0]?.id || '')).trim()
+    const selectedTerm = String(ctx.request.input('term', 'T1')).trim()
+    const selectedChild = children.find((child) => child.id === selectedChildId) || children[0] || null
+
+    let grades: Grade[] = []
+    if (selectedChild) {
+      grades = await Grade.query()
+        .where('student_id', selectedChild.id)
+        .where('term', selectedTerm)
+        .preload('subject')
+        .orderBy('exam_date', 'asc')
+    }
+
+    const bySubject = new Map<string, any>()
+    for (const grade of grades) {
+      const key = grade.subjectId || grade.subject?.name || grade.id
+      if (!bySubject.has(key)) {
+        bySubject.set(key, {
+          id: key,
+          name: grade.subject?.name || '-',
+          coefficient: grade.subject?.coefficient || 1,
+          scores: [],
+          compo: null,
+          interro: null,
+          devoir: null,
+          appreciation: grade.teacherComments || '',
+        })
+      }
+      const subject = bySubject.get(key)
+      subject.scores.push(Number(grade.score))
+      const examType = String(grade.examType || '').toLowerCase()
+      if (examType.includes('composition') || examType.includes('exam')) subject.compo = this.formatScore(grade.score)
+      else if (examType.includes('inter')) subject.interro = this.formatScore(grade.score)
+      else subject.devoir = this.formatScore(grade.score)
+      if (grade.teacherComments) subject.appreciation = grade.teacherComments
+    }
+
+    const subjectsGrades = Array.from(bySubject.values()).map((subject) => ({
+      ...subject,
+      average: this.formatScore(this.average(subject.scores)),
+    }))
+    const averages = subjectsGrades.map((subject) => Number(subject.average)).filter(Number.isFinite)
+    const overallAverage = this.formatScore(this.average(averages))
+
+    return ctx.view.render(
+      'parent/grades/index',
+      await this.parentPageContext(ctx, {
+        school: selectedChild?.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        children,
+        selectedChild,
+        selectedChildId: selectedChild?.id || '',
+        selectedTerm,
+        subjectsGrades,
+        overallAverage,
+        rank: '-',
+        totalStudents: selectedChild?.totalStudents || 0,
+        teacherComments: subjectsGrades
+          .filter((subject) => subject.appreciation)
+          .map((subject) => ({
+            subject: subject.name,
+            comment: subject.appreciation,
+            teacher: '-',
+            date: DateTime.now().toFormat('dd/MM/yyyy'),
+          })),
+        subjectsNames: subjectsGrades.map((subject) => subject.name),
+        subjectsAverages: subjectsGrades.map((subject) => Number(subject.average) || 0),
+        termsLabels: ['T1', 'T2', 'T3'],
+        termsAverages: ['T1', 'T2', 'T3'].map((term) => (term === selectedTerm ? Number(overallAverage) || 0 : 0)),
+      })
+    )
+  }
+
+  public async reportCardPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const child = await this.getAuthorizedChild(user, ctx.params.studentId)
+    const grades = await Grade.query().where('student_id', child.id).preload('subject')
+    const rows = grades.map((grade) => ({
+      subject: grade.subject?.name || '-',
+      coefficient: grade.subject?.coefficient || 1,
+      score: Number(grade.score || 0),
+      points: Number(grade.score || 0) * Number(grade.subject?.coefficient || 1),
+    }))
+    const totalCoefficient = rows.reduce((sum, grade) => sum + Number(grade.coefficient || 0), 0)
+    const totalPoints = rows.reduce((sum, grade) => sum + Number(grade.points || 0), 0)
+
+    return ctx.view.render(
+      'parent/grades/report-card',
+      await this.parentPageContext(ctx, {
+        child: { id: child.id, name: child.user?.fullName || child.registrationNumber, className: child.class?.name || '-' },
+        school: child.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        grades: rows,
+        totalCoefficient,
+        totalPoints,
+        overallAverage: totalCoefficient ? this.formatScore(totalPoints / totalCoefficient) : '-',
+        rank: '-',
+        totalStudents: child.classId
+          ? await Student.query().where('class_id', child.classId).count('* as total').then((r) => Number(r[0].$extras.total || 0))
+          : 0,
+      })
+    )
+  }
+
+  public async disciplineDetailsPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const incident = await Discipline.query().where('id', ctx.params.id).preload('student', (q) => q.preload('user').preload('class').preload('school')).firstOrFail()
+    await this.getAuthorizedChild(user, incident.studentId)
+    const child = {
+      id: incident.studentId,
+      name: incident.student?.user?.fullName || '-',
+      className: incident.student?.class?.name || '-',
+    }
+    const previous = await Discipline.query().where('student_id', incident.studentId).whereNot('id', incident.id).orderBy('incident_date', 'desc').limit(5)
+
+    return ctx.view.render(
+      'parent/discipline/details',
+      await this.parentPageContext(ctx, {
+        school: incident.student?.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        child,
+        incident: {
+          id: incident.id,
+          date: incident.incidentDate,
+          time: incident.incidentDate?.toFormat('HH:mm'),
+          type: incident.incidentType,
+          typeLabel: this.getIncidentTypeLabel(incident.incidentType),
+          severity: incident.severity,
+          severityLabel: this.getSeverityLabel(incident.severity),
+          description: incident.description || '-',
+          location: null,
+          witnesses: null,
+          actionTaken: incident.actionTaken,
+          sanction: incident.sanction || 'none',
+          sanctionLabel: this.getSanctionLabel(incident.sanction),
+          sanctionDuration: null,
+          parentNotified: Boolean(incident.parentNotifiedAt),
+          parentNotifiedAt: incident.parentNotifiedAt,
+          parentResponse: incident.parentResponse,
+          parentResponded: Boolean(incident.parentResponse),
+        },
+        previousIncidents: previous.map((item) => ({
+          id: item.id,
+          date: item.incidentDate,
+          typeLabel: this.getIncidentTypeLabel(item.incidentType),
+          severity: item.severity,
+          severityLabel: this.getSeverityLabel(item.severity),
+        })),
+      })
+    )
+  }
+
+  public async attendanceJustifyPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const childId = String(ctx.request.input('child_id', '')).trim()
+    const childModel = childId ? await this.getAuthorizedChild(user, childId) : null
+    const fallbackChild = !childModel ? (await this.getParentChildren(user))[0] : null
+    const child = childModel
+      ? { id: childModel.id, name: childModel.user?.fullName || childModel.registrationNumber }
+      : { id: fallbackChild?.id || '', name: fallbackChild?.name || '-' }
+    return ctx.view.render(
+      'parent/attendance/justify',
+      await this.parentPageContext(ctx, {
+        child,
+        absenceDate: DateTime.now().toISODate(),
+        recordId: ctx.request.input('record_id') || '',
+        parent: { phone: user.phone || '' },
+      })
+    )
+  }
+
+  public async paymentsHistoryPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const children = await this.getParentChildren(user)
+    const child = children.find((item) => item.id === ctx.request.input('child_id')) || children[0]
+    if (!child) return ctx.response.redirect('/parent/payments')
+    const rows = await FeePayment.query().where('student_id', child.id).preload('fee').orderBy('payment_date', 'desc')
+    const payments = rows.map((payment) => ({
+      id: payment.id,
+      date: payment.paymentDate,
+      receiptNumber: payment.receiptNumber || '-',
+      feeType: payment.fee?.feeType || '-',
+      description: payment.fee?.description || '-',
+      amount: Number(payment.amountPaid || 0),
+      method: payment.paymentMethod || 'other',
+      methodLabel: this.getPaymentMethodLabel(payment.paymentMethod),
+      referenceNumber: payment.referenceNumber || '-',
+    }))
+    const totalAmount = payments.reduce((sum, payment) => sum + payment.amount, 0)
+
+    return ctx.view.render(
+      'parent/payments/history',
+      await this.parentPageContext(ctx, {
+        school: child.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        child,
+        payments,
+        stats: {
+          totalTransactions: payments.length,
+          totalAmount,
+          averagePayment: payments.length ? totalAmount / payments.length : 0,
+          worstYear: DateTime.now().year,
+        },
+        chartLabels: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'],
+        chartValues: Array.from({ length: 12 }, (_, index) =>
+          payments
+            .filter((payment) => {
+              const date = payment.date instanceof DateTime ? payment.date : DateTime.fromJSDate(payment.date as any)
+              return date.month === index + 1
+            })
+            .reduce((sum, payment) => sum + payment.amount, 0)
+        ),
+      })
+    )
+  }
+
+  public async paymentsStatusPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const children = await this.getParentChildren(user)
+    const child = children.find((item) => item.id === ctx.request.input('child_id')) || children[0]
+    if (!child) return ctx.response.redirect('/parent/payments')
+    const fees = await SchoolFee.query().where('school_id', child.schoolId)
+    const payments = await FeePayment.query().where('student_id', child.id)
+    const totalAnnualFees = fees.reduce((sum, fee) => sum + Number(fee.amount || 0), 0)
+    const totalPaid = payments.reduce((sum, payment) => sum + Number(payment.amountPaid || 0), 0)
+
+    return ctx.view.render(
+      'parent/payments/status',
+      await this.parentPageContext(ctx, {
+        school: child.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        child,
+        totalAnnualFees,
+        totalPaid,
+        balance: Math.max(totalAnnualFees - totalPaid, 0),
+        paymentsCount: payments.length,
+        termDetails: ['T1', 'T2', 'T3'].map((term) => ({
+          name: term,
+          amount: totalAnnualFees / 3,
+          paid: totalPaid / 3,
+          balance: Math.max((totalAnnualFees - totalPaid) / 3, 0),
+        })),
+        upcomingDeadlines: [],
+      })
+    )
+  }
+
+  public async parentMessagesPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const messages = await Message.query()
+      .where((query) => query.where('sender_id', user.id).orWhere('receiver_id', user.id))
+      .whereNull('deleted_at')
+      .preload('sender')
+      .preload('receiver')
+      .orderBy('created_at', 'desc')
+
+    const conversationsMap = new Map<string, any>()
+    for (const message of messages) {
+      const otherUser = message.senderId === user.id ? message.receiver : message.sender
+      if (!otherUser || conversationsMap.has(otherUser.id)) continue
+      conversationsMap.set(otherUser.id, {
+        userId: otherUser.id,
+        userName: otherUser.fullName || otherUser.email,
+        lastMessage: message.content,
+        lastMessageTime: message.createdAt?.toFormat('dd/MM/yyyy HH:mm') || '',
+        unreadCount: messages.filter((item) => item.senderId === otherUser.id && item.receiverId === user.id && !item.isRead).length,
+      })
+    }
+
+    return ctx.view.render(
+      'parent/messages/index',
+      await this.parentPageContext(ctx, {
+        conversations: Array.from(conversationsMap.values()),
+        stats: {
+          total: messages.length,
+          unread: messages.filter((message) => message.receiverId === user.id && !message.isRead).length,
+          sent: messages.filter((message) => message.senderId === user.id).length,
+          conversations: conversationsMap.size,
+        },
+      })
+    )
+  }
+
+  public async parentMessageSendPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const children = await this.getParentChildren(user)
+    const schoolIds = Array.from(new Set(children.map((child) => child.schoolId).filter(Boolean)))
+    const teachers = await this.getAppointmentTeachers(schoolIds as string[])
+    const selectedTeacherId = String(ctx.request.input('teacher_id', '')).trim()
+    return ctx.view.render(
+      'parent/messages/send',
+      await this.parentPageContext(ctx, {
+        school: children[0]?.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        children,
+        teachers: teachers.map((teacher) => ({ ...teacher, id: teacher.userId })),
+        selectedChildId: ctx.request.input('student_id') || '',
+        selectedTeacherId,
+        selectedSubject: teachers.find((teacher) => teacher.userId === selectedTeacherId)?.subject || '',
+      })
+    )
+  }
+
+  public async sendParentMessage({ auth, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const receiverId = String(request.input('receiverId') || request.input('teacherId') || '').trim()
+    const content = String(request.input('content') || '').trim()
+    const subject = String(request.input('subject') || 'Message parent').trim()
+    const studentId = String(request.input('studentId') || '').trim()
+
+    if (!receiverId || !content) {
+      session?.flash?.('error', 'Veuillez choisir un destinataire et saisir un message.')
+      return response.redirect().back()
+    }
+
+    const message = new Message()
+    message.senderId = user.id
+    message.receiverId = receiverId
+    message.subject = request.input('urgent') ? `[URGENT] ${subject}` : subject
+    message.content = content
+    message.type = 'parent_teacher'
+    message.schoolId = user.schoolId
+    if (studentId) {
+      const child = await this.getAuthorizedChild(user, studentId)
+      message.schoolId = child.schoolId
+    }
+    await message.save()
+
+    const expectsJson =
+      request.url().startsWith('/api/') ||
+      request.header('accept')?.includes('application/json') ||
+      request.header('content-type')?.includes('application/json')
+
+    if (expectsJson) {
+      return response.created({ success: true, message })
+    }
+    session.flash('success', 'Message envoye avec succes.')
+    return response.redirect('/parent/messages')
+  }
+
+  public async parentConversationPage(ctx: HttpContext) {
+    const receiver = await User.findOrFail(ctx.params.id)
+    return ctx.view.render(
+      'parent/messages/conversation',
+      await this.parentPageContext(ctx, {
+        receiver: {
+          id: receiver.id,
+          name: receiver.fullName || receiver.email,
+          roleLabel: receiver.role === 'teacher' ? 'Enseignant' : receiver.role,
+        },
+      })
+    )
+  }
+
+  public async parentConversationData({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const rows = await Message.query()
+      .where((query) => {
+        query
+          .where((q) => q.where('sender_id', user.id).where('receiver_id', params.userId))
+          .orWhere((q) => q.where('sender_id', params.userId).where('receiver_id', user.id))
+      })
+      .whereNull('deleted_at')
+      .orderBy('created_at', 'asc')
+
+    return response.ok({
+      success: true,
+      messages: rows.map((message) => ({
+        id: message.id,
+        content: message.content,
+        isMine: message.senderId === user.id,
+        time: message.createdAt?.toFormat('dd/MM/yyyy HH:mm') || '',
+      })),
+    })
+  }
+
+  public async markConversationRead({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await Message.query()
+      .where('sender_id', params.userId)
+      .where('receiver_id', user.id)
+      .where('is_read', false)
+      .update({ is_read: true, read_at: DateTime.now().toSQL() })
+    return response.ok({ success: true })
+  }
+
+  public async markAllParentMessagesRead({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await Message.query().where('receiver_id', user.id).where('is_read', false).update({ is_read: true, read_at: DateTime.now().toSQL() })
+    return response.ok({ success: true })
+  }
+
+  public async parentNotificationsPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const messages = await Message.query().where('receiver_id', user.id).orderBy('created_at', 'desc').limit(50)
+    const notifications = messages.map((message) => ({
+      id: message.id,
+      type: 'message',
+      title: message.subject || 'Nouveau message',
+      message: message.content,
+      isRead: message.isRead,
+      time: message.createdAt?.toFormat('dd/MM/yyyy HH:mm') || '',
+      link: `/parent/messages/${message.senderId}`,
+    }))
+
+    return ctx.view.render(
+      'parent/messages/notifications',
+      await this.parentPageContext(ctx, {
+        notifications,
+        stats: {
+          total: notifications.length,
+          unread: notifications.filter((notification) => !notification.isRead).length,
+          read: notifications.filter((notification) => notification.isRead).length,
+          thisWeek: notifications.length,
+        },
+      })
+    )
+  }
+
+  public async parentUnreadCount({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const unread = await Message.query().where('receiver_id', user.id).where('is_read', false).count('* as total')
+    return response.ok({ unread: Number(unread[0].$extras.total || 0) })
+  }
+
+  public async childrenStats({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const children = await this.getParentChildren(user)
+    const averages = children.map((child) => Number(child.averageGrade)).filter(Number.isFinite)
+    return response.ok({
+      total: children.length,
+      averageGrade: this.formatScore(this.average(averages)),
+      attendanceRate: children.length
+        ? Math.round(children.reduce((sum, child) => sum + Number(child.attendanceRate || 0), 0) / children.length)
+        : 0,
+      totalPayments: 0,
+    })
+  }
+
+  public async exportGrades({ auth, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const child = await this.getAuthorizedChild(user, String(request.input('child_id')))
+    const grades = await Grade.query().where('student_id', child.id).preload('subject')
+    return this.csv(
+      response,
+      'notes-parent.csv',
+      grades.map((grade) => ({
+        enfant: child.user?.fullName || child.registrationNumber,
+        matiere: grade.subject?.name || '-',
+        note: grade.score,
+        trimestre: grade.term,
+        date: grade.examDate?.toFormat('dd/MM/yyyy') || '',
+      }))
+    )
+  }
+
+  public async exportAttendance({ auth, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const child = await this.getAuthorizedChild(user, String(request.input('child_id')))
+    const records = await db.from('attendances').where('student_id', child.id).orderBy('date', 'desc')
+    return this.csv(response, 'presences-parent.csv', records)
+  }
+
+  public async exportPayments({ auth, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const child = await this.getAuthorizedChild(user, String(request.input('child_id')))
+    const payments = await FeePayment.query().where('student_id', child.id).preload('fee')
+    return this.csv(
+      response,
+      'paiements-parent.csv',
+      payments.map((payment) => ({
+        recu: payment.receiptNumber,
+        frais: payment.fee?.feeType,
+        montant: payment.amountPaid,
+        date: payment.paymentDate?.toFormat('dd/MM/yyyy') || '',
+      }))
+    )
+  }
+
+  public async cancelAppointment({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await Message.query().where('id', params.id).where('sender_id', user.id).update({ deleted_at: DateTime.now().toSQL() })
+    return response.ok({ success: true })
+  }
+
+  public async appointmentSchedule({ response }: HttpContext) {
+    return response.ok({ success: true, appointments: [] })
+  }
+
+  public async exportAppointments(ctx: HttpContext) {
+    return this.csv(ctx.response, 'rendez-vous-parent.csv', [])
+  }
+
+  public async respondToIncident({ auth, params, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const incident = await Discipline.findOrFail(params.id)
+    await this.getAuthorizedChild(user, incident.studentId)
+    await Discipline.query().where('id', incident.id).update({
+      parent_response: request.input('response'),
+      parent_notified_at: DateTime.now().toSQL(),
+    })
+    return response.ok({ success: true })
+  }
+
+  public async markNotificationRead(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    await Message.query()
+      .where('id', ctx.params.id)
+      .where('receiver_id', user.id)
+      .update({ is_read: true, read_at: DateTime.now().toSQL() })
+    return ctx.response.ok({ success: true })
+  }
+
+  public async markAllNotificationsRead(ctx: HttpContext) {
+    return this.markAllParentMessagesRead(ctx)
+  }
+
+  public async deleteAllNotifications({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await Message.query().where('receiver_id', user.id).update({ deleted_at: DateTime.now().toSQL() })
+    return response.ok({ success: true })
   }
 }

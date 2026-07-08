@@ -20,6 +20,7 @@ import {
   generateSchoolReportValidator,
 } from '#validators/inspection'
 import { canUseAppLanguage } from '#services/language_service'
+import { deleteSchoolWithLinkedAccounts } from '#services/school_deletion_service'
 
 export default class InspectionController {
   private mailService = new OtpMailService()
@@ -697,8 +698,7 @@ export default class InspectionController {
     const reason = String(request.input('reason', '')).trim()
 
     await db.transaction(async (trx) => {
-      await trx.from('users').where('school_id', school.id).delete()
-      await trx.from('schools').where('id', school.id).delete()
+      await deleteSchoolWithLinkedAccounts(school.id, trx)
     })
 
     const message = reason ? 'Demande rejetée et supprimée' : 'Demande supprimée'
@@ -1144,7 +1144,7 @@ export default class InspectionController {
   }
 
   public async exportSchools({ response }: HttpContext) {
-    return response.ok('Export des Ã©coles non configurÃ©')
+    return response.ok('Export des écoles non configuré')
   }
 
   public disabledSettingsPage(view: any) {

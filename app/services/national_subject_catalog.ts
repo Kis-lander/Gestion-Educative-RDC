@@ -111,6 +111,36 @@ export const COMMON_SUBJECT_CODES = [
   'FRA', 'MAT', 'ANG', 'HIS', 'GEO', 'ECM', 'REL', 'EPS', 'INF',
 ] as const
 
+export const SECTION_SUBJECT_CODES: Record<string, string[]> = {
+  maternelle: ['FRA', 'MAT', 'ECM', 'REL', 'EPS', 'DES', 'MUS', 'HYG'],
+  primaire: [
+    'FRA',
+    'MAT',
+    'ANG',
+    'LIN',
+    'KIK',
+    'SWA',
+    'TSH',
+    'HIS',
+    'GEO',
+    'ECM',
+    'REL',
+    'EPS',
+    'SVT',
+    'INF',
+    'DES',
+    'MUS',
+    'HYG',
+  ],
+  secondaire: [],
+}
+
+export function getSubjectCodesForSection(sectionCode?: string | null) {
+  if (!sectionCode || sectionCode === 'secondaire') return null
+
+  return SECTION_SUBJECT_CODES[sectionCode] || null
+}
+
 export const OPTION_SUBJECT_CODES: Record<string, string[]> = {
   'Chimie-biologie': ['SVT', 'PHY', 'CHI', 'BOT', 'ZOO', 'ANA-B', 'PHY-B', 'MIC', 'BIOC', 'ECO-L'],
   'Commerciale et gestion': ['COM', 'GES', 'ECO', 'DRO', 'ORG', 'MAR', 'FIS', 'FIN', 'SEC', 'COR', 'BUR'],

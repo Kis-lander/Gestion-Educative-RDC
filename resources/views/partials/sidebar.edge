@@ -165,6 +165,18 @@
     </a>
 
     <!-- Paramètres -->
+    <!-- Forum -->
+    @if(['teacher', 'student', 'director', 'discipline_director'].includes(auth?.user?.role))
+      <a
+        href="{{ auth?.user?.role === 'student' ? '/student/forum' : '/teacher/forum' }}"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/teacher/forum', '/student/forum'])"
+      >
+        <i class="fas fa-comments w-5" :class="iconClass(['/teacher/forum', '/student/forum'])"></i>
+        <span x-show="sidebarOpen">Forum</span>
+      </a>
+    @endif
+
     <a
       href="/settings"
       class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
