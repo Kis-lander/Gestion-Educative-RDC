@@ -102,11 +102,29 @@ const routes = {
     tokens: [{"old":"/help/contact","type":0,"val":"help","end":""},{"old":"/help/contact","type":0,"val":"contact","end":""}],
     types: placeholder as Registry['help.contact']['types'],
   },
+  'help.contact.send': {
+    methods: ["POST"],
+    pattern: '/help/contact',
+    tokens: [{"old":"/help/contact","type":0,"val":"help","end":""},{"old":"/help/contact","type":0,"val":"contact","end":""}],
+    types: placeholder as Registry['help.contact.send']['types'],
+  },
   'help.documentation': {
     methods: ["GET","HEAD"],
     pattern: '/help/documentation',
     tokens: [{"old":"/help/documentation","type":0,"val":"help","end":""},{"old":"/help/documentation","type":0,"val":"documentation","end":""}],
     types: placeholder as Registry['help.documentation']['types'],
+  },
+  'help.views.track': {
+    methods: ["POST"],
+    pattern: '/api/help/views',
+    tokens: [{"old":"/api/help/views","type":0,"val":"api","end":""},{"old":"/api/help/views","type":0,"val":"help","end":""},{"old":"/api/help/views","type":0,"val":"views","end":""}],
+    types: placeholder as Registry['help.views.track']['types'],
+  },
+  'help.feedback': {
+    methods: ["POST"],
+    pattern: '/api/help/documentation/feedback',
+    tokens: [{"old":"/api/help/documentation/feedback","type":0,"val":"api","end":""},{"old":"/api/help/documentation/feedback","type":0,"val":"help","end":""},{"old":"/api/help/documentation/feedback","type":0,"val":"documentation","end":""},{"old":"/api/help/documentation/feedback","type":0,"val":"feedback","end":""}],
+    types: placeholder as Registry['help.feedback']['types'],
   },
   'session.create': {
     methods: ["GET","HEAD"],
@@ -251,6 +269,12 @@ const routes = {
     pattern: '/inspection/communications/:id',
     tokens: [{"old":"/inspection/communications/:id","type":0,"val":"inspection","end":""},{"old":"/inspection/communications/:id","type":0,"val":"communications","end":""},{"old":"/inspection/communications/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['inspections.communication_details']['types'],
+  },
+  'inspections.help_feedback_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/inspection/help-feedback',
+    tokens: [{"old":"/inspection/help-feedback","type":0,"val":"inspection","end":""},{"old":"/inspection/help-feedback","type":0,"val":"help-feedback","end":""}],
+    types: placeholder as Registry['inspections.help_feedback_page']['types'],
   },
   'inspections.reports_schools_page': {
     methods: ["GET","HEAD"],
@@ -1860,6 +1884,12 @@ const routes = {
     tokens: [{"old":"/teacher/attendance/student/:id","type":0,"val":"teacher","end":""},{"old":"/teacher/attendance/student/:id","type":0,"val":"attendance","end":""},{"old":"/teacher/attendance/student/:id","type":0,"val":"student","end":""},{"old":"/teacher/attendance/student/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['teachers.attendance_student_page']['types'],
   },
+  'teacher.students.grades': {
+    methods: ["GET","HEAD"],
+    pattern: '/teacher/students/:studentId/grades',
+    tokens: [{"old":"/teacher/students/:studentId/grades","type":0,"val":"teacher","end":""},{"old":"/teacher/students/:studentId/grades","type":0,"val":"students","end":""},{"old":"/teacher/students/:studentId/grades","type":1,"val":"studentId","end":""},{"old":"/teacher/students/:studentId/grades","type":0,"val":"grades","end":""}],
+    types: placeholder as Registry['teacher.students.grades']['types'],
+  },
   'teachers.grades_page': {
     methods: ["GET","HEAD"],
     pattern: '/teacher/grades',
@@ -1973,6 +2003,12 @@ const routes = {
     pattern: '/teacher/forum/topic/:id/toggle-pin',
     tokens: [{"old":"/teacher/forum/topic/:id/toggle-pin","type":0,"val":"teacher","end":""},{"old":"/teacher/forum/topic/:id/toggle-pin","type":0,"val":"forum","end":""},{"old":"/teacher/forum/topic/:id/toggle-pin","type":0,"val":"topic","end":""},{"old":"/teacher/forum/topic/:id/toggle-pin","type":1,"val":"id","end":""},{"old":"/teacher/forum/topic/:id/toggle-pin","type":0,"val":"toggle-pin","end":""}],
     types: placeholder as Registry['forums.toggle_pin']['types'],
+  },
+  'teachers.timetable_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/teacher/timetable',
+    tokens: [{"old":"/teacher/timetable","type":0,"val":"teacher","end":""},{"old":"/teacher/timetable","type":0,"val":"timetable","end":""}],
+    types: placeholder as Registry['teachers.timetable_page']['types'],
   },
   'students.assignments_page': {
     methods: ["GET","HEAD"],

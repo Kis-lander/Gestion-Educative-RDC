@@ -201,12 +201,12 @@ export function navigationPolicyFor(position?: SchoolPosition | User['role'] | n
 
   return {
     position: key,
-    canViewClasses: isPromoter || isSectionDirector || isStudiesDirector || isPedagogicalAdvisor || isTeacher,
+    canViewClasses: isPromoter || isSectionDirector || isStudiesDirector || isPedagogicalAdvisor || isDiscipline || isTeacher,
     canViewSubjects: isPromoter || isSectionDirector || isStudiesDirector || isPedagogicalAdvisor,
     canViewStudents: isPromoter || isSectionDirector || isStudiesDirector || isDiscipline || isSecretary || isTeacher,
     canViewTeachers: isPromoter || isSectionDirector || isStudiesDirector || isPedagogicalAdvisor || isInspection,
     canViewAccounts: isPromoter || isSectionDirector || isStudiesDirector,
-    canViewGrades: isPromoter || isSectionDirector || isStudiesDirector || isPedagogicalAdvisor || isTeacher,
+    canViewGrades: isPromoter || isSectionDirector || isStudiesDirector || isPedagogicalAdvisor || isDiscipline || isTeacher,
     canViewDiscipline: isPromoter || key === 'prefect' || isDiscipline,
     canViewFinance: isPromoter || isSectionDirector || isFinance,
     canViewTransfers: isPromoter || key === 'prefect',

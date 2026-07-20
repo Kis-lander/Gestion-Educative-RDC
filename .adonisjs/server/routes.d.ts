@@ -20,7 +20,10 @@ export type ScannedRoutes = {
     'help.guides': { paramsTuple?: []; params?: {} }
     'help.tutorial': { paramsTuple?: []; params?: {} }
     'help.contact': { paramsTuple?: []; params?: {} }
+    'help.contact.send': { paramsTuple?: []; params?: {} }
     'help.documentation': { paramsTuple?: []; params?: {} }
+    'help.views.track': { paramsTuple?: []; params?: {} }
+    'help.feedback': { paramsTuple?: []; params?: {} }
     'session.create': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'new_account.create': { paramsTuple?: []; params?: {} }
@@ -45,6 +48,7 @@ export type ScannedRoutes = {
     'messages.send_school_communication': { paramsTuple?: []; params?: {} }
     'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
     'inspections.communication_details': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.help_feedback_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_schools_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_performance_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_statistics_page': { paramsTuple?: []; params?: {} }
@@ -313,6 +317,7 @@ export type ScannedRoutes = {
     'teachers.attendance_mark_page': { paramsTuple?: []; params?: {} }
     'teachers.attendance_report_page': { paramsTuple?: []; params?: {} }
     'teachers.attendance_student_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.students.grades': { paramsTuple: [ParamValue]; params: {'studentId': ParamValue} }
     'teachers.grades_page': { paramsTuple?: []; params?: {} }
     'teachers.grade_add_page': { paramsTuple?: []; params?: {} }
     'teachers.store_grade_web': { paramsTuple?: []; params?: {} }
@@ -332,6 +337,7 @@ export type ScannedRoutes = {
     'teacher.forum.reply.delete': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'forums.toggle_lock': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'forums.toggle_pin': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teachers.timetable_page': { paramsTuple?: []; params?: {} }
     'students.assignments_page': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.index': { paramsTuple?: []; params?: {} }
     'students.assignment_show_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -619,6 +625,7 @@ export type ScannedRoutes = {
     'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
     'inspections.communication_details': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.help_feedback_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_schools_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_performance_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_statistics_page': { paramsTuple?: []; params?: {} }
@@ -769,6 +776,7 @@ export type ScannedRoutes = {
     'teachers.attendance_mark_page': { paramsTuple?: []; params?: {} }
     'teachers.attendance_report_page': { paramsTuple?: []; params?: {} }
     'teachers.attendance_student_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.students.grades': { paramsTuple: [ParamValue]; params: {'studentId': ParamValue} }
     'teachers.grades_page': { paramsTuple?: []; params?: {} }
     'teachers.grade_add_page': { paramsTuple?: []; params?: {} }
     'teachers.grade_class_page': { paramsTuple: [ParamValue]; params: {'classId': ParamValue} }
@@ -777,6 +785,7 @@ export type ScannedRoutes = {
     'forums.teacher_create': { paramsTuple?: []; params?: {} }
     'forums.my_teacher_topics': { paramsTuple?: []; params?: {} }
     'forums.teacher_topic': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teachers.timetable_page': { paramsTuple?: []; params?: {} }
     'students.assignments_page': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.index': { paramsTuple?: []; params?: {} }
     'students.assignment_show_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -957,6 +966,7 @@ export type ScannedRoutes = {
     'inspections.communications_school_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_history_page': { paramsTuple?: []; params?: {} }
     'inspections.communication_details': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.help_feedback_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_schools_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_performance_page': { paramsTuple?: []; params?: {} }
     'inspections.reports_statistics_page': { paramsTuple?: []; params?: {} }
@@ -1107,6 +1117,7 @@ export type ScannedRoutes = {
     'teachers.attendance_mark_page': { paramsTuple?: []; params?: {} }
     'teachers.attendance_report_page': { paramsTuple?: []; params?: {} }
     'teachers.attendance_student_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.students.grades': { paramsTuple: [ParamValue]; params: {'studentId': ParamValue} }
     'teachers.grades_page': { paramsTuple?: []; params?: {} }
     'teachers.grade_add_page': { paramsTuple?: []; params?: {} }
     'teachers.grade_class_page': { paramsTuple: [ParamValue]; params: {'classId': ParamValue} }
@@ -1115,6 +1126,7 @@ export type ScannedRoutes = {
     'forums.teacher_create': { paramsTuple?: []; params?: {} }
     'forums.my_teacher_topics': { paramsTuple?: []; params?: {} }
     'forums.teacher_topic': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teachers.timetable_page': { paramsTuple?: []; params?: {} }
     'students.assignments_page': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.index': { paramsTuple?: []; params?: {} }
     'students.assignment_show_page': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -1267,6 +1279,9 @@ export type ScannedRoutes = {
   POST: {
     'welcome.testimonials.store': { paramsTuple?: []; params?: {} }
     'schools.register': { paramsTuple?: []; params?: {} }
+    'help.contact.send': { paramsTuple?: []; params?: {} }
+    'help.views.track': { paramsTuple?: []; params?: {} }
+    'help.feedback': { paramsTuple?: []; params?: {} }
     'session.store': { paramsTuple?: []; params?: {} }
     'new_account.store': { paramsTuple?: []; params?: {} }
     'session.destroy': { paramsTuple?: []; params?: {} }

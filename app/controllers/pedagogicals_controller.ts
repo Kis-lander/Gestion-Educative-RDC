@@ -4,6 +4,7 @@ import Class from '#models/class'
 import Student from '#models/student'
 import Grade from '#models/grade'
 import School from '#models/school'
+import Teacher from '#models/teacher'
 import {
   generateReportCardValidator,
   publishGradesValidator,
@@ -12,12 +13,50 @@ import {
   createExamScheduleValidator,
 } from '#validators/pedagogical'
 import { DateTime } from 'luxon'
+import { getGovernanceContext } from '#services/school_governance_service'
 
 export default class PedagogicalController {
+  private async authorizeTimetableClass(user: any, classId: string) {
+    const query = Class.query()
+      .where('id', classId)
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+
+    if (user.role === 'teacher') {
+      const teacher = await Teacher.query().where('userId', user.id).first()
+      if (!teacher) return query.whereRaw('1 = 0').firstOrFail()
+
+      const assignedRows = await db
+        .from('class_subject')
+        .where('teacher_id', teacher.id)
+        .select('class_id')
+        .distinct()
+      const assignedClassIds = assignedRows.map((row) => row.class_id).filter(Boolean)
+
+      return query
+        .where((builder) => {
+          builder.where('teacherId', teacher.id)
+          if (assignedClassIds.length) builder.orWhereIn('id', assignedClassIds)
+        })
+        .firstOrFail()
+    }
+
+    const governance = await getGovernanceContext(user)
+    if (!governance.canManageAllSections && governance.sectionId) {
+      query.where('schoolSectionId', governance.sectionId)
+    }
+    if (!governance.canManageAllSections && !governance.sectionId) {
+      query.whereRaw('1 = 0')
+    }
+
+    return query.firstOrFail()
+  }
+
   /**
    * Créer l'emploi du temps d'une classe
    */
   public async createTimetable({ request, auth, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
     const rawPayload = request.all()
     const payload = {
       classId: rawPayload.classId,
@@ -28,11 +67,7 @@ export default class PedagogicalController {
     }
 
     // Vérifier que la classe appartient à l'école
-    await Class.query()
-      .where('id', payload.classId)
-      .where('school_id', auth.user!.schoolId)
-      .whereNull('archivedAt')
-      .firstOrFail()
+    await this.authorizeTimetableClass(user, payload.classId)
 
     if (payload.schedule.length === 0) {
       if (request.header('accept')?.includes('text/html')) {
@@ -92,7 +127,9 @@ export default class PedagogicalController {
   /**
    * Obtenir l'emploi du temps d'une classe
    */
-  public async getClassTimetable({ params, request, response }: HttpContext) {
+  public async getClassTimetable({ auth, params, request, response }: HttpContext) {
+    await this.authorizeTimetableClass(auth.getUserOrFail(), params.classId)
+
     const academicYear = request.input('academic_year', request.input('year'))
     const term = request.input('term')
     const shift = request.input('shift')

@@ -4760,6 +4760,537 @@
     ],
   }
 
+  const helpModuleTranslations = {
+    en: {
+      "Centre d'aide": 'Help center',
+      'Retrouvez les réponses utiles pour gérer l\'école au quotidien':
+        'Find useful answers for day-to-day school management',
+      'Assistance Gestion Éducative RDC': 'Gestion Éducative RDC support',
+      "Trouvez rapidement l'aide adaptée à votre rôle": 'Quickly find help adapted to your role',
+      "Les contenus couvrent l'inspection, la direction, les enseignants, les parents, les élèves, la discipline, les finances, les transferts, les rapports et la communication inter-écoles.":
+        'Content covers inspection, management, teachers, parents, students, discipline, finance, transfers, reports, and inter-school communication.',
+      'Rechercher une aide, un module ou un rôle...': 'Search for help, a module, or a role...',
+      FAQ: 'FAQ',
+      'Réponses courtes aux questions fréquentes par module.':
+        'Short answers to frequently asked questions by module.',
+      'Guides pratiques': 'Practical guides',
+      'Procédures étape par étape pour les opérations importantes.':
+        'Step-by-step procedures for important operations.',
+      'Parcours tutoriels': 'Tutorial paths',
+      "Suites d'actions pour apprendre sans quitter l'application.":
+        'Action sequences to learn without leaving the application.',
+      'Documentation fonctionnelle': 'Functional documentation',
+      'Vue complète des rôles, modules et flux de travail.':
+        'Complete view of roles, modules, and workflows.',
+      Support: 'Support',
+      'Signaler un blocage ou demander une amélioration.':
+        'Report a blocker or request an improvement.',
+      'Démarrage rapide': 'Quick start',
+      "Les premières actions à faire après validation d'une école.":
+        'The first actions to take after a school is approved.',
+      'Articles recommandés': 'Recommended articles',
+      'Retours documentation': 'Documentation feedback',
+      vues: 'views',
+      'Aucun contenu ne correspond à votre recherche. Essayez avec un module comme notes, paiements, transferts, messages ou rapports.':
+        'No content matches your search. Try a module such as grades, payments, transfers, messages, or reports.',
+      'Questions fréquemment posées': 'Frequently asked questions',
+      "Réponses rapides sur les modules de l'application": 'Quick answers about application modules',
+      Toutes: 'All',
+      Tous: 'All',
+      Comptes: 'Accounts',
+      École: 'School',
+      Scolarité: 'Schooling',
+      Finances: 'Finance',
+      Discipline: 'Discipline',
+      Communication: 'Communication',
+      Technique: 'Technical',
+      'Comptes et accès': 'Accounts and access',
+      'Qui peut créer les comptes utilisateurs ?': 'Who can create user accounts?',
+      "Le directeur ou les profils autorisés créent les comptes depuis Comptes. Les accès sont limités par rôle et, si nécessaire, par section scolaire.":
+        'The director or authorized profiles create accounts from Accounts. Access is limited by role and, if needed, by school section.',
+      "Pourquoi certains menus n'apparaissent pas ?": 'Why are some menus not shown?',
+      "Le menu dépend du rôle, de l'école liée au compte et des responsabilités attribuées. Un enseignant, un parent et un directeur financier ne voient pas les mêmes modules.":
+        'The menu depends on the role, the school linked to the account, and assigned responsibilities. A teacher, parent, and finance director do not see the same modules.',
+      'École et inspection': 'School and inspection',
+      'Comment une école est-elle validée ?': 'How is a school approved?',
+      "L'école s'inscrit via le formulaire public, puis l'inspection vérifie la demande. Après approbation, les identifiants de gestion sont générés pour l'établissement.":
+        'The school registers through the public form, then inspection verifies the request. After approval, management credentials are generated for the institution.',
+      'À quoi servent les sections scolaires ?': 'What are school sections for?',
+      'Les sections séparent les responsabilités, classes, enseignants et affectations dans une même école, par exemple primaire, secondaire ou options spécifiques.':
+        'Sections separate responsibilities, classes, teachers, and assignments within one school, such as primary, secondary, or specific options.',
+      'Scolarité, notes et présences': 'Schooling, grades, and attendance',
+      'Comment saisir des notes correctement ?': 'How do I enter grades correctly?',
+      'Choisissez la classe, la matière, le trimestre et les élèves concernés. Vérifiez les coefficients, maxima et filtres avant de publier les résultats.':
+        'Choose the class, subject, term, and concerned students. Check coefficients, maximum scores, and filters before publishing results.',
+      'Qui consulte les bulletins et les devoirs ?': 'Who can view report cards and assignments?',
+      'Les élèves consultent leurs résultats. Les parents voient les enfants liés à leur compte. Les enseignants et directions voient les données de leur périmètre.':
+        'Students view their results. Parents see children linked to their account. Teachers and managers see data within their scope.',
+      'Comment suivre les impayés ?': 'How do I track unpaid amounts?',
+      'Le module financier compare les frais attendus et les paiements enregistrés. Les rapports indiquent les montants dus, payés et restants par élève.':
+        'The finance module compares expected fees and recorded payments. Reports show due, paid, and remaining amounts by student.',
+      'Un reçu peut-il être réimprimé ?': 'Can a receipt be reprinted?',
+      "Oui, ouvrez le paiement concerné depuis l'historique puis utilisez l'action d'impression ou la page de reçu.":
+        'Yes, open the related payment from history, then use the print action or receipt page.',
+      'Comment notifier les parents après un incident ?': 'How do I notify parents after an incident?',
+      "Enregistrez l'incident, vérifiez l'élève et la sanction, puis utilisez l'action de notification parent si elle est disponible pour votre rôle.":
+        'Record the incident, check the student and sanction, then use the parent notification action if available for your role.',
+      'Communication, forum et transferts': 'Communication, forum, and transfers',
+      'Quelle différence entre messages et forum ?': 'What is the difference between messages and the forum?',
+      'Les messages servent aux échanges directs ou institutionnels. Le forum sert aux questions pédagogiques, discussions de classe et ressources partagées.':
+        'Messages are for direct or institutional exchanges. The forum is for learning questions, class discussions, and shared resources.',
+      'Comment suivre une demande de transfert ?': 'How do I track a transfer request?',
+      "Ouvrez le module Transferts pour consulter le statut, l'école de départ, l'école d'accueil, l'autorisation et l'historique de décision.":
+        'Open the Transfers module to view the status, origin school, destination school, authorization, and decision history.',
+      'Problèmes techniques': 'Technical issues',
+      'Que faire si une page ne charge pas ?': 'What should I do if a page does not load?',
+      'Rechargez la page, vérifiez votre connexion, puis réessayez après déconnexion et reconnexion. Si le problème continue, contactez le support avec le module concerné.':
+        'Reload the page, check your connection, then try again after signing out and back in. If the issue continues, contact support with the related module.',
+      'Pourquoi une donnée semble manquante ?': 'Why does data seem to be missing?',
+      "Vérifiez d'abord les filtres de classe, trimestre, section ou année scolaire. Les données peuvent aussi être limitées par votre rôle.":
+        'First check the class, term, section, or school year filters. Data may also be limited by your role.',
+      "Vous n'avez pas trouvé votre réponse ?": 'Did you not find your answer?',
+      'Contactez le support': 'Contact support',
+      'Des procédures courtes pour les tâches clés de la plateforme':
+        'Short procedures for key platform tasks',
+      Démarrage: 'Getting started',
+      Administration: 'Administration',
+      Enseignants: 'Teachers',
+      Parents: 'Parents',
+      Essentiel: 'Essential',
+      Intermédiaire: 'Intermediate',
+      Facile: 'Easy',
+      'Lire la procédure': 'Read the procedure',
+      'Guides les plus consultés': 'Most viewed guides',
+      lectures: 'reads',
+      'Ordre conseillé pour démarrer': 'Recommended startup order',
+      "1. Valider l'école et ses informations administratives.":
+        '1. Validate the school and its administrative information.',
+      '2. Créer les sections, classes, matières et enseignants.':
+        '2. Create sections, classes, subjects, and teachers.',
+      '3. Inscrire les élèves et lier les parents.': '3. Enroll students and link parents.',
+      '4. Configurer les frais, présences, devoirs, notes et communications.':
+        '4. Configure fees, attendance, assignments, grades, and communications.',
+      "Apprenez les enchaînements d'actions les plus fréquents":
+        'Learn the most common action sequences',
+      Bases: 'Basics',
+      Fonctionnalités: 'Features',
+      Avancé: 'Advanced',
+      étapes: 'steps',
+      'Méthode recommandée': 'Recommended method',
+      '1. Ouvrez le module concerné depuis le menu latéral.':
+        '1. Open the related module from the sidebar.',
+      '2. Vérifiez le contexte : école, section, classe, trimestre ou élève.':
+        '2. Check the context: school, section, class, term, or student.',
+      '3. Enregistrez une petite opération de test avant les saisies massives.':
+        '3. Save a small test operation before bulk entry.',
+      '4. Contrôlez les rapports ou historiques après validation.':
+        '4. Check reports or history after validation.',
+      'À préparer avant une formation': 'Prepare before training',
+      'Un compte de test par rôle important.': 'One test account per important role.',
+      'Une classe, quelques élèves et au moins une matière.':
+        'One class, a few students, and at least one subject.',
+      'Un exemple de frais scolaire et un paiement fictif.':
+        'A sample school fee and a fake payment.',
+      'Un message interne pour tester la communication.': 'An internal message to test communication.',
+      'Comprendre les rôles, modules et flux de travail de la plateforme':
+        'Understand platform roles, modules, and workflows',
+      Sommaire: 'Contents',
+      '1. Démarrage': '1. Getting started',
+      '2. Rôles et accès': '2. Roles and access',
+      '3. École et inspection': '3. School and inspection',
+      '4. Scolarité': '4. Schooling',
+      '5. Finances': '5. Finance',
+      '6. Discipline': '6. Discipline',
+      '7. Communication': '7. Communication',
+      '8. Transferts': '8. Transfers',
+      '9. Inter-écoles': '9. Inter-school',
+      '10. Espaces famille': '10. Family areas',
+      '11. Rapports': '11. Reports',
+      '12. Dépannage': '12. Troubleshooting',
+      'Ordre conseillé': 'Recommended order',
+      'École, sections, classes, matières, enseignants, élèves, parents, frais scolaires.':
+        'School, sections, classes, subjects, teachers, students, parents, school fees.',
+      'Point de contrôle': 'Checkpoint',
+      'Vérifiez le rôle de chaque compte avant de saisir des données sensibles.':
+        'Check each account role before entering sensitive data.',
+      'Rôles et accès': 'Roles and access',
+      'Inspection :': 'Inspection:',
+      'Direction :': 'Management:',
+      'Finance :': 'Finance:',
+      'Discipline :': 'Discipline:',
+      'Enseignant :': 'Teacher:',
+      'Parent et élève :': 'Parent and student:',
+      'supervise les écoles, validations, rapports et communications officielles.':
+        'supervises schools, approvals, reports, and official communications.',
+      "pilote classes, élèves, enseignants, matières, transferts, comptes et paramètres de l'école.":
+        'manages classes, students, teachers, subjects, transfers, accounts, and school settings.',
+      'configure frais, paiements, reçus, bourses, plans de paiement et rapports financiers.':
+        'configures fees, payments, receipts, scholarships, payment plans, and financial reports.',
+      'suit incidents, sanctions, appels et notifications aux parents.':
+        'tracks incidents, sanctions, appeals, and parent notifications.',
+      'gère classes, présences, devoirs, notes et forum pédagogique.':
+        'manages classes, attendance, assignments, grades, and the educational forum.',
+      'consultent les informations liées à leur parcours ou à leurs enfants.':
+        'view information related to their own pathway or their children.',
+      'Inter-écoles': 'Inter-school',
+      'Espaces famille': 'Family areas',
+      Rapports: 'Reports',
+      Dépannage: 'Troubleshooting',
+      "Cette documentation vous a-t-elle été utile ?": 'Was this documentation helpful?',
+      Oui: 'Yes',
+      Non: 'No',
+      'Merci pour votre retour !': 'Thank you for your feedback!',
+      "Quelle remarque souhaitez-vous transmettre à l'inspection ?":
+        'What comment would you like to send to inspection?',
+      'Expliquez ce qui manque, ce qui est incorrect ou ce qui devrait être amélioré.':
+        'Explain what is missing, incorrect, or should be improved.',
+      'Envoyer la remarque': 'Send comment',
+      Annuler: 'Cancel',
+      'Veuillez écrire une remarque avant de valider.':
+        'Please write a comment before submitting.',
+      "Impossible d'enregistrer votre retour.": 'Unable to save your feedback.',
+      'Support technique': 'Technical support',
+      "Décrivez votre blocage avec le module, le rôle et l'action concernée":
+        'Describe your blocker with the related module, role, and action',
+      'Envoyez-nous un message': 'Send us a message',
+      'Sujet *': 'Subject *',
+      'Sélectionner un sujet': 'Select a subject',
+      'Accès ou rôle': 'Access or role',
+      'Scolarité, notes ou présences': 'Schooling, grades, or attendance',
+      'Paiement ou finances': 'Payment or finance',
+      'Discipline ou sanction': 'Discipline or sanction',
+      "Transfert d'élève": 'Student transfer',
+      'Messages ou notifications': 'Messages or notifications',
+      'Problème technique': 'Technical issue',
+      "Demande d'amélioration": 'Improvement request',
+      'Module concerné': 'Related module',
+      'Exemple : Notes, Paiements, Transferts': 'Example: Grades, Payments, Transfers',
+      'Votre message *': 'Your message *',
+      "Indiquez votre rôle, l'action tentée, le message d'erreur éventuel et le résultat attendu.":
+        'Indicate your role, attempted action, possible error message, and expected result.',
+      'Pièce jointe utile': 'Useful attachment',
+      'Ajouter une capture, un reçu ou un document': 'Add a screenshot, receipt, or document',
+      'PDF, image, document ou ZIP': 'PDF, image, document, or ZIP',
+      'Envoyer la demande': 'Send request',
+      "Avant d'envoyer": 'Before sending',
+      'Vérifiez les filtres de classe, trimestre, section ou année scolaire.':
+        'Check the class, term, section, or school year filters.',
+      'Essayez de vous déconnecter puis reconnecter.': 'Try signing out and back in.',
+      "Ajoutez une capture si l'erreur est visible.": 'Add a screenshot if the error is visible.',
+      'Temps de réponse indicatif': 'Indicative response time',
+      'Blocage critique': 'Critical blocker',
+      'Question fonctionnelle': 'Functional question',
+      Amélioration: 'Improvement',
+      'Raccourcis utiles': 'Useful shortcuts',
+      'Consulter la FAQ': 'Read the FAQ',
+      'Lire les guides pratiques': 'Read practical guides',
+      'Voir le dépannage': 'View troubleshooting',
+      'Fichier joint': 'Attachment',
+      'Créer les comptes de votre école': 'Create your school accounts',
+      'Directeurs, enseignants, élèves, parents, responsables de section et personnel administratif.':
+        'Directors, teachers, students, parents, section managers, and administrative staff.',
+      'Saisir et publier les notes': 'Enter and publish grades',
+      'De la saisie enseignant à la consultation par les parents et les élèves.':
+        'From teacher entry to consultation by parents and students.',
+      'Enregistrer un paiement et imprimer un reçu': 'Record a payment and print a receipt',
+      'Frais scolaires, paiements, reçus, bourses, plans de paiement et impayés.':
+        'School fees, payments, receipts, scholarships, payment plans, and unpaid amounts.',
+      'Suivre une demande de transfert': 'Track a transfer request',
+      "Circuit entre l'école de départ, l'école d'accueil et l'inspection.":
+        'Workflow between the origin school, destination school, and inspection.',
+      'Communiquer avec les familles': 'Communicate with families',
+      'Messages, notifications, conversations et suivi des échanges.':
+        'Messages, notifications, conversations, and exchange tracking.',
+      'Démarrer une école en production': 'Launch a school in production',
+      'Validez le profil, créez les sections, classes, matières et premiers comptes.':
+        'Validate the profile, create sections, classes, subjects, and first accounts.',
+      'Créer les utilisateurs et limiter leurs accès': 'Create users and limit their access',
+      "Attribuez les rôles, sections et périmètres pour protéger les données de l'école.":
+        'Assign roles, sections, and scopes to protect school data.',
+      'Gérer élèves, classes et matières': 'Manage students, classes, and subjects',
+      'Inscrivez les élèves, organisez les classes et assignez les matières du programme national.':
+        'Enroll students, organize classes, and assign subjects from the national curriculum.',
+      'Saisir, corriger et publier les notes': 'Enter, correct, and publish grades',
+      'Utilisez les vues par classe, matière et trimestre avant la génération des bulletins.':
+        'Use class, subject, and term views before generating report cards.',
+      'Piloter frais scolaires et paiements': 'Manage school fees and payments',
+      'Définissez les frais, encaissez les paiements, imprimez les reçus et suivez les impayés.':
+        'Define fees, collect payments, print receipts, and track unpaid amounts.',
+      'Suivre incidents, sanctions et appels': 'Track incidents, sanctions, and appeals',
+      'Déclarez un incident, appliquez une sanction, notifiez les parents et consultez les rapports.':
+        'Report an incident, apply a sanction, notify parents, and view reports.',
+      "Suivre la scolarité d'un enfant": "Track a child's schooling",
+      "Consultez notes, présences, discipline, paiements et messages depuis l'espace parent.":
+        'View grades, attendance, discipline, payments, and messages from the parent area.',
+      'Prendre en main le tableau de bord': 'Get started with the dashboard',
+      'Repérez les raccourcis, notifications, modules visibles et actions rapides selon votre rôle.':
+        'Find shortcuts, notifications, visible modules, and quick actions according to your role.',
+      'Créer une classe et y affecter les matières': 'Create a class and assign subjects',
+      "Préparez la structure pédagogique avant l'inscription ou l'affectation des élèves.":
+        'Prepare the academic structure before enrolling or assigning students.',
+      'Envoyer une communication ciblée': 'Send a targeted communication',
+      'Rédigez un message, choisissez les destinataires et suivez les conversations.':
+        'Write a message, choose recipients, and follow conversations.',
+      'Traiter une demande de transfert': 'Process a transfer request',
+      "Vérifiez l'autorisation, le statut et l'historique avant de finaliser la décision.":
+        'Check authorization, status, and history before finalizing the decision.',
+      'Analyser les rapports scolaires et financiers': 'Analyze academic and financial reports',
+      'Comparez performance, recouvrement, discipline et transferts pour décider avec de bons indicateurs.':
+        'Compare performance, collection, discipline, and transfers to decide with good indicators.',
+    },
+    ln: {
+      "Centre d'aide": 'Esika ya lisungi',
+      FAQ: 'Mituna ya mingi',
+      'Guides pratiques': 'Mikanda ya kolakisa',
+      'Parcours tutoriels': 'Mateya ya kolanda',
+      'Documentation fonctionnelle': 'Mikanda ya mosala',
+      Support: 'Lisungi',
+      'Démarrage rapide': 'Kobanda noki',
+      'Retours documentation': 'Biyano ya mikanda',
+      'Questions fréquemment posées': 'Mituna oyo etunamaka mingi',
+      Toutes: 'Nyonso',
+      Tous: 'Nyonso',
+      Comptes: 'Ba compte',
+      École: 'Eteyelo',
+      Scolarité: 'Boyekoli',
+      Finances: 'Mosolo',
+      Discipline: 'Discipline',
+      Communication: 'Bosololi',
+      Technique: 'Tekiniki',
+      'Comptes et accès': 'Ba compte mpe bokoti',
+      'École et inspection': 'Eteyelo mpe inspection',
+      'Scolarité, notes et présences': 'Boyekoli, bapwɛ mpe bozali',
+      'Problèmes techniques': 'Mikakatano ya tekiniki',
+      'Contactez le support': 'Benga lisungi',
+      Démarrage: 'Kobanda',
+      Administration: 'Administration',
+      Enseignants: 'Balakisi',
+      Parents: 'Baboti',
+      Essentiel: 'Ya ntina',
+      Intermédiaire: 'Ya katikati',
+      Facile: 'Pete',
+      lectures: 'botangi',
+      Bases: 'Makambo ya ebandeli',
+      Fonctionnalités: 'Misala',
+      Avancé: 'Ya likolo',
+      étapes: 'matambe',
+      Sommaire: 'Makambo',
+      'Rôles et accès': 'Misala mpe bokoti',
+      'Inter-écoles': 'Kati ya biteyelo',
+      'Espaces famille': 'Esika ya libota',
+      Rapports: 'Balapolo',
+      Dépannage: 'Kobongisa mikakatano',
+      Oui: 'Iyo',
+      Non: 'Te',
+      'Support technique': 'Lisungi ya tekiniki',
+      'Sujet *': 'Likambo *',
+      'Sélectionner un sujet': 'Pona likambo',
+      'Accès ou rôle': 'Bokoti to mosala',
+      'Paiement ou finances': 'Lifuti to mosolo',
+      'Problème technique': 'Mokakatano ya tekiniki',
+      'Envoyer la demande': 'Tinda bosengi',
+      'Fichier joint': 'Fisyé ekangami',
+      "Quelle remarque souhaitez-vous transmettre à l'inspection ?":
+        'Likanisi nini olingi kotindela inspection?',
+      'Expliquez ce qui manque, ce qui est incorrect ou ce qui devrait être amélioré.':
+        'Limbola oyo ezangi, oyo ezali malamu te to oyo esengeli kobongisama.',
+      'Envoyer la remarque': 'Tinda likanisi',
+      Annuler: 'Kolongola',
+      'Veuillez écrire une remarque avant de valider.':
+        'Komá likanisi liboso ya kondima.',
+      "Impossible d'enregistrer votre retour.": 'Tokoki kobomba eyano na yo te.',
+    },
+    sw: {
+      "Centre d'aide": 'Kituo cha msaada',
+      'Retrouvez les réponses utiles pour gérer l\'école au quotidien':
+        'Pata majibu muhimu ya kusimamia shule kila siku',
+      'Assistance Gestion Éducative RDC': 'Msaada wa Gestion Éducative RDC',
+      "Trouvez rapidement l'aide adaptée à votre rôle": 'Pata haraka msaada unaolingana na jukumu lako',
+      FAQ: 'Maswali ya mara kwa mara',
+      'Guides pratiques': 'Miongozo ya vitendo',
+      'Parcours tutoriels': 'Njia za mafunzo',
+      'Documentation fonctionnelle': 'Nyaraka za matumizi',
+      Support: 'Msaada',
+      'Démarrage rapide': 'Kuanza haraka',
+      'Articles recommandés': 'Makala yaliyopendekezwa',
+      'Retours documentation': 'Maoni ya nyaraka',
+      vues: 'maoni',
+      'Questions fréquemment posées': 'Maswali yanayoulizwa mara kwa mara',
+      Toutes: 'Yote',
+      Tous: 'Yote',
+      Comptes: 'Akaunti',
+      École: 'Shule',
+      Scolarité: 'Masomo',
+      Finances: 'Fedha',
+      Discipline: 'Nidhamu',
+      Communication: 'Mawasiliano',
+      Technique: 'Kiufundi',
+      'Comptes et accès': 'Akaunti na ufikiaji',
+      'École et inspection': 'Shule na ukaguzi',
+      'Scolarité, notes et présences': 'Masomo, alama na mahudhurio',
+      'Problèmes techniques': 'Matatizo ya kiufundi',
+      'Contactez le support': 'Wasiliana na msaada',
+      Démarrage: 'Kuanza',
+      Administration: 'Utawala',
+      Enseignants: 'Walimu',
+      Parents: 'Wazazi',
+      Essentiel: 'Muhimu',
+      Intermédiaire: 'Wastani',
+      Facile: 'Rahisi',
+      lectures: 'usomaji',
+      Bases: 'Misingi',
+      Fonctionnalités: 'Vipengele',
+      Avancé: 'Kiwango cha juu',
+      étapes: 'hatua',
+      'Méthode recommandée': 'Njia inayopendekezwa',
+      'À préparer avant une formation': 'Cha kuandaa kabla ya mafunzo',
+      Sommaire: 'Yaliyomo',
+      'Rôles et accès': 'Majukumu na ufikiaji',
+      'Inter-écoles': 'Kati ya shule',
+      'Espaces famille': 'Nafasi za familia',
+      Rapports: 'Ripoti',
+      Dépannage: 'Utatuzi',
+      Oui: 'Ndiyo',
+      Non: 'Hapana',
+      'Support technique': 'Msaada wa kiufundi',
+      'Sujet *': 'Mada *',
+      'Sélectionner un sujet': 'Chagua mada',
+      'Accès ou rôle': 'Ufikiaji au jukumu',
+      'Scolarité, notes ou présences': 'Masomo, alama au mahudhurio',
+      'Paiement ou finances': 'Malipo au fedha',
+      'Discipline ou sanction': 'Nidhamu au adhabu',
+      "Transfert d'élève": 'Uhamisho wa mwanafunzi',
+      'Messages ou notifications': 'Ujumbe au arifa',
+      'Problème technique': 'Tatizo la kiufundi',
+      "Demande d'amélioration": 'Ombi la kuboresha',
+      'Module concerné': 'Moduli husika',
+      'Votre message *': 'Ujumbe wako *',
+      'Pièce jointe utile': 'Kiambatisho muhimu',
+      'Envoyer la demande': 'Tuma ombi',
+      "Avant d'envoyer": 'Kabla ya kutuma',
+      'Temps de réponse indicatif': 'Muda wa majibu uliokadiriwa',
+      'Blocage critique': 'Kizuizi kikubwa',
+      'Question fonctionnelle': 'Swali la matumizi',
+      Amélioration: 'Uboreshaji',
+      'Raccourcis utiles': 'Njia za mkato muhimu',
+      'Consulter la FAQ': 'Soma FAQ',
+      'Lire les guides pratiques': 'Soma miongozo ya vitendo',
+      'Voir le dépannage': 'Tazama utatuzi',
+      'Fichier joint': 'Kiambatisho',
+      "Quelle remarque souhaitez-vous transmettre à l'inspection ?":
+        'Ni maoni gani ungependa kutuma kwa ukaguzi?',
+      'Expliquez ce qui manque, ce qui est incorrect ou ce qui devrait être amélioré.':
+        'Eleza kinachokosekana, kilicho si sahihi au kinachopaswa kuboreshwa.',
+      'Envoyer la remarque': 'Tuma maoni',
+      Annuler: 'Ghairi',
+      'Veuillez écrire une remarque avant de valider.':
+        'Tafadhali andika maoni kabla ya kuthibitisha.',
+      "Impossible d'enregistrer votre retour.": 'Haiwezekani kuhifadhi maoni yako.',
+    },
+    kg: {
+      "Centre d'aide": 'Kisika ya lusadisu',
+      FAQ: 'Biuvu biyuvulwanga mingi',
+      'Guides pratiques': 'Minkanda ya lutwadisu',
+      'Parcours tutoriels': 'Malongi ya kulanda',
+      'Documentation fonctionnelle': 'Minkanda ya bisalu',
+      Support: 'Lusadisu',
+      'Démarrage rapide': 'Yantika nswalu',
+      'Retours documentation': 'Mvutu ya minkanda',
+      Toutes: 'Yonso',
+      Tous: 'Yonso',
+      Comptes: 'Ba compte',
+      École: 'Sukulu',
+      Scolarité: 'Malongi',
+      Finances: 'Mbongo',
+      Discipline: 'Discipline',
+      Communication: 'Nsangu',
+      Technique: 'Tekiniki',
+      'Contactez le support': 'Benga lusadisu',
+      Démarrage: 'Luyantiku',
+      Administration: 'Administration',
+      Enseignants: 'Balongi',
+      Parents: 'Bibuti',
+      Essentiel: 'Ya mfunu',
+      Intermédiaire: 'Ya kati',
+      Facile: 'Mpete',
+      Bases: 'Bantima',
+      Fonctionnalités: 'Bisalu',
+      Avancé: 'Ya ntwala',
+      étapes: 'bitambi',
+      Sommaire: 'Mambu',
+      Rapports: 'Balapolo',
+      Dépannage: 'Kubongisa mpasi',
+      Oui: 'Ee',
+      Non: 'Ve',
+      'Support technique': 'Lusadisu ya tekiniki',
+      'Sujet *': 'Dyambu *',
+      'Sélectionner un sujet': 'Sola dyambu',
+      'Problème technique': 'Mpasi ya tekiniki',
+      'Envoyer la demande': 'Tinda lusambu',
+      'Fichier joint': 'Fisye ya kukangama',
+      "Quelle remarque souhaitez-vous transmettre à l'inspection ?":
+        'Inki ngindu nge zola kutindila inspection?',
+      'Expliquez ce qui manque, ce qui est incorrect ou ce qui devrait être amélioré.':
+        'Tendula yina me konda, yina kele ya mbi to yina fwete bongisama.',
+      'Envoyer la remarque': 'Tinda ngindu',
+      Annuler: 'Katula',
+      'Veuillez écrire une remarque avant de valider.':
+        'Sonika ngindu tekila kundima.',
+      "Impossible d'enregistrer votre retour.": 'Kulenda bumba mvutu na nge ve.',
+    },
+    lua: {
+      "Centre d'aide": 'Tshibanza tshia dikuatshisha',
+      FAQ: 'Mipuangu ya bungi',
+      'Guides pratiques': 'Mikanda ya kutangila',
+      'Parcours tutoriels': 'Njila ya dilonga',
+      'Documentation fonctionnelle': 'Mikanda ya midimu',
+      Support: 'Dikuatshisha',
+      'Démarrage rapide': 'Kutanga mu bwangu',
+      'Retours documentation': 'Mvutu ya mikanda',
+      Toutes: 'Byonso',
+      Tous: 'Byonso',
+      Comptes: 'Ba compte',
+      École: 'Shikola',
+      Scolarité: 'Dilonga',
+      Finances: 'Makuta',
+      Discipline: 'Discipline',
+      Communication: 'Muyuki',
+      Technique: 'Tekiniki',
+      'Contactez le support': 'Benga dikuatshisha',
+      Démarrage: 'Ntatu',
+      Administration: 'Buludiki',
+      Enseignants: 'Balongeshi',
+      Parents: 'Baleledi',
+      Essentiel: 'Wa mushinga',
+      Intermédiaire: 'Wa munkatshi',
+      Facile: 'Mupepele',
+      Bases: 'Mibelu',
+      Fonctionnalités: 'Midimu',
+      Avancé: 'Wa kumpala',
+      étapes: 'matamba',
+      Sommaire: 'Mambu',
+      Rapports: 'Malapolo',
+      Dépannage: 'Kubongesha mpata',
+      Oui: 'Eyo',
+      Non: 'Towa',
+      'Support technique': 'Dikuatshisha dia tekiniki',
+      'Sujet *': 'Diyi *',
+      'Sélectionner un sujet': 'Tola diyi',
+      'Problème technique': 'Mpata wa tekiniki',
+      'Envoyer la demande': 'Tuma dilomba',
+      'Fichier joint': 'Fichier mukangile',
+      "Quelle remarque souhaitez-vous transmettre à l'inspection ?":
+        'Ngelelu kayi udi musue kutumina inspection?',
+      'Expliquez ce qui manque, ce qui est incorrect ou ce qui devrait être amélioré.':
+        'Ambila tshidi tshikengela, tshidi katshiyi tshimpe to tshidi ne bua kulengulula.',
+      'Envoyer la remarque': 'Tuma ngelelu',
+      Annuler: 'Kansela',
+      'Veuillez écrire une remarque avant de valider.':
+        'Fundila ngelelu kumpala kua kujikija.',
+      "Impossible d'enregistrer votre retour.": 'Kakuena bua kubomba mvutu webe.',
+    },
+  }
+
   const messageModuleTranslations = {
     en: {
       'Boîte de réception': 'Inbox',
@@ -5229,11 +5760,160 @@
     },
   }
 
+  Object.entries(helpModuleTranslations).forEach(([language, values]) => {
+    dictionaries[language] = Object.assign(dictionaries[language] || {}, values)
+  })
+
   Object.entries(messageModuleTranslations).forEach(([language, values]) => {
     dictionaries[language] = Object.assign(dictionaries[language] || {}, values)
   })
 
   Object.entries(forumModuleTranslations).forEach(([language, values]) => {
+    dictionaries[language] = Object.assign(dictionaries[language] || {}, values)
+  })
+
+  const guardianModuleTranslations = {
+    fr: {
+      'Tuteur principal': 'Tuteur principal',
+      'Parent/Tuteur lié': 'Parent/Tuteur lié',
+      'Aucun parent lié': 'Aucun parent lié',
+      'Aucun tuteur lié': 'Aucun tuteur lié',
+      "Lien avec l'élève": "Lien avec l'élève",
+      Lien: 'Lien',
+      'Lien:': 'Lien:',
+      'Votre lien': 'Votre lien',
+      'Votre lien:': 'Votre lien:',
+      'Contact tuteur': 'Contact tuteur',
+      'Vous êtes': 'Vous êtes',
+      principal: 'principal',
+      'Ce lien sera enregistré sur chaque rattachement parent-élève sélectionné.':
+        'Ce lien sera enregistré sur chaque rattachement parent-élève sélectionné.',
+      "Facultatif. Si renseigné, ce parent devient le tuteur principal de l'élève.":
+        "Facultatif. Si renseigné, ce parent devient le tuteur principal de l'élève.",
+      'Facultatif. Si vide, le lien enregistré sur le parent sera utilisé.':
+        'Facultatif. Si vide, le lien enregistré sur le parent sera utilisé.',
+      "Le parent sélectionné n'appartient pas à votre école.":
+        "Le parent sélectionné n'appartient pas à votre école.",
+      'Ex: Père, Mère, Tuteur': 'Ex: Père, Mère, Tuteur',
+    },
+    en: {
+      'Tuteur principal': 'Primary guardian',
+      'Parent/Tuteur lié': 'Linked parent/guardian',
+      'Aucun parent lié': 'No linked parent',
+      'Aucun tuteur lié': 'No linked guardian',
+      "Lien avec l'élève": 'Relationship to the student',
+      Lien: 'Relationship',
+      'Lien:': 'Relationship:',
+      'Votre lien': 'Your relationship',
+      'Votre lien:': 'Your relationship:',
+      'Contact tuteur': 'Guardian contact',
+      'Vous êtes': 'You are',
+      principal: 'primary',
+      'Ce lien sera enregistré sur chaque rattachement parent-élève sélectionné.':
+        'This relationship will be saved on each selected parent-student link.',
+      "Facultatif. Si renseigné, ce parent devient le tuteur principal de l'élève.":
+        'Optional. If selected, this parent becomes the student’s primary guardian.',
+      'Facultatif. Si vide, le lien enregistré sur le parent sera utilisé.':
+        'Optional. If empty, the relationship saved on the parent will be used.',
+      "Le parent sélectionné n'appartient pas à votre école.":
+        'The selected parent does not belong to your school.',
+      'Ex: Père, Mère, Tuteur': 'E.g. Father, Mother, Guardian',
+    },
+    ln: {
+      'Tuteur principal': 'Mobateli monene',
+      'Parent/Tuteur lié': 'Moboti/Mobateli akangami',
+      'Aucun parent lié': 'Moboti akangami te',
+      'Aucun tuteur lié': 'Mobateli akangami te',
+      "Lien avec l'élève": 'Bokangani na moyekoli',
+      Lien: 'Bokangani',
+      'Lien:': 'Bokangani:',
+      'Votre lien': 'Bokangani na yo',
+      'Votre lien:': 'Bokangani na yo:',
+      'Contact tuteur': 'Contact ya mobateli',
+      'Vous êtes': 'Ozali',
+      principal: 'monene',
+      'Ce lien sera enregistré sur chaque rattachement parent-élève sélectionné.':
+        'Bokangani oyo ekobombama na boyokani nyonso ya moboti na moyekoli oyo oponi.',
+      "Facultatif. Si renseigné, ce parent devient le tuteur principal de l'élève.":
+        'Ezali ya kopona. Soki oponi, moboti oyo akokoma mobateli monene ya moyekoli.',
+      'Facultatif. Si vide, le lien enregistré sur le parent sera utilisé.':
+        'Ezali ya kopona. Soki ezali mpamba, bokangani oyo ebombami na moboti ekosalelama.',
+      "Le parent sélectionné n'appartient pas à votre école.":
+        'Moboti oyo oponi azali ya eteyelo na yo te.',
+      'Ex: Père, Mère, Tuteur': 'Ndakisa: Tata, Mama, Mobateli',
+    },
+    sw: {
+      'Tuteur principal': 'Mlezi mkuu',
+      'Parent/Tuteur lié': 'Mzazi/Mlezi aliyeunganishwa',
+      'Aucun parent lié': 'Hakuna mzazi aliyeunganishwa',
+      'Aucun tuteur lié': 'Hakuna mlezi aliyeunganishwa',
+      "Lien avec l'élève": 'Uhusiano na mwanafunzi',
+      Lien: 'Uhusiano',
+      'Lien:': 'Uhusiano:',
+      'Votre lien': 'Uhusiano wako',
+      'Votre lien:': 'Uhusiano wako:',
+      'Contact tuteur': 'Mawasiliano ya mlezi',
+      'Vous êtes': 'Wewe ni',
+      principal: 'mkuu',
+      'Ce lien sera enregistré sur chaque rattachement parent-élève sélectionné.':
+        'Uhusiano huu utahifadhiwa kwa kila muunganisho uliochaguliwa wa mzazi na mwanafunzi.',
+      "Facultatif. Si renseigné, ce parent devient le tuteur principal de l'élève.":
+        'Si lazima. Ukichaguliwa, mzazi huyu atakuwa mlezi mkuu wa mwanafunzi.',
+      'Facultatif. Si vide, le lien enregistré sur le parent sera utilisé.':
+        'Si lazima. Ikiwa tupu, uhusiano uliohifadhiwa kwa mzazi utatumika.',
+      "Le parent sélectionné n'appartient pas à votre école.":
+        'Mzazi aliyechaguliwa si wa shule yako.',
+      'Ex: Père, Mère, Tuteur': 'Mfano: Baba, Mama, Mlezi',
+    },
+    kg: {
+      'Tuteur principal': 'Ntanini ya nene',
+      'Parent/Tuteur lié': 'Kibuti/Ntanini ya kangama',
+      'Aucun parent lié': 'Kibuti ya kangama kele ve',
+      'Aucun tuteur lié': 'Ntanini ya kangama kele ve',
+      "Lien avec l'élève": 'Kinkangu na mwana-nkanda',
+      Lien: 'Kinkangu',
+      'Lien:': 'Kinkangu:',
+      'Votre lien': 'Kinkangu na nge',
+      'Votre lien:': 'Kinkangu na nge:',
+      'Contact tuteur': 'Contact ya ntanini',
+      'Vous êtes': 'Nge kele',
+      principal: 'ya nene',
+      'Ce lien sera enregistré sur chaque rattachement parent-élève sélectionné.':
+        'Kinkangu yayi ta bumbama na konso bokangami ya kibuti na mwana-nkanda ya nge me pona.',
+      "Facultatif. Si renseigné, ce parent devient le tuteur principal de l'élève.":
+        'Ya luzolo. Kana nge me pona, kibuti yayi ta kuma ntanini ya nene ya mwana-nkanda.',
+      'Facultatif. Si vide, le lien enregistré sur le parent sera utilisé.':
+        'Ya luzolo. Kana kele mpamba, kinkangu ya bumbama na kibuti ta sadila.',
+      "Le parent sélectionné n'appartient pas à votre école.":
+        'Kibuti ya nge me pona kele ya sukulu na nge ve.',
+      'Ex: Père, Mère, Tuteur': 'Ndakisa: Tata, Mama, Ntanini',
+    },
+    lua: {
+      'Tuteur principal': 'Mukokeshi munene',
+      'Parent/Tuteur lié': 'Muleli/Mukokeshi mukangile',
+      'Aucun parent lié': 'Kakuena muleli mukangile',
+      'Aucun tuteur lié': 'Kakuena mukokeshi mukangile',
+      "Lien avec l'élève": 'Bukumanyi ne muyidi',
+      Lien: 'Bukumanyi',
+      'Lien:': 'Bukumanyi:',
+      'Votre lien': 'Bukumanyi buebe',
+      'Votre lien:': 'Bukumanyi buebe:',
+      'Contact tuteur': 'Contact wa mukokeshi',
+      'Vous êtes': 'Udi',
+      principal: 'munene',
+      'Ce lien sera enregistré sur chaque rattachement parent-élève sélectionné.':
+        'Bukumanyi ebu bukabikwa pa kukangana konse kwa muleli ne muyidi kusungula.',
+      "Facultatif. Si renseigné, ce parent devient le tuteur principal de l'élève.":
+        'Bidi mu disua. Bikala bisungudibue, muleli ewu ukalua mukokeshi munene wa muyidi.',
+      'Facultatif. Si vide, le lien enregistré sur le parent sera utilisé.':
+        'Bidi mu disua. Bikala mpamba, bukumanyi bubikidibue pa muleli bukasambilwa.',
+      "Le parent sélectionné n'appartient pas à votre école.":
+        'Muleli musungula kena wa dikola diebe.',
+      'Ex: Père, Mère, Tuteur': 'Cilejilu: Tatu, Mamu, Mukokeshi',
+    },
+  }
+
+  Object.entries(guardianModuleTranslations).forEach(([language, values]) => {
     dictionaries[language] = Object.assign(dictionaries[language] || {}, values)
   })
 

@@ -105,8 +105,14 @@ export interface ApiDefinition {
     faq: typeof routes['help.faq']
     guides: typeof routes['help.guides']
     tutorial: typeof routes['help.tutorial']
-    contact: typeof routes['help.contact']
+    contact: typeof routes['help.contact'] & {
+      send: typeof routes['help.contact.send']
+    }
     documentation: typeof routes['help.documentation']
+    views: {
+      track: typeof routes['help.views.track']
+    }
+    feedback: typeof routes['help.feedback']
   }
   session: {
     create: typeof routes['session.create']
@@ -178,6 +184,7 @@ export interface ApiDefinition {
     communicationsSchoolPage: typeof routes['inspections.communications_school_page']
     communicationsHistoryPage: typeof routes['inspections.communications_history_page']
     communicationDetails: typeof routes['inspections.communication_details']
+    helpFeedbackPage: typeof routes['inspections.help_feedback_page']
     reportsSchoolsPage: typeof routes['inspections.reports_schools_page']
     reportsPerformancePage: typeof routes['inspections.reports_performance_page']
     reportsStatisticsPage: typeof routes['inspections.reports_statistics_page']
@@ -266,6 +273,7 @@ export interface ApiDefinition {
     storeGradeWeb: typeof routes['teachers.store_grade_web']
     gradeClassPage: typeof routes['teachers.grade_class_page']
     gradeEditPage: typeof routes['teachers.grade_edit_page']
+    timetablePage: typeof routes['teachers.timetable_page']
     getMyClasses: typeof routes['teachers.get_my_classes']
     getAssignments: typeof routes['teachers.get_assignments']
     createAssignment: typeof routes['teachers.create_assignment']
@@ -621,6 +629,9 @@ export interface ApiDefinition {
         post: typeof routes['teacher.assignments.update.post']
         put: typeof routes['teacher.assignments.update.put']
       }
+    }
+    students: {
+      grades: typeof routes['teacher.students.grades']
     }
     grades: {
       update: typeof routes['teacher.grades.update']

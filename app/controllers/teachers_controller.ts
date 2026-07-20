@@ -16,6 +16,10 @@ import ForumTopic from '#models/forum_topic'
 import Grade from '#models/grade'
 import Message from '#models/message'
 // import ForumPost from '#models/forum_post'
+import {
+  formatGuardianLabel,
+  getPrimaryGuardiansForStudents,
+} from '#services/guardian_service'
 
 // Imports des validateurs VineJS
 import {
@@ -25,10 +29,27 @@ import {
 } from '#validators/teacher'
 
 export default class TeacherController {
-  private async storeAssignmentAttachment(request: HttpContext['request'], folder: 'assignments' | 'submissions' = 'assignments') {
+  private async storeAssignmentAttachment(
+    request: HttpContext['request'],
+    folder: 'assignments' | 'submissions' = 'assignments'
+  ) {
     const attachment = request.file('attachment', {
       size: '20mb',
-      extnames: ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip'],
+      extnames: [
+        'pdf',
+        'jpg',
+        'jpeg',
+        'png',
+        'webp',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'ppt',
+        'pptx',
+        'txt',
+        'zip',
+      ],
     })
 
     if (!attachment) return null
@@ -43,7 +64,9 @@ export default class TeacherController {
   }
 
   private csvValue(value: unknown) {
-    const text = String(value ?? '').replace(/\r?\n/g, ' ').trim()
+    const text = String(value ?? '')
+      .replace(/\r?\n/g, ' ')
+      .trim()
     return `"${text.replace(/"/g, '""')}"`
   }
 
@@ -133,7 +156,9 @@ export default class TeacherController {
       .first()
 
     const totalStudents = Number(totalStudentsRow?.total || 0)
-    const submittedCount = submissions.filter((submission) => ['submitted', 'graded'].includes(submission.status)).length
+    const submittedCount = submissions.filter((submission) =>
+      ['submitted', 'graded'].includes(submission.status)
+    ).length
     const gradedCount = submissions.filter((submission) => submission.status === 'graded').length
     const daysRemaining = Math.ceil(assignment.dueDate.diff(DateTime.now(), 'days').days)
 
@@ -203,15 +228,25 @@ export default class TeacherController {
       .where('classId', classId)
       .preload('user')
       .orderBy('registrationNumber', 'asc')
+    const guardiansByStudent = await getPrimaryGuardiansForStudents(
+      students.map((student) => student.id)
+    )
 
     return Promise.all(
       students.map(async (student) => {
+        const primaryGuardian = guardiansByStudent.get(student.id) || null
         const grades = await Grade.query().where('studentId', student.id)
         const scores = grades.map((grade) => Number(grade.score)).filter(Number.isFinite)
-        const average = scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null
+        const average = scores.length
+          ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+          : null
         const attendanceRows = await db.from('attendances').where('student_id', student.id)
-        const present = attendanceRows.filter((row) => ['present', 'excused'].includes(row.status)).length
-        const attendanceRate = attendanceRows.length ? Math.round((present / attendanceRows.length) * 100) : 0
+        const present = attendanceRows.filter((row) =>
+          ['present', 'excused'].includes(row.status)
+        ).length
+        const attendanceRate = attendanceRows.length
+          ? Math.round((present / attendanceRows.length) * 100)
+          : 0
 
         return {
           id: student.id,
@@ -221,7 +256,10 @@ export default class TeacherController {
           gender: student.gender,
           averageGrade: this.formatScore(average),
           attendanceRate,
-          parentPhone: student.parentPhone,
+          primaryGuardian,
+          parentName: formatGuardianLabel(primaryGuardian) || '-',
+          parentRelationship: primaryGuardian?.relationship || '-',
+          parentPhone: primaryGuardian?.phone || student.parentPhone,
         }
       })
     )
@@ -235,7 +273,10 @@ export default class TeacherController {
       ? averages.reduce((sum, score) => sum + score, 0) / averages.length
       : null
     const attendanceRate = students.length
-      ? Math.round(students.reduce((sum, student) => sum + Number(student.attendanceRate || 0), 0) / students.length)
+      ? Math.round(
+          students.reduce((sum, student) => sum + Number(student.attendanceRate || 0), 0) /
+            students.length
+        )
       : 0
 
     return {
@@ -311,8 +352,7 @@ export default class TeacherController {
     const user = ctx.auth.getUserOrFail()
     const classes = await this.getAttendanceClassesForUser(user)
     const selectedClassId = String(ctx.request.input('class_id', ''))
-    const startDate =
-      ctx.request.input('start_date') || DateTime.now().startOf('month').toISODate()
+    const startDate = ctx.request.input('start_date') || DateTime.now().startOf('month').toISODate()
     const endDate = ctx.request.input('end_date') || DateTime.now().toISODate()
     const allowedClassIds = classes.map((classObj) => classObj.id)
     const visibleClasses = selectedClassId
@@ -387,7 +427,9 @@ export default class TeacherController {
         })
 
         const totalRecords = classRows.length
-        const presentCount = classRows.filter((row) => row.status === 'present' || row.status === 'excused').length
+        const presentCount = classRows.filter(
+          (row) => row.status === 'present' || row.status === 'excused'
+        ).length
         const absentCount = classRows.filter((row) => row.status === 'absent').length
         const lateCount = classRows.filter((row) => row.status === 'late').length
 
@@ -404,7 +446,9 @@ export default class TeacherController {
       .filter((classAttendance) => classAttendance.totalRecords > 0)
 
     const allRows = attendanceRows
-    const totalPresent = allRows.filter((row) => row.status === 'present' || row.status === 'excused').length
+    const totalPresent = allRows.filter(
+      (row) => row.status === 'present' || row.status === 'excused'
+    ).length
 
     return ctx.view.render(
       'teacher/attendance/index',
@@ -434,9 +478,7 @@ export default class TeacherController {
     const academicYear = request.input('academicYear')
     const term = request.input('term')
 
-    const query = Class.query()
-      .where('teacher_id', teacher.id)
-      .whereNull('archivedAt')
+    const query = Class.query().where('teacher_id', teacher.id).whereNull('archivedAt')
 
     if (academicYear) {
       query.where('academic_year', academicYear)
@@ -499,13 +541,17 @@ export default class TeacherController {
       .orderBy('createdAt', 'desc')
 
     const assignments = await query
-    const formattedAssignments = await Promise.all(assignments.map((assignment) => this.formatAssignment(assignment)))
+    const formattedAssignments = await Promise.all(
+      assignments.map((assignment) => this.formatAssignment(assignment))
+    )
     const stats = {
       total: formattedAssignments.length,
-      published: formattedAssignments.filter((assignment) => assignment.status === 'published').length,
+      published: formattedAssignments.filter((assignment) => assignment.status === 'published')
+        .length,
       draft: formattedAssignments.filter((assignment) => assignment.status === 'draft').length,
       pendingSubmissions: formattedAssignments.reduce(
-        (total, assignment) => total + Math.max(assignment.submittedCount - assignment.gradedCount, 0),
+        (total, assignment) =>
+          total + Math.max(assignment.submittedCount - assignment.gradedCount, 0),
         0
       ),
     }
@@ -517,7 +563,12 @@ export default class TeacherController {
         classes,
         subjects,
         stats,
-        pagination: { total: formattedAssignments.length, perPage: 50, currentPage: 1, lastPage: 1 },
+        pagination: {
+          total: formattedAssignments.length,
+          perPage: 50,
+          currentPage: 1,
+          lastPage: 1,
+        },
       })
     )
   }
@@ -526,8 +577,7 @@ export default class TeacherController {
     const user = ctx.auth.getUserOrFail()
     const classes = await this.getAttendanceClassesForUser(user)
     const selectedClassId = String(ctx.request.input('class_id', classes[0]?.id || ''))
-    const startDate =
-      ctx.request.input('start_date') || DateTime.now().startOf('month').toISODate()
+    const startDate = ctx.request.input('start_date') || DateTime.now().startOf('month').toISODate()
     const endDate = ctx.request.input('end_date') || DateTime.now().toISODate()
     const classObj = selectedClassId
       ? await this.authorizeAttendanceClass(user, selectedClassId)
@@ -598,8 +648,17 @@ export default class TeacherController {
     )
   }
 
-  private async studentAttendancePayload(user: any, studentId: string, startDate?: string, endDate?: string) {
-    const student = await Student.query().where('id', studentId).preload('user').preload('class').firstOrFail()
+  private async studentAttendancePayload(
+    user: any,
+    studentId: string,
+    startDate?: string,
+    endDate?: string
+  ) {
+    const student = await Student.query()
+      .where('id', studentId)
+      .preload('user')
+      .preload('class')
+      .firstOrFail()
     if (!student.classId) throw new Error('Cet eleve n est pas associe a une classe')
     await this.authorizeAttendanceClass(user, student.classId)
 
@@ -609,7 +668,9 @@ export default class TeacherController {
     else if (endDate) query.where('date', '<=', endDate)
 
     const attendanceRecords = await query
-    const present = attendanceRecords.filter((row) => ['present', 'excused'].includes(row.status)).length
+    const present = attendanceRecords.filter((row) =>
+      ['present', 'excused'].includes(row.status)
+    ).length
     const absent = attendanceRecords.filter((row) => row.status === 'absent').length
     const late = attendanceRecords.filter((row) => row.status === 'late').length
     const total = present + absent + late
@@ -649,8 +710,13 @@ export default class TeacherController {
     const assignments = await this.assignmentQueryForUser(user, teacher)
       .orderBy('createdAt', 'desc')
       .limit(5)
-    const formattedAssignments = await Promise.all(assignments.map((assignment) => this.formatAssignment(assignment)))
-    const topics = await ForumTopic.query().where('author_id', user.id).orderBy('created_at', 'desc').limit(5)
+    const formattedAssignments = await Promise.all(
+      assignments.map((assignment) => this.formatAssignment(assignment))
+    )
+    const topics = await ForumTopic.query()
+      .where('author_id', user.id)
+      .orderBy('created_at', 'desc')
+      .limit(5)
 
     return ctx.view.render(
       'teacher/dashboard',
@@ -675,7 +741,10 @@ export default class TeacherController {
           myClasses: formatted.length,
           myStudents: formatted.reduce((sum, item) => sum + item.studentsCount, 0),
           assignments: formattedAssignments.length,
-          pendingSubmissions: formattedAssignments.reduce((sum, item) => sum + Math.max(item.submittedCount - item.gradedCount, 0), 0),
+          pendingSubmissions: formattedAssignments.reduce(
+            (sum, item) => sum + Math.max(item.submittedCount - item.gradedCount, 0),
+            0
+          ),
         },
       })
     )
@@ -685,7 +754,9 @@ export default class TeacherController {
     const user = ctx.auth.getUserOrFail()
     const { formatted } = await this.teacherClassesData(user)
     const totalStudents = formatted.reduce((sum, item) => sum + item.studentsCount, 0)
-    const subjects = new Set(formatted.flatMap((item) => item.subjects.map((subject) => subject.id)))
+    const subjects = new Set(
+      formatted.flatMap((item) => item.subjects.map((subject) => subject.id))
+    )
 
     return ctx.view.render(
       'teacher/classes/index',
@@ -727,7 +798,9 @@ export default class TeacherController {
           title: assignment.title,
           subjectName: assignment.subject?.name || '-',
           dueDate: assignment.dueDate?.toFormat('dd/MM/yyyy') || '-',
-          submittedCount: assignment.submissions.filter((submission) => ['submitted', 'graded'].includes(submission.status)).length,
+          submittedCount: assignment.submissions.filter((submission) =>
+            ['submitted', 'graded'].includes(submission.status)
+          ).length,
           isOverdue: assignment.dueDate < DateTime.now(),
         })),
         stats: {
@@ -753,22 +826,48 @@ export default class TeacherController {
     )
   }
 
+  public async timetablePage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const { formatted } = await this.teacherClassesData(user)
+
+    return ctx.view.render(
+      'schools/timetable/index',
+      await edgePageContext(ctx, {
+        classes: formatted,
+        currentYear: DateTime.now().year,
+        selectedClassId: ctx.request.input('class_id', ''),
+        canManageTimetable: ['director', 'discipline_director'].includes(user.role),
+        timetableIndexUrl: '/teacher/timetable',
+      })
+    )
+  }
+
   public async gradesPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
     const { teacher, classes, formatted } = await this.teacherClassesData(user)
     const classIds = classes.map((item) => item.id)
     const subjects = await this.assignmentSubjects(classIds)
-    const query = Grade.query().whereIn('classId', classIds).preload('student', (q) => q.preload('user')).preload('class').preload('subject')
+    const query = Grade.query()
+      .whereIn('classId', classIds)
+      .preload('student', (q) => q.preload('user'))
+      .preload('class')
+      .preload('subject')
 
     if (ctx.request.input('class_id')) query.where('classId', ctx.request.input('class_id'))
     if (ctx.request.input('subject_id')) query.where('subjectId', ctx.request.input('subject_id'))
     if (ctx.request.input('term')) query.where('term', ctx.request.input('term'))
-    if (ctx.request.input('published') !== undefined) query.where('published', String(ctx.request.input('published')) === 'true')
+    if (ctx.request.input('published') !== undefined)
+      query.where('published', String(ctx.request.input('published')) === 'true')
     if (teacher && !['director', 'discipline_director'].includes(user.role)) {
-      const subjectRows = await db.from('class_subject').where('teacher_id', teacher.id).select('subject_id', 'class_id')
+      const subjectRows = await db
+        .from('class_subject')
+        .where('teacher_id', teacher.id)
+        .select('subject_id', 'class_id')
       query.where((builder) => {
         for (const row of subjectRows) {
-          builder.orWhere((sub) => sub.where('class_id', row.class_id).where('subject_id', row.subject_id))
+          builder.orWhere((sub) =>
+            sub.where('class_id', row.class_id).where('subject_id', row.subject_id)
+          )
         }
       })
     }
@@ -797,7 +896,9 @@ export default class TeacherController {
         stats: {
           totalGrades: gradeRows.length,
           published: gradeRows.filter((grade) => grade.published).length,
-          average: this.formatScore(scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null),
+          average: this.formatScore(
+            scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null
+          ),
           students: new Set(gradeRows.map((grade) => grade.studentId)).size,
         },
       })
@@ -807,7 +908,10 @@ export default class TeacherController {
   public async gradeAddPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
     const { formatted } = await this.teacherClassesData(user)
-    return ctx.view.render('teacher/grades/add', await edgePageContext(ctx, { myClasses: formatted }))
+    return ctx.view.render(
+      'teacher/grades/add',
+      await edgePageContext(ctx, { myClasses: formatted })
+    )
   }
 
   public async gradeClassPage(ctx: HttpContext) {
@@ -824,24 +928,29 @@ export default class TeacherController {
       .if(subjectId, (query) => query.where('subjectId', subjectId))
       .preload('subject')
 
-    const rows = students.map((student) => {
-      const studentGrades = grades.filter((grade) => grade.studentId === student.id)
-      const scores = studentGrades.map((grade) => Number(grade.score)).filter(Number.isFinite)
-      const average = scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0
-      return {
-        ...student,
-        rank: 0,
-        average,
-        gradesBySubject: subjects.map((subject) => ({
-          subjectId: subject.id,
-          score: studentGrades.find((grade) => grade.subjectId === subject.id)?.score || null,
-        })),
-        grade: {
-          score: studentGrades[0]?.score || null,
-          comment: studentGrades[0]?.teacherComments || null,
-        },
-      }
-    }).sort((a, b) => b.average - a.average).map((student, index) => ({ ...student, rank: index + 1 }))
+    const rows = students
+      .map((student) => {
+        const studentGrades = grades.filter((grade) => grade.studentId === student.id)
+        const scores = studentGrades.map((grade) => Number(grade.score)).filter(Number.isFinite)
+        const average = scores.length
+          ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+          : 0
+        return {
+          ...student,
+          rank: 0,
+          average,
+          gradesBySubject: subjects.map((subject) => ({
+            subjectId: subject.id,
+            score: studentGrades.find((grade) => grade.subjectId === subject.id)?.score || null,
+          })),
+          grade: {
+            score: studentGrades[0]?.score || null,
+            comment: studentGrades[0]?.teacherComments || null,
+          },
+        }
+      })
+      .sort((a, b) => b.average - a.average)
+      .map((student, index) => ({ ...student, rank: index + 1 }))
     const scores = rows.map((student) => student.average).filter(Number.isFinite)
     const distribution = [0, 0, 0, 0, 0, 0, 0]
     scores.forEach((score) => {
@@ -866,10 +975,14 @@ export default class TeacherController {
         subjectsList: subjects,
         students: rows,
         stats: {
-          average: this.formatScore(scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null),
+          average: this.formatScore(
+            scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null
+          ),
           highest: this.formatScore(scores.length ? Math.max(...scores) : null),
           lowest: this.formatScore(scores.length ? Math.min(...scores) : null),
-          passRate: scores.length ? Math.round((scores.filter((score) => score >= 10).length / scores.length) * 100) : 0,
+          passRate: scores.length
+            ? Math.round((scores.filter((score) => score >= 10).length / scores.length) * 100)
+            : 0,
         },
         distributionData: distribution,
       })
@@ -881,7 +994,10 @@ export default class TeacherController {
     const { classes } = await this.teacherClassesData(user)
     const grade = await Grade.query()
       .where('id', ctx.params.id)
-      .whereIn('classId', classes.map((item) => item.id))
+      .whereIn(
+        'classId',
+        classes.map((item) => item.id)
+      )
       .preload('student', (q) => q.preload('user'))
       .preload('class')
       .preload('subject')
@@ -936,7 +1052,10 @@ export default class TeacherController {
       .first()
 
     if (!classSubject) {
-      session.flash('error', "Vous n'etes pas autorise a creer un devoir pour cette classe et cette matiere.")
+      session.flash(
+        'error',
+        "Vous n'etes pas autorise a creer un devoir pour cette classe et cette matiere."
+      )
       return response.redirect().back()
     }
 
@@ -974,7 +1093,9 @@ export default class TeacherController {
     const recentSubmissions = (assignment.submissions || [])
       .filter((submission) => ['submitted', 'graded'].includes(submission.status))
       .slice()
-      .sort((a, b) => Number(b.submittedAt?.toMillis() || 0) - Number(a.submittedAt?.toMillis() || 0))
+      .sort(
+        (a, b) => Number(b.submittedAt?.toMillis() || 0) - Number(a.submittedAt?.toMillis() || 0)
+      )
       .slice(0, 5)
       .map((submission) => ({
         id: submission.id,
@@ -1010,13 +1131,17 @@ export default class TeacherController {
 
     let attachmentUrl = assignment.attachmentUrl
     try {
-      attachmentUrl = (await this.storeAssignmentAttachment(request, 'assignments')) || attachmentUrl
+      attachmentUrl =
+        (await this.storeAssignmentAttachment(request, 'assignments')) || attachmentUrl
     } catch (error) {
       session.flash('error', error instanceof Error ? error.message : 'Fichier joint invalide')
       return response.redirect().back()
     }
 
-    const status = String(request.input('status') || assignment.status) as 'draft' | 'published' | 'closed'
+    const status = String(request.input('status') || assignment.status) as
+      | 'draft'
+      | 'published'
+      | 'closed'
     assignment.merge({
       title: String(request.input('title') || assignment.title).trim(),
       description: String(request.input('description') || '').trim() || null,
@@ -1026,7 +1151,8 @@ export default class TeacherController {
       maxPoints: Number(request.input('maxPoints') || assignment.maxPoints || 20),
       attachmentUrl,
       status,
-      publishedAt: status === 'published' && !assignment.publishedAt ? DateTime.now() : assignment.publishedAt,
+      publishedAt:
+        status === 'published' && !assignment.publishedAt ? DateTime.now() : assignment.publishedAt,
     })
     await assignment.save()
 
@@ -1068,7 +1194,9 @@ export default class TeacherController {
       .preload('user')
       .orderBy('registrationNumber', 'asc')
 
-    const submissionByStudent = new Map((assignment.submissions || []).map((submission) => [submission.studentId, submission]))
+    const submissionByStudent = new Map(
+      (assignment.submissions || []).map((submission) => [submission.studentId, submission])
+    )
     const submissions = students.map((student) => {
       const submission = submissionByStudent.get(student.id)
       return {
@@ -1082,7 +1210,9 @@ export default class TeacherController {
         isGraded: submission?.status === 'graded',
       }
     })
-    const submitted = submissions.filter((submission) => ['submitted', 'graded'].includes(submission.status)).length
+    const submitted = submissions.filter((submission) =>
+      ['submitted', 'graded'].includes(submission.status)
+    ).length
     const graded = submissions.filter((submission) => submission.isGraded).length
 
     return ctx.view.render(
@@ -1104,7 +1234,9 @@ export default class TeacherController {
     const user = ctx.auth.getUserOrFail()
     const submission = await AssignmentSubmission.query()
       .where('id', ctx.params.id)
-      .preload('assignment', (assignmentQuery) => assignmentQuery.preload('class').preload('subject'))
+      .preload('assignment', (assignmentQuery) =>
+        assignmentQuery.preload('class').preload('subject')
+      )
       .preload('student', (studentQuery) => studentQuery.preload('user'))
       .firstOrFail()
 
@@ -1131,7 +1263,10 @@ export default class TeacherController {
   public async gradeSubmissionWeb(ctx: HttpContext) {
     const payload = await ctx.request.validateUsing(gradeSubmissionValidator)
     const user = ctx.auth.getUserOrFail()
-    const submission = await AssignmentSubmission.query().where('id', ctx.params.id).preload('assignment').firstOrFail()
+    const submission = await AssignmentSubmission.query()
+      .where('id', ctx.params.id)
+      .preload('assignment')
+      .firstOrFail()
     await this.getTeacherAssignment(user, submission.assignmentId)
 
     submission.merge({
@@ -1157,8 +1292,19 @@ export default class TeacherController {
       .orderBy('createdAt', 'desc')
 
     const assignments = await query
-    const formatted = await Promise.all(assignments.map((assignment) => this.formatAssignment(assignment)))
-    const header = ['Titre', 'Classe', 'Matiere', 'Statut', 'Date limite', 'Points', 'Rendus', 'Notes']
+    const formatted = await Promise.all(
+      assignments.map((assignment) => this.formatAssignment(assignment))
+    )
+    const header = [
+      'Titre',
+      'Classe',
+      'Matiere',
+      'Statut',
+      'Date limite',
+      'Points',
+      'Rendus',
+      'Notes',
+    ]
     const rows = formatted.map((assignment) =>
       [
         assignment.title,
@@ -1173,8 +1319,13 @@ export default class TeacherController {
     )
 
     response.header('Content-Type', 'text/csv; charset=utf-8')
-    response.header('Content-Disposition', `attachment; filename="devoirs-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`)
-    return response.send(`\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="devoirs-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`
+    )
+    return response.send(
+      `\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`
+    )
   }
 
   public async exportSubmissions({ auth, params, response }: HttpContext) {
@@ -1185,7 +1336,9 @@ export default class TeacherController {
       .preload('user')
       .orderBy('registrationNumber', 'asc')
 
-    const submissionByStudent = new Map((assignment.submissions || []).map((submission) => [submission.studentId, submission]))
+    const submissionByStudent = new Map(
+      (assignment.submissions || []).map((submission) => [submission.studentId, submission])
+    )
     const header = ['Matricule', 'Eleve', 'Statut', 'Date soumission', 'Note', 'Feedback']
     const rows = students.map((student) => {
       const submission = submissionByStudent.get(student.id)
@@ -1200,8 +1353,13 @@ export default class TeacherController {
     })
 
     response.header('Content-Type', 'text/csv; charset=utf-8')
-    response.header('Content-Disposition', `attachment; filename="soumissions-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`)
-    return response.send(`\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="soumissions-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`
+    )
+    return response.send(
+      `\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`
+    )
   }
 
   public async classSubjectsData({ auth, params, response }: HttpContext) {
@@ -1216,7 +1374,15 @@ export default class TeacherController {
   public async exportClasses({ auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const { formatted } = await this.teacherClassesData(user)
-    const header = ['Classe', 'Niveau', 'Annee scolaire', 'Eleves', 'Moyenne', 'Presence', 'Matieres']
+    const header = [
+      'Classe',
+      'Niveau',
+      'Annee scolaire',
+      'Eleves',
+      'Moyenne',
+      'Presence',
+      'Matieres',
+    ]
     const rows = formatted.map((classObj) =>
       [
         classObj.name,
@@ -1230,19 +1396,26 @@ export default class TeacherController {
     )
 
     response.header('Content-Type', 'text/csv; charset=utf-8')
-    response.header('Content-Disposition', `attachment; filename="classes-enseignant-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`)
-    return response.send(`\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="classes-enseignant-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`
+    )
+    return response.send(
+      `\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`
+    )
   }
 
   public async exportClassStudents({ auth, params, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const classObj = await this.authorizeAttendanceClass(user, params.id)
     const students = await this.classStudents(params.id)
-    const header = ['Matricule', 'Eleve', 'Telephone parent', 'Moyenne', 'Presence']
+    const header = ['Matricule', 'Eleve', 'Tuteur principal', 'Lien', 'Telephone parent', 'Moyenne', 'Presence']
     const rows = students.map((student) =>
       [
         student.registrationNumber,
         student.name,
+        student.primaryGuardian?.fullName || '-',
+        student.parentRelationship || '-',
         student.parentPhone,
         student.averageGrade,
         `${student.attendanceRate}%`,
@@ -1250,8 +1423,13 @@ export default class TeacherController {
     )
 
     response.header('Content-Type', 'text/csv; charset=utf-8')
-    response.header('Content-Disposition', `attachment; filename="eleves-${classObj.name}-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`)
-    return response.send(`\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="eleves-${classObj.name}-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`
+    )
+    return response.send(
+      `\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`
+    )
   }
 
   public async gradeClassData({ auth, params, request, response }: HttpContext) {
@@ -1408,7 +1586,16 @@ export default class TeacherController {
       authorizedGrades.push(grade)
     }
 
-    const header = ['Eleve', 'Classe', 'Matiere', 'Periode', 'Evaluation', 'Note', 'Pourcentage', 'Publiee']
+    const header = [
+      'Eleve',
+      'Classe',
+      'Matiere',
+      'Periode',
+      'Evaluation',
+      'Note',
+      'Pourcentage',
+      'Publiee',
+    ]
     const rows = authorizedGrades.map((grade) =>
       [
         grade.student?.user?.fullName || '-',
@@ -1423,8 +1610,13 @@ export default class TeacherController {
     )
 
     response.header('Content-Type', 'text/csv; charset=utf-8')
-    response.header('Content-Disposition', `attachment; filename="notes-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`)
-    return response.send(`\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="notes-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`
+    )
+    return response.send(
+      `\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`
+    )
   }
 
   public async attendanceStudentData({ auth, params, request, response }: HttpContext) {
@@ -1434,7 +1626,11 @@ export default class TeacherController {
       request.input('start_date'),
       request.input('end_date')
     )
-    return response.ok({ success: true, attendances: payload.attendanceRecords, stats: payload.stats })
+    return response.ok({
+      success: true,
+      attendances: payload.attendanceRecords,
+      stats: payload.stats,
+    })
   }
 
   public async exportAttendanceStudent({ auth, params, request, response }: HttpContext) {
@@ -1446,12 +1642,19 @@ export default class TeacherController {
     )
     const header = ['Date', 'Periode', 'Statut', 'Motif']
     const rows = payload.attendanceRecords.map((record) =>
-      [record.date, record.period, record.status, record.reason || ''].map((value) => this.csvValue(value))
+      [record.date, record.period, record.status, record.reason || ''].map((value) =>
+        this.csvValue(value)
+      )
     )
 
     response.header('Content-Type', 'text/csv; charset=utf-8')
-    response.header('Content-Disposition', `attachment; filename="presences-${payload.student.registrationNumber}-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`)
-    return response.send(`\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="presences-${payload.student.registrationNumber}-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`
+    )
+    return response.send(
+      `\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`
+    )
   }
 
   public async exportAttendance({ auth, request, response }: HttpContext) {
@@ -1466,7 +1669,17 @@ export default class TeacherController {
       .join('students', 'attendances.student_id', 'students.id')
       .join('users', 'students.user_id', 'users.id')
       .join('classes', 'attendances.class_id', 'classes.id')
-      .select('attendances.date', 'attendances.period', 'attendances.status', 'attendances.reason', 'students.registration_number', 'users.first_name', 'users.last_name', 'users.postnom', 'classes.name as class_name')
+      .select(
+        'attendances.date',
+        'attendances.period',
+        'attendances.status',
+        'attendances.reason',
+        'students.registration_number',
+        'users.first_name',
+        'users.last_name',
+        'users.postnom',
+        'classes.name as class_name'
+      )
 
     if (selectedClassId) query.where('attendances.class_id', selectedClassId)
     else if (classIds.length) query.whereIn('attendances.class_id', classIds)
@@ -1487,8 +1700,13 @@ export default class TeacherController {
     )
 
     response.header('Content-Type', 'text/csv; charset=utf-8')
-    response.header('Content-Disposition', `attachment; filename="presences-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`)
-    return response.send(`\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`)
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="presences-${DateTime.now().toFormat('yyyyLLdd-HHmm')}.csv"`
+    )
+    return response.send(
+      `\uFEFF${header.map((value) => this.csvValue(value)).join(',')}\n${rows.map((row) => row.join(',')).join('\n')}`
+    )
   }
 
   public async sendTeacherMessage({ auth, request, response }: HttpContext) {
@@ -1498,16 +1716,55 @@ export default class TeacherController {
     const content = request.input('content')
     const classId = request.input('classId')
 
-    if (!content) return response.badRequest({ success: false, message: 'Le message est obligatoire' })
+    if (!content)
+      return response.badRequest({ success: false, message: 'Le message est obligatoire' })
     if (classId) await this.authorizeAttendanceClass(user, classId)
 
-    const receiverIds: string[] = []
+    let receiverIds: string[] = []
     if (recipient && recipient !== 'all') {
-      const student = await Student.query().where('id', recipient).preload('user').first()
-      if (student?.userId) receiverIds.push(student.userId)
+      const student = await Student.query()
+        .where('id', recipient)
+        .where('classId', classId)
+        .where('academicStatus', 'active')
+        .first()
+
+      if (!student) {
+        return response.notFound({
+          success: false,
+          message: "L'eleve selectionne n'appartient pas a cette classe.",
+        })
+      }
+
+      const parents = await db
+        .from('parent_student')
+        .join('parents', 'parent_student.parent_id', 'parents.id')
+        .where('parent_student.student_id', student.id)
+        .select('parents.user_id')
+
+      receiverIds.push(...parents.map((parent) => parent.user_id).filter(Boolean))
     } else if (classId) {
-      const students = await Student.query().where('classId', classId).where('academicStatus', 'active')
-      receiverIds.push(...students.map((student) => student.userId).filter(Boolean))
+      const students = await Student.query()
+        .where('classId', classId)
+        .where('academicStatus', 'active')
+      const studentIds = students.map((student) => student.id)
+      const parents = studentIds.length
+        ? await db
+            .from('parent_student')
+            .join('parents', 'parent_student.parent_id', 'parents.id')
+            .whereIn('parent_student.student_id', studentIds)
+            .select('parents.user_id')
+        : []
+
+      receiverIds.push(...parents.map((parent) => parent.user_id).filter(Boolean))
+    }
+
+    receiverIds = [...new Set(receiverIds)]
+
+    if (!receiverIds.length) {
+      return response.badRequest({
+        success: false,
+        message: 'Aucun parent lie a cet eleve ou a cette classe.',
+      })
     }
 
     for (const receiverId of receiverIds) {
@@ -1517,7 +1774,7 @@ export default class TeacherController {
         receiverId,
         subject,
         content,
-        type: 'general',
+        type: 'parent_teacher',
         isRead: false,
         isGlobal: false,
       })

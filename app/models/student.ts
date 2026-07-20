@@ -1,7 +1,7 @@
 import { StudentSchema } from '#database/schema'
 import { DateTime } from 'luxon'
-import { column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
-import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
+import { column, belongsTo, hasMany, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 
 // Utilisation des alias de chemin pour une meilleure structure
 import User from '#models/user'
@@ -86,6 +86,12 @@ export default class Student extends StudentSchema {
   @hasMany(() => Discipline)
   declare disciplines: HasMany<typeof Discipline>
 
-  @hasMany(() => Parent)
-  declare parents: HasMany<typeof Parent>
+  @manyToMany(() => Parent, {
+    pivotTable: 'parent_student',
+    pivotForeignKey: 'student_id',
+    pivotRelatedForeignKey: 'parent_id',
+    pivotTimestamps: true,
+    pivotColumns: ['is_primary', 'relationship'],
+  })
+  declare parents: ManyToMany<typeof Parent>
 }

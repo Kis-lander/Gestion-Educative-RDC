@@ -31,7 +31,7 @@ const fallbackTestimonials = [
     authorName: 'Jean Mukadi',
     roleLabel: 'Directeur, Collège Saint Joseph - Kinshasa',
     content:
-      "La plateforme a révolutionné la gestion de notre école. Les fonctionnalités sont complètes et le support est réactif.",
+      'La plateforme a révolutionné la gestion de notre école. Les fonctionnalités sont complètes et le support est réactif.',
     rating: 5,
   },
   {
@@ -53,7 +53,11 @@ async function getWelcomeTestimonials() {
       .limit(6)
 
     const testimonials = rows.map((testimonial) => {
-      const details = [testimonial.author_role, testimonial.school_name, testimonial.province].filter(Boolean)
+      const details = [
+        testimonial.author_role,
+        testimonial.school_name,
+        testimonial.province,
+      ].filter(Boolean)
 
       return {
         authorName: testimonial.author_name,
@@ -114,11 +118,21 @@ router
       return response.redirect('/#testimonials')
     }
 
-    const authorName = String(request.input('author_name') ?? '').trim().slice(0, 120)
-    const authorRole = String(request.input('author_role') ?? '').trim().slice(0, 120)
-    const schoolName = String(request.input('school_name') ?? '').trim().slice(0, 160)
-    const province = String(request.input('province') ?? '').trim().slice(0, 120)
-    const content = String(request.input('content') ?? '').trim().slice(0, 600)
+    const authorName = String(request.input('author_name') ?? '')
+      .trim()
+      .slice(0, 120)
+    const authorRole = String(request.input('author_role') ?? '')
+      .trim()
+      .slice(0, 120)
+    const schoolName = String(request.input('school_name') ?? '')
+      .trim()
+      .slice(0, 160)
+    const province = String(request.input('province') ?? '')
+      .trim()
+      .slice(0, 120)
+    const content = String(request.input('content') ?? '')
+      .trim()
+      .slice(0, 600)
     const rating = Math.min(5, Math.max(1, Number(request.input('rating') ?? 5) || 5))
 
     if (!authorName || content.length < 10) {
@@ -162,7 +176,10 @@ router.get('/help/faq', [controllers.Help, 'faq']).as('help.faq')
 router.get('/help/guides', [controllers.Help, 'guides']).as('help.guides')
 router.get('/help/tutorial', [controllers.Help, 'tutorial']).as('help.tutorial')
 router.get('/help/contact', [controllers.Help, 'contact']).as('help.contact')
+router.post('/help/contact', [controllers.Help, 'sendContact']).as('help.contact.send')
 router.get('/help/documentation', [controllers.Help, 'documentation']).as('help.documentation')
+router.post('/api/help/views', [controllers.Help, 'trackView']).as('help.views.track')
+router.post('/api/help/documentation/feedback', [controllers.Help, 'feedback']).as('help.feedback')
 
 router
   .group(() => {
@@ -208,6 +225,7 @@ router
     router.post('/communications/school', [controllers.Messages, 'sendSchoolCommunication'])
     router.get('/communications/history', [controllers.Inspections, 'communicationsHistoryPage'])
     router.get('/communications/:id', [controllers.Inspections, 'communicationDetails'])
+    router.get('/help-feedback', [controllers.Inspections, 'helpFeedbackPage'])
     router.get('/reports/schools', [controllers.Inspections, 'reportsSchoolsPage'])
     router.get('/reports/performance', [controllers.Inspections, 'reportsPerformancePage'])
     router.get('/reports/statistics', [controllers.Inspections, 'reportsStatisticsPage'])
@@ -297,9 +315,13 @@ router
       .post('/privacy/visibility', [controllers.Settings, 'saveVisibility'])
       .use(middleware.auth())
     router.get('/privacy/export-data', [controllers.Settings, 'exportData']).use(middleware.auth())
-    router.delete('/privacy/delete-data', [controllers.Settings, 'deleteData']).use(middleware.auth())
+    router
+      .delete('/privacy/delete-data', [controllers.Settings, 'deleteData'])
+      .use(middleware.auth())
     router.post('/privacy/block', [controllers.Settings, 'blockUser']).use(middleware.auth())
-    router.delete('/privacy/unblock/:id', [controllers.Settings, 'unblockUser']).use(middleware.auth())
+    router
+      .delete('/privacy/unblock/:id', [controllers.Settings, 'unblockUser'])
+      .use(middleware.auth())
   })
   .prefix('/api/settings')
 
@@ -410,7 +432,10 @@ router
   .use(middleware.auth())
 
 router
-  .delete('/communication/messages/:id/permanent', [controllers.Messages, 'deleteWebMessagePermanently'])
+  .delete('/communication/messages/:id/permanent', [
+    controllers.Messages,
+    'deleteWebMessagePermanently',
+  ])
   .as('communication.messages.permanent_delete')
   .use(middleware.auth())
 
@@ -497,12 +522,21 @@ router
 router
   .get('/api/teacher/assignments/export', [controllers.Teachers, 'exportAssignments'])
   .as('api.teacher.assignments.export')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] }),
+  ])
 
 router
-  .get('/api/teacher/assignments/:id/submissions/export', [controllers.Teachers, 'exportSubmissions'])
+  .get('/api/teacher/assignments/:id/submissions/export', [
+    controllers.Teachers,
+    'exportSubmissions',
+  ])
   .as('api.teacher.assignments.submissions.export')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] }),
+  ])
 
 router
   .post('/api/messages/:id/restore', [controllers.Messages, 'restoreWebMessage'])
@@ -561,7 +595,9 @@ router
 
 router
   .group(() => {
-    router.get('/classes/export', [controllers.Teachers, 'exportClasses']).as('api.teacher.classes.export')
+    router
+      .get('/classes/export', [controllers.Teachers, 'exportClasses'])
+      .as('api.teacher.classes.export')
     router
       .get('/classes/:id/my-subjects', [controllers.Teachers, 'classSubjectsData'])
       .as('api.teacher.classes.subjects')
@@ -571,7 +607,9 @@ router
     router
       .get('/classes/:id/students/export', [controllers.Teachers, 'exportClassStudents'])
       .as('api.teacher.classes.students.export')
-    router.get('/grades/export', [controllers.Teachers, 'exportGrades']).as('api.teacher.grades.export')
+    router
+      .get('/grades/export', [controllers.Teachers, 'exportGrades'])
+      .as('api.teacher.grades.export')
     router
       .get('/grades/class/:classId', [controllers.Teachers, 'gradeClassData'])
       .as('api.teacher.grades.class')
@@ -587,16 +625,24 @@ router
     router
       .get('/attendance/class/:id', [controllers.Teachers, 'getClassAttendance'])
       .as('api.teacher.attendance.class')
-    router.get('/attendance/export', [controllers.Teachers, 'exportAttendance']).as('api.teacher.attendance.export')
+    router
+      .get('/attendance/export', [controllers.Teachers, 'exportAttendance'])
+      .as('api.teacher.attendance.export')
     router
       .get('/attendance/student/:id', [controllers.Teachers, 'attendanceStudentData'])
       .as('api.teacher.attendance.student')
     router
       .get('/attendance/student/:id/export', [controllers.Teachers, 'exportAttendanceStudent'])
       .as('api.teacher.attendance.student.export')
-    router.post('/attendance', [controllers.Teachers, 'markAttendance']).as('api.teacher.attendance.store')
-    router.post('/send-message', [controllers.Teachers, 'sendTeacherMessage']).as('api.teacher.send_message')
-    router.get('/notifications/count', [controllers.Teachers, 'notificationsCount']).as('api.teacher.notifications.count')
+    router
+      .post('/attendance', [controllers.Teachers, 'markAttendance'])
+      .as('api.teacher.attendance.store')
+    router
+      .post('/send-message', [controllers.Teachers, 'sendTeacherMessage'])
+      .as('api.teacher.send_message')
+    router
+      .get('/notifications/count', [controllers.Teachers, 'notificationsCount'])
+      .as('api.teacher.notifications.count')
   })
   .prefix('/api/teacher')
   .use([
@@ -605,7 +651,10 @@ router
   ])
 
 router
-  .get('/api/teachers/:teacherId/available-slots', [controllers.Parents, 'getTeacherAvailableSlots'])
+  .get('/api/teachers/:teacherId/available-slots', [
+    controllers.Parents,
+    'getTeacherAvailableSlots',
+  ])
   .as('api.teachers.available_slots')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['parent', 'director'] })])
 
@@ -703,7 +752,10 @@ router
       .as('academic.classes.subjects')
   })
   .prefix('/academic')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director'] }),
+  ])
 
 router
   .group(() => {
@@ -724,7 +776,10 @@ router
       .as('legacy.api.timetable.create')
   })
   .prefix('/api')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director'] }),
+  ])
 
 router
   .group(() => {
@@ -734,7 +789,10 @@ router
     router.get('/:id', [controllers.Students, 'showPage']).as('students.show')
   })
   .prefix('/students')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director', 'secretary'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director', 'secretary'] }),
+  ])
 
 router
   .group(() => {
@@ -758,7 +816,9 @@ router
     router
       .get('/classes/:id/students', [controllers.Academics, 'classStudentsPage'])
       .as('schools.classes.students')
-    router.get('/classes/:id/edit', [controllers.Academics, 'editClassPage']).as('schools.classes.edit')
+    router
+      .get('/classes/:id/edit', [controllers.Academics, 'editClassPage'])
+      .as('schools.classes.edit')
     router.get('/classes/:id', [controllers.Academics, 'showClassPage']).as('schools.classes.show')
     router
       .post('/classes/:classId/subjects', [controllers.Academics, 'addSubjectToClass'])
@@ -769,12 +829,16 @@ router
         'removeSubjectFromClass',
       ])
       .as('schools.classes.subjects.destroy')
-    router.post('/classes/:id', [controllers.Academics, 'updateClass']).as('schools.classes.update.post')
+    router
+      .post('/classes/:id', [controllers.Academics, 'updateClass'])
+      .as('schools.classes.update.post')
     router.put('/classes/:id', [controllers.Academics, 'updateClass']).as('schools.classes.update')
     router
       .post('/classes/:id/delete', [controllers.Academics, 'deleteClass'])
       .as('schools.classes.destroy.post')
-    router.delete('/classes/:id', [controllers.Academics, 'deleteClass']).as('schools.classes.destroy')
+    router
+      .delete('/classes/:id', [controllers.Academics, 'deleteClass'])
+      .as('schools.classes.destroy')
     router.get('/timetable', [controllers.Academics, 'timetablePage']).as('schools.timetable.index')
     router
       .get('/timetable/create', [controllers.Academics, 'createTimetablePage'])
@@ -829,7 +893,9 @@ router
 
 router
   .group(() => {
-    router.get('/incidents', [controllers.Disciplines, 'incidentsPage']).as('discipline.incidents.index')
+    router
+      .get('/incidents', [controllers.Disciplines, 'incidentsPage'])
+      .as('discipline.incidents.index')
     router
       .get('/incidents/report', [controllers.Disciplines, 'reportIncidentPage'])
       .as('discipline.incidents.report')
@@ -851,7 +917,9 @@ router
     router
       .delete('/incidents/:id', [controllers.Disciplines, 'deleteIncident'])
       .as('discipline.incidents.destroy')
-    router.get('/students', [controllers.Disciplines, 'studentsPage']).as('discipline.students.index')
+    router
+      .get('/students', [controllers.Disciplines, 'studentsPage'])
+      .as('discipline.students.index')
     router.get('/students/search', async (ctx) =>
       ctx.view.render('discipline/students/search', await edgePageContext(ctx))
     )
@@ -904,19 +972,28 @@ router
     ctx.view.render('academic/calendar/index', await edgePageContext(ctx))
   )
   .as('academic.calendar')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director'] }),
+  ])
 
 router
   .group(() => {
-    router.get('/', ({ response }) => response.redirect('/financial/payments')).as('financial.index')
+    router
+      .get('/', ({ response }) => response.redirect('/financial/payments'))
+      .as('financial.index')
     router.get('/fees', [controllers.Financials, 'feesPage']).as('financial.fees.index')
-    router.get('/fees/create', [controllers.Financials, 'createFeePage']).as('financial.fees.create')
+    router
+      .get('/fees/create', [controllers.Financials, 'createFeePage'])
+      .as('financial.fees.create')
     router.post('/fees/create', [controllers.Financials, 'setFees']).as('financial.fees.store')
     router
       .get('/fees/structure', [controllers.Financials, 'feesStructurePage'])
       .as('financial.fees.structure')
     router.get('/fees/:id/edit', [controllers.Financials, 'editFeePage']).as('financial.fees.edit')
-    router.put('/fees/:id/update', [controllers.Financials, 'updateFees']).as('financial.fees.update')
+    router
+      .put('/fees/:id/update', [controllers.Financials, 'updateFees'])
+      .as('financial.fees.update')
     router
       .post('/fees/:id/update', [controllers.Financials, 'updateFees'])
       .as('financial.fees.update.post')
@@ -1009,12 +1086,8 @@ router
       .post('/profile/update', [controllers.Schools, 'updateSchoolProfile'])
       .as('schools.profile.update.web')
     router.get('/subjects', [controllers.Academics, 'subjectsPage']).as('schools.subjects.index')
-    router.get('/subjects/create', ({ response }) =>
-      response.redirect('/schools/subjects/assign')
-    )
-    router
-      .post('/subjects', [controllers.Academics, 'createSubject'])
-      .as('schools.subjects.store')
+    router.get('/subjects/create', ({ response }) => response.redirect('/schools/subjects/assign'))
+    router.post('/subjects', [controllers.Academics, 'createSubject']).as('schools.subjects.store')
     router
       .get('/subjects/assign', [controllers.Academics, 'assignSubjectsPage'])
       .as('schools.subjects.assign')
@@ -1227,7 +1300,10 @@ router
     )
   })
   .prefix('/academic')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'teacher'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['director', 'teacher', 'discipline_director'] }),
+  ])
 
 router
   .group(() => {
@@ -1255,35 +1331,54 @@ router
       .as('teacher.assignments.update.put')
     router.post('/assignments/:id/publish', [controllers.Teachers, 'publishAssignment'])
     router.post('/assignments/:id/close', [controllers.Teachers, 'closeAssignment'])
-    router.post('/assignments/:id/remove-attachment', [controllers.Teachers, 'removeAssignmentAttachment'])
+    router.post('/assignments/:id/remove-attachment', [
+      controllers.Teachers,
+      'removeAssignmentAttachment',
+    ])
     router.get('/assignments/:id/submissions', [controllers.Teachers, 'assignmentSubmissionsPage'])
     router.get('/attendance', [controllers.Teachers, 'attendanceIndexPage'])
     router.get('/attendance/mark', [controllers.Teachers, 'attendanceMarkPage'])
     router.get('/attendance/report', [controllers.Teachers, 'attendanceReportPage'])
     router.get('/attendance/student/:id', [controllers.Teachers, 'attendanceStudentPage'])
+    router
+      .get('/students/:studentId/grades', [controllers.Academics, 'studentGradesPage'])
+      .as('teacher.students.grades')
     router.get('/grades', [controllers.Teachers, 'gradesPage'])
     router.get('/grades/add', [controllers.Teachers, 'gradeAddPage'])
     router.post('/grades', [controllers.Teachers, 'storeGradeWeb'])
     router.get('/grades/class/:classId', [controllers.Teachers, 'gradeClassPage'])
     router.get('/grades/:id/edit', [controllers.Teachers, 'gradeEditPage'])
     router.put('/grades/:id', [controllers.Teachers, 'updateGradeWeb']).as('teacher.grades.update')
-    router.delete('/grades/:id', [controllers.Teachers, 'deleteGradeWeb']).as('teacher.grades.delete')
+    router
+      .delete('/grades/:id', [controllers.Teachers, 'deleteGradeWeb'])
+      .as('teacher.grades.delete')
     router.get('/forum', [forumsController, 'teacherIndex'])
     router.get('/forum/create', [forumsController, 'teacherCreate'])
     router.post('/forum/create', [forumsController, 'storeTeacherTopic'])
     router.get('/forum/my-topics', [forumsController, 'myTeacherTopics'])
     router.get('/forum/topic/:id', [forumsController, 'teacherTopic'])
     router.post('/forum/topic/:id/reply', [forumsController, 'teacherReply'])
-    router.put('/forum/topic/:id', [forumsController, 'updateTopic']).as('teacher.forum.topic.update')
-    router.delete('/forum/topic/:id', [forumsController, 'deleteTopic']).as('teacher.forum.topic.delete')
-    router.put('/forum/reply/:id', [forumsController, 'updateReply']).as('teacher.forum.reply.update')
-    router.delete('/forum/reply/:id', [forumsController, 'deleteReply']).as('teacher.forum.reply.delete')
+    router
+      .put('/forum/topic/:id', [forumsController, 'updateTopic'])
+      .as('teacher.forum.topic.update')
+    router
+      .delete('/forum/topic/:id', [forumsController, 'deleteTopic'])
+      .as('teacher.forum.topic.delete')
+    router
+      .put('/forum/reply/:id', [forumsController, 'updateReply'])
+      .as('teacher.forum.reply.update')
+    router
+      .delete('/forum/reply/:id', [forumsController, 'deleteReply'])
+      .as('teacher.forum.reply.delete')
     router.post('/forum/topic/:id/toggle-lock', [forumsController, 'toggleLock'])
     router.post('/forum/topic/:id/toggle-pin', [forumsController, 'togglePin'])
-    router.get('/timetable', ({ response }) => response.redirect('/schools/timetable'))
+    router.get('/timetable', [controllers.Teachers, 'timetablePage'])
   })
   .prefix('/teacher')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({ allowedRoles: ['teacher', 'director', 'discipline_director'] }),
+  ])
 
 router
   .group(() => {
@@ -1318,10 +1413,18 @@ router
     router.get('/forum/my-questions', [forumsController, 'myStudentQuestions'])
     router.get('/forum/topic/:id', [forumsController, 'studentTopic'])
     router.post('/forum/topic/:id/reply', [forumsController, 'studentReply'])
-    router.put('/forum/topic/:id', [forumsController, 'updateTopic']).as('student.forum.topic.update')
-    router.delete('/forum/topic/:id', [forumsController, 'deleteTopic']).as('student.forum.topic.delete')
-    router.put('/forum/reply/:id', [forumsController, 'updateReply']).as('student.forum.reply.update')
-    router.delete('/forum/reply/:id', [forumsController, 'deleteReply']).as('student.forum.reply.delete')
+    router
+      .put('/forum/topic/:id', [forumsController, 'updateTopic'])
+      .as('student.forum.topic.update')
+    router
+      .delete('/forum/topic/:id', [forumsController, 'deleteTopic'])
+      .as('student.forum.topic.delete')
+    router
+      .put('/forum/reply/:id', [forumsController, 'updateReply'])
+      .as('student.forum.reply.update')
+    router
+      .delete('/forum/reply/:id', [forumsController, 'deleteReply'])
+      .as('student.forum.reply.delete')
     router.get('/grades', async (ctx) =>
       ctx.view.render('student/grades/index', await edgePageContext(ctx))
     )
@@ -1368,7 +1471,8 @@ router
 
       const studentRecord = await studentQuery.first()
       const studentId = studentRecord?.id || context.student?.id || ''
-      const classId = studentRecord?.class_id || context.student?.classId || context.classObj?.id || ''
+      const classId =
+        studentRecord?.class_id || context.student?.classId || context.classObj?.id || ''
       const formatDate = (value: any) => {
         if (!value) return '-'
         const date = DateTime.fromJSDate(value instanceof Date ? value : new Date(value))
@@ -1387,8 +1491,10 @@ router
         ...context.student,
         id: studentId,
         name: studentName || context.user?.fullName || context.student?.name || '-',
-        registrationNumber: studentRecord?.registration_number || context.student?.registrationNumber || '-',
-        className: studentRecord?.class_name || context.student?.className || context.classObj?.name || '-',
+        registrationNumber:
+          studentRecord?.registration_number || context.student?.registrationNumber || '-',
+        className:
+          studentRecord?.class_name || context.student?.className || context.classObj?.name || '-',
         birthDate: formatDate(studentRecord?.birth_date || context.student?.birthDate),
         birthPlace: studentRecord?.birth_place || context.student?.birthPlace || '-',
         gender:
@@ -1520,7 +1626,8 @@ router
       for (const grade of classRows) {
         if (grade.score === null || grade.score === undefined) continue
         const maxScore = Number(grade.max_score || 20)
-        const scoreOnTwenty = maxScore > 0 ? (Number(grade.score) / maxScore) * 20 : Number(grade.score)
+        const scoreOnTwenty =
+          maxScore > 0 ? (Number(grade.score) / maxScore) * 20 : Number(grade.score)
         const coefficient = Number(grade.coefficient || 1)
         const current = classAverages.get(grade.student_id) || { points: 0, coefficients: 0 }
         current.points += scoreOnTwenty * coefficient
@@ -1536,11 +1643,8 @@ router
       const rankIndex = rankedAverages.findIndex((entry) => entry.id === studentId)
       const totalStudents = classId
         ? Number(
-            (await db
-              .from('students')
-              .where('class_id', classId)
-              .count('* as total')
-              .first())?.total || context.totalStudents
+            (await db.from('students').where('class_id', classId).count('* as total').first())
+              ?.total || context.totalStudents
           )
         : context.totalStudents
 
@@ -1553,18 +1657,16 @@ router
       const attendanceRate =
         attendanceRows.length > 0 ? Math.round((presentCount / attendanceRows.length) * 100) : 0
       const hasScoredGrades = grades.some((grade) => grade.hasScore)
-      const decision =
-        !hasScoredGrades ? '-' : overallAverage >= 10 ? 'Admis' : 'Non admis'
-      const appreciation =
-        !hasScoredGrades
-          ? '-'
-          : overallAverage >= 16
-            ? 'Excellent travail. Continuez ainsi.'
-            : overallAverage >= 12
-              ? 'Bon travail. Des efforts réguliers sont encouragés.'
-              : overallAverage >= 10
-                ? 'Travail satisfaisant. Continuez vos efforts.'
-                : 'Des efforts importants sont nécessaires.'
+      const decision = !hasScoredGrades ? '-' : overallAverage >= 10 ? 'Admis' : 'Non admis'
+      const appreciation = !hasScoredGrades
+        ? '-'
+        : overallAverage >= 16
+          ? 'Excellent travail. Continuez ainsi.'
+          : overallAverage >= 12
+            ? 'Bon travail. Des efforts réguliers sont encouragés.'
+            : overallAverage >= 10
+              ? 'Travail satisfaisant. Continuez vos efforts.'
+              : 'Des efforts importants sont nécessaires.'
 
       return ctx.view.render('student/grades/report-card', {
         ...context,
@@ -1592,7 +1694,9 @@ router
       })
     })
     router.get('/messages', ({ response }) => response.redirect('/communication/messages'))
-    router.get('/messages/send', ({ response }) => response.redirect('/communication/messages/compose'))
+    router.get('/messages/send', ({ response }) =>
+      response.redirect('/communication/messages/compose')
+    )
     router.get('/messages/:id', ({ params, response }) =>
       response.redirect(`/communication/messages/read/${params.id}`)
     )
@@ -1620,20 +1724,30 @@ router
     router.get('/children/:id/profile', [controllers.Parents, 'childProfilePage'])
     router.get('/grades', [controllers.Parents, 'gradesPage'])
     router.get('/grades/child/:studentId', [controllers.Parents, 'childGradesDetailsPage'])
-    router.get('/grades/report-card/:studentId', [controllers.Parents, 'reportCardPage']).as('parent.grades.report_card')
-    router.get('/report-card/child/:studentId', [controllers.Parents, 'reportCardPage']).as('parent.report_card.child')
+    router
+      .get('/grades/report-card/:studentId', [controllers.Parents, 'reportCardPage'])
+      .as('parent.grades.report_card')
+    router
+      .get('/report-card/child/:studentId', [controllers.Parents, 'reportCardPage'])
+      .as('parent.report_card.child')
     router.get('/discipline', [controllers.Parents, 'disciplinePage'])
     router.get('/discipline/child/:studentId', ({ params, response }) =>
       response.redirect(`/parent/discipline?child_id=${params.studentId}`)
     )
-    router.get('/discipline/details/:id', [controllers.Parents, 'disciplineDetailsPage']).as('parent.discipline.details')
-    router.get('/discipline/:id', [controllers.Parents, 'disciplineDetailsPage']).as('parent.discipline.details.alias')
+    router
+      .get('/discipline/details/:id', [controllers.Parents, 'disciplineDetailsPage'])
+      .as('parent.discipline.details')
+    router
+      .get('/discipline/:id', [controllers.Parents, 'disciplineDetailsPage'])
+      .as('parent.discipline.details.alias')
     router.get('/attendance', [controllers.Parents, 'attendancePage'])
     router.get('/attendance/child/:studentId', ({ params, response }) =>
       response.redirect(`/parent/attendance?child_id=${params.studentId}`)
     )
     router.get('/attendance/justify', [controllers.Parents, 'attendanceJustifyPage'])
-    router.post('/attendance/justify', [controllers.Parents, 'justifyAbsence']).as('parent.attendance.justify.store')
+    router
+      .post('/attendance/justify', [controllers.Parents, 'justifyAbsence'])
+      .as('parent.attendance.justify.store')
     router.get('/payments', [controllers.Parents, 'paymentsPage'])
     router.get('/payments/child/:studentId', ({ params, response }) =>
       response.redirect(`/parent/payments?child_id=${params.studentId}`)
@@ -1642,7 +1756,9 @@ router
     router.get('/payments/status', [controllers.Parents, 'paymentsStatusPage'])
     router.get('/messages', [controllers.Parents, 'parentMessagesPage'])
     router.get('/messages/send', [controllers.Parents, 'parentMessageSendPage'])
-    router.post('/messages/send', [controllers.Parents, 'sendParentMessage']).as('parent.messages.send.store')
+    router
+      .post('/messages/send', [controllers.Parents, 'sendParentMessage'])
+      .as('parent.messages.send.store')
     router.get('/messages/notifications', [controllers.Parents, 'parentNotificationsPage'])
     router.get('/messages/:id', [controllers.Parents, 'parentConversationPage'])
     router.get('/appointments', [controllers.Parents, 'appointmentsPage'])
@@ -1651,8 +1767,12 @@ router
     router.get('/appointments/schedule', async (ctx) =>
       ctx.view.render('parent/appointments/schedule', await edgePageContext(ctx))
     )
-    router.get('/appointments/reschedule', [controllers.Parents, 'appointmentRequestPage']).as('parent.appointments.reschedule')
-    router.get('/appointments/:id', [controllers.Parents, 'appointmentsPage']).as('parent.appointments.show.alias')
+    router
+      .get('/appointments/reschedule', [controllers.Parents, 'appointmentRequestPage'])
+      .as('parent.appointments.reschedule')
+    router
+      .get('/appointments/:id', [controllers.Parents, 'appointmentsPage'])
+      .as('parent.appointments.show.alias')
   })
   .prefix('/parent')
   .use([middleware.auth(), middleware.role({ allowedRoles: ['parent', 'director'] })])
@@ -1662,13 +1782,19 @@ router
     router.get('/children/stats', [controllers.Parents, 'childrenStats'])
     router.get('/grades/export', [controllers.Parents, 'exportGrades'])
     router.get('/attendance/export', [controllers.Parents, 'exportAttendance'])
-    router.get('/payments/export', [controllers.Parents, 'exportPayments']).as('api.parent.payments.export')
-    router.get('/payments/history/export', [controllers.Parents, 'exportPayments']).as('api.parent.payments.history.export')
+    router
+      .get('/payments/export', [controllers.Parents, 'exportPayments'])
+      .as('api.parent.payments.export')
+    router
+      .get('/payments/history/export', [controllers.Parents, 'exportPayments'])
+      .as('api.parent.payments.history.export')
     router.get('/appointments/schedule', [controllers.Parents, 'appointmentSchedule'])
     router.delete('/appointments/:id/cancel', [controllers.Parents, 'cancelAppointment'])
     router.get('/appointments/export', [controllers.Parents, 'exportAppointments'])
     router.get('/messages/conversation/:userId', [controllers.Parents, 'parentConversationData'])
-    router.post('/messages/send', [controllers.Parents, 'sendParentMessage']).as('api.parent.messages.send')
+    router
+      .post('/messages/send', [controllers.Parents, 'sendParentMessage'])
+      .as('api.parent.messages.send')
     router.post('/messages/mark-read/:userId', [controllers.Parents, 'markConversationRead'])
     router.post('/messages/mark-all-read', [controllers.Parents, 'markAllParentMessagesRead'])
     router.post('/discipline/:id/respond', [controllers.Parents, 'respondToIncident'])
@@ -1691,9 +1817,15 @@ router
     router.get('/events/create', [interSchoolController, 'eventCreatePage'])
     router.post('/events/create', [interSchoolController, 'storeEventWeb'])
     router.get('/events/my-events', [interSchoolController, 'myEventsPage'])
-    router.get('/events/:id', [interSchoolController, 'eventShowPage']).as('inter-school.events.show')
-    router.get('/events/:id/show', [interSchoolController, 'eventShowPage']).as('inter-school.events.show.alias')
-    router.get('/events/:id/edit', [interSchoolController, 'eventShowPage']).as('inter-school.events.edit.alias')
+    router
+      .get('/events/:id', [interSchoolController, 'eventShowPage'])
+      .as('inter-school.events.show')
+    router
+      .get('/events/:id/show', [interSchoolController, 'eventShowPage'])
+      .as('inter-school.events.show.alias')
+    router
+      .get('/events/:id/edit', [interSchoolController, 'eventShowPage'])
+      .as('inter-school.events.edit.alias')
     router.get('/events/:id/register', [interSchoolController, 'eventRegisterPage'])
     router.post('/events/:id/register', [interSchoolController, 'registerEventWeb'])
     router.post('/events/:id/cancel', [interSchoolController, 'cancelEvent'])
@@ -1701,16 +1833,24 @@ router
     router.get('/exchanges', [interSchoolController, 'exchangesPage'])
     router.get('/exchanges/start', [interSchoolController, 'exchangeStartPage'])
     router.post('/exchanges/start', [interSchoolController, 'storeExchangeWeb'])
-    router.get('/exchanges/:id', [interSchoolController, 'exchangeShowPage']).as('inter-school.exchanges.show')
-    router.get('/exchanges/:id/show', [interSchoolController, 'exchangeShowPage']).as('inter-school.exchanges.show.alias')
+    router
+      .get('/exchanges/:id', [interSchoolController, 'exchangeShowPage'])
+      .as('inter-school.exchanges.show')
+    router
+      .get('/exchanges/:id/show', [interSchoolController, 'exchangeShowPage'])
+      .as('inter-school.exchanges.show.alias')
     router.get('/exchanges/:id/messages', [interSchoolController, 'exchangeMessagesPage'])
 
     router.get('/best-practices', [interSchoolController, 'bestPracticesPage'])
     router.get('/best-practices/categories', [interSchoolController, 'bestPracticeCategoriesPage'])
     router.get('/best-practices/share', [interSchoolController, 'bestPracticeSharePage'])
     router.post('/best-practices/share', [interSchoolController, 'storeBestPracticeWeb'])
-    router.get('/best-practices/:id', [interSchoolController, 'bestPracticeShowPage']).as('inter-school.best-practices.show')
-    router.get('/best-practices/:id/show', [interSchoolController, 'bestPracticeShowPage']).as('inter-school.best-practices.show.alias')
+    router
+      .get('/best-practices/:id', [interSchoolController, 'bestPracticeShowPage'])
+      .as('inter-school.best-practices.show')
+    router
+      .get('/best-practices/:id/show', [interSchoolController, 'bestPracticeShowPage'])
+      .as('inter-school.best-practices.show.alias')
   })
   .prefix('/inter-school')
   .use(middleware.auth())
@@ -1794,28 +1934,61 @@ router
 router
   .group(() => {
     router.get('/academic/performance', [reportsController, 'academicPerformanceData'])
-    router.get('/academic/performance/export', [reportsController, 'exportData']).as('api.reports.academic.performance.export')
-    router.get('/academic/class/:id/export', [reportsController, 'exportData']).as('api.reports.academic.class.export')
-    router.get('/academic/student/:id/export', [reportsController, 'exportData']).as('api.reports.academic.student.export')
-    router.get('/academic/subject/:id/export', [reportsController, 'exportData']).as('api.reports.academic.subject.export')
+    router
+      .get('/academic/performance/export', [reportsController, 'exportData'])
+      .as('api.reports.academic.performance.export')
+    router
+      .get('/academic/class/:id/export', [reportsController, 'exportData'])
+      .as('api.reports.academic.class.export')
+    router
+      .get('/academic/student/:id/export', [reportsController, 'exportData'])
+      .as('api.reports.academic.student.export')
+    router
+      .get('/academic/subject/:id/export', [reportsController, 'exportData'])
+      .as('api.reports.academic.subject.export')
     router.get('/financial/income', [reportsController, 'financialIncomeData'])
-    router.get('/financial/income/export', [reportsController, 'exportData']).as('api.reports.financial.income.export')
+    router
+      .get('/financial/income/export', [reportsController, 'exportData'])
+      .as('api.reports.financial.income.export')
     router.get('/financial/expenses', [reportsController, 'financialExpensesData'])
-    router.get('/financial/expenses/export', [reportsController, 'exportData']).as('api.reports.financial.expenses.export')
+    router
+      .get('/financial/expenses/export', [reportsController, 'exportData'])
+      .as('api.reports.financial.expenses.export')
     router.get('/financial/balance', [reportsController, 'financialBalanceData'])
-    router.get('/financial/balance/export', [reportsController, 'exportData']).as('api.reports.financial.balance.export')
+    router
+      .get('/financial/balance/export', [reportsController, 'exportData'])
+      .as('api.reports.financial.balance.export')
     router.get('/financial/forecasts', [reportsController, 'financialForecastsData'])
-    router.get('/financial/forecasts/export', [reportsController, 'exportData']).as('api.reports.financial.forecasts.export')
+    router
+      .get('/financial/forecasts/export', [reportsController, 'exportData'])
+      .as('api.reports.financial.forecasts.export')
     router.get('/disciplinary/summary', [reportsController, 'disciplinarySummaryData'])
-    router.get('/disciplinary/summary/export', [reportsController, 'exportData']).as('api.reports.disciplinary.summary.export')
+    router
+      .get('/disciplinary/summary/export', [reportsController, 'exportData'])
+      .as('api.reports.disciplinary.summary.export')
     router.get('/disciplinary/trends', [reportsController, 'disciplinaryTrendsData'])
-    router.get('/disciplinary/trends/export', [reportsController, 'exportData']).as('api.reports.disciplinary.trends.export')
+    router
+      .get('/disciplinary/trends/export', [reportsController, 'exportData'])
+      .as('api.reports.disciplinary.trends.export')
     router.get('/disciplinary/comparisons', [reportsController, 'disciplinaryComparisonsData'])
-    router.get('/disciplinary/comparisons/export', [reportsController, 'exportData']).as('api.reports.disciplinary.comparisons.export')
+    router
+      .get('/disciplinary/comparisons/export', [reportsController, 'exportData'])
+      .as('api.reports.disciplinary.comparisons.export')
     router.delete('/exports/:id', [reportsController, 'deleteExport'])
   })
   .prefix('/api/reports')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director', 'secretary'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({
+      allowedRoles: [
+        'director',
+        'inspection',
+        'finance_director',
+        'discipline_director',
+        'secretary',
+      ],
+    }),
+  ])
 
 router
   .group(() => {
@@ -1825,13 +1998,37 @@ router
     router.get('/academic/school', [reportsController, 'academicSchoolPage'])
     router.get('/academic/student-progress', [reportsController, 'studentProgressPage'])
     router.get('/academic/subject', [reportsController, 'subjectReportPage'])
-    router.get('/disciplinary/comparisons', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/disciplinary/comparisons')))
-    router.get('/disciplinary/summary', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/disciplinary/summary')))
-    router.get('/disciplinary/trends', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/disciplinary/trends')))
-    router.get('/financial/balance', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/balance')))
-    router.get('/financial/expenses', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/expenses')))
-    router.get('/financial/forecasts', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/forecasts')))
-    router.get('/financial/income', (ctx) => reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/income')))
+    router.get('/disciplinary/comparisons', (ctx) =>
+      reportsController().then((m) =>
+        new m.default().reportsPage(ctx, 'reports/disciplinary/comparisons')
+      )
+    )
+    router.get('/disciplinary/summary', (ctx) =>
+      reportsController().then((m) =>
+        new m.default().reportsPage(ctx, 'reports/disciplinary/summary')
+      )
+    )
+    router.get('/disciplinary/trends', (ctx) =>
+      reportsController().then((m) =>
+        new m.default().reportsPage(ctx, 'reports/disciplinary/trends')
+      )
+    )
+    router.get('/financial/balance', (ctx) =>
+      reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/balance'))
+    )
+    router.get('/financial/expenses', (ctx) =>
+      reportsController().then((m) =>
+        new m.default().reportsPage(ctx, 'reports/financial/expenses')
+      )
+    )
+    router.get('/financial/forecasts', (ctx) =>
+      reportsController().then((m) =>
+        new m.default().reportsPage(ctx, 'reports/financial/forecasts')
+      )
+    )
+    router.get('/financial/income', (ctx) =>
+      reportsController().then((m) => new m.default().reportsPage(ctx, 'reports/financial/income'))
+    )
     router.get('/exports', [reportsController, 'exportsPage'])
     router.get('/exports/generate', [reportsController, 'exportsGeneratePage'])
     router.post('/exports/generate', [reportsController, 'generateExport'])
@@ -1839,7 +2036,18 @@ router
     router.get('/exports/download/:id', [reportsController, 'downloadExport'])
   })
   .prefix('/reports')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director', 'secretary'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({
+      allowedRoles: [
+        'director',
+        'inspection',
+        'finance_director',
+        'discipline_director',
+        'secretary',
+      ],
+    }),
+  ])
 
 router
   .group(() => {
@@ -1927,7 +2135,18 @@ router
     )
   })
   .prefix('/reports-legacy')
-  .use([middleware.auth(), middleware.role({ allowedRoles: ['director', 'inspection', 'finance_director', 'discipline_director', 'secretary'] })])
+  .use([
+    middleware.auth(),
+    middleware.role({
+      allowedRoles: [
+        'director',
+        'inspection',
+        'finance_director',
+        'discipline_director',
+        'secretary',
+      ],
+    }),
+  ])
 
 router
   .group(() => {
@@ -2101,7 +2320,10 @@ router
             router.post('/forum/topics', [controllers.Teachers, 'createForumTopic'])
 
             // Presences
-            router.get('/classes/:id/students', [controllers.Teachers, 'getClassStudentsForAttendance'])
+            router.get('/classes/:id/students', [
+              controllers.Teachers,
+              'getClassStudentsForAttendance',
+            ])
             router.get('/attendance/class/:id', [controllers.Teachers, 'getClassAttendance'])
             router.post('/attendance', [controllers.Teachers, 'markAttendance'])
           })

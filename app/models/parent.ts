@@ -45,6 +45,7 @@ export default class Parent extends ParentSchema {
     pivotForeignKey: 'parent_id',
     pivotRelatedForeignKey: 'student_id',
     pivotTimestamps: true, // Recommandé si tu as created_at/updated_at dans ta table pivot
+    pivotColumns: ['is_primary', 'relationship'],
   })
   declare children: ManyToMany<typeof Student>
 }

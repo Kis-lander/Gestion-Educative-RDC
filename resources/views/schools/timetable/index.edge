@@ -13,15 +13,19 @@
   
   @section('actions')
     <div class="flex gap-2">
-      <a
-        href="/schools/timetable/create"
-        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-      >
-        <i class="fas fa-plus mr-2"></i>Nouvel emploi du temps
-  </a>
-      <button onclick="printTimetable()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-        <i class="fas fa-print mr-2"></i>Imprimer
-  </button>
+      @if(canManageTimetable !== false)
+        <a
+          href="/schools/timetable/create"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+        >
+          <i class="fas fa-plus mr-2"></i>Nouvel emploi du temps
+    </a>
+      @endif
+      @if(canManageTimetable !== false)
+        <button onclick="printTimetable()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+          <i class="fas fa-print mr-2"></i>Imprimer
+    </button>
+      @endif
     </div>
   @endsection
   
@@ -120,6 +124,8 @@
 
       const weekRangeSpan = document.getElementById("weekRange");
 
+      const canManageTimetable = {{ (canManageTimetable !== false)|json_encode|raw }};
+
       let currentWeek = 0;
 
       let currentYear = new Date().getFullYear();
@@ -146,11 +152,11 @@
         const classId = classSelect.value;
         if (!classId) {
           timetableContent.innerHTML = `
-                  <div class="text-center py-12 text-gray-500">
-                    <i class="fas fa-calendar-alt text-4xl mb-3 block"></i>
-                    <p>Veuillez sélectionner une classe</p>
-                  </div>
-                `;
+                        <div class="text-center py-12 text-gray-500">
+                          <i class="fas fa-calendar-alt text-4xl mb-3 block"></i>
+                          <p>Veuillez sélectionner une classe</p>
+                        </div>
+                      `;
           selectedClassName.textContent = "Sélectionnez une classe";
           return;
         }
@@ -159,11 +165,11 @@
         const shift = shiftSelect.value;
         const year = yearSelect.value;
         timetableContent.innerHTML = `
-                <div class="text-center py-12">
-                  <i class="fas fa-spinner fa-spin text-2xl text-primary"></i>
-                  <p class="mt-2 text-gray-500">Chargement...</p>
-                </div>
-              `;
+                      <div class="text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-2xl text-primary"></i>
+                        <p class="mt-2 text-gray-500">Chargement...</p>
+                      </div>
+                    `;
         const res = await fetch(`/api/timetable/class/${classId}?year=${year}&shift=${shift}&week=${currentWeek}`);
         const data = await res.json();
         if (data.success && data.timetable) {
@@ -171,53 +177,53 @@
           weekRangeSpan.textContent = getWeekRange(currentWeek, currentYear);
         } else {
           timetableContent.innerHTML = `
-                  <div class="text-center py-12 text-gray-500">
-                    <i class="fas fa-clock text-4xl mb-3 block"></i>
-                    <p>Aucun emploi du temps défini pour cette classe</p>
-                    <a href="/schools/timetable/create?class_id=${classId}" class="mt-3 inline-block text-primary hover:underline">
-                      Créer un emploi du temps
-                    </a>
-                  </div>
-                `;
+                        <div class="text-center py-12 text-gray-500">
+                          <i class="fas fa-clock text-4xl mb-3 block"></i>
+                          <p>Aucun emploi du temps défini pour cette classe</p>
+                          ${canManageTimetable ? `<a href="/schools/timetable/create?class_id=${classId}" class="mt-3 inline-block text-primary hover:underline">` : ""}
+                            ${canManageTimetable ? "Créer un emploi du temps" : ""}
+                          ${canManageTimetable ? `</a>` : ""}
+                        </div>
+                      `;
         }
       }
 
       function renderTimetable(timetable, summary) {
         let html = `
-                <div class="table-responsive">
-                  <table class="w-full text-sm">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th class="px-3 py-2 text-center" style="min-width: 100px">Horaire</th>
-                        <th class="px-3 py-2 text-center">Lundi</th>
-                        <th class="px-3 py-2 text-center">Mardi</th>
-                        <th class="px-3 py-2 text-center">Mercredi</th>
-                        <th class="px-3 py-2 text-center">Jeudi</th>
-                        <th class="px-3 py-2 text-center">Vendredi</th>
-                        <th class="px-3 py-2 text-center">Samedi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-              `;
+                      <div class="table-responsive">
+                        <table class="w-full text-sm">
+                          <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                              <th class="px-3 py-2 text-center" style="min-width: 100px">Horaire</th>
+                              <th class="px-3 py-2 text-center">Lundi</th>
+                              <th class="px-3 py-2 text-center">Mardi</th>
+                              <th class="px-3 py-2 text-center">Mercredi</th>
+                              <th class="px-3 py-2 text-center">Jeudi</th>
+                              <th class="px-3 py-2 text-center">Vendredi</th>
+                              <th class="px-3 py-2 text-center">Samedi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                    `;
         const timeSlots = [ "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "13:00-14:00", "14:00-15:00", "15:00-16:00", "16:00-17:00" ];
         timeSlots.forEach(time => {
           html += `
-                  <tr class="border-b dark:border-gray-700">
-                    <td class="px-3 py-2 font-medium text-center bg-gray-50 dark:bg-gray-700">${time}</td>
-                `;
+                        <tr class="border-b dark:border-gray-700">
+                          <td class="px-3 py-2 font-medium text-center bg-gray-50 dark:bg-gray-700">${time}</td>
+                      `;
           const days = [ "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" ];
           days.forEach(day => {
             const entry = timetable[day]?.find(e => e.time === time) || null;
             if (entry) {
               html += `
-                      <td class="px-2 py-2 ${entry.isCurrent ? "bg-blue-50 dark:bg-blue-900/20" : ""}">
-                        <div class="text-center">
-                          <p class="font-medium">${entry.subject}</p>
-                          <p class="text-xs text-gray-500">${entry.teacher}</p>
-                          <p class="text-xs text-gray-400">Salle ${entry.room}</p>
-                        </div>
-                      </td>
-                    `;
+                            <td class="px-2 py-2 ${entry.isCurrent ? "bg-blue-50 dark:bg-blue-900/20" : ""}">
+                              <div class="text-center">
+                                <p class="font-medium">${entry.subject}</p>
+                                <p class="text-xs text-gray-500">${entry.teacher}</p>
+                                <p class="text-xs text-gray-400">Salle ${entry.room}</p>
+                              </div>
+                            </td>
+                          `;
             } else {
               html += `<td class="px-2 py-2 text-center text-gray-400">-</td>`;
             }
@@ -225,18 +231,18 @@
           html += `</tr>`;
         });
         html += `
-                    </tbody>
-                  </table>
-                </div>
-                ${summary ? `
-                <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-sm">
-                  <div><span class="text-gray-500">Total heures:</span> <span class="font-bold">${summary.totalHours || 0}h</span></div>
-                  <div><span class="text-gray-500">Matières:</span> <span class="font-bold">${summary.subjectsCount || 0}</span></div>
-                  <div><span class="text-gray-500">Enseignants:</span> <span class="font-bold">${summary.teachersCount || 0}</span></div>
-                  <div><span class="text-gray-500">Taux occupation:</span> <span class="font-bold">${summary.occupancyRate || 0}%</span></div>
-                </div>
-                ` : ""}
-              `;
+                          </tbody>
+                        </table>
+                      </div>
+                      ${summary ? `
+                      <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-sm">
+                        <div><span class="text-gray-500">Total heures:</span> <span class="font-bold">${summary.totalHours || 0}h</span></div>
+                        <div><span class="text-gray-500">Matières:</span> <span class="font-bold">${summary.subjectsCount || 0}</span></div>
+                        <div><span class="text-gray-500">Enseignants:</span> <span class="font-bold">${summary.teachersCount || 0}</span></div>
+                        <div><span class="text-gray-500">Taux occupation:</span> <span class="font-bold">${summary.occupancyRate || 0}%</span></div>
+                      </div>
+                      ` : ""}
+                    `;
         timetableContent.innerHTML = html;
       }
 
@@ -266,6 +272,7 @@
       // Initialisation
 
       currentWeek = getWeekNumber(new Date());
+
       if (classSelect.value) {
         loadTimetable();
       }

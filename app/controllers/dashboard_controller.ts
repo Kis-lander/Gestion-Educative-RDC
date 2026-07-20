@@ -20,6 +20,7 @@ import {
   listSchoolSections,
   positionLabel,
 } from '#services/school_governance_service'
+import { formatGuardianLabel, getPrimaryGuardianForStudent } from '#services/guardian_service'
 
 export default class DashboardController {
   public async workspace({ auth, request, response, view }: HttpContext) {
@@ -469,28 +470,10 @@ export default class DashboardController {
     const averageGrade = grades.length
       ? (grades.reduce((sum, grade) => sum + Number(grade.score || 0), 0) / grades.length).toFixed(1)
       : '-'
-    const parentRecord = studentProfile
-      ? await db
-          .from('parent_student')
-          .join('parents', 'parent_student.parent_id', 'parents.id')
-          .join('users', 'parents.user_id', 'users.id')
-          .where('parent_student.student_id', studentProfile.id)
-          .select(
-            'users.first_name as firstName',
-            'users.postnom as postnom',
-            'users.last_name as lastName',
-            'parents.relationship'
-          )
-          .first()
+    const primaryGuardian = studentProfile
+      ? await getPrimaryGuardianForStudent(studentProfile.id)
       : null
-    const parentName = parentRecord
-      ? [
-          [parentRecord.firstName, parentRecord.lastName, parentRecord.postnom].filter(Boolean).join(' '),
-          parentRecord.relationship ? `(${parentRecord.relationship})` : '',
-        ]
-          .filter(Boolean)
-          .join(' ')
-      : ''
+    const parentName = formatGuardianLabel(primaryGuardian)
 
     return view.render('dashboard/student', {
       stats: {
@@ -510,6 +493,7 @@ export default class DashboardController {
         registrationNumber: studentProfile?.registrationNumber || '-',
         birthDate: studentProfile?.birthDate?.toFormat('dd/MM/yyyy') || '-',
         parentName,
+        parentRelationship: primaryGuardian?.relationship || '-',
       },
       recentGrades: grades.map((grade) => ({
         subjectName: grade.subject?.name || '-',

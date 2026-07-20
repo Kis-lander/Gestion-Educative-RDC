@@ -3,157 +3,123 @@
   @section('title')
     Contacter le support - {{ school.name }}
   @endsection
-  
+
   @section('dashboardTitle')
-    Support technique
+    <span data-i18n>Support technique</span>
   @endsection
   @section('dashboardSubtitle')
-    Nous sommes là pour vous aider
+    <span data-i18n>Décrivez votre blocage avec le module, le rôle et l'action concernée</span>
   @endsection
-  
+
   @section('content')
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Formulaire -->
-      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-        <h3 class="font-semibold text-lg border-b pb-2 mb-4">
-          Envoyez-nous un message
-        </h3>
+      <section class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+        <h3 class="font-semibold text-lg border-b dark:border-gray-700 pb-2 mb-4" data-i18n>Envoyez-nous un message</h3>
 
-        <form method="POST" action="/help/contact" x-data="{ loading: false }" @submit="loading = true">
+        @if(flashMessages?.has('success'))
+          <div class="mb-4 rounded-lg bg-green-50 text-green-700 p-3 text-sm" data-i18n>
+            {{ flashMessages.get('success') }}
+          </div>
+        @endif
+        @if(flashMessages?.has('error'))
+          <div class="mb-4 rounded-lg bg-red-50 text-red-700 p-3 text-sm" data-i18n>
+            {{ flashMessages.get('error') }}
+          </div>
+        @endif
+
+        <form method="POST" action="/help/contact" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
-          <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Sujet *</label>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Sujet *</label>
               <select name="subject" required class="w-full px-3 py-2 border rounded-lg">
-                <option value="">
-                  Sélectionner un sujet
-                </option>
-                <option value="technical">
-                  Problème technique
-                </option>
-                <option value="billing">
-                  Question de paiement
-                </option>
-                <option value="feature">
-                  Demande de fonctionnalité
-                </option>
-                <option value="other">
-                  Autre
-                </option>
+                <option value="" data-i18n>Sélectionner un sujet</option>
+                <option value="access" data-i18n>Accès ou rôle</option>
+                <option value="academic" data-i18n>Scolarité, notes ou présences</option>
+                <option value="finance" data-i18n>Paiement ou finances</option>
+                <option value="discipline" data-i18n>Discipline ou sanction</option>
+                <option value="transfer" data-i18n>Transfert d'élève</option>
+                <option value="communication" data-i18n>Messages ou notifications</option>
+                <option value="technical" data-i18n>Problème technique</option>
+                <option value="feature" data-i18n>Demande d'amélioration</option>
               </select>
             </div>
-
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Votre message *</label>
-              <textarea
-                name="message"
-                required
-                rows="6"
-                class="w-full px-3 py-2 border rounded-lg"
-                placeholder="Décrivez votre problème ou votre question en détail..."
-              ></textarea>
-            </div>
-
-            <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Pièces jointes (optionnel)</label>
-              <div
-                class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition"
-                onclick="document.getElementById('attachmentInput').click()"
-              >
-                <input type="file" name="attachment" id="attachmentInput" class="hidden" accept=".pdf,.jpg,.png,.zip" />
-                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                <p class="text-gray-500">
-                  Cliquez pour ajouter un fichier
-                </p>
-                <p class="text-xs text-gray-400 mt-1">
-                  Captures d'écran, logs, etc. (max 10MB)
-                </p>
-              </div>
-              <div id="fileName" class="text-sm text-green-600 mt-1 hidden">
-              </div>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Module concerné</label>
+              <input name="module" class="w-full px-3 py-2 border rounded-lg" placeholder="Exemple : Notes, Paiements, Transferts" />
             </div>
           </div>
 
-          <div class="flex gap-3 mt-6 pt-4 border-t">
-            <button
-              type="submit"
-              :disabled="loading"
-              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
-            >
+          <div class="mt-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Votre message *</label>
+            <textarea
+              name="message"
+              required
+              rows="7"
+              class="w-full px-3 py-2 border rounded-lg"
+              placeholder="Indiquez votre rôle, l'action tentée, le message d'erreur éventuel et le résultat attendu."
+            ></textarea>
+          </div>
+
+          <div class="mt-4">
+            <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Pièce jointe utile</label>
+            <div class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition" onclick="document.getElementById('attachmentInput').click()">
+              <input type="file" name="attachment" id="attachmentInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.zip,.doc,.docx" />
+              <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+              <p class="text-gray-500" data-i18n>Ajouter une capture, un reçu ou un document</p>
+              <p class="text-xs text-gray-400 mt-1" data-i18n>PDF, image, document ou ZIP</p>
+            </div>
+            <div id="fileName" class="text-sm text-green-600 mt-2 hidden"></div>
+          </div>
+
+          <div class="flex gap-3 mt-6 pt-4 border-t dark:border-gray-700">
+            <button type="submit" :disabled="loading" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 disabled:opacity-70">
               <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              Envoyer
-        </button>
+              <span data-i18n>Envoyer la demande</span>
+            </button>
           </div>
         </form>
-      </div>
+      </section>
 
-      <!-- Informations contact -->
-      <div class="space-y-6">
+      <aside class="space-y-6">
         <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-          <h3 class="font-semibold mb-2">
-            Support technique
-          </h3>
-          <ul class="text-sm space-y-2">
-            <li class="flex gap-2">
-              <i class="fas fa-envelope text-primary w-5"></i>support
-              @education.gouv.cd
-            </li>
-            <li class="flex gap-2">
-              <i class="fas fa-phone text-primary w-5"></i>+243 XXX XXX XXX
-            </li>
-            <li class="flex gap-2">
-              <i class="fas fa-clock text-primary w-5"></i>Lundi - Vendredi, 8h - 17h
-            </li>
+          <h3 class="font-semibold mb-2" data-i18n>Avant d'envoyer</h3>
+          <ul class="text-sm space-y-2 text-gray-600 dark:text-gray-300">
+            <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Vérifiez les filtres de classe, trimestre, section ou année scolaire.</span></li>
+            <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Essayez de vous déconnecter puis reconnecter.</span></li>
+            <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Ajoutez une capture si l'erreur est visible.</span></li>
           </ul>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-          <h3 class="font-semibold mb-2">
-            Temps de réponse
-          </h3>
+          <h3 class="font-semibold mb-2" data-i18n>Temps de réponse indicatif</h3>
           <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span>Urgent</span>              <span>&lt; 4 heures</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Normal</span>              <span>24-48 heures</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Demande de fonctionnalité</span>              <span>5-7 jours</span>
-            </div>
+            <div class="flex justify-between gap-3"><span data-i18n>Blocage critique</span><span>&lt; 4 heures</span></div>
+            <div class="flex justify-between gap-3"><span data-i18n>Question fonctionnelle</span><span>24-48 heures</span></div>
+            <div class="flex justify-between gap-3"><span data-i18n>Amélioration</span><span>5-7 jours</span></div>
           </div>
         </div>
 
         <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-          <h3 class="font-semibold mb-2">
-            Avant de contacter le support
-          </h3>
-          <ul class="text-sm space-y-1">
-            <li>
-              ✓ Consultez notre <a href="/help/faq" class="text-primary hover:underline">FAQ</a>
-            </li>
-            <li>
-              ✓ Lisez les <a href="/help/guides" class="text-primary hover:underline">guides</a>
-            </li>
-            <li>
-              ✓ Vérifiez votre connexion internet
-            </li>
-            <li>
-              ✓ Essayez de vider le cache de votre navigateur
-            </li>
+          <h3 class="font-semibold mb-2" data-i18n>Raccourcis utiles</h3>
+          <ul class="text-sm space-y-2">
+            <li><a href="/help/faq" class="text-primary hover:underline" data-i18n>Consulter la FAQ</a></li>
+            <li><a href="/help/guides" class="text-primary hover:underline" data-i18n>Lire les guides pratiques</a></li>
+            <li><a href="/help/documentation#troubleshooting" class="text-primary hover:underline" data-i18n>Voir le dépannage</a></li>
           </ul>
         </div>
-      </div>
+      </aside>
     </div>
 
     <script>
       document.getElementById("attachmentInput")?.addEventListener("change", function(e) {
-        if (e.target.files && e.target.files[0]) {
-          document.getElementById("fileName").textContent = `Fichier joint: ${e.target.files[0].name}`;
-          document.getElementById("fileName").classList.remove("hidden");
-        }
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const label = window.AppTranslations?.translate("Fichier joint") || "Fichier joint";
+        document.getElementById("fileName").textContent = `${label}: ${file.name}`;
+        document.getElementById("fileName").classList.remove("hidden");
       });
     </script>
   @endsection
-  

@@ -130,6 +130,10 @@
           subjectSelect.disabled = true;
         }
       });
+      if (classSelect.value) {
+        classSelect.dispatchEvent(new Event("change"));
+      }
+
       // Charger les élèves
 
       subjectSelect.addEventListener("change", async () => {

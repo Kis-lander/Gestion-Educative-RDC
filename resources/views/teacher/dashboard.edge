@@ -110,14 +110,14 @@
                   <i class="fas fa-calendar-check mr-1"></i>Présences
           </a>
                 <a
-                  href="/academic/grades/add?class_id={{ classObj.id }}"
+                  href="/teacher/grades/add?class_id={{ classObj.id }}"
                   class="text-yellow-600 text-sm hover:underline"
                 >
                   <i class="fas fa-star mr-1"></i>Notes
           </a>
               </div>
             </div>
-            @else
+          @else
             <div class="p-8 text-center text-gray-500">
               <i class="fas fa-chalkboard text-3xl mb-2 block"></i>
               Aucune classe assignée
@@ -170,7 +170,7 @@
                 </div>
               </div>
             </div>
-            @else
+          @else
             <div class="p-8 text-center text-gray-500">
               <i class="fas fa-tasks text-3xl mb-2 block"></i>
               Aucun devoir publié
@@ -220,7 +220,7 @@
               <span>Absents: {{ classAttendance.absentCount }}</span>
             </div>
           </div>
-          @else
+        @else
           <div class="col-span-2 text-center py-6 text-gray-500">
             Aucun cours programmé aujourd'hui
           </div>
@@ -258,7 +258,7 @@
               </div>
             </div>
           </div>
-          @else
+        @else
           <div class="p-8 text-center text-gray-500">
             <i class="fas fa-comments text-3xl mb-2 block"></i>
             Aucun sujet récent
@@ -297,7 +297,7 @@
               </div>
             </div>
           </div>
-          @else
+        @else
           <div class="p-8 text-center text-gray-500">
             <i class="fas fa-envelope text-3xl mb-2 block"></i>
             Aucun message récent

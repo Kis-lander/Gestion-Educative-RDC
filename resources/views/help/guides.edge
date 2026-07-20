@@ -3,113 +3,109 @@
   @section('title')
     Guides - {{ school.name }}
   @endsection
-  
+
   @section('dashboardTitle')
-    Guides pratiques
+    <span data-i18n>Guides pratiques</span>
   @endsection
   @section('dashboardSubtitle')
-    Apprenez à utiliser la plateforme
+    <span data-i18n>Des procédures courtes pour les tâches clés de la plateforme</span>
   @endsection
-  
+
   @section('content')
-    <!-- Catégories -->
     <div class="flex flex-wrap gap-2 mb-6">
-      <button class="guide-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all">Tous</button>
-      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="quick-start">Démarrage</button>
-      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="teachers">Enseignants</button>
-      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="parents">Parents</button>
-      <button
-        class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50"
-        data-cat="administrators"
-      >Administrateurs</button>
+      <button class="guide-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all" data-i18n>Tous</button>
+      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="quick-start" data-i18n>Démarrage</button>
+      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="administrators" data-i18n>Administration</button>
+      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="teachers" data-i18n>Enseignants</button>
+      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="parents" data-i18n>Parents</button>
     </div>
 
-    <!-- Grille des guides -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
       @each(guide in guides)
-        <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden guide-card"
-          data-cat="{{ guide.category }}"
-        >
-          <div class="h-32 bg-gradient-to-r {{ guide.color }} relative">
-            <div class="absolute bottom-4 left-4">
-              <span class="px-2 py-1 rounded-full text-xs bg-white/20 text-white">{{ guide.categoryLabel }}</span>
-            </div>
+        <article id="{{ guide.id }}" class="guide-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden" data-cat="{{ guide.category }}">
+          <div class="h-28 bg-gradient-to-r {{ guide.color }} p-5 text-white flex items-end justify-between">
+            <span class="px-2 py-1 rounded-full text-xs bg-white/20" data-i18n>{{ guide.categoryLabel }}</span>
+            <i class="fas {{ guide.icon }} text-3xl opacity-90"></i>
           </div>
-          <div class="p-4">
-            <h3 class="font-bold text-lg">
-              {{ guide.title }}
-            </h3>
-            <p class="text-sm text-gray-600 mt-1">
-              {{ guide.description }}
-            </p>
-            <div class="flex items-center gap-3 mt-3 text-xs text-gray-400">
-              <span>                <i class="fas fa-clock mr-1"></i>{{ guide.readTime }} min</span>
-              <span>                <i class="fas fa-chart-line mr-1"></i>{{ guide.difficulty }}</span>
+          <div class="p-5">
+            <h3 class="font-bold text-lg" data-i18n>{{ guide.title }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n>{{ guide.description }}</p>
+            <div class="flex items-center gap-3 mt-4 text-xs text-gray-500">
+              <span><i class="fas fa-clock mr-1"></i>{{ guide.readTime }} min</span>
+              <span><i class="fas fa-chart-line mr-1"></i><span data-i18n>{{ guide.difficulty }}</span></span>
             </div>
-            <div class="mt-4">
-              <a href="{{ guide.link }}" class="text-primary text-sm hover:underline">Lire le guide →</a>
-            </div>
+            <a href="{{ guide.link }}" class="inline-flex items-center gap-2 mt-4 text-primary text-sm hover:underline" data-help-view-slug="{{ guide.id }}">
+              <span data-i18n>Lire la procédure</span> <i class="fas fa-arrow-right text-xs"></i>
+            </a>
           </div>
-        </div>
-        @else
-        <div class="col-span-full text-center py-12 text-gray-500">
-          <i class="fas fa-book-open text-4xl mb-3 block"></i>
-          <p>
-            Aucun guide disponible
-          </p>
-        </div>
+        </article>
       @end
     </div>
 
-    <!-- Guides populaires -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <div class="px-4 py-3 border-b dark:border-gray-700">
-        <h3 class="font-semibold">
-          Guides les plus consultés
-        </h3>
-      </div>
-      <div class="divide-y dark:divide-gray-700">
-        @each(popular in popularGuides)
-          <div
-            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-            onclick="window.location.href='{{ popular.link }}'"
-          >
-            <div class="flex items-center gap-3">
-              <i class="fas fa-star text-yellow-500"></i>
-              <div>
-                <p class="font-medium">
-                  {{ popular.title }}
-                </p>
-                <p class="text-sm text-gray-500">
-                  {{ popular.views }} lectures
-                </p>
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_0.8fr] gap-5">
+      <section class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="px-5 py-4 border-b dark:border-gray-700">
+          <h3 class="font-semibold" data-i18n>Guides les plus consultés</h3>
+        </div>
+        <div class="divide-y dark:divide-gray-700">
+          @each(popular in popularGuides)
+            <a href="{{ popular.link }}" class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700" data-help-view-slug="{{ popular.id }}">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-star text-yellow-500"></i>
+                <div>
+                  <p class="font-medium" data-i18n>{{ popular.title }}</p>
+                  <p class="text-sm text-gray-500"><span>{{ popular.views }}</span> <span data-i18n>lectures</span></p>
+                </div>
               </div>
-            </div>
-          </div>
-        @end
-      </div>
+            </a>
+          @end
+        </div>
+      </section>
+
+      <section class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5">
+        <h3 class="font-semibold text-lg mb-3" data-i18n>Ordre conseillé pour démarrer</h3>
+        <ol class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+          <li data-i18n>1. Valider l'école et ses informations administratives.</li>
+          <li data-i18n>2. Créer les sections, classes, matières et enseignants.</li>
+          <li data-i18n>3. Inscrire les élèves et lier les parents.</li>
+          <li data-i18n>4. Configurer les frais, présences, devoirs, notes et communications.</li>
+        </ol>
+      </section>
     </div>
 
     <script>
       document.querySelectorAll(".guide-cat").forEach(cat => {
         cat.addEventListener("click", () => {
           const selectedCat = cat.dataset.cat;
-          document.querySelectorAll(".guide-cat").forEach(c => {
-            c.classList.remove("bg-primary", "text-white");
-            c.classList.add("border");
+
+          document.querySelectorAll(".guide-cat").forEach(item => {
+            item.classList.remove("bg-primary", "text-white");
+            item.classList.add("border");
           });
           cat.classList.add("bg-primary", "text-white");
           cat.classList.remove("border");
+
           document.querySelectorAll(".guide-card").forEach(card => {
-            if (selectedCat === "all" || card.dataset.cat === selectedCat) {
-              card.style.display = "";
-            } else {
-              card.style.display = "none";
-            }
+            card.classList.toggle("hidden", selectedCat !== "all" && card.dataset.cat !== selectedCat);
           });
+        });
+      });
+
+      document.querySelectorAll("[data-help-view-slug]").forEach(link => {
+        link.addEventListener("click", () => {
+          const slug = link.dataset.helpViewSlug;
+          if (!slug) return;
+
+          fetch("/api/help/views", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            },
+            body: JSON.stringify({ slug }),
+            keepalive: true
+          }).catch(() => {});
         });
       });
     </script>
   @endsection
-  

@@ -62,7 +62,7 @@
   @section('content')
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Informations élève -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 min-h-[390px] flex flex-col">
         <div class="flex items-center gap-3 mb-4">
           <div
             class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold"
@@ -107,21 +107,23 @@
       </div>
 
       <!-- Graphique évolution -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 min-h-[390px] flex flex-col">
         <h3 class="font-semibold mb-3">
           Évolution des incidents
         </h3>
-        <canvas id="studentTrendChart" height="150">
-        </canvas>
+        <div class="relative flex-1 min-h-[320px]">
+          <canvas id="studentTrendChart"></canvas>
+        </div>
       </div>
 
       <!-- Répartition par type -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 min-h-[390px] flex flex-col">
         <h3 class="font-semibold mb-3">
           Répartition par type
         </h3>
-        <canvas id="studentTypeChart" height="150">
-        </canvas>
+        <div class="relative flex-1 min-h-[320px]">
+          <canvas id="studentTypeChart"></canvas>
+        </div>
       </div>
     </div>
 
@@ -274,7 +276,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false
           }
         });
         // Graphique par type
@@ -290,7 +292,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false
           }
         });
       }

@@ -21,6 +21,11 @@ import Message from '#models/message'
 import School from '#models/school'
 import OtpMailService from '#services/otp_mail_service'
 import {
+  formatGuardianLabel,
+  getPrimaryGuardianForStudent,
+  getPrimaryGuardiansForStudents,
+} from '#services/guardian_service'
+import {
   RDC_CLASS_CATALOG,
   RDC_SCHOOL_OPTIONS,
   filterClassCatalogForSection,
@@ -192,12 +197,27 @@ export default class StudentController {
         .first(),
     ])
 
+    const pageStudents = paginator.all()
+    const guardiansByStudent = await getPrimaryGuardiansForStudents(
+      pageStudents.map((student) => student.id)
+    )
+    const students = pageStudents.map((student) => {
+      const primaryGuardian = guardiansByStudent.get(student.id) || null
+
+      return Object.assign(student, {
+        primaryGuardian,
+        parentName: formatGuardianLabel(primaryGuardian) || '-',
+        parentRelationship: primaryGuardian?.relationship || '-',
+        parentPhone: primaryGuardian?.phone || student.parentPhone,
+      })
+    })
+
     return view.render('students/index', {
       school: {
         id: user.schoolId,
         name: 'Gestion Éducative RDC',
       },
-      students: paginator.all(),
+      students,
       classes,
       stats: {
         total: Number(total?.$extras.total || 0),
@@ -271,12 +291,19 @@ export default class StudentController {
         ).toFixed(1)
       : '-'
 
+    const primaryGuardian = await getPrimaryGuardianForStudent(student.id)
+
     return view.render('students/show', {
       school: {
         id: user.schoolId,
         name: student.school?.name || 'Gestion Éducative RDC',
       },
-      student,
+      student: Object.assign(student, {
+        primaryGuardian,
+        parentName: formatGuardianLabel(primaryGuardian) || '-',
+        parentRelationship: primaryGuardian?.relationship || '-',
+        parentPhone: primaryGuardian?.phone || student.parentPhone,
+      }),
       recentGrades,
       stats: {
         averageGrade,

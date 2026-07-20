@@ -190,19 +190,21 @@
 
       <!-- Graphique performance -->
       <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 min-h-[390px] flex flex-col">
           <h3 class="font-semibold mb-3">
             Performance par matière
           </h3>
-          <canvas id="performanceChart" height="250">
-          </canvas>
+          <div class="relative flex-1 min-h-[320px]">
+            <canvas id="performanceChart"></canvas>
+          </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 min-h-[390px] flex flex-col">
           <h3 class="font-semibold mb-3">
             Progression trimestrielle
           </h3>
-          <canvas id="progressChart" height="250">
-          </canvas>
+          <div class="relative flex-1 min-h-[320px]">
+            <canvas id="progressChart"></canvas>
+          </div>
         </div>
       </div>
 
@@ -274,7 +276,7 @@
             },
             options: {
               responsive: true,
-              maintainAspectRatio: true,
+              maintainAspectRatio: false,
               scales: {
                 y: {
                   max: 20,
@@ -302,7 +304,7 @@
             },
             options: {
               responsive: true,
-              maintainAspectRatio: true,
+              maintainAspectRatio: false,
               scales: {
                 y: {
                   max: 20,

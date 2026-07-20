@@ -104,6 +104,58 @@ export class AttendanceSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class BestPracticeCommentSchema extends BaseModel {
+  static $columns = ['content', 'createdAt', 'id', 'likes', 'practiceId', 'updatedAt', 'userId'] as const
+  $columns = BestPracticeCommentSchema.$columns
+  @column()
+  declare content: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare likes: number
+  @column()
+  declare practiceId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string | null
+}
+
+export class BestPracticeSchema extends BaseModel {
+  static $columns = ['category', 'createdAt', 'description', 'id', 'isPublic', 'likes', 'rating', 'resources', 'results', 'schoolId', 'tags', 'title', 'updatedAt', 'views'] as const
+  $columns = BestPracticeSchema.$columns
+  @column()
+  declare category: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare description: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isPublic: boolean
+  @column()
+  declare likes: number
+  @column()
+  declare rating: string
+  @column()
+  declare resources: any | null
+  @column()
+  declare results: string | null
+  @column()
+  declare schoolId: string | null
+  @column()
+  declare tags: any | null
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare views: number
+}
+
 export class ClassSubjectSchema extends BaseModel {
   static $columns = ['classId', 'coefficient', 'createdAt', 'hoursPerWeek', 'id', 'subjectId', 'teacherId', 'updatedAt'] as const
   $columns = ClassSubjectSchema.$columns
@@ -189,6 +241,29 @@ export class DisciplineSchema extends BaseModel {
   declare severity: string | null
   @column()
   declare studentId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class EventParticipantSchema extends BaseModel {
+  static $columns = ['createdAt', 'eventId', 'id', 'notes', 'participantsCount', 'registeredAt', 'schoolId', 'status', 'updatedAt'] as const
+  $columns = EventParticipantSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare eventId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare notes: string | null
+  @column()
+  declare participantsCount: number
+  @column.dateTime()
+  declare registeredAt: DateTime | null
+  @column()
+  declare schoolId: string | null
+  @column()
+  declare status: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
@@ -333,6 +408,54 @@ export class GradeSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class HelpContentViewSchema extends BaseModel {
+  static $columns = ['createdAt', 'slug', 'title', 'updatedAt', 'viewsCount'] as const
+  $columns = HelpContentViewSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare slug: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare viewsCount: number
+}
+
+export class HelpDocumentationFeedbackSchema extends BaseModel {
+  static $columns = ['createdAt', 'helpful', 'id', 'ipAddress', 'page', 'remark', 'schoolId', 'status', 'updatedAt', 'userAgent', 'userEmail', 'userId', 'userName', 'userRole'] as const
+  $columns = HelpDocumentationFeedbackSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare helpful: boolean
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare ipAddress: string | null
+  @column()
+  declare page: string
+  @column()
+  declare remark: string | null
+  @column()
+  declare schoolId: string | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userAgent: string | null
+  @column()
+  declare userEmail: string | null
+  @column()
+  declare userId: string | null
+  @column()
+  declare userName: string | null
+  @column()
+  declare userRole: string | null
+}
+
 export class InspectionSettingSchema extends BaseModel {
   static $columns = ['createdAt', 'group', 'key', 'updatedAt', 'value'] as const
   $columns = InspectionSettingSchema.$columns
@@ -346,6 +469,89 @@ export class InspectionSettingSchema extends BaseModel {
   declare updatedAt: DateTime | null
   @column()
   declare value: string | null
+}
+
+export class InterSchoolEventSchema extends BaseModel {
+  static $columns = ['additionalInfo', 'createdAt', 'description', 'endDate', 'eventType', 'id', 'location', 'maxParticipants', 'organizerSchoolId', 'participationFee', 'registrationDeadline', 'startDate', 'status', 'title', 'updatedAt'] as const
+  $columns = InterSchoolEventSchema.$columns
+  @column()
+  declare additionalInfo: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare description: string
+  @column.date()
+  declare endDate: DateTime
+  @column()
+  declare eventType: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare location: string
+  @column()
+  declare maxParticipants: number | null
+  @column()
+  declare organizerSchoolId: string | null
+  @column()
+  declare participationFee: string | null
+  @column.date()
+  declare registrationDeadline: DateTime | null
+  @column.date()
+  declare startDate: DateTime
+  @column()
+  declare status: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class InterSchoolExchangeMessageSchema extends BaseModel {
+  static $columns = ['attachmentUrl', 'content', 'createdAt', 'exchangeId', 'id', 'schoolId', 'senderId', 'updatedAt'] as const
+  $columns = InterSchoolExchangeMessageSchema.$columns
+  @column()
+  declare attachmentUrl: string | null
+  @column()
+  declare content: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare exchangeId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare schoolId: string | null
+  @column()
+  declare senderId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class InterSchoolExchangeSchema extends BaseModel {
+  static $columns = ['createdAt', 'exchangeType', 'fromSchoolId', 'id', 'message', 'participants', 'proposedDate', 'status', 'subject', 'toSchoolId', 'updatedAt'] as const
+  $columns = InterSchoolExchangeSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare exchangeType: string
+  @column()
+  declare fromSchoolId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare message: string
+  @column()
+  declare participants: number | null
+  @column.date()
+  declare proposedDate: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare subject: string
+  @column()
+  declare toSchoolId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
 }
 
 export class MessageSchema extends BaseModel {
@@ -419,7 +625,7 @@ export class OtpCodeSchema extends BaseModel {
 }
 
 export class ParentStudentSchema extends BaseModel {
-  static $columns = ['createdAt', 'id', 'isPrimary', 'parentId', 'studentId', 'updatedAt'] as const
+  static $columns = ['createdAt', 'id', 'isPrimary', 'parentId', 'relationship', 'studentId', 'updatedAt'] as const
   $columns = ParentStudentSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -429,6 +635,8 @@ export class ParentStudentSchema extends BaseModel {
   declare isPrimary: boolean | null
   @column()
   declare parentId: string | null
+  @column()
+  declare relationship: string | null
   @column()
   declare studentId: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })

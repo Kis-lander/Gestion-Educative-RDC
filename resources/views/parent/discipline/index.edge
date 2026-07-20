@@ -94,12 +94,13 @@
       </div>
 
       <!-- Graphique d'évolution -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6 min-h-[390px] flex flex-col">
         <h3 class="font-semibold mb-3">
           Évolution des incidents
         </h3>
-        <canvas id="incidentsChart" height="150">
-        </canvas>
+        <div class="relative flex-1 min-h-[320px]">
+          <canvas id="incidentsChart"></canvas>
+        </div>
       </div>
 
       <!-- Tableau des incidents -->
@@ -281,7 +282,7 @@
               },
               options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 scales: {
                   y: {
                     beginAtZero: true,

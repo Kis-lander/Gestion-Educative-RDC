@@ -3,11 +3,17 @@
   x-cloak
   x-data="{
     currentPath: window.location.pathname,
+    helpOpen: window.location.pathname === '/help' || window.location.pathname.startsWith('/help/'),
     isActive(paths) {
       return paths.some(path => this.currentPath === path || this.currentPath.startsWith(`${path}/`))
     },
     linkClass(paths) {
       return this.isActive(paths)
+        ? 'bg-primary text-white shadow-md'
+        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+    },
+    exactLinkClass(path) {
+      return this.currentPath === path
         ? 'bg-primary text-white shadow-md'
         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
     },
@@ -49,7 +55,7 @@
     <!-- Classes -->
     @if(navigation ? navigation.canViewClasses : ['director', 'teacher'].includes(auth?.user?.role))
       <a
-        href="/academic/classes"
+        href="{{ ['teacher', 'discipline_director'].includes(auth?.user?.role) ? '/teacher/classes' : '/academic/classes' }}"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
         :class="linkClass(['/academic/classes', '/schools/classes', '/teacher/classes'])"
       >
@@ -109,11 +115,11 @@
     <!-- Notes -->
     @if(navigation ? navigation.canViewGrades : ['director', 'teacher'].includes(auth?.user?.role))
       <a
-        href="/academic/grades"
+        href="{{ ['teacher', 'discipline_director'].includes(auth?.user?.role) ? '/teacher/grades' : '/academic/grades' }}"
         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
-        :class="linkClass(['/academic/grades'])"
+        :class="linkClass(['/academic/grades', '/teacher/grades'])"
       >
-        <i class="fas fa-star w-5" :class="iconClass(['/academic/grades'])"></i>
+        <i class="fas fa-star w-5" :class="iconClass(['/academic/grades', '/teacher/grades'])"></i>
         <span x-show="sidebarOpen">Notes</span>
       </a>
     @endif
@@ -176,6 +182,51 @@
         <span x-show="sidebarOpen">Forum</span>
       </a>
     @endif
+
+    <!-- Aide -->
+    <div>
+      <button
+        type="button"
+        class="flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left"
+        :class="linkClass(['/help'])"
+        @click="helpOpen = !helpOpen"
+        aria-label="Ouvrir le menu d'aide"
+        title="Ouvrir le menu d'aide"
+      >
+        <i class="fas fa-circle-question w-5" :class="iconClass(['/help'])"></i>
+        <span x-show="sidebarOpen" class="flex-1" data-i18n>Aide</span>
+        <i
+          x-show="sidebarOpen"
+          class="fas fa-chevron-down text-xs transition-transform"
+          :class="{ 'rotate-180': helpOpen }"
+        ></i>
+      </button>
+      <div x-show="sidebarOpen && helpOpen" x-cloak class="mt-1 space-y-1 pl-8">
+        <a href="/help" class="block rounded-lg px-4 py-2 text-sm transition-colors" :class="exactLinkClass('/help')" data-i18n>
+          Centre d'aide
+        </a>
+        <a href="/help/faq" class="block rounded-lg px-4 py-2 text-sm transition-colors" :class="exactLinkClass('/help/faq')" data-i18n>
+          FAQ
+        </a>
+        <a href="/help/guides" class="block rounded-lg px-4 py-2 text-sm transition-colors" :class="exactLinkClass('/help/guides')" data-i18n>
+          Guides
+        </a>
+        <a href="/help/tutorial" class="block rounded-lg px-4 py-2 text-sm transition-colors" :class="exactLinkClass('/help/tutorial')" data-i18n>
+          Tutoriel
+        </a>
+        <a href="/help/documentation" class="block rounded-lg px-4 py-2 text-sm transition-colors" :class="exactLinkClass('/help/documentation')" data-i18n>
+          Documentation
+        </a>
+        <a href="/help/contact" class="block rounded-lg px-4 py-2 text-sm transition-colors" :class="exactLinkClass('/help/contact')" data-i18n>
+          Contact
+        </a>
+        @if(auth?.user?.role === 'inspection')
+          <a href="/inspection/help-feedback" class="block rounded-lg px-4 py-2 text-sm transition-colors" :class="exactLinkClass('/inspection/help-feedback')" data-i18n>
+            Retours documentation
+          </a>
+        @endif
+      </div>
+    </div>
 
     <a
       href="/settings"

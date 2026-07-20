@@ -916,6 +916,64 @@ export default class InspectionController {
     return view.render('inspection/reports/transfers')
   }
 
+  public async helpFeedbackPage({ request, view }: HttpContext) {
+    const status = String(request.input('status', 'new'))
+    const allowedStatuses = ['all', 'new', 'reviewed', 'archived']
+    const selectedStatus = allowedStatuses.includes(status) ? status : 'new'
+
+    try {
+      const baseQuery = db
+        .from('help_documentation_feedback as feedback')
+        .leftJoin('schools as schools', 'schools.id', 'feedback.school_id')
+        .select(
+          'feedback.id',
+          'feedback.helpful',
+          'feedback.page',
+          'feedback.remark',
+          'feedback.status',
+          'feedback.user_role',
+          'feedback.user_name',
+          'feedback.user_email',
+          'feedback.created_at',
+          'schools.name as school_name'
+        )
+
+      if (selectedStatus !== 'all') {
+        baseQuery.where('feedback.status', selectedStatus)
+      }
+
+      const rows = await baseQuery.orderBy('feedback.created_at', 'desc').limit(100)
+      const [newCount, totalCount] = await Promise.all([
+        db.from('help_documentation_feedback').where('status', 'new').count('* as total').first(),
+        db.from('help_documentation_feedback').count('* as total').first(),
+      ])
+
+      return view.render('inspection/help-feedback/index', {
+        feedbackItems: rows.map((row) => ({
+          ...row,
+          createdAtLabel: this.formatLogDate(row.created_at),
+          helpfulLabel: row.helpful ? 'Oui' : 'Non',
+          statusLabel:
+            row.status === 'new' ? 'Nouveau' : row.status === 'reviewed' ? 'Traité' : 'Archivé',
+        })),
+        selectedStatus,
+        stats: {
+          newCount: Number(newCount?.total ?? 0),
+          totalCount: Number(totalCount?.total ?? 0),
+        },
+      })
+    } catch {
+      return view.render('inspection/help-feedback/index', {
+        feedbackItems: [],
+        selectedStatus,
+        stats: {
+          newCount: 0,
+          totalCount: 0,
+        },
+      })
+    }
+  }
+
   public async settingsPage({ view }: HttpContext) {
     const settings = await this.getInspectionSettings()
     const backups = await this.listInspectionBackups()

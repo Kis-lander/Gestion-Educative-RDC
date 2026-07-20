@@ -86,10 +86,32 @@ export default class SchoolController {
     return teacherPositionLabelForSection(sectionCode)
   }
 
+  private scopeTeachersToGovernance(
+    query: any,
+    governance: Awaited<ReturnType<typeof getGovernanceContext>>
+  ) {
+    if (governance.canManageAllSections) return query
+    if (!governance.sectionId) return query.whereRaw('1 = 0')
+
+    return query.whereIn(
+      'userId',
+      db
+        .from('school_staff_assignments')
+        .where('school_section_id', governance.sectionId)
+        .where('position', 'teacher')
+        .where('is_active', true)
+        .select('user_id')
+    )
+  }
+
   private async getTeacherRoleLabelForUser(userId: string) {
     const assignment = await db
       .from('school_staff_assignments')
-      .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+      .leftJoin(
+        'school_sections',
+        'school_staff_assignments.school_section_id',
+        'school_sections.id'
+      )
       .where('school_staff_assignments.user_id', userId)
       .where('school_staff_assignments.position', 'teacher')
       .where('school_staff_assignments.is_active', true)
@@ -379,21 +401,24 @@ export default class SchoolController {
    */
   public async teachersPage({ auth, request, view }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const page = Number(request.input('page', 1))
     const status = request.input('status')
     const qualification = request.input('qualification')
     const search = String(request.input('search', '')).trim()
 
-    const query = Teacher.query()
-      .where('schoolId', user.schoolId)
+    const baseTeacherQuery = () =>
+      this.scopeTeachersToGovernance(Teacher.query().where('schoolId', user.schoolId), governance)
+
+    const query = baseTeacherQuery()
       .preload('user')
-      .if(status, (teacherQuery) => teacherQuery.where('status', status))
-      .if(qualification, (teacherQuery) => teacherQuery.where('qualification', qualification))
-      .if(search, (teacherQuery) => {
-        teacherQuery.where((searchQuery) => {
+      .if(status, (teacherQuery: any) => teacherQuery.where('status', status))
+      .if(qualification, (teacherQuery: any) => teacherQuery.where('qualification', qualification))
+      .if(search, (teacherQuery: any) => {
+        teacherQuery.where((searchQuery: any) => {
           searchQuery
             .whereILike('employeeNumber', `%${search}%`)
-            .orWhereHas('user', (userQuery) => {
+            .orWhereHas('user', (userQuery: any) => {
               userQuery
                 .whereILike('firstName', `%${search}%`)
                 .orWhereILike('postnom', `%${search}%`)
@@ -406,15 +431,11 @@ export default class SchoolController {
 
     const paginator = await query.paginate(page, 20)
     const teachers = paginator.all()
+    const teacherIds = teachers.map((teacher: Teacher) => teacher.id)
     const [total, active, qualified, assignmentRows, primaryClassRows] = await Promise.all([
-      Teacher.query().where('schoolId', user.schoolId).count('* as total').first(),
-      Teacher.query()
-        .where('schoolId', user.schoolId)
-        .where('status', 'active')
-        .count('* as total')
-        .first(),
-      Teacher.query()
-        .where('schoolId', user.schoolId)
+      baseTeacherQuery().count('* as total').first(),
+      baseTeacherQuery().where('status', 'active').count('* as total').first(),
+      baseTeacherQuery()
         .whereNotNull('qualification')
         .whereNot('qualification', '')
         .count('* as total')
@@ -424,6 +445,10 @@ export default class SchoolController {
         .join('classes', 'class_subject.class_id', 'classes.id')
         .where('classes.school_id', user.schoolId)
         .whereNull('classes.archived_at')
+        .if(teacherIds.length, (assignmentQuery) =>
+          assignmentQuery.whereIn('class_subject.teacher_id', teacherIds)
+        )
+        .if(!teacherIds.length, (assignmentQuery) => assignmentQuery.whereRaw('1 = 0'))
         .select(
           'class_subject.teacher_id',
           'class_subject.subject_id',
@@ -435,6 +460,8 @@ export default class SchoolController {
         .where('school_id', user.schoolId)
         .whereNull('archived_at')
         .whereNotNull('teacher_id')
+        .if(teacherIds.length, (classQuery) => classQuery.whereIn('teacher_id', teacherIds))
+        .if(!teacherIds.length, (classQuery) => classQuery.whereRaw('1 = 0'))
         .select('teacher_id', 'id as class_id'),
     ])
 
@@ -468,17 +495,12 @@ export default class SchoolController {
       getWorkload(row.teacher_id).classes.add(row.class_id)
     }
 
-    const assignedSubjects = new Set(
-      assignmentRows.map((row) => row.subject_id).filter(Boolean)
-    )
-    const totalHours = assignmentRows.reduce(
-      (sum, row) => sum + Number(row.hours_per_week || 0),
-      0
-    )
+    const assignedSubjects = new Set(assignmentRows.map((row) => row.subject_id).filter(Boolean))
+    const totalHours = assignmentRows.reduce((sum, row) => sum + Number(row.hours_per_week || 0), 0)
 
     return view.render('schools/teachers/index', {
       school: this.getFallbackSchool(user),
-      teachers: teachers.map((teacher) => {
+      teachers: teachers.map((teacher: Teacher) => {
         const workload = workloadByTeacher.get(teacher.id)
 
         return {
@@ -504,6 +526,10 @@ export default class SchoolController {
   public async createTeacherPage({ auth, view }: HttpContext) {
     const user = auth.getUserOrFail()
     const governance = await getGovernanceContext(user)
+    const sections = await listSchoolSections(user.schoolId)
+    const visibleSections = governance.canManageAllSections
+      ? sections
+      : sections.filter((section) => section.id === governance.sectionId)
     const subjects = this.filterSubjectsBySection(
       await Subject.query().orderBy('name', 'asc'),
       governance.canManageAllSections ? null : governance.sectionCode
@@ -512,20 +538,26 @@ export default class SchoolController {
     return view.render('schools/teachers/create', {
       school: this.getFallbackSchool(user),
       subjects,
+      sections: visibleSections,
+      governance,
+      teacherRoleLabel: this.getTeacherSectionRoleLabel(governance.sectionCode),
     })
   }
 
   public async listActiveTeachers({ auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
-    const teachers = await Teacher.query()
-      .where('schoolId', user.schoolId)
+    const governance = await getGovernanceContext(user)
+    const teachers = await this.scopeTeachersToGovernance(
+      Teacher.query().where('schoolId', user.schoolId),
+      governance
+    )
       .where('status', 'active')
       .preload('user')
       .orderBy('createdAt', 'desc')
 
     return response.ok({
       success: true,
-      teachers: teachers.map((teacher) => ({
+      teachers: teachers.map((teacher: Teacher) => ({
         id: teacher.id,
         user: {
           firstName: teacher.user.firstName,
@@ -537,16 +569,22 @@ export default class SchoolController {
     })
   }
 
-  private async getTeacherForDirector(teacherId: string, schoolId?: string | null) {
+  private async getTeacherForDirector(
+    teacherId: string,
+    schoolId?: string | null,
+    governance?: Awaited<ReturnType<typeof getGovernanceContext>>
+  ): Promise<Teacher> {
     if (!schoolId) {
       throw new Error("Votre compte n'est lie a aucune ecole.")
     }
 
-    return Teacher.query()
-      .where('id', teacherId)
-      .where('schoolId', schoolId)
+    return (await this.scopeTeachersToGovernance(
+      Teacher.query().where('id', teacherId).where('schoolId', schoolId),
+      governance ||
+        ({ canManageAllSections: true } as Awaited<ReturnType<typeof getGovernanceContext>>)
+    )
       .preload('user')
-      .firstOrFail()
+      .firstOrFail()) as Teacher
   }
 
   private async getTeacherAssignments(teacher: Teacher) {
@@ -637,7 +675,8 @@ export default class SchoolController {
 
   public async showTeacherPage({ auth, params, view }: HttpContext) {
     const user = auth.getUserOrFail()
-    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const governance = await getGovernanceContext(user)
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId, governance)
     const assignments = await this.getTeacherAssignments(teacher)
     const assignmentsCount = await db
       .from('assignments')
@@ -720,14 +759,17 @@ export default class SchoolController {
   public async editTeacherPage({ auth, params, view }: HttpContext) {
     const user = auth.getUserOrFail()
     const governance = await getGovernanceContext(user)
-    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId, governance)
     const assignments = await this.getTeacherAssignments(teacher)
     const [allSubjects, replacementTeachers] = await Promise.all([
       Subject.query().orderBy('name', 'asc'),
-      Teacher.query()
-        .where('schoolId', user.schoolId)
-        .where('status', 'active')
-        .whereNot('id', teacher.id)
+      this.scopeTeachersToGovernance(
+        Teacher.query()
+          .where('schoolId', user.schoolId)
+          .where('status', 'active')
+          .whereNot('id', teacher.id),
+        governance
+      )
         .preload('user')
         .orderBy('createdAt', 'desc'),
     ])
@@ -756,7 +798,8 @@ export default class SchoolController {
 
   public async scheduleTeacherPage({ auth, params, request, view }: HttpContext) {
     const user = auth.getUserOrFail()
-    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const governance = await getGovernanceContext(user)
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId, governance)
     const now = DateTime.now()
     const selectedYear = Number(request.input('year', now.weekYear))
     const selectedWeek = Number(request.input('week', now.weekNumber))
@@ -877,9 +920,7 @@ export default class SchoolController {
     const assignedClassIds = new Set<string>()
     const assignedSubjectIds = new Set<string>()
     let assignedHours = 0
-    const scheduledPairs = new Set(
-      entries.map((entry) => `${entry.class_id}:${entry.subject_id}`)
-    )
+    const scheduledPairs = new Set(entries.map((entry) => `${entry.class_id}:${entry.subject_id}`))
     const assignedCourses = assignmentRows.map((assignment) => {
       assignedClassIds.add(assignment.class_id)
       assignedSubjectIds.add(assignment.subject_id)
@@ -930,7 +971,7 @@ export default class SchoolController {
   public async updateTeacher({ auth, params, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
     const governance = await getGovernanceContext(user)
-    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId, governance)
     const schema = vine.compile(
       vine.object({
         firstName: vine.string().trim(),
@@ -1016,7 +1057,8 @@ export default class SchoolController {
 
   public async deleteTeacher({ auth, params, response }: HttpContext) {
     const user = auth.getUserOrFail()
-    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const governance = await getGovernanceContext(user)
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId, governance)
 
     await db.transaction(async (trx) => {
       await trx.from('class_subject').where('teacher_id', teacher.id).update({
@@ -1051,7 +1093,8 @@ export default class SchoolController {
 
   public async replaceTeacher({ auth, params, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
-    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const governance = await getGovernanceContext(user)
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId, governance)
     const schema = vine.compile(
       vine.object({
         replacementTeacherId: vine.string().trim(),
@@ -1069,15 +1112,16 @@ export default class SchoolController {
       return response.redirect().back()
     }
 
-    const replacement = await Teacher.query()
-      .where('id', payload.replacementTeacherId)
-      .where('schoolId', user.schoolId)
+    const replacement = await this.scopeTeachersToGovernance(
+      Teacher.query().where('id', payload.replacementTeacherId).where('schoolId', user.schoolId),
+      governance
+    )
       .where('status', 'active')
       .preload('user')
       .first()
 
     if (!replacement) {
-      session.flash('error', "Le remplaçant doit être un enseignant actif de votre établissement.")
+      session.flash('error', 'Le remplaçant doit être un enseignant actif de votre établissement.')
       return response.redirect().back()
     }
 
@@ -1093,26 +1137,12 @@ export default class SchoolController {
             .from('timetables')
             .whereIn('class_id', activeClassIds)
             .where('teacher_id', teacher.id)
-            .select(
-              'academic_year',
-              'term',
-              'shift',
-              'day_of_week',
-              'start_time',
-              'end_time'
-            )
+            .select('academic_year', 'term', 'shift', 'day_of_week', 'start_time', 'end_time')
         : [],
       db
         .from('timetables')
         .where('teacher_id', replacement.id)
-        .select(
-          'academic_year',
-          'term',
-          'shift',
-          'day_of_week',
-          'start_time',
-          'end_time'
-        ),
+        .select('academic_year', 'term', 'shift', 'day_of_week', 'start_time', 'end_time'),
     ])
     const hasScheduleConflict = outgoingTimetable.some((outgoing) =>
       replacementTimetable.some(
@@ -1198,17 +1228,13 @@ export default class SchoolController {
     return response.redirect(`/schools/teachers/${replacement.id}`)
   }
 
-  public async resetTeacherPassword({
-    auth,
-    params,
-    request,
-    response,
-    view,
-  }: HttpContext) {
+  public async resetTeacherPassword({ auth, params, request, response, view }: HttpContext) {
     const user = auth.getUserOrFail()
-    const teacher = await this.getTeacherForDirector(params.id, user.schoolId)
+    const governance = await getGovernanceContext(user)
+    const teacher = await this.getTeacherForDirector(params.id, user.schoolId, governance)
     const tempPassword = crypto.randomBytes(8).toString('hex')
     const schoolName = await this.getSchoolName(user.schoolId)
+    const roleLabel = await this.getTeacherRoleLabelForUser(teacher.user.id)
 
     teacher.user.password = tempPassword
     teacher.user.mustChangePassword = true
@@ -1224,7 +1250,7 @@ export default class SchoolController {
         to: teacher.user.email,
         schoolName,
         fullName: teacher.user.fullName,
-        roleLabel: 'Enseignant',
+        roleLabel,
         email: teacher.user.email,
         password: tempPassword,
       })
@@ -1241,7 +1267,7 @@ export default class SchoolController {
     const credentials = {
       fullName: teacher.user.fullName,
       role: teacher.user.role,
-      roleLabel: 'Enseignant',
+      roleLabel,
       email: teacher.user.email,
       password: tempPassword,
       schoolName,
@@ -1270,8 +1296,9 @@ export default class SchoolController {
     })
   }
 
-  public async addTeacher({ request, auth, response, view }: HttpContext) {
+  public async addTeacher({ request, auth, response, view, session }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
 
     const schema = vine.compile(
       vine.object({
@@ -1279,47 +1306,91 @@ export default class SchoolController {
         postnom: vine.string(),
         lastName: vine.string(),
         email: vine.string().email().unique({ table: 'users', column: 'email' }),
-        phone: vine.string(),
+        phone: vine.string().optional(),
         qualification: vine.string(),
-        specialization: vine.string(),
+        specialization: vine.string().optional(),
+        sectionId: vine.string().optional(),
+        hireDate: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
       })
     )
 
     const data = await request.validateUsing(schema)
+    const sectionId = governance.canManageAllSections ? data.sectionId : governance.sectionId
+
+    if (!sectionId) {
+      session.flash('error', 'Veuillez sélectionner la section scolaire concernée.')
+      return response.redirect().back()
+    }
+
+    const section = await db
+      .from('school_sections')
+      .where('id', sectionId)
+      .where('school_id', user.schoolId)
+      .where('is_active', true)
+      .first()
+
+    if (!section) {
+      session.flash('error', "La section scolaire sélectionnée n'appartient pas à cette école.")
+      return response.redirect().back()
+    }
+
+    if (!SECTION_POSITION_OPTIONS[section.code]?.includes('teacher')) {
+      session.flash('error', `Un enseignant ne peut pas être affecté à ${section.name}.`)
+      return response.redirect().back()
+    }
+
     const tempPassword = crypto.randomBytes(8).toString('hex')
+    const roleLabel = this.getTeacherSectionRoleLabel(section.code)
 
-    // Créer l'utilisateur via transaction recommandée en Lucid 22
-    const teacherUser = await User.create({
-      schoolId: user.schoolId,
-      email: data.email,
-      password: tempPassword,
-      firstName: data.firstName,
-      postnom: data.postnom,
-      lastName: data.lastName,
-      phone: data.phone,
-      role: 'teacher',
-      status: 'active',
-      mustChangePassword: true,
-    })
-
+    let teacherUser!: User
+    let teacher!: Teacher
     const employeeNumber = `TCH-${String(user.schoolId).slice(0, 4)}-${Date.now()}`
 
-    const teacher = await Teacher.create({
-      userId: teacherUser.id,
-      schoolId: user.schoolId!,
-      employeeNumber,
-      qualification: data.qualification,
-      specialization: data.specialization,
-      hireDate: DateTime.now(),
-      status: 'active',
+    await db.transaction(async (trx) => {
+      teacherUser = new User()
+      teacherUser.useTransaction(trx)
+      teacherUser.schoolId = user.schoolId
+      teacherUser.email = data.email.trim().toLowerCase()
+      teacherUser.password = tempPassword
+      teacherUser.firstName = data.firstName
+      teacherUser.postnom = data.postnom
+      teacherUser.lastName = data.lastName
+      teacherUser.phone = data.phone || null
+      teacherUser.role = 'teacher'
+      teacherUser.status = 'active'
+      teacherUser.mustChangePassword = true
+      await teacherUser.save()
+
+      await trx.table('school_staff_assignments').insert({
+        school_id: user.schoolId,
+        school_section_id: sectionId,
+        user_id: teacherUser.id,
+        position: 'teacher',
+        is_primary: true,
+        is_active: true,
+        created_by: user.id,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+
+      teacher = new Teacher()
+      teacher.useTransaction(trx)
+      teacher.userId = teacherUser.id
+      teacher.schoolId = user.schoolId!
+      teacher.employeeNumber = employeeNumber
+      teacher.qualification = data.qualification
+      teacher.specialization = data.specialization || ''
+      teacher.hireDate = data.hireDate || DateTime.now()
+      teacher.status = 'active'
+      await teacher.save()
     })
 
     const schoolName = await this.getSchoolName(user.schoolId)
     const credentials = {
-      fullName: teacherUser.fullName,
-      role: teacherUser.role,
-      roleLabel: 'Enseignant',
-      email: teacherUser.email,
+      fullName: teacherUser!.fullName,
+      role: teacherUser!.role,
+      roleLabel,
+      email: teacherUser!.email,
       password: tempPassword,
       schoolName,
       profileReference: employeeNumber,
@@ -1332,11 +1403,11 @@ export default class SchoolController {
 
     try {
       await this.mailService.sendAccountCredentials({
-        to: teacherUser.email,
+        to: teacherUser!.email,
         schoolName,
-        fullName: teacherUser.fullName,
-        roleLabel: 'Enseignant',
-        email: teacherUser.email,
+        fullName: teacherUser!.fullName,
+        roleLabel,
+        email: teacherUser!.email,
         password: tempPassword,
       })
     } catch (error) {
@@ -1359,8 +1430,8 @@ export default class SchoolController {
 
     return response.created({
       success: true,
-      teacher: { ...teacher.serialize(), user: teacherUser.serialize() },
-      credentials: { email: teacherUser.email, temporaryPassword: tempPassword },
+      teacher: { ...teacher!.serialize(), user: teacherUser!.serialize() },
+      credentials: { email: teacherUser!.email, temporaryPassword: tempPassword },
       emailDelivery,
     })
   }
@@ -1454,7 +1525,11 @@ export default class SchoolController {
     const governance = await getGovernanceContext(user)
     const assignments = await db
       .from('school_staff_assignments')
-      .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+      .leftJoin(
+        'school_sections',
+        'school_staff_assignments.school_section_id',
+        'school_sections.id'
+      )
       .where('school_staff_assignments.school_id', user.schoolId)
       .where('school_staff_assignments.is_active', true)
       .select(
@@ -1463,7 +1538,9 @@ export default class SchoolController {
         'school_staff_assignments.school_section_id',
         'school_sections.name as section_name'
       )
-    const assignmentByUser = new Map(assignments.map((assignment) => [assignment.user_id, assignment]))
+    const assignmentByUser = new Map(
+      assignments.map((assignment) => [assignment.user_id, assignment])
+    )
     const sectionUserIds = governance.canManageAllSections
       ? null
       : assignments
@@ -1567,7 +1644,7 @@ export default class SchoolController {
     const denied = await this.ensureCanEditAccount(governance, account, session, response)
     if (denied) return denied
 
-    const [classes, students, teacher, student, parent] = await Promise.all([
+    const [classes, students, parents, teacher, student, parent] = await Promise.all([
       Class.query()
         .where('schoolId', director.schoolId)
         .whereNull('archivedAt')
@@ -1587,6 +1664,12 @@ export default class SchoolController {
         .preload('user')
         .preload('class')
         .orderBy('createdAt', 'desc'),
+      Parent.query()
+        .whereHas('user', (userQuery) => {
+          userQuery.where('schoolId', director.schoolId)
+        })
+        .preload('user')
+        .orderBy('createdAt', 'desc'),
       Teacher.query().where('userId', account.id).first(),
       Student.query().where('userId', account.id).first(),
       Parent.query().where('userId', account.id).first(),
@@ -1600,9 +1683,20 @@ export default class SchoolController {
         .select('student_id')
       selectedChildrenIds = links.map((link) => link.student_id)
     }
+    const selectedParentLink = student
+      ? await db
+          .from('parent_student')
+          .where('student_id', student.id)
+          .orderBy('is_primary', 'desc')
+          .first()
+      : null
     const staffAssignment = await db
       .from('school_staff_assignments')
-      .leftJoin('school_sections', 'school_staff_assignments.school_section_id', 'school_sections.id')
+      .leftJoin(
+        'school_sections',
+        'school_staff_assignments.school_section_id',
+        'school_sections.id'
+      )
       .where('school_staff_assignments.user_id', account.id)
       .where('school_staff_assignments.is_active', true)
       .select('school_staff_assignments.position', 'school_sections.name as section_name')
@@ -1619,6 +1713,9 @@ export default class SchoolController {
         ? RDC_SCHOOL_OPTIONS
         : getSchoolOptionsForSection(governance.sectionCode),
       students,
+      parents,
+      selectedParentId: selectedParentLink?.parent_id || '',
+      selectedParentRelationship: selectedParentLink?.relationship || '',
       selectedChildrenIds,
       roleLabel: staffAssignment
         ? staffAssignment.position === 'teacher'
@@ -1668,6 +1765,7 @@ export default class SchoolController {
         address: vine.string().trim().optional(),
         medicalInfo: vine.string().trim().optional(),
         relationship: vine.string().trim().optional(),
+        parentId: vine.string().trim().optional(),
         profession: vine.string().trim().optional(),
         emergencyPhone: vine.string().trim().optional(),
         childrenIds: vine.array(vine.string()).optional(),
@@ -1708,20 +1806,12 @@ export default class SchoolController {
       : getSchoolOptionsForSection(governance.sectionCode)
     const isHumanities = isHumanitiesClass(selectedClass)
 
-    if (
-      account.role === 'student' &&
-      !governance.isPromoter &&
-      !payload.classId
-    ) {
+    if (account.role === 'student' && !governance.isPromoter && !payload.classId) {
       session.flash('error', 'Veuillez sélectionner une classe de votre section pour cet élève.')
       return response.redirect().back()
     }
 
-    if (
-      account.role === 'student' &&
-      payload.classId &&
-      !selectedClass
-    ) {
+    if (account.role === 'student' && payload.classId && !selectedClass) {
       session.flash('error', "La classe sélectionnée n'appartient pas à votre section.")
       return response.redirect().back()
     }
@@ -1770,6 +1860,56 @@ export default class SchoolController {
           student.address = payload.address || ''
           student.medicalInfo = payload.medicalInfo || null
           await student.save()
+
+          if (payload.parentId !== undefined) {
+            const selectedParentId = payload.parentId.trim()
+
+            if (selectedParentId) {
+              const selectedParent = await Parent.query({ client: trx })
+                .where('id', selectedParentId)
+                .whereHas('user', (userQuery) => {
+                  userQuery.where('schoolId', director.schoolId)
+                })
+                .first()
+
+              if (!selectedParent) {
+                throw new Error("Le parent sélectionné n'appartient pas à votre école.")
+              }
+
+              await trx
+                .from('parent_student')
+                .where('student_id', student.id)
+                .where('is_primary', true)
+                .update({ is_primary: false, updated_at: new Date() })
+
+              const existingLink = await trx
+                .from('parent_student')
+                .where('parent_id', selectedParent.id)
+                .where('student_id', student.id)
+                .first()
+              const relationship = payload.relationship || selectedParent.relationship || null
+
+              if (existingLink) {
+                await trx
+                  .from('parent_student')
+                  .where('id', existingLink.id)
+                  .update({
+                    relationship,
+                    is_primary: true,
+                    updated_at: new Date(),
+                  })
+              } else {
+                await trx.table('parent_student').insert({
+                  parent_id: selectedParent.id,
+                  student_id: student.id,
+                  relationship,
+                  is_primary: true,
+                  created_at: new Date(),
+                  updated_at: new Date(),
+                })
+              }
+            }
+          }
         }
       }
 
@@ -1820,6 +1960,7 @@ export default class SchoolController {
                 validChildren.map((student, index) => ({
                   parent_id: parent.id,
                   student_id: student.id,
+                  relationship: payload.relationship || parent.relationship,
                   is_primary: index === 0,
                   created_at: new Date(),
                   updated_at: new Date(),
@@ -2229,6 +2370,7 @@ export default class SchoolController {
             validChildren.map((student, index) => ({
               parent_id: parent.id,
               student_id: student.id,
+              relationship: payload.relationship!,
               is_primary: index === 0,
               created_at: new Date(),
               updated_at: new Date(),

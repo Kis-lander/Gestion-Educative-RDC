@@ -11,6 +11,11 @@ import {
 } from '#validators/discipline'
 import { DateTime } from 'luxon'
 import { edgePageContext } from '#start/view_context'
+import {
+  formatGuardianLabel,
+  getPrimaryGuardianForStudent,
+  getPrimaryGuardiansForStudents,
+} from '#services/guardian_service'
 
 export default class DisciplineController {
   private async renderWithContext(ctx: HttpContext, template: string, data: Record<string, any>) {
@@ -364,6 +369,10 @@ export default class DisciplineController {
       })
       .orderBy('createdAt', 'desc')
     const paginator = await query.paginate(page, 20)
+    const pageStudents = paginator.all()
+    const guardiansByStudent = await getPrimaryGuardiansForStudents(
+      pageStudents.map((student) => student.id)
+    )
     const classes = await db
       .from('classes')
       .where('school_id', user.schoolId)
@@ -374,15 +383,22 @@ export default class DisciplineController {
     return this.renderWithContext(ctx, 'discipline/students/index', {
       school: { id: user.schoolId, name: 'Gestion Éducative RDC' },
       classes,
-      students: paginator.all().map((student) => ({
-        id: student.id,
-        registrationNumber: student.registrationNumber,
-        name: student.user?.fullName || '-',
-        className: student.class?.name || 'Non affecté',
-        incidentCount: 0,
-        status: 'exemplary',
-        lastIncidentDate: null,
-      })),
+      students: pageStudents.map((student) => {
+        const primaryGuardian = guardiansByStudent.get(student.id) || null
+
+        return {
+          id: student.id,
+          registrationNumber: student.registrationNumber,
+          name: student.user?.fullName || '-',
+          className: student.class?.name || 'Non affecté',
+          parentName: formatGuardianLabel(primaryGuardian) || '-',
+          parentRelationship: primaryGuardian?.relationship || '-',
+          parentPhone: primaryGuardian?.phone || student.parentPhone || '-',
+          incidentCount: 0,
+          status: 'exemplary',
+          lastIncidentDate: null,
+        }
+      }),
       stats: {
         total: paginator.total,
         withIncidents: 0,
@@ -463,6 +479,7 @@ export default class DisciplineController {
       .where('student_id', student.id)
       .preload('reporter')
       .orderBy('incident_date', 'desc')
+    const primaryGuardian = await getPrimaryGuardianForStudent(student.id)
 
     const summary = {
       total: incidents.length,
@@ -482,7 +499,12 @@ export default class DisciplineController {
 
     return response.ok({
       success: true,
-      student,
+      student: Object.assign(student, {
+        primaryGuardian,
+        parentName: formatGuardianLabel(primaryGuardian) || '-',
+        parentRelationship: primaryGuardian?.relationship || '-',
+        parentPhone: primaryGuardian?.phone || student.parentPhone || '-',
+      }),
       incidents,
       summary,
     })

@@ -93,7 +93,7 @@
               <th class="px-4 py-3 text-left">Nom complet</th>
               <th class="px-4 py-3 text-left">Classe</th>
               <th class="px-4 py-3 text-left">Genre</th>
-              <th class="px-4 py-3 text-left">Téléphone parent</th>
+              <th class="px-4 py-3 text-left"><span data-i18n>Tuteur principal</span></th>
               <th class="px-4 py-3 text-center">Statut</th>
               <th class="px-4 py-3 text-center">Actions</th>
             </tr>
@@ -105,7 +105,10 @@
                 <td class="px-4 py-3 font-medium">{{ student.user.fullName }}</td>
                 <td class="px-4 py-3">{{ student.class?.name || 'Non affecté' }}</td>
                 <td class="px-4 py-3">{{ student.gender === 'male' ? 'Masculin' : 'Féminin' }}</td>
-                <td class="px-4 py-3">{{ student.parentPhone || '-' }}</td>
+                <td class="px-4 py-3">
+                  <div class="font-medium">{{ student.parentName || '-' }}</div>
+                  <div class="text-xs text-gray-500">{{ student.parentPhone || '-' }}</div>
+                </td>
                 <td class="px-4 py-3 text-center">
                   <span class="px-2 py-1 rounded-full text-xs {{ student.academicStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                     {{ student.academicStatus === 'active' ? 'Actif' : student.academicStatus }}

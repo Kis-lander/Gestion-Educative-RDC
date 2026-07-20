@@ -3,162 +3,76 @@
   @section('title')
     Tutoriels - {{ school.name }}
   @endsection
-  
+
   @section('dashboardTitle')
-    Tutoriels vidéo
+    <span data-i18n>Parcours tutoriels</span>
   @endsection
   @section('dashboardSubtitle')
-    Apprenez en vidéo
+    <span data-i18n>Apprenez les enchaînements d'actions les plus fréquents</span>
   @endsection
-  
+
   @section('content')
-    <!-- Catégories -->
     <div class="flex flex-wrap gap-2 mb-6">
-      <button class="tuto-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all">Tous</button>
-      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="basics">Bases</button>
-      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="features">Fonctionnalités</button>
-      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="advanced">Avancé</button>
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all" data-i18n>Tous</button>
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="basics" data-i18n>Bases</button>
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="features" data-i18n>Fonctionnalités</button>
+      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="advanced" data-i18n>Avancé</button>
     </div>
 
-    <!-- Grille des tutoriels -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
       @each(tutorial in tutorials)
-        <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden tutorial-card"
-          data-cat="{{ tutorial.category }}"
-        >
-          <div class="relative">
-            <img src="{{ tutorial.thumbnail }}" alt="{{ tutorial.title }}" class="w-full h-40 object-cover" />
-            <div
-              class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition"
-            >
-              <button
-                class="w-12 h-12 rounded-full bg-white text-primary flex items-center justify-center"
-                onclick="playVideo('{{ tutorial.videoId }}')"
-              >
-                <i class="fas fa-play ml-1"></i>
-              </button>
-            </div>
-            <div class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-              {{ tutorial.duration }}
-            </div>
+        <article class="tutorial-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5" data-cat="{{ tutorial.category }}">
+          <div class="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <i class="fas {{ tutorial.icon }} text-xl"></i>
           </div>
-          <div class="p-4">
-            <h3 class="font-bold text-lg">
-              {{ tutorial.title }}
-            </h3>
-            <p class="text-sm text-gray-600 mt-1">
-              {{ tutorial.description }}
-            </p>
-            <div class="flex items-center gap-3 mt-3 text-xs text-gray-400">
-              <span>                <i class="fas fa-eye mr-1"></i>{{ tutorial.views }} vues</span>
-              <span>                <i class="fas fa-thumbs-up mr-1"></i>{{ tutorial.likes }}</span>
-            </div>
+          <h3 class="font-bold text-lg" data-i18n>{{ tutorial.title }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n>{{ tutorial.description }}</p>
+          <div class="flex items-center gap-3 mt-4 text-xs text-gray-500">
+            <span><i class="fas fa-clock mr-1"></i>{{ tutorial.duration }}</span>
+            <span><i class="fas fa-list-check mr-1"></i>{{ tutorial.steps }} <span data-i18n>étapes</span></span>
           </div>
-        </div>
-        @else
-        <div class="col-span-full text-center py-12 text-gray-500">
-          <i class="fas fa-video text-4xl mb-3 block"></i>
-          <p>
-            Aucun tutoriel disponible
-          </p>
-        </div>
+        </article>
       @end
     </div>
 
-    <!-- Prochains tutoriels -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-      <h3 class="font-semibold text-lg mb-3">
-        À venir
-      </h3>
-      <div class="space-y-2">
-        <div class="flex items-center gap-3 p-2 border-b">
-          <div class="w-16 h-12 bg-gray-200 rounded">
-          </div>
-          <div>
-            <p class="font-medium">
-              Gestion avancée des notes
-            </p>
-            <p class="text-sm text-gray-500">
-              Sortie prévue: 15/12/2024
-            </p>
-          </div>
-        </div>
-        <div class="flex items-center gap-3 p-2 border-b">
-          <div class="w-16 h-12 bg-gray-200 rounded">
-          </div>
-          <div>
-            <p class="font-medium">
-              Rapports personnalisés
-            </p>
-            <p class="text-sm text-gray-500">
-              Sortie prévue: 22/12/2024
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <section class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <h3 class="font-semibold text-lg mb-3" data-i18n>Méthode recommandée</h3>
+        <ol class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+          <li data-i18n>1. Ouvrez le module concerné depuis le menu latéral.</li>
+          <li data-i18n>2. Vérifiez le contexte : école, section, classe, trimestre ou élève.</li>
+          <li data-i18n>3. Enregistrez une petite opération de test avant les saisies massives.</li>
+          <li data-i18n>4. Contrôlez les rapports ou historiques après validation.</li>
+        </ol>
+      </section>
 
-    <!-- Modal vidéo -->
-    <div id="videoModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full p-4">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="font-bold" id="videoTitle">
-          </h3>
-          <button onclick="closeVideo()" class="text-gray-400 hover:text-gray-600">
-            <i class="fas fa-times text-xl"></i>
-          </button>
-        </div>
-        <div class="aspect-video bg-black rounded-lg overflow-hidden">
-          <iframe
-            id="videoFrame"
-            class="w-full h-full"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          >
-          </iframe>
-        </div>
-      </div>
+      <section class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5">
+        <h3 class="font-semibold text-lg mb-3" data-i18n>À préparer avant une formation</h3>
+        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Un compte de test par rôle important.</span></li>
+          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Une classe, quelques élèves et au moins une matière.</span></li>
+          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Un exemple de frais scolaire et un paiement fictif.</span></li>
+          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Un message interne pour tester la communication.</span></li>
+        </ul>
+      </section>
     </div>
 
     <script>
-      function playVideo(videoId, title = "Tutoriel") {
-        const modal = document.getElementById("videoModal");
-        const frame = document.getElementById("videoFrame");
-        const titleEl = document.getElementById("videoTitle");
-        titleEl.textContent = title;
-        frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-      }
-
-      function closeVideo() {
-        const modal = document.getElementById("videoModal");
-        const frame = document.getElementById("videoFrame");
-        frame.src = "";
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-      }
-
       document.querySelectorAll(".tuto-cat").forEach(cat => {
         cat.addEventListener("click", () => {
           const selectedCat = cat.dataset.cat;
-          document.querySelectorAll(".tuto-cat").forEach(c => {
-            c.classList.remove("bg-primary", "text-white");
-            c.classList.add("border");
+
+          document.querySelectorAll(".tuto-cat").forEach(item => {
+            item.classList.remove("bg-primary", "text-white");
+            item.classList.add("border");
           });
           cat.classList.add("bg-primary", "text-white");
           cat.classList.remove("border");
+
           document.querySelectorAll(".tutorial-card").forEach(card => {
-            if (selectedCat === "all" || card.dataset.cat === selectedCat) {
-              card.style.display = "";
-            } else {
-              card.style.display = "none";
-            }
+            card.classList.toggle("hidden", selectedCat !== "all" && card.dataset.cat !== selectedCat);
           });
         });
       });
     </script>
   @endsection
-  

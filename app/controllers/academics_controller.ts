@@ -26,6 +26,11 @@ import {
 } from '#services/school_governance_service'
 import { getSubjectCodesForSection } from '#services/national_subject_catalog'
 import { edgePageContext } from '#start/view_context'
+import {
+  formatGuardianLabel,
+  getPrimaryGuardianForStudent,
+  getPrimaryGuardiansForStudents,
+} from '#services/guardian_service'
 
 export default class AcademicController {
   private getPaginationMeta(paginator: { toJSON: () => any }) {
@@ -538,6 +543,7 @@ export default class AcademicController {
         defaultHoursPerWeek: Number(program?.default_hours_per_week || 2),
       }
     })
+    const timetable = await this.getClassTimetablePreview(classObj)
 
     return view.render('schools/classes/show', {
       school: this.getFallbackSchool(user),
@@ -545,13 +551,72 @@ export default class AcademicController {
       subjects,
       availableSubjects,
       teachers,
-      timetable: [],
+      timetable,
       stats: {
         studentsCount: Number(studentsCount[0].$extras.total || 0),
         averageGrade: await this.getClassAverage(classObj.id),
         attendanceRate: await this.getClassAttendance(classObj.id),
       },
     })
+  }
+
+  private async getClassTimetablePreview(classObj: Class) {
+    const rows = await db
+      .from('timetables')
+      .leftJoin('subjects', 'timetables.subject_id', 'subjects.id')
+      .where('timetables.class_id', classObj.id)
+      .where('timetables.academic_year', classObj.academicYear)
+      .where((query) => {
+        query.where('timetables.shift', classObj.shift).orWhereNull('timetables.shift')
+      })
+      .select(
+        'timetables.day_of_week',
+        'timetables.start_time',
+        'timetables.end_time',
+        'timetables.room',
+        'subjects.name as subject_name'
+      )
+      .orderBy('timetables.start_time', 'asc')
+      .orderBy('timetables.day_of_week', 'asc')
+
+    const dayColumns: Record<number, string> = {
+      1: 'monday',
+      2: 'tuesday',
+      3: 'wednesday',
+      4: 'thursday',
+      5: 'friday',
+    }
+    const previewRows = new Map<string, Record<string, string | null>>()
+
+    for (const row of rows) {
+      const dayColumn = dayColumns[Number(row.day_of_week)]
+      if (!dayColumn) continue
+
+      const startTime = String(row.start_time || '').slice(0, 5)
+      const endTime = String(row.end_time || '').slice(0, 5)
+      const time = `${startTime}-${endTime}`
+
+      if (!previewRows.has(time)) {
+        previewRows.set(time, {
+          time,
+          monday: null,
+          tuesday: null,
+          wednesday: null,
+          thursday: null,
+          friday: null,
+        })
+      }
+
+      const subject = row.subject_name || 'Matiere'
+      const room = row.room ? ` - ${row.room}` : ''
+      const previewRow = previewRows.get(time)!
+
+      if (!previewRow[dayColumn]) {
+        previewRow[dayColumn] = `${subject}${room}`
+      }
+    }
+
+    return Array.from(previewRows.values())
   }
 
   public async editClassPage({ auth, params, view }: HttpContext) {
@@ -958,16 +1023,24 @@ export default class AcademicController {
     }
 
     const students = await query.orderBy('createdAt', 'desc')
+    const guardiansByStudent = await getPrimaryGuardiansForStudents(
+      students.map((student) => student.id)
+    )
 
     // Ajouter les moyennes pour chaque élève
     const studentsWithStats = await Promise.all(
       students.map(async (student) => {
+        const primaryGuardian = guardiansByStudent.get(student.id) || null
         const averageGradeResult = await Grade.query()
           .where('studentId', student.id)
           .avg('score', 'average')
 
         return {
           ...student.toJSON(),
+          primaryGuardian,
+          parentName: formatGuardianLabel(primaryGuardian) || '-',
+          parentRelationship: primaryGuardian?.relationship || '-',
+          parentPhone: primaryGuardian?.phone || student.parentPhone || '-',
           averageGrade: Number(averageGradeResult[0].$extras.average || 0),
         }
       })
@@ -1866,18 +1939,7 @@ export default class AcademicController {
             'subjects.coefficient'
           )
       : []
-    const parentRecord = await db
-      .from('parent_student')
-      .join('parents', 'parent_student.parent_id', 'parents.id')
-      .join('users', 'parents.user_id', 'users.id')
-      .where('parent_student.student_id', student.id)
-      .select(
-        'users.first_name as firstName',
-        'users.postnom as postnom',
-        'users.last_name as lastName',
-        'parents.relationship'
-      )
-      .first()
+    const primaryGuardian = await getPrimaryGuardianForStudent(student.id)
     const attendance = await db
       .from('attendances')
       .where('student_id', student.id)
@@ -2021,14 +2083,7 @@ export default class AcademicController {
     const decile = typeof rank === 'number' && totalStudents
       ? Math.max(1, Math.ceil((rank / totalStudents) * 10))
       : '-'
-    const parentName = parentRecord
-      ? [
-          [parentRecord.firstName, parentRecord.lastName, parentRecord.postnom].filter(Boolean).join(' '),
-          parentRecord.relationship ? `(${parentRecord.relationship})` : '',
-        ]
-          .filter(Boolean)
-          .join(' ')
-      : '-'
+    const parentName = formatGuardianLabel(primaryGuardian) || '-'
     const attendanceLabel = attendanceRate === null ? '-' : `${attendanceRate}%`
 
     return view.render('academic/grades/student-grades', {
@@ -2043,7 +2098,8 @@ export default class AcademicController {
         className: student.class?.name || 'Non affecté',
         birthDate: student.birthDate ? student.birthDate.toFormat('dd/MM/yyyy') : '-',
         parentName,
-        parentPhone: student.parentPhone || '-',
+        parentRelationship: primaryGuardian?.relationship || '-',
+        parentPhone: primaryGuardian?.phone || student.parentPhone || '-',
       },
       termsSummary: [
         { term: 'Trimestre 1', average: termAverages.t1, rank, attendance: attendanceRate || 0, attendanceLabel, hasGrades: termAverages.t1 > 0 },

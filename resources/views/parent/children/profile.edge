@@ -142,13 +142,16 @@
                 Parent/Tuteur
               </p>
               <p class="text-sm">
-                {{ parent.name || '-' }}
+                {{ child.parentName || '-' }}
               </p>
               <p class="text-sm">
-                Tél: {{ parent.phone || '-' }}
+                <span data-i18n>Lien:</span> {{ child.parentRelationship || '-' }}
               </p>
               <p class="text-sm">
-                Email: {{ parent.email || '-' }}
+                Tél: {{ child.parentPhone || '-' }}
+              </p>
+              <p class="text-sm">
+                Email: {{ child.primaryGuardian?.email || '-' }}
               </p>
             </div>
             <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -159,7 +162,7 @@
                 {{ child.parentPhone || '-' }}
               </p>
               <p class="text-sm">
-                Relation: Parent
+                <span data-i18n>Votre lien:</span> {{ child.currentParentRelationship || '-' }}
               </p>
             </div>
           </div>

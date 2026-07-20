@@ -61,7 +61,7 @@
                 </option>
                 @each(child in children)
                   <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>
-                    {{ child.name }} - {{ child.className }}
+                    {{ child.name }} - {{ child.className }} - {{ child.currentParentRelationship || child.parentRelationship || 'Parent' }}
                   </option>
                 @end
               </select>

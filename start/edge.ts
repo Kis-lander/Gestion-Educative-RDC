@@ -10,7 +10,7 @@ const pageAreas = [
     subtitle: 'Créez les matières puis assignez-les aux classes et aux enseignants.',
   },
   {
-    prefixes: ['/academic/classes', '/schools/classes'],
+    prefixes: ['/academic/classes', '/schools/classes', '/teacher/classes'],
     title: 'Gestion des classes',
     subtitle: 'Organisez les classes, leurs élèves, leurs matières et leurs enseignants.',
   },
@@ -20,7 +20,7 @@ const pageAreas = [
     subtitle: 'Consultez les dossiers des élèves et gérez leur parcours scolaire.',
   },
   {
-    prefixes: ['/teachers', '/schools/teachers', '/teacher'],
+    prefixes: ['/teachers', '/schools/teachers', '/teacher/dashboard'],
     title: 'Espace enseignant',
     subtitle: 'Gérez les enseignants, leurs cours, leurs classes et leurs activités.',
   },
@@ -30,7 +30,7 @@ const pageAreas = [
     subtitle: 'Créez les comptes et gérez les accès des utilisateurs.',
   },
   {
-    prefixes: ['/academic/grades', '/student/grades', '/parent/grades'],
+    prefixes: ['/academic/grades', '/teacher/grades', '/student/grades', '/parent/grades'],
     title: 'Notes et évaluations',
     subtitle: 'Saisissez, consultez et analysez les résultats scolaires.',
   },
@@ -55,7 +55,7 @@ const pageAreas = [
     subtitle: 'Configurez et suivez les périodes de l’année scolaire.',
   },
   {
-    prefixes: ['/schools/timetable', '/student/timetable'],
+    prefixes: ['/schools/timetable', '/teacher/timetable', '/student/timetable'],
     title: 'Emploi du temps',
     subtitle: 'Organisez et consultez les horaires de cours.',
   },
@@ -100,6 +100,11 @@ const pageAreas = [
     subtitle: 'Configurez les préférences et les règles de fonctionnement.',
   },
   {
+    prefixes: ['/help'],
+    title: "Centre d'aide",
+    subtitle: 'Consultez la FAQ, les guides, les tutoriels et la documentation.',
+  },
+  {
     prefixes: ['/inspection/schools'],
     title: 'Établissements scolaires',
     subtitle: 'Consultez, approuvez et supervisez les établissements scolaires.',
@@ -113,6 +118,11 @@ const pageAreas = [
     prefixes: ['/inspection/communications'],
     title: 'Communication de l’inspection',
     subtitle: 'Diffusez et suivez les communications adressées aux établissements.',
+  },
+  {
+    prefixes: ['/inspection/help-feedback'],
+    title: 'Retours sur la documentation',
+    subtitle: "Consultez les remarques envoyées depuis les pages d'aide.",
   },
   {
     prefixes: ['/inspection/reports', '/reports'],

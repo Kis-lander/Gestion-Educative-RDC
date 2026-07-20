@@ -13,6 +13,11 @@ import FeePayment from '#models/fee_payment'
 import SchoolFee from '#models/school_fee'
 import Teacher from '#models/teacher'
 import { edgePageContext } from '#start/view_context'
+import {
+  formatGuardianLabel,
+  getPrimaryGuardianForStudent,
+  getPrimaryGuardiansForStudents,
+} from '#services/guardian_service'
 
 // Imports des validateurs VineJS
 import { sendMessageToTeacherValidator } from '#validators/parent'
@@ -243,6 +248,7 @@ export default class ParentController {
   }
 
   private async getAppointmentChildren(user: User) {
+    const parentProfile = user.role === 'director' ? null : await Parent.findByOrFail('user_id', user.id)
     const childrenModels =
       user.role === 'director'
         ? await Student.query()
@@ -252,12 +258,7 @@ export default class ParentController {
             .preload('school')
             .orderBy('created_at', 'desc')
             .limit(100)
-        : await (await Parent.findByOrFail('user_id', user.id))
-            .related('children')
-            .query()
-            .preload('user')
-            .preload('class')
-            .preload('school')
+        : await parentProfile!.related('children').query().preload('user').preload('class').preload('school')
 
     return childrenModels.map((child) => ({
       id: child.id,
@@ -298,6 +299,7 @@ export default class ParentController {
   }
 
   private async getParentChildren(user: User) {
+    const parentProfile = user.role === 'director' ? null : await Parent.findByOrFail('user_id', user.id)
     const childrenModels =
       user.role === 'director'
         ? await Student.query()
@@ -307,12 +309,26 @@ export default class ParentController {
             .preload('school')
             .orderBy('created_at', 'desc')
             .limit(100)
-        : await (await Parent.findByOrFail('user_id', user.id))
-            .related('children')
-            .query()
-            .preload('user')
-            .preload('class')
-            .preload('school')
+        : await parentProfile!.related('children').query().preload('user').preload('class').preload('school')
+
+    const childIds = childrenModels.map((child) => child.id)
+    const guardiansByStudent = await getPrimaryGuardiansForStudents(childIds)
+    const relationshipRows = parentProfile
+      ? await db
+          .from('parent_student')
+          .where('parent_id', parentProfile.id)
+          .whereIn('student_id', childIds)
+          .select('student_id', 'relationship', 'is_primary')
+      : []
+    const relationshipByStudent = new Map(
+      relationshipRows.map((row) => [
+        row.student_id,
+        {
+          relationship: row.relationship || parentProfile?.relationship || null,
+          isPrimary: Boolean(row.is_primary),
+        },
+      ])
+    )
 
     return Promise.all(
       childrenModels.map(async (child) => {
@@ -329,6 +345,9 @@ export default class ParentController {
         const attendanceStats = this.buildAttendanceStats(attendanceRows)
         const disciplineCount = await Discipline.query().where('student_id', child.id).count('* as total')
 
+        const primaryGuardian = guardiansByStudent.get(child.id) || null
+        const currentParentLink = relationshipByStudent.get(child.id)
+
         return {
           id: child.id,
           name: child.user?.fullName || child.registrationNumber,
@@ -340,7 +359,12 @@ export default class ParentController {
           gender: child.gender,
           address: child.address || '-',
           medicalInfo: child.medicalInfo,
-          parentPhone: child.parentPhone,
+          primaryGuardian,
+          parentName: formatGuardianLabel(primaryGuardian) || '-',
+          parentRelationship: primaryGuardian?.relationship || '-',
+          currentParentRelationship: currentParentLink?.relationship || '-',
+          currentParentIsPrimary: currentParentLink?.isPrimary || false,
+          parentPhone: primaryGuardian?.phone || child.parentPhone,
           schoolId: child.schoolId,
           school: child.school,
           academicStatus: child.academicStatus || 'active',
@@ -1481,11 +1505,22 @@ export default class ParentController {
     }))
     const totalCoefficient = rows.reduce((sum, grade) => sum + Number(grade.coefficient || 0), 0)
     const totalPoints = rows.reduce((sum, grade) => sum + Number(grade.points || 0), 0)
+    const primaryGuardian = await getPrimaryGuardianForStudent(child.id)
 
     return ctx.view.render(
       'parent/grades/report-card',
       await this.parentPageContext(ctx, {
-        child: { id: child.id, name: child.user?.fullName || child.registrationNumber, className: child.class?.name || '-' },
+        student: {
+          id: child.id,
+          name: child.user?.fullName || child.registrationNumber,
+          registrationNumber: child.registrationNumber,
+          className: child.class?.name || '-',
+          birthDate: child.birthDate?.toFormat('dd/MM/yyyy') || '-',
+          nationality: child.nationality || 'Congolaise',
+          isRepeating: false,
+          parentName: formatGuardianLabel(primaryGuardian) || '-',
+          parentRelationship: primaryGuardian?.relationship || '-',
+        },
         school: child.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
         grades: rows,
         totalCoefficient,

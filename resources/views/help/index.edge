@@ -3,184 +3,129 @@
   @section('title')
     Centre d'aide - {{ school.name }}
   @endsection
-  
+
   @section('dashboardTitle')
-    Centre d'aide
+    <span data-i18n>Centre d'aide</span>
   @endsection
   @section('dashboardSubtitle')
-    Comment pouvons-nous vous aider ?
+    <span data-i18n>Retrouvez les réponses utiles pour gérer l'école au quotidien</span>
   @endsection
-  
+
   @section('content')
-    <!-- Barre de recherche -->
-    <div class="bg-gradient-to-r from-primary to-blue-700 rounded-xl p-8 mb-8 text-center text-white">
-      <h2 class="text-2xl font-bold mb-2">
-        Bienvenue au centre d'aide
-      </h2>
-      <p class="mb-6 opacity-90">
-        Trouvez des réponses à vos questions
-      </p>
-      <div class="max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+      <div class="grid grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] gap-6 items-center">
+        <div>
+          <p class="text-sm font-semibold text-primary mb-2" data-i18n>Assistance Gestion Éducative RDC</p>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3" data-i18n>
+            Trouvez rapidement l'aide adaptée à votre rôle
+          </h2>
+          <p class="text-gray-600 dark:text-gray-300" data-i18n>
+            Les contenus couvrent l'inspection, la direction, les enseignants, les parents, les élèves, la discipline, les finances, les transferts, les rapports et la communication inter-écoles.
+          </p>
+        </div>
         <div class="relative">
           <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input
             type="text"
             id="searchHelp"
-            placeholder="Rechercher une aide..."
-            class="w-full pl-12 pr-4 py-3 rounded-lg text-gray-800"
+            placeholder="Rechercher une aide, un module ou un rôle..."
+            class="w-full pl-12 pr-4 py-3 rounded-lg border"
           />
         </div>
       </div>
     </div>
 
-    <!-- Catégories d'aide -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition"
-        onclick="window.location.href='/help/faq'"
-      >
-        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-question-circle text-blue-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-lg">
-          FAQ
-        </h3>
-        <p class="text-sm text-gray-500 mt-2">
-          Questions fréquemment posées
-        </p>
-      </div>
-
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition"
-        onclick="window.location.href='/help/guides'"
-      >
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-book-open text-green-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-lg">
-          Guides
-        </h3>
-        <p class="text-sm text-gray-500 mt-2">
-          Tutoriels détaillés
-        </p>
-      </div>
-
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition"
-        onclick="window.location.href='/help/tutorial'"
-      >
-        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-play-circle text-purple-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-lg">
-          Tutoriels vidéo
-        </h3>
-        <p class="text-sm text-gray-500 mt-2">
-          Apprenez en vidéo
-        </p>
-      </div>
-
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition"
-        onclick="window.location.href='/help/documentation'"
-      >
-        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-file-alt text-yellow-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-lg">
-          Documentation
-        </h3>
-        <p class="text-sm text-gray-500 mt-2">
-          Documentation technique
-        </p>
-      </div>
-
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition"
-        onclick="window.location.href='/help/contact'"
-      >
-        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-headset text-red-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-lg">
-          Support
-        </h3>
-        <p class="text-sm text-gray-500 mt-2">
-          Contacter le support
-        </p>
-      </div>
-
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center cursor-pointer hover:shadow-lg transition"
-        onclick="window.location.href='/help/guides?category=quick-start'"
-      >
-        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-rocket text-indigo-600 text-2xl"></i>
-        </div>
-        <h3 class="font-semibold text-lg">
-          Démarrage rapide
-        </h3>
-        <p class="text-sm text-gray-500 mt-2">
-          Commencez en 5 minutes
-        </p>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-8" id="helpCards">
+      <a href="/help/faq" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="faq questions comptes école notes paiements discipline transferts messages rapports">
+        <i class="fas fa-circle-question text-primary text-2xl mb-3"></i>
+        <h3 class="font-semibold text-lg" data-i18n>FAQ</h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>Réponses courtes aux questions fréquentes par module.</p>
+      </a>
+      <a href="/help/guides" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="guides démarrage comptes classes élèves enseignants parents finances discipline">
+        <i class="fas fa-book-open text-green-600 text-2xl mb-3"></i>
+        <h3 class="font-semibold text-lg" data-i18n>Guides pratiques</h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>Procédures étape par étape pour les opérations importantes.</p>
+      </a>
+      <a href="/help/tutorial" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="tutoriels parcours tableau de bord messages rapports transferts">
+        <i class="fas fa-route text-indigo-600 text-2xl mb-3"></i>
+        <h3 class="font-semibold text-lg" data-i18n>Parcours tutoriels</h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>Suites d'actions pour apprendre sans quitter l'application.</p>
+      </a>
+      <a href="/help/documentation" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="documentation modules rôles inspection scolaire financier discipline communication inter-écoles">
+        <i class="fas fa-file-lines text-amber-600 text-2xl mb-3"></i>
+        <h3 class="font-semibold text-lg" data-i18n>Documentation fonctionnelle</h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>Vue complète des rôles, modules et flux de travail.</p>
+      </a>
+      <a href="/help/contact" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="support contact problème technique assistance">
+        <i class="fas fa-headset text-red-600 text-2xl mb-3"></i>
+        <h3 class="font-semibold text-lg" data-i18n>Support</h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>Signaler un blocage ou demander une amélioration.</p>
+      </a>
+      <a href="/help/guides#quick-start" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="démarrage rapide première configuration école production">
+        <i class="fas fa-rocket text-purple-600 text-2xl mb-3"></i>
+        <h3 class="font-semibold text-lg" data-i18n>Démarrage rapide</h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>Les premières actions à faire après validation d'une école.</p>
+      </a>
     </div>
 
-    <!-- Articles populaires -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
-      <div class="px-4 py-3 border-b dark:border-gray-700">
-        <h3 class="font-semibold">
-          Articles populaires
-        </h3>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
+      <div class="px-5 py-4 border-b dark:border-gray-700">
+        <h3 class="font-semibold" data-i18n>Articles recommandés</h3>
       </div>
-      <div class="divide-y dark:divide-gray-700">
+      <div class="divide-y dark:divide-gray-700" id="popularArticles">
         @each(article in popularArticles)
-          <div
-            class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-            onclick="window.location.href='{{ article.link }}'"
-          >
-            <div class="flex items-center gap-3">
-              <i class="fas fa-file-alt text-gray-400"></i>
+          <a href="{{ article.link }}" class="help-article block p-4 hover:bg-gray-50 dark:hover:bg-gray-700" data-search="{{ article.title }} {{ article.description }}" data-help-view-slug="{{ article.slug }}">
+            <div class="flex items-start gap-3">
+              <i class="fas {{ article.icon }} text-primary mt-1 w-5"></i>
               <div>
-                <p class="font-medium">
-                  {{ article.title }}
-                </p>
-                <p class="text-sm text-gray-500">
-                  {{ article.views }} vues
-                </p>
+                <p class="font-medium" data-i18n>{{ article.title }}</p>
+                <p class="text-sm text-gray-500 mt-1" data-i18n>{{ article.description }}</p>
+                <p class="text-xs text-gray-400 mt-2"><span>{{ article.views }}</span> <span data-i18n>vues</span></p>
               </div>
             </div>
-          </div>
+          </a>
         @end
       </div>
     </div>
 
-    <!-- Nouveautés -->
-    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
-      <div class="flex items-start gap-4">
-        <i class="fas fa-newspaper text-blue-500 text-2xl"></i>
-        <div>
-          <h4 class="font-semibold">
-            Nouveautés
-          </h4>
-          <p class="text-sm text-gray-600 mt-1">
-            Version 2.0 - Nouveau tableau de bord, rapports améliorés, et plus encore.
-          </p>
-          <a
-            href="/help/documentation#whats-new"
-            class="text-primary text-sm hover:underline mt-2 inline-block"
-          >En savoir plus →</a>
-        </div>
-      </div>
+    <div id="emptySearch" class="hidden bg-amber-50 dark:bg-amber-900/20 rounded-xl p-5 text-sm text-gray-700 dark:text-gray-200" data-i18n>
+      Aucun contenu ne correspond à votre recherche. Essayez avec un module comme notes, paiements, transferts, messages ou rapports.
     </div>
 
     <script>
-      document.getElementById("searchHelp").addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-          const query = encodeURIComponent(this.value);
-          window.location.href = `/help/search?q=${query}`;
-        }
+      const helpSearch = document.getElementById("searchHelp");
+      const searchableItems = Array.from(document.querySelectorAll(".help-card, .help-article"));
+      const emptySearch = document.getElementById("emptySearch");
+
+      helpSearch?.addEventListener("input", () => {
+        const query = helpSearch.value.trim().toLowerCase();
+        let visible = 0;
+
+        searchableItems.forEach(item => {
+          const text = `${item.textContent} ${item.dataset.search || ""}`.toLowerCase();
+          const matches = !query || text.includes(query);
+          item.classList.toggle("hidden", !matches);
+          if (matches) visible += 1;
+        });
+
+        emptySearch.classList.toggle("hidden", visible > 0);
+      });
+
+      document.querySelectorAll("[data-help-view-slug]").forEach(link => {
+        link.addEventListener("click", () => {
+          const slug = link.dataset.helpViewSlug;
+          if (!slug) return;
+
+          fetch("/api/help/views", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": "{{ csrfToken }}"
+            },
+            body: JSON.stringify({ slug }),
+            keepalive: true
+          }).catch(() => {});
+        });
       });
     </script>
   @endsection
-  

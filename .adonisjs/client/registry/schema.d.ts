@@ -199,6 +199,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/help_controller').default['contact']>>>
     }
   }
+  'help.contact.send': {
+    methods: ["POST"]
+    pattern: '/help/contact'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/help_controller').default['sendContact']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/help_controller').default['sendContact']>>>
+    }
+  }
   'help.documentation': {
     methods: ["GET","HEAD"]
     pattern: '/help/documentation'
@@ -209,6 +221,30 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/help_controller').default['documentation']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/help_controller').default['documentation']>>>
+    }
+  }
+  'help.views.track': {
+    methods: ["POST"]
+    pattern: '/api/help/views'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/help_controller').default['trackView']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/help_controller').default['trackView']>>>
+    }
+  }
+  'help.feedback': {
+    methods: ["POST"]
+    pattern: '/api/help/documentation/feedback'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/help_controller').default['feedback']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/help_controller').default['feedback']>>>
     }
   }
   'session.create': {
@@ -497,6 +533,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationDetails']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['communicationDetails']>>>
+    }
+  }
+  'inspections.help_feedback_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/inspection/help-feedback'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['helpFeedbackPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['helpFeedbackPage']>>>
     }
   }
   'inspections.reports_schools_page': {
@@ -3715,6 +3763,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['attendanceStudentPage']>>>
     }
   }
+  'teacher.students.grades': {
+    methods: ["GET","HEAD"]
+    pattern: '/teacher/students/:studentId/grades'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { studentId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['studentGradesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['studentGradesPage']>>>
+    }
+  }
   'teachers.grades_page': {
     methods: ["GET","HEAD"]
     pattern: '/teacher/grades'
@@ -3941,6 +4001,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['togglePin']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['togglePin']>>>
+    }
+  }
+  'teachers.timetable_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/teacher/timetable'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['timetablePage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['timetablePage']>>>
     }
   }
   'students.assignments_page': {

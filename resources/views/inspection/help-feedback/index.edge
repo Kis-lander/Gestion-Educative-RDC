@@ -1,0 +1,80 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Retours documentation - Inspection RDC
+  @endsection
+
+  @section('dashboardTitle')
+    Retours sur la documentation
+  @endsection
+  @section('dashboardSubtitle')
+    Remarques envoyées depuis la question "Cette documentation vous a-t-elle été utile ?"
+  @endsection
+
+  @section('content')
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <p class="text-sm text-gray-500">Nouveaux retours</p>
+        <p class="text-3xl font-bold text-primary mt-1">{{ stats.newCount }}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+        <p class="text-sm text-gray-500">Total enregistré</p>
+        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.totalCount }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="px-5 py-4 border-b dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <h3 class="font-semibold">Commentaires reçus</h3>
+        <form method="GET" action="/inspection/help-feedback" class="flex items-center gap-2">
+          <label for="status" class="text-sm text-gray-500">Statut</label>
+          <select id="status" name="status" class="px-3 py-2 border rounded-lg text-sm" onchange="this.form.submit()">
+            <option value="new" {{ selectedStatus === 'new' ? 'selected' : '' }}>Nouveaux</option>
+            <option value="reviewed" {{ selectedStatus === 'reviewed' ? 'selected' : '' }}>Traités</option>
+            <option value="archived" {{ selectedStatus === 'archived' ? 'selected' : '' }}>Archivés</option>
+            <option value="all" {{ selectedStatus === 'all' ? 'selected' : '' }}>Tous</option>
+          </select>
+        </form>
+      </div>
+
+      @if(feedbackItems.length)
+        <div class="divide-y dark:divide-gray-700">
+          @each(item in feedbackItems)
+            <article class="p-5">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2 py-1 rounded-full text-xs {{ item.helpful ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                      Utile : {{ item.helpfulLabel }}
+                    </span>
+                    <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+                      {{ item.statusLabel }}
+                    </span>
+                  </div>
+                  <p class="font-semibold mt-3">{{ item.user_name || 'Utilisateur non connecté' }}</p>
+                  <p class="text-sm text-gray-500">
+                    {{ item.user_role || 'Rôle inconnu' }}
+                    @if(item.school_name)
+                      · {{ item.school_name }}
+                    @endif
+                    @if(item.user_email)
+                      · {{ item.user_email }}
+                    @endif
+                  </p>
+                </div>
+                <p class="text-sm text-gray-500">{{ item.createdAtLabel }}</p>
+              </div>
+
+              <div class="mt-4 rounded-lg bg-gray-50 dark:bg-gray-900/40 p-4 text-gray-700 dark:text-gray-200">
+                {{ item.remark || 'Aucune remarque écrite.' }}
+              </div>
+            </article>
+          @end
+        </div>
+      @else
+        <div class="p-8 text-center text-gray-500">
+          Aucun retour de documentation ne correspond à ce filtre.
+        </div>
+      @endif
+    </div>
+  @endsection

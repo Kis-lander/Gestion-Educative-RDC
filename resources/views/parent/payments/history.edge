@@ -207,12 +207,13 @@
     </div>
 
     <!-- Graphique annuel -->
-    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 min-h-[390px] flex flex-col">
       <h3 class="font-semibold mb-3">
         Récapitulatif annuel
       </h3>
-      <canvas id="annualChart" height="200">
-      </canvas>
+      <div class="relative flex-1 min-h-[320px]">
+        <canvas id="annualChart"></canvas>
+      </div>
     </div>
 
     <script>
@@ -233,7 +234,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             scales: {
               y: {
                 beginAtZero: true

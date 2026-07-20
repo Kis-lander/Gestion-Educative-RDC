@@ -91,6 +91,60 @@ export default class MessageController {
     return content.length > length ? `${content.slice(0, length)}...` : content
   }
 
+  private async getAssignedRoleLabel(user?: User | null) {
+    if (!user) return 'Compte supprimé'
+
+    if (user.schoolId) {
+      const assignment = await db
+        .from('school_staff_assignments')
+        .where('user_id', user.id)
+        .where('school_id', user.schoolId)
+        .where('is_active', true)
+        .select('position')
+        .orderBy('is_primary', 'desc')
+        .first()
+
+      if (assignment?.position) {
+        return positionLabel(assignment.position)
+      }
+    }
+
+    return this.getRoleLabel(user.role)
+  }
+
+  private normalizeSupportText(value: string, senderRoleLabel?: string | null) {
+    return value
+      .replace(/\bScolarite\b/g, 'Scolarité')
+      .replace(/\bpresences\b/g, 'présences')
+      .replace(/\bAcces\b/g, 'Accès')
+      .replace(/\brole\b/g, 'rôle')
+      .replace(/\bProbleme\b/g, 'Problème')
+      .replace(/\bamelioration\b/g, 'amélioration')
+      .replace(/\beleve\b/g, 'élève')
+      .replace(/Demande envoyee depuis le centre d'aide\./g, "Demande envoyée depuis le centre d'aide.")
+      .replace(/^Role: director$/gm, `Rôle: ${senderRoleLabel || "Direction d'école"}`)
+      .replace(/^Role: inspection$/gm, 'Rôle: Inspection')
+      .replace(/^Role: finance_director$/gm, 'Rôle: Direction financière')
+      .replace(/^Role: teacher$/gm, 'Rôle: Enseignant')
+      .replace(/^Role: parent$/gm, 'Rôle: Parent')
+      .replace(/^Role: student$/gm, 'Rôle: Élève')
+      .replace(/^Role: discipline_director$/gm, 'Rôle: Direction de discipline')
+      .replace(/^Role: secretary$/gm, 'Rôle: Secrétariat')
+      .replace(/^Module concerne:/gm, 'Module concerné:')
+      .replace(/\bgestion de présence\b/g, 'gestion des présences')
+      .replace(/\bPourriez-vous nous éclaircir dans ce sens\s?\?/g, 'Pourriez-vous nous éclairer à ce sujet ?')
+  }
+
+  private formatMessageSubject(subject: string) {
+    return subject.startsWith('Support: ') ? this.normalizeSupportText(subject) : subject
+  }
+
+  private formatMessageContent(content: string, subject?: string, senderRoleLabel?: string | null) {
+    return subject?.startsWith('Support: ')
+      ? this.normalizeSupportText(content, senderRoleLabel)
+      : content
+  }
+
   private isValidUuid(value?: string | null) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       String(value || '')
@@ -102,7 +156,7 @@ export default class MessageController {
 
     return {
       id: message.id,
-      content: message.content,
+      content: this.formatMessageContent(message.content, message.subject),
       senderName: message.sender?.fullName || (message.senderId === user.id ? user.fullName : 'Auteur supprimé'),
       isMine: message.senderId === user.id,
       canEdit: message.senderId === user.id,
@@ -200,8 +254,8 @@ export default class MessageController {
       receiverRole: this.getRoleLabel(contact?.role),
       isIncoming,
       type: message.type,
-      subject: message.subject,
-      preview: this.getMessagePreview(message.content),
+      subject: this.formatMessageSubject(message.subject),
+      preview: this.getMessagePreview(this.formatMessageContent(message.content, message.subject)),
       deletedAt: deletedAt.toFormat('dd/MM/yyyy HH:mm'),
       daysUntilExpiry,
     }
@@ -210,7 +264,11 @@ export default class MessageController {
   private formatMessageNotification(message: Message) {
     const senderName = message.sender?.fullName || 'Expéditeur supprimé'
     const forumLinkMatch = message.content.match(/\[forum-link:([^\]]+)\]/)
-    const cleanContent = message.content.replace(/\s*\[forum-link:[^\]]+\]\s*/g, '').trim()
+    const notificationLinkMatch = message.content.match(/\[notification-link:([^\]]+)\]/)
+    const cleanContent = message.content
+      .replace(/\s*\[forum-link:[^\]]+\]\s*/g, '')
+      .replace(/\s*\[notification-link:[^\]]+\]\s*/g, '')
+      .trim()
     const preview =
       cleanContent.length > 120 ? `${cleanContent.slice(0, 120)}...` : cleanContent
     const isForumNotification = Boolean(forumLinkMatch)
@@ -226,13 +284,13 @@ export default class MessageController {
     return {
       id: message.id,
       type: isIncomingTransfer || isTransferNotification ? 'transfer' : isForumNotification ? 'forum' : 'message',
-      title: message.subject,
-      message: `${senderName}: ${preview}`,
+      title: this.formatMessageSubject(message.subject),
+      message: `${senderName}: ${this.formatMessageContent(preview, message.subject)}`,
       link: isIncomingTransfer
         ? '/schools/transfers/pending'
         : isTransferNotification
           ? '/schools/transfers/requests'
-          : forumLinkMatch?.[1] || `/communication/messages/read/${message.id}`,
+          : notificationLinkMatch?.[1] || forumLinkMatch?.[1] || `/communication/messages/read/${message.id}`,
       read: message.isRead,
       isRead: message.isRead,
       time: message.createdAt.toFormat('dd/MM/yyyy HH:mm'),
@@ -286,8 +344,8 @@ export default class MessageController {
         senderRole: this.getRoleLabel(message.sender?.role),
         type: message.type,
         isRead: message.isRead,
-        subject: message.subject,
-        preview: this.getMessagePreview(message.content),
+        subject: this.formatMessageSubject(message.subject),
+        preview: this.getMessagePreview(this.formatMessageContent(message.content, message.subject)),
         time: message.createdAt.toFormat('dd/MM/yyyy HH:mm'),
         hasAttachment: message.hasAttachment,
       })),
@@ -321,6 +379,9 @@ export default class MessageController {
       await message.save()
     }
 
+    const senderRole = await this.getAssignedRoleLabel(message.sender)
+    const receiverRole = message.receiver ? await this.getAssignedRoleLabel(message.receiver) : null
+
     return view.render('communication/messages/read', {
       school: this.getFallbackSchool(user),
       message: {
@@ -331,15 +392,15 @@ export default class MessageController {
         canOpenConversation: this.isValidUuid(
           message.senderId === user.id ? message.receiverId : message.senderId
         ),
-        subject: message.subject,
-        content: message.content,
+        subject: this.formatMessageSubject(message.subject),
+        content: this.formatMessageContent(message.content, message.subject, senderRole),
         type: message.type,
         canEdit: message.senderId === user.id,
         urgent: false,
         senderName: message.sender?.fullName || 'Expéditeur supprimé',
-        senderRole: this.getRoleLabel(message.sender?.role),
+        senderRole,
         receiverName: message.receiver?.fullName,
-        receiverRole: this.getRoleLabel(message.receiver?.role),
+        receiverRole: receiverRole || this.getRoleLabel(message.receiver?.role),
         date: message.createdAt.toFormat('dd/MM/yyyy'),
         time: message.createdAt.toFormat('HH:mm'),
         readAt: message.readAt?.toFormat('dd/MM/yyyy HH:mm') || '-',
@@ -374,8 +435,8 @@ export default class MessageController {
       message: {
         id: message.id,
         receiverId: message.receiverId,
-        subject: message.subject,
-        content: message.content,
+        subject: this.formatMessageSubject(message.subject),
+        content: this.formatMessageContent(message.content, message.subject),
         type: message.type,
         receiverName: message.receiver?.fullName || 'Destinataire supprimé',
         receiverRole: this.getRoleLabel(message.receiver?.role),
@@ -748,8 +809,8 @@ export default class MessageController {
         receiverRole: this.getRoleLabel(message.receiver?.role),
         type: message.type,
         isRead: message.isRead,
-        subject: message.subject,
-        preview: this.getMessagePreview(message.content),
+        subject: this.formatMessageSubject(message.subject),
+        preview: this.getMessagePreview(this.formatMessageContent(message.content, message.subject)),
         time: message.createdAt.toFormat('dd/MM/yyyy HH:mm'),
         readAt: message.readAt?.toFormat('dd/MM/yyyy HH:mm'),
         hasAttachment: message.hasAttachment,

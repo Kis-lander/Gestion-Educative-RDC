@@ -108,6 +108,18 @@
             <span class="text-gray-500">Adresse</span>
             <span>{{ child.address || '-' }}</span>
           </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500" data-i18n>Tuteur principal</span>
+            <span class="text-right">{{ child.parentName || '-' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500" data-i18n>Votre lien</span>
+            <span>{{ child.currentParentRelationship || '-' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500" data-i18n>Contact tuteur</span>
+            <span>{{ child.parentPhone || '-' }}</span>
+          </div>
         </div>
       </div>
 
