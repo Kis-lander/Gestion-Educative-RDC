@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: npm ci && npm run build && cd build && npm ci --omit=dev
+    buildCommand: npm ci --include=dev && npm run build && cd build && npm ci --omit=dev
     startCommand: cd build && node ace migration:run --force && node bin/server.js
     healthCheckPath: /home
     envVars:
