@@ -37,7 +37,7 @@ export class AssignmentSubmissionSchema extends BaseModel {
 }
 
 export class AssignmentSchema extends BaseModel {
-  static $columns = ['attachmentUrl', 'classId', 'createdAt', 'description', 'dueDate', 'dueTime', 'id', 'instructions', 'maxPoints', 'publishedAt', 'status', 'subjectId', 'teacherId', 'title', 'updatedAt'] as const
+  static $columns = ['attachmentUrl', 'classId', 'createdAt', 'description', 'dueDate', 'dueTime', 'evaluationType', 'id', 'instructions', 'maxPoints', 'publishedAt', 'status', 'subjectId', 'teacherId', 'term', 'title', 'updatedAt'] as const
   $columns = AssignmentSchema.$columns
   @column()
   declare attachmentUrl: string | null
@@ -51,6 +51,8 @@ export class AssignmentSchema extends BaseModel {
   declare dueDate: DateTime
   @column()
   declare dueTime: string | null
+  @column()
+  declare evaluationType: string
   @column({ isPrimary: true })
   declare id: string
   @column()
@@ -65,6 +67,8 @@ export class AssignmentSchema extends BaseModel {
   declare subjectId: string | null
   @column()
   declare teacherId: string | null
+  @column()
+  declare term: string | null
   @column()
   declare title: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })

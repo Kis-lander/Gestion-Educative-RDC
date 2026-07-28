@@ -22,146 +22,242 @@
       <aside class="lg:col-span-1">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md sticky top-20">
           <div class="p-4 border-b dark:border-gray-700">
-            <h3 class="font-semibold" data-i18n>Sommaire</h3>
+            <h3 class="font-semibold" data-i18n>
+              Sommaire
+            </h3>
           </div>
           <nav class="p-4 space-y-2 text-sm">
-            <a href="#getting-started" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>1. Démarrage</a>
-            <a href="#user-management" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>2. Rôles et accès</a>
-            <a href="#school-management" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>3. École et inspection</a>
-            <a href="#academic" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>4. Scolarité</a>
-            <a href="#financial" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>5. Finances</a>
-            <a href="#discipline" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>6. Discipline</a>
-            <a href="#communication" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>7. Communication</a>
-            <a href="#transfers" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>8. Transferts</a>
-            <a href="#inter-school" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>9. Inter-écoles</a>
-            <a href="#family-spaces" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>10. Espaces famille</a>
-            <a href="#reports" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>11. Rapports</a>
-            <a href="#troubleshooting" class="block text-gray-700 dark:text-gray-300 hover:text-primary" data-i18n>12. Dépannage</a>
+            @each(section in documentationSections)
+              <a href="#{{ section.id }}" class="block text-gray-700 dark:text-gray-300 hover:text-primary">
+                <span>{{ section.number }}.</span>                <span data-i18n>{{ section.title }}</span>
+              </a>
+            @end
           </nav>
         </div>
       </aside>
 
       <div class="lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-9">
-        <section id="getting-started" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>1. Démarrage</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Après validation d'une école, commencez par compléter le profil, créer les sections nécessaires, configurer les classes, vérifier les matières et créer les comptes des responsables.
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-            <div class="border rounded-lg p-3">
-              <p class="font-medium" data-i18n>Ordre conseillé</p>
-              <p class="text-sm text-gray-500 mt-1" data-i18n>École, sections, classes, matières, enseignants, élèves, parents, frais scolaires.</p>
+        @if(visibleDocumentationSectionIds.includes('getting-started'))
+          <section id="getting-started" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              1. Démarrage
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Après validation d'une école, commencez par compléter le profil, créer les sections nécessaires, configurer les classes, vérifier les matières et créer les comptes des responsables.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+              <div class="border rounded-lg p-3">
+                <p class="font-medium" data-i18n>
+                  Ordre conseillé
+                </p>
+                <p class="text-sm text-gray-500 mt-1" data-i18n>
+                  École, sections, classes, matières, enseignants, élèves, parents, frais scolaires.
+                </p>
+              </div>
+              <div class="border rounded-lg p-3">
+                <p class="font-medium" data-i18n>
+                  Point de contrôle
+                </p>
+                <p class="text-sm text-gray-500 mt-1" data-i18n>
+                  Vérifiez le rôle de chaque compte avant de saisir des données sensibles.
+                </p>
+              </div>
             </div>
-            <div class="border rounded-lg p-3">
-              <p class="font-medium" data-i18n>Point de contrôle</p>
-              <p class="text-sm text-gray-500 mt-1" data-i18n>Vérifiez le rôle de chaque compte avant de saisir des données sensibles.</p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('user-management'))
+          <section id="user-management" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              2. Rôles et accès
+            </h2>
+            <ul class="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300">
+              <li>
+                <strong data-i18n>Inspection :</strong>                <span data-i18n>supervise les écoles, validations, rapports et communications officielles.</span>
+              </li>
+              <li>
+                <strong data-i18n>Direction :</strong>                <span data-i18n>pilote classes, élèves, enseignants, matières, transferts, comptes et paramètres de l'école.</span>
+              </li>
+              <li>
+                <strong data-i18n>Finance :</strong>                <span data-i18n>configure frais, paiements, reçus, bourses, plans de paiement et rapports financiers.</span>
+              </li>
+              <li>
+                <strong data-i18n>Discipline :</strong>                <span data-i18n>suit incidents, sanctions, appels et notifications aux parents.</span>
+              </li>
+              <li>
+                <strong data-i18n>Enseignant :</strong>                <span data-i18n>gère classes, présences, devoirs, notes et forum pédagogique.</span>
+              </li>
+              <li>
+                <strong data-i18n>Parent et élève :</strong>                <span data-i18n>consultent les informations liées à leur parcours ou à leurs enfants.</span>
+              </li>
+            </ul>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('school-management'))
+          <section id="school-management" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              3. École et inspection
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              L'inspection valide les inscriptions d'écoles, suit les établissements, consulte les rapports et peut communiquer avec une école ou l'ensemble du réseau.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('academic'))
+          <section id="academic" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              4. Scolarité
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Le module scolaire regroupe les classes, matières, élèves, enseignants, présences, devoirs, notes, examens, bulletins, calendrier, sessions et emploi du temps.
+            </p>
+            <ul class="list-disc list-inside mt-3 space-y-1 text-gray-600 dark:text-gray-300">
+              <li data-i18n>
+                Les classes archivées restent séparées des classes actives.
+              </li>
+              <li data-i18n>
+                Les matières peuvent provenir du catalogue national puis être assignées aux classes.
+              </li>
+              <li data-i18n>
+                Les notes doivent être vérifiées avant publication des bulletins.
+              </li>
+            </ul>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('financial'))
+          <section id="financial" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              5. Finances
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Les finances couvrent la structure des frais, les paiements, reçus, plans de paiement, bourses, statistiques, revenus et impayés. Les rapports aident à suivre le recouvrement.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('discipline'))
+          <section id="discipline" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              6. Discipline
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Le suivi disciplinaire permet de déclarer un incident, appliquer une sanction, suivre un appel et produire des rapports par élève, classe ou école.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('communication'))
+          <section id="communication" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              7. Communication
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              La plateforme propose une messagerie interne, des notifications, des groupes, des conversations et un forum pédagogique pour les enseignants et élèves.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('transfers'))
+          <section id="transfers" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              8. Transferts
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Les demandes de transfert suivent un circuit contrôlé : demande, autorisation, historique, décision et suivi. Les statuts distinguent les demandes en attente, approuvées, rejetées ou annulées.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('inter-school'))
+          <section id="inter-school" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              9. Inter-écoles
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Le module inter-écoles facilite la recherche d'établissements, les échanges, le partage de bonnes pratiques et la participation à des événements communs.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('family-spaces'))
+          <section id="family-spaces" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              10. Espaces famille
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Les parents suivent les enfants liés à leur compte : notes, présences, discipline, paiements, messages et demandes de rendez-vous. Les élèves accèdent à leurs devoirs, notes, présences, messages, forum et emploi du temps.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('reports'))
+          <section id="reports" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              11. Rapports
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300" data-i18n>
+              Les rapports consolident les indicateurs scolaires, financiers, disciplinaires et de transfert. Utilisez les filtres avant d'exporter ou de comparer les résultats.
+            </p>
+          </section>
+        @endif
+
+        @if(visibleDocumentationSectionIds.includes('troubleshooting'))
+          <section id="troubleshooting" class="documentation-section">
+            <h2 class="text-2xl font-bold mb-3" data-i18n>
+              12. Dépannage
+            </h2>
+            <div class="space-y-3">
+              <div class="border rounded-lg p-3">
+                <p class="font-medium" data-i18n>
+                  Une page est vide
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" data-i18n>
+                  Vérifiez les filtres de classe, section, trimestre et année scolaire, puis rechargez la page.
+                </p>
+              </div>
+              <div class="border rounded-lg p-3">
+                <p class="font-medium" data-i18n>
+                  Une action est inaccessible
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" data-i18n>
+                  Confirmez que votre rôle possède l'autorisation nécessaire et que votre compte est lié à la bonne école.
+                </p>
+              </div>
+              <div class="border rounded-lg p-3">
+                <p class="font-medium" data-i18n>
+                  Un paiement ou une note semble incorrect
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" data-i18n>
+                  Consultez l'historique, vérifiez le contexte choisi, puis contactez le responsable du module si besoin.
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        @endif
 
-        <section id="user-management" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>2. Rôles et accès</h2>
-          <ul class="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300">
-            <li><strong data-i18n>Inspection :</strong> <span data-i18n>supervise les écoles, validations, rapports et communications officielles.</span></li>
-            <li><strong data-i18n>Direction :</strong> <span data-i18n>pilote classes, élèves, enseignants, matières, transferts, comptes et paramètres de l'école.</span></li>
-            <li><strong data-i18n>Finance :</strong> <span data-i18n>configure frais, paiements, reçus, bourses, plans de paiement et rapports financiers.</span></li>
-            <li><strong data-i18n>Discipline :</strong> <span data-i18n>suit incidents, sanctions, appels et notifications aux parents.</span></li>
-            <li><strong data-i18n>Enseignant :</strong> <span data-i18n>gère classes, présences, devoirs, notes et forum pédagogique.</span></li>
-            <li><strong data-i18n>Parent et élève :</strong> <span data-i18n>consultent les informations liées à leur parcours ou à leurs enfants.</span></li>
-          </ul>
-        </section>
-
-        <section id="school-management" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>3. École et inspection</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            L'inspection valide les inscriptions d'écoles, suit les établissements, consulte les rapports et peut communiquer avec une école ou l'ensemble du réseau.
+        <div
+          class="pt-5 border-t dark:border-gray-700"
+          x-data="{ showRemark: false, remark: '', sending: false, message: '', error: '' }"
+        >
+          <p class="text-sm text-gray-500" data-i18n>
+            Cette documentation vous a-t-elle été utile ?
           </p>
-        </section>
-
-        <section id="academic" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>4. Scolarité</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Le module scolaire regroupe les classes, matières, élèves, enseignants, présences, devoirs, notes, examens, bulletins, calendrier, sessions et emploi du temps.
-          </p>
-          <ul class="list-disc list-inside mt-3 space-y-1 text-gray-600 dark:text-gray-300">
-            <li data-i18n>Les classes archivées restent séparées des classes actives.</li>
-            <li data-i18n>Les matières peuvent provenir du catalogue national puis être assignées aux classes.</li>
-            <li data-i18n>Les notes doivent être vérifiées avant publication des bulletins.</li>
-          </ul>
-        </section>
-
-        <section id="financial" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>5. Finances</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Les finances couvrent la structure des frais, les paiements, reçus, plans de paiement, bourses, statistiques, revenus et impayés. Les rapports aident à suivre le recouvrement.
-          </p>
-        </section>
-
-        <section id="discipline" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>6. Discipline</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Le suivi disciplinaire permet de déclarer un incident, appliquer une sanction, suivre un appel et produire des rapports par élève, classe ou école.
-          </p>
-        </section>
-
-        <section id="communication" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>7. Communication</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            La plateforme propose une messagerie interne, des notifications, des groupes, des conversations et un forum pédagogique pour les enseignants et élèves.
-          </p>
-        </section>
-
-        <section id="transfers" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>8. Transferts</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Les demandes de transfert suivent un circuit contrôlé : demande, autorisation, historique, décision et suivi. Les statuts distinguent les demandes en attente, approuvées, rejetées ou annulées.
-          </p>
-        </section>
-
-        <section id="inter-school" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>9. Inter-écoles</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Le module inter-écoles facilite la recherche d'établissements, les échanges, le partage de bonnes pratiques et la participation à des événements communs.
-          </p>
-        </section>
-
-        <section id="family-spaces" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>10. Espaces famille</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Les parents suivent les enfants liés à leur compte : notes, présences, discipline, paiements, messages et demandes de rendez-vous. Les élèves accèdent à leurs devoirs, notes, présences, messages, forum et emploi du temps.
-          </p>
-        </section>
-
-        <section id="reports" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>11. Rapports</h2>
-          <p class="text-gray-600 dark:text-gray-300" data-i18n>
-            Les rapports consolident les indicateurs scolaires, financiers, disciplinaires et de transfert. Utilisez les filtres avant d'exporter ou de comparer les résultats.
-          </p>
-        </section>
-
-        <section id="troubleshooting" class="documentation-section">
-          <h2 class="text-2xl font-bold mb-3" data-i18n>12. Dépannage</h2>
-          <div class="space-y-3">
-            <div class="border rounded-lg p-3">
-              <p class="font-medium" data-i18n>Une page est vide</p>
-              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" data-i18n>Vérifiez les filtres de classe, section, trimestre et année scolaire, puis rechargez la page.</p>
-            </div>
-            <div class="border rounded-lg p-3">
-              <p class="font-medium" data-i18n>Une action est inaccessible</p>
-              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" data-i18n>Confirmez que votre rôle possède l'autorisation nécessaire et que votre compte est lié à la bonne école.</p>
-            </div>
-            <div class="border rounded-lg p-3">
-              <p class="font-medium" data-i18n>Un paiement ou une note semble incorrect</p>
-              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" data-i18n>Consultez l'historique, vérifiez le contexte choisi, puis contactez le responsable du module si besoin.</p>
-            </div>
-          </div>
-        </section>
-
-        <div class="pt-5 border-t dark:border-gray-700" x-data="{ showRemark: false, remark: '', sending: false, message: '', error: '' }">
-          <p class="text-sm text-gray-500" data-i18n>Cette documentation vous a-t-elle été utile ?</p>
           <div class="flex gap-2 mt-2">
-            <button type="button" @click="showRemark = false; feedback(true)" class="px-3 py-1 border rounded-lg text-sm hover:bg-green-50" data-i18n>Oui</button>
-            <button type="button" @click="showRemark = true; message = ''; error = ''; $nextTick(() => $refs.remark?.focus())" class="px-3 py-1 border rounded-lg text-sm hover:bg-red-50" data-i18n>Non</button>
+            <button
+              type="button"
+              @click="showRemark = false; feedback(true)"
+              class="px-3 py-1 border rounded-lg text-sm hover:bg-green-50"
+              data-i18n
+            >Oui</button>
+            <button
+              type="button"
+              @click="showRemark = true; message = ''; error = ''; $nextTick(() => $refs.remark?.focus())"
+              class="px-3 py-1 border rounded-lg text-sm hover:bg-red-50"
+              data-i18n
+            >Non</button>
           </div>
 
           <form
@@ -170,7 +266,11 @@
             class="mt-4 rounded-lg border dark:border-gray-700 p-4"
             @submit.prevent="feedback(false, remark, { setSending: value => sending = value, setMessage: value => message = value, setError: value => error = value, close: () => showRemark = false })"
           >
-            <label for="documentationRemark" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-i18n>
+            <label
+              for="documentationRemark"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              data-i18n
+            >
               Quelle remarque souhaitez-vous transmettre à l'inspection ?
             </label>
             <textarea
@@ -185,16 +285,27 @@
               placeholder="Expliquez ce qui manque, ce qui est incorrect ou ce qui devrait être amélioré."
             ></textarea>
             <div class="flex items-center gap-3 mt-3">
-              <button type="submit" :disabled="sending" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-70">
+              <button
+                type="submit"
+                :disabled="sending"
+                class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-70"
+              >
                 <i x-show="sending" class="fas fa-spinner fa-spin mr-2"></i>
                 <span data-i18n>Envoyer la remarque</span>
               </button>
-              <button type="button" @click="showRemark = false; remark = ''; error = ''; message = ''" class="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50" data-i18n>
+              <button
+                type="button"
+                @click="showRemark = false; remark = ''; error = ''; message = ''"
+                class="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50"
+                data-i18n
+              >
                 Annuler
               </button>
             </div>
-            <p x-show="message" class="mt-3 text-sm text-green-600" x-text="message"></p>
-            <p x-show="error" class="mt-3 text-sm text-red-600" x-text="error"></p>
+            <p x-show="message" class="mt-3 text-sm text-green-600" x-text="message">
+            </p>
+            <p x-show="error" class="mt-3 text-sm text-red-600" x-text="error">
+            </p>
           </form>
         </div>
       </div>
@@ -205,36 +316,35 @@
         ui?.setSending?.(true);
         ui?.setError?.("");
         ui?.setMessage?.("");
-
         fetch("/api/help/documentation/feedback", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "X-CSRF-TOKEN": "{{ csrfToken }}"
           },
-          body: JSON.stringify({ helpful, remark, page: "documentation" })
-        })
-          .then(async response => {
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(data.message || "Impossible d'enregistrer votre retour.");
-
-            const successMessage = window.AppTranslations?.translate("Merci pour votre retour !") || "Merci pour votre retour !";
-            if (ui) {
-              ui.setMessage(successMessage);
-              ui.close?.();
-            } else {
-              alert(successMessage);
-            }
+          body: JSON.stringify({
+            helpful: helpful,
+            remark: remark,
+            page: "documentation"
           })
-          .catch(error => {
-            const message = window.AppTranslations?.translate(error.message) || error.message;
-            if (ui) {
-              ui.setError(message);
-            } else {
-              alert(message);
-            }
-          })
-          .finally(() => ui?.setSending?.(false));
+        }).then(async response => {
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.message || "Impossible d'enregistrer votre retour.");
+          const successMessage = window.AppTranslations?.translate("Merci pour votre retour !") || "Merci pour votre retour !";
+          if (ui) {
+            ui.setMessage(successMessage);
+            ui.close?.();
+          } else {
+            alert(successMessage);
+          }
+        }).catch(error => {
+          const message = window.AppTranslations?.translate(error.message) || error.message;
+          if (ui) {
+            ui.setError(message);
+          } else {
+            alert(message);
+          }
+        }).finally(() => ui?.setSending?.(false));
       }
 
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -243,8 +353,10 @@
           const targetSelector = this.getAttribute("href");
           const target = document.querySelector(targetSelector);
           if (!target) return;
-
-          target.scrollIntoView({ behavior: "smooth", block: "start" });
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
           history.replaceState(null, "", targetSelector);
         });
       });

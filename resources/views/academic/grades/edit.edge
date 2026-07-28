@@ -54,7 +54,7 @@
             />
           </div>
           <div>
-            <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Période scolaire</label>
             <input
               type="text"
               value="{{ grade.term }}"
@@ -87,7 +87,7 @@
 
           <div>
             <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" name="published" class="w-4 h-4" {{ grade.published ? 'checked' : '' }} />
+              <input type="checkbox" name="published" value="true" class="w-4 h-4" {{ grade.published ? 'checked' : '' }} />
               <span class="text-green-600 font-medium">Publier cette note</span>
             </label>
           </div>

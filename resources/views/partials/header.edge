@@ -45,7 +45,12 @@
             try {
               const res = await fetch('/api/settings/language', { headers: { Accept: 'application/json' } })
               const data = await res.json()
-              if (data.success) this.currentLanguage = data.language || 'fr'
+              if (data.success) {
+                this.currentLanguage = data.language || 'fr'
+                localStorage.setItem('appLanguage', this.currentLanguage)
+                localStorage.setItem('appLanguageExplicit', 'true')
+                window.AppTranslations?.setLanguage(this.currentLanguage)
+              }
             } catch {}
           },
           async changeLanguage(language) {

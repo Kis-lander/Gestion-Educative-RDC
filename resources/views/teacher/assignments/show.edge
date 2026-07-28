@@ -1,7 +1,7 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Détails devoir - {{ assignment.title }}
+    Détails du devoir - {{ assignment.title }}
   @endsection
   
   @section('dashboardTitle')
@@ -13,7 +13,7 @@
   
   @section('actions')
     <div class="flex gap-2">
-      @if(assignment.status === 'draft')
+      @if(assignment.rawStatus === 'draft')
         <button
           onclick="publishAssignment()"
           class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -21,7 +21,7 @@
           <i class="fas fa-check-circle mr-2"></i>Publier
   </button>
       @endif
-      @if(assignment.status === 'published')
+      @if(assignment.rawStatus === 'published')
         <button
           onclick="closeAssignment()"
           class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
@@ -72,10 +72,10 @@
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
         <p class="text-2xl font-bold {{ assignment.isOverdue ? 'text-red-600' : 'text-green-600' }}">
-          {{ assignment.daysRemaining }} jours
+          {{ assignment.isOverdue ? assignment.daysLate : assignment.daysRemaining }} jours
         </p>
         <p class="text-sm text-gray-500">
-          avant échéance
+          {{ assignment.isOverdue ? 'depuis échéance' : 'avant échéance' }}
         </p>
       </div>
     </div>
@@ -86,10 +86,8 @@
       <!-- Détails du devoir -->
       <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
         <div class="flex items-center gap-2 mb-4">
-          <span
-            class="px-2 py-1 rounded-full text-xs {{ assignment.status === 'published' ? 'bg-green-100 text-green-800' : (assignment.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}"
-          >
-            {{ assignment.status === 'published' ? 'Publié' : (assignment.status === 'draft' ? 'Brouillon' : 'Clôturé') }}
+          <span class="px-2 py-1 rounded-full text-xs {{ assignment.statusClass }}" data-i18n>
+            {{ assignment.statusLabel }}
       </span>
           <span class="text-xs text-gray-400">Crée le {{ formatDate(assignment.createdAt) }}</span>
         </div>
@@ -112,12 +110,18 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <div>
             <span class="text-gray-500">Date limite:</span>            <strong>{{ formatDate(assignment.dueDate) }} {{ assignment.dueTime ? 'à ' + assignment.dueTime : '' }}</strong>
           </div>
           <div>
             <span class="text-gray-500">Points max:</span>            <strong>{{ assignment.maxPoints }} points</strong>
+          </div>
+          <div>
+            <span class="text-gray-500" data-i18n>Période scolaire:</span>            <strong>{{ assignment.termLabel }}</strong>
+          </div>
+          <div>
+            <span class="text-gray-500" data-i18n>Type d'épreuve:</span>            <strong>{{ assignment.evaluationTypeLabel }}</strong>
           </div>
         </div>
 

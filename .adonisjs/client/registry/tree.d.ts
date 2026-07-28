@@ -335,6 +335,7 @@ export interface ApiDefinition {
           view: typeof routes['api.student.forum.topic.view']
         }
       }
+      pendingAssignmentsCount: typeof routes['api.student.pending_assignments_count']
     }
     teacher: {
       forum: {
@@ -392,6 +393,9 @@ export interface ApiDefinition {
       list: typeof routes['api.teachers.list']
     }
     parent: {
+      attendance: {
+        show: typeof routes['api.parent.attendance.show']
+      }
       payments: {
         export: typeof routes['api.parent.payments.export']
         history: {
@@ -477,6 +481,13 @@ export interface ApiDefinition {
       store: typeof routes['academic.grades.store']
       publish: typeof routes['academic.grades.publish']
       class: typeof routes['academic.grades.class']
+      edit: typeof routes['academic.grades.edit']
+      update: {
+        web: typeof routes['academic.grades.update.web']
+      }
+      delete: {
+        web: typeof routes['academic.grades.delete.web']
+      }
     }
     timetable: {
       create: typeof routes['academic.timetable.create']
@@ -511,11 +522,13 @@ export interface ApiDefinition {
     assignmentShowPage: typeof routes['students.assignment_show_page']
     assignmentSubmitPage: typeof routes['students.assignment_submit_page']
     submitAssignmentWeb: typeof routes['students.submit_assignment_web']
+    gradesPage: typeof routes['students.grades_page']
     getMyProfile: typeof routes['students.get_my_profile']
     getMyGrades: typeof routes['students.get_my_grades']
     getMyReportCard: typeof routes['students.get_my_report_card']
     getMyDiscipline: typeof routes['students.get_my_discipline']
     getAssignments: typeof routes['students.get_assignments']
+    pendingAssignmentsCount: typeof routes['students.pending_assignments_count']
     submitAssignment: typeof routes['students.submit_assignment']
     getMyForumQuestions: typeof routes['students.get_my_forum_questions']
     postForumQuestion: typeof routes['students.post_forum_question']
@@ -595,6 +608,7 @@ export interface ApiDefinition {
   }
   academics: {
     studentGradesPage: typeof routes['academics.student_grades_page']
+    publishGradesPage: typeof routes['academics.publish_grades_page']
     getClasses: typeof routes['academics.get_classes']
     createClass: typeof routes['academics.create_class']
     getClassById: typeof routes['academics.get_class_by_id']
@@ -668,6 +682,7 @@ export interface ApiDefinition {
     assignments: {
       submissions: {
         index: typeof routes['student.assignments.submissions.index']
+        show: typeof routes['student.assignments.submissions.show']
         legacy: typeof routes['student.assignments.submissions.legacy']
       }
     }
@@ -685,6 +700,9 @@ export interface ApiDefinition {
   parents: {
     dashboardPage: typeof routes['parents.dashboard_page']
     childrenPage: typeof routes['parents.children_page']
+    classesPage: typeof routes['parents.classes_page']
+    subjectsPage: typeof routes['parents.subjects_page']
+    teachersPage: typeof routes['parents.teachers_page']
     childShowPage: typeof routes['parents.child_show_page']
     childProfilePage: typeof routes['parents.child_profile_page']
     gradesPage: typeof routes['parents.grades_page']
@@ -695,6 +713,11 @@ export interface ApiDefinition {
     paymentsPage: typeof routes['parents.payments_page']
     paymentsHistoryPage: typeof routes['parents.payments_history_page']
     paymentsStatusPage: typeof routes['parents.payments_status_page']
+    paymentStatusPdfRedirect: typeof routes['parents.payment_status_pdf_redirect']
+    initiatePaymentRedirect: typeof routes['parents.initiate_payment_redirect']
+    paymentPlanRequestRedirect: typeof routes['parents.payment_plan_request_redirect']
+    paymentReceiptPage: typeof routes['parents.payment_receipt_page']
+    printPaymentReceiptPage: typeof routes['parents.print_payment_receipt_page']
     parentMessagesPage: typeof routes['parents.parent_messages_page']
     parentMessageSendPage: typeof routes['parents.parent_message_send_page']
     parentNotificationsPage: typeof routes['parents.parent_notifications_page']

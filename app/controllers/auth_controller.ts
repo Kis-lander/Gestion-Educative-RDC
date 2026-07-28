@@ -5,6 +5,7 @@ import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
 import { DateTime } from 'luxon'
 import { resolveAppLanguage } from '#services/language_service'
+import { getGovernanceContext } from '#services/school_governance_service'
 import School from '#models/school'
 import User from '#models/user'
 import OtpService from '#services/otp_service'
@@ -28,7 +29,8 @@ export default class AuthController {
     const user = auth.getUserOrFail()
     await user.load('school')
     const profileStats = await this.getProfileStats(user)
-    const recentActivities = (await this.getUserActivities(user)).slice(0, 5).map((activity) => ({
+    const userActivities = await this.getUserActivities(user)
+    const recentActivities = userActivities.slice(0, 5).map((activity) => ({
       type: activity.action,
       description: activity.description,
       time: this.formatRelativeTime(activity.createdAt),
@@ -44,6 +46,10 @@ export default class AuthController {
       student: 'Élève',
     }
 
+    const profileRoleLabel = await this.resolveProfileRoleLabel(
+      user,
+      roleLabels[user.role] ?? user.role
+    )
     const profileFields = [
       user.firstName,
       user.postnom,
@@ -67,7 +73,7 @@ export default class AuthController {
         fullName: user.fullName,
         phone: user.phone,
         role: user.role,
-        roleLabel: roleLabels[user.role] ?? user.role,
+        roleLabel: profileRoleLabel,
         avatarUrl: user.avatarUrl,
         schoolName: user.school?.name,
         className: null,
@@ -194,7 +200,7 @@ export default class AuthController {
 
     return view.render('profile/edit', {
       title: `Modifier mon profil - ${user.fullName}`,
-      user: this.getProfileViewUser(user),
+      user: await this.getProfileViewUser(user),
     })
   }
 
@@ -204,7 +210,7 @@ export default class AuthController {
 
     return view.render('profile/security', {
       title: `Sécurité - ${user.fullName}`,
-      user: this.getProfileViewUser(user),
+      user: await this.getProfileViewUser(user),
       stats: {
         passwordStrength: 'Bon',
         lastPasswordChange: '-',
@@ -222,7 +228,7 @@ export default class AuthController {
 
     return view.render('profile/preferences', {
       title: `Préférences - ${user.fullName}`,
-      user: this.getProfileViewUser(user),
+      user: await this.getProfileViewUser(user),
       preferences: {
         theme: 'dark',
         language,
@@ -333,7 +339,7 @@ export default class AuthController {
 
     return view.render('profile/activity', {
       title: `Mon activité - ${user.fullName}`,
-      user: this.getProfileViewUser(user),
+      user: await this.getProfileViewUser(user),
       activities,
       url: '/profile/activity',
       pagination: {
@@ -397,7 +403,12 @@ export default class AuthController {
       for (const message of messages) {
         addActivity('message', 'Message', `Message envoyé : ${message.subject}`, message.created_at)
         if (message.has_attachment) {
-          addActivity('document', 'Document', `Document joint au message : ${message.subject}`, message.created_at)
+          addActivity(
+            'document',
+            'Document',
+            `Document joint au message : ${message.subject}`,
+            message.created_at
+          )
         }
       }
     } catch {}
@@ -412,9 +423,19 @@ export default class AuthController {
         .limit(300)
 
       for (const assignment of assignments) {
-        addActivity('create', 'Création', `Devoir créé : ${assignment.title}`, assignment.created_at)
+        addActivity(
+          'create',
+          'Création',
+          `Devoir créé : ${assignment.title}`,
+          assignment.created_at
+        )
         if (assignment.attachment_url) {
-          addActivity('document', 'Document', `Document partagé dans le devoir : ${assignment.title}`, assignment.created_at)
+          addActivity(
+            'document',
+            'Document',
+            `Document partagé dans le devoir : ${assignment.title}`,
+            assignment.created_at
+          )
         }
       }
     } catch {}
@@ -434,9 +455,19 @@ export default class AuthController {
         .limit(300)
 
       for (const submission of submissions) {
-        addActivity('create', 'Création', `Travail rendu : ${submission.title}`, submission.created_at)
+        addActivity(
+          'create',
+          'Création',
+          `Travail rendu : ${submission.title}`,
+          submission.created_at
+        )
         if (submission.attachment_url) {
-          addActivity('document', 'Document', `Document remis : ${submission.title}`, submission.created_at)
+          addActivity(
+            'document',
+            'Document',
+            `Document remis : ${submission.title}`,
+            submission.created_at
+          )
         }
       }
     } catch {}
@@ -503,7 +534,20 @@ export default class AuthController {
     )
   }
 
-  private getProfileViewUser(user: User) {
+  private async resolveProfileRoleLabel(user: User, fallback: string) {
+    if (!user.schoolId) return fallback
+    if (['parent', 'student'].includes(user.role)) return fallback
+
+    try {
+      const governance = await getGovernanceContext(user)
+      const sectionSuffix = governance.sectionName ? ` - ${governance.sectionName}` : ''
+      return `${governance.positionLabel}${sectionSuffix}`
+    } catch {
+      return fallback
+    }
+  }
+
+  private async getProfileViewUser(user: User) {
     const roleLabels: Record<string, string> = {
       inspection: 'Inspection pédagogique',
       director: "Direction d'école",
@@ -514,6 +558,8 @@ export default class AuthController {
       student: 'Élève',
     }
 
+    const roleLabel = await this.resolveProfileRoleLabel(user, roleLabels[user.role] ?? user.role)
+
     return {
       id: user.id,
       email: user.email,
@@ -523,7 +569,7 @@ export default class AuthController {
       fullName: user.fullName,
       phone: user.phone,
       role: user.role,
-      roleLabel: roleLabels[user.role] ?? user.role,
+      roleLabel,
       avatarUrl: user.avatarUrl,
       schoolName: user.school?.name,
       className: null,
@@ -710,6 +756,7 @@ export default class AuthController {
   public async getProfile({ auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
     await user.load('school')
+    const profileUser = await this.getProfileViewUser(user)
 
     return response.ok({
       success: true,
@@ -721,6 +768,7 @@ export default class AuthController {
         fullName: user.fullName,
         phone: user.phone,
         role: user.role,
+        roleLabel: profileUser.roleLabel,
         schoolId: user.schoolId,
         schoolName: user.school?.name,
         avatarUrl: user.avatarUrl,

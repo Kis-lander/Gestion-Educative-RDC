@@ -14,7 +14,7 @@
   @section('stats')
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-        <p class="text-sm opacity-90">
+        <p class="text-sm opacity-90" data-i18n>
           Total devoirs
         </p>
         <p class="text-3xl font-bold">
@@ -22,7 +22,7 @@
         </p>
       </div>
       <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-        <p class="text-sm opacity-90">
+        <p class="text-sm opacity-90" data-i18n>
           À rendre
         </p>
         <p class="text-3xl font-bold">
@@ -30,7 +30,7 @@
         </p>
       </div>
       <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-        <p class="text-sm opacity-90">
+        <p class="text-sm opacity-90" data-i18n>
           Soumis
         </p>
         <p class="text-3xl font-bold">
@@ -38,7 +38,7 @@
         </p>
       </div>
       <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-        <p class="text-sm opacity-90">
+        <p class="text-sm opacity-90" data-i18n>
           Notés
         </p>
         <p class="text-3xl font-bold">
@@ -53,7 +53,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Statut</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Statut</label>
           <select id="filterStatus" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">
               Tous
@@ -67,10 +67,13 @@
             <option value="graded">
               Notés
             </option>
+            <option value="missing">
+              Non rendu
+            </option>
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Matière</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Matière</label>
           <select id="filterSubject" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">
               Toutes
@@ -83,7 +86,7 @@
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Recherche</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Recherche</label>
           <input
             type="text"
             id="searchInput"
@@ -111,12 +114,7 @@
           data-subject="{{ assignment.subjectId }}"
           data-title="{{ assignment.title.toLowerCase() }}"
         >
-          <div
-            class=border-l-4
-            {{ assignment.status === 'pending' && assignment.daysRemaining < 0 ? 'border-red-500' : 
-         (assignment.status === 'pending' ? 'border-yellow-500' : 
-         (assignment.status === 'graded' ? 'border-green-500' : 'border-gray-400')) }}
-          >
+          <div class="border-l-4 {{ assignment.borderClass }}">
             <div class="p-4">
               <div class="flex flex-wrap justify-between items-start gap-3">
                 <div class="flex-1">
@@ -124,61 +122,52 @@
                     <h3 class="font-bold text-gray-800 dark:text-white">
                       {{ assignment.title }}
                     </h3>
-                    <span
-                      class=px-2
-                      py-1
-                      rounded-full
-                      text-xs
-                      {{ assignment.status === 'pending' && assignment.daysRemaining < 0 ? 'bg-red-100 text-red-800' : 
-                   (assignment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                   (assignment.status === 'graded' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}
-                    >
-                      {{ assignment.status === 'pending' && assignment.daysRemaining < 0 ? 'En retard' : 
-                   (assignment.status === 'pending' ? 'À rendre' : 
-                   (assignment.status === 'graded' ? 'Noté' : 'Soumis')) }}
+                    <span class="px-2 py-1 rounded-full text-xs {{ assignment.statusClass }}" data-i18n>
+                      {{ assignment.statusLabel }}
               </span>
                     <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ assignment.subjectName }} - {{ assignment.className }}</span>
+                    <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">{{ assignment.termLabel }}</span>
+                    <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded" data-i18n>{{ assignment.evaluationTypeLabel }}</span>
                   </div>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                     {{ assignment.description }}
                   </p>
                   <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-400">
-                    <span>                      <i class="fas fa-calendar mr-1"></i>Date limite: {{ formatDate(assignment.dueDate) }}</span>
-                    <span>                      <i class="fas fa-star mr-1"></i>Points max: {{ assignment.maxPoints }}</span>
+                    <span>                      <i class="fas fa-calendar mr-1"></i><span data-i18n>Date limite</span>: {{ formatDate(assignment.dueDate) }}</span>
+                    <span>                      <i class="fas fa-star mr-1"></i><span data-i18n>Points max</span>: {{ assignment.maxPoints }}</span>
                     <span>                      <i class="fas fa-clock mr-1"></i>
-                      {{ assignment.daysRemaining > 0 ? assignment.daysRemaining + ' jours restants' : 
-                   (assignment.daysRemaining < 0 ? 'En retard de ' + Math.abs(assignment.daysRemaining) + ' jours' : 'Dernier jour') }}
+                      <span data-i18n>{{ assignment.isOverdue ? 'Date dépassée' : (assignment.daysRemaining > 0 ? assignment.daysRemaining + ' jours restants' : 'Dernier jour') }}</span>
               </span>
                   </div>
                 </div>
                 <div class="flex gap-2">
-                  @if(assignment.status === 'pending')
+                  @if(assignment.canSubmit)
                     <a
                       href="/student/assignments/{{ assignment.id }}/submit"
                       class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
                     >
-                      <i class="fas fa-upload mr-1"></i>Soumettre
+                      <i class="fas fa-upload mr-1"></i><span data-i18n>Soumettre</span>
             </a>
                   @endif
                   <a
                     href="/student/assignments/{{ assignment.id }}"
                     class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
                   >
-                    <i class="fas fa-eye mr-1"></i>Détails
+                    <i class="fas fa-eye mr-1"></i><span data-i18n>Détails</span>
             </a>
-                  @if(assignment.status === 'graded')
+                  @if(assignment.status === 'graded' || assignment.status === 'late_graded')
                     <a
                       href="/student/assignments/submissions/{{ assignment.submissionId }}"
                       class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
                     >
-                      <i class="fas fa-star mr-1"></i>Voir note
+                      <i class="fas fa-star mr-1"></i><span data-i18n>Voir la note</span>
             </a>
                   @endif
                 </div>
               </div>
-              @if(assignment.status === 'graded' && assignment.grade !== null)
+              @if((assignment.status === 'graded' || assignment.status === 'late_graded') && assignment.grade !== null)
                 <div class="mt-3 pt-2 border-t flex justify-between items-center">
-                  <span class="text-sm text-gray-500">Note obtenue:</span>
+                  <span class="text-sm text-gray-500"><span data-i18n>Note obtenue</span>:</span>
                   <span
                     class="text-xl font-bold {{ assignment.grade >= 15 ? 'text-green-600' : (assignment.grade >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
                   >
@@ -192,7 +181,7 @@
         @else
         <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
           <i class="fas fa-tasks text-5xl text-gray-400 mb-3"></i>
-          <p class="text-gray-500">
+          <p class="text-gray-500" data-i18n>
             Aucun devoir trouvé
           </p>
         </div>

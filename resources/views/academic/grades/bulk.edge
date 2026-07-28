@@ -91,34 +91,13 @@
 
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre *</label>
-              <select name="term" required class="w-full px-3 py-2 border rounded-lg">
-                <option value="T1">
-                  Trimestre 1
-                </option>
-                <option value="T2">
-                  Trimestre 2
-                </option>
-                <option value="T3">
-                  Trimestre 3
-                </option>
+              <label id="termLabel" class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Période scolaire *</label>
+              <select name="term" required id="termSelect" class="w-full px-3 py-2 border rounded-lg">
               </select>
             </div>
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Type examen *</label>
-              <select name="examType" required class="w-full px-3 py-2 border rounded-lg">
-                <option value="Composition">
-                  Composition
-                </option>
-                <option value="Interrogation">
-                  Interrogation
-                </option>
-                <option value="Devoir">
-                  Devoir
-                </option>
-                <option value="Projet">
-                  Projet
-                </option>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Type d'évaluation *</label>
+              <select name="examType" required id="examTypeSelect" class="w-full px-3 py-2 border rounded-lg">
               </select>
             </div>
           </div>
@@ -155,7 +134,7 @@
               <strong>Colonne A:</strong>Matricule de l'élève
             </li>
             <li>
-              <strong>Colonne B:</strong>Note /20
+              <strong>Colonne B:</strong>Note selon la pondération choisie
             </li>
             <li>
               <strong>Colonne C:</strong>Appréciation (optionnel)
@@ -239,9 +218,47 @@
 
     <script>
       let fileData = null;
+      const classEvaluationPolicies = {{ classEvaluationPolicies|json_encode|raw }};
+      const fallbackTermOptions = {{ fallbackTermOptions|json_encode|raw }};
+      const fallbackEvaluationTypeOptions = {{ fallbackEvaluationTypeOptions|json_encode|raw }};
+      const translate = (text) => window.AppTranslations?.translate(text) || text;
+      const classSelect = document.getElementById("classSelect");
+      const termSelect = document.getElementById("termSelect");
+      const examTypeSelect = document.getElementById("examTypeSelect");
+      const termLabel = document.getElementById("termLabel");
+
+      function selectedPolicy() {
+        return classEvaluationPolicies[classSelect.value] || Object.values(classEvaluationPolicies)[0] || {
+          periodAxisLabel: "Période scolaire",
+          periods: fallbackTermOptions,
+          evaluationTypes: fallbackEvaluationTypeOptions
+        };
+      }
+
+      function renderEvaluationPolicy() {
+        const policy = selectedPolicy();
+        termLabel.textContent = `${translate("Période scolaire")} *`;
+        termSelect.innerHTML = "";
+        const periods = policy.periods?.length ? policy.periods : fallbackTermOptions;
+        const evaluationTypes = policy.evaluationTypes?.length ? policy.evaluationTypes : fallbackEvaluationTypeOptions;
+        periods.forEach((period) => {
+          const option = document.createElement("option");
+          option.value = period.value;
+          option.textContent = translate(period.label);
+          termSelect.appendChild(option);
+        });
+        examTypeSelect.innerHTML = "";
+        evaluationTypes.forEach((type) => {
+          const option = document.createElement("option");
+          option.value = type.value;
+          option.textContent = translate(type.label);
+          examTypeSelect.appendChild(option);
+        });
+      }
       // Charger les matières
 
       document.getElementById("classSelect")?.addEventListener("change", async () => {
+        renderEvaluationPolicy();
         const classId = document.getElementById("classSelect").value;
         if (!classId) return;
         const res = await fetch(`/api/classes/${classId}/subjects`);
@@ -343,6 +360,7 @@
       // Date par défaut
 
       document.querySelector('input[type="date"]').value = new Date().toISOString().split("T")[0];
+      renderEvaluationPolicy();
     </script>
   @endsection
   

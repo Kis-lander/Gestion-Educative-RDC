@@ -14,15 +14,17 @@
   @section('actions')
     <div class="flex gap-2">
       <select id="termSelect" class="px-3 py-2 border rounded-lg text-sm">
-        <option value="T1" {{ selectedTerm == 'T1' ? 'selected' : '' }}>
-          Trimestre 1
-        </option>
-        <option value="T2" {{ selectedTerm == 'T2' ? 'selected' : '' }}>
-          Trimestre 2
-        </option>
-        <option value="T3" {{ selectedTerm == 'T3' ? 'selected' : '' }}>
-          Trimestre 3
-        </option>
+        @each(termOption in studentTermOptions)
+          <option value="{{ termOption.value }}" {{ selectedTerm == termOption.value ? 'selected' : '' }} data-i18n>
+            {{ termOption.label }}
+          </option>
+        @else
+          @each(termOption in fallbackTermOptions)
+            <option value="{{ termOption.value }}" {{ selectedTerm == termOption.value ? 'selected' : '' }} data-i18n>
+              {{ termOption.label }}
+            </option>
+          @end
+        @end
       </select>
       <button id="applyTerm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
         <i class="fas fa-sync-alt mr-2"></i>Actualiser
@@ -91,13 +93,16 @@
                 Coefficient
               </th>
               <th class="px-4 py-3 text-center">
-                Composition
+                {{ studentEvaluationPolicy.evaluationTypes[0]?.label || 'Évaluation 1' }}
               </th>
               <th class="px-4 py-3 text-center">
-                Interrogation
+                {{ studentEvaluationPolicy.evaluationTypes[1]?.label || 'Évaluation 2' }}
               </th>
               <th class="px-4 py-3 text-center">
-                Devoir
+                {{ studentEvaluationPolicy.evaluationTypes[2]?.label || 'Évaluation 3' }}
+              </th>
+              <th class="px-4 py-3 text-center">
+                Examen
               </th>
               <th class="px-4 py-3 text-center">
                 Moyenne
@@ -120,25 +125,16 @@
                   {{ subject.coefficient || '-' }}
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span
-                    class="{{ subject.compo && subject.compo >= 15 ? 'text-green-600' : (subject.compo && subject.compo >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
-                  >
-                    {{ subject.compo || '-' }}
-            </span>
+                  <span>{{ subject.compo || '-' }}</span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span
-                    class="{{ subject.interro && subject.interro >= 15 ? 'text-green-600' : (subject.interro && subject.interro >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
-                  >
-                    {{ subject.interro || '-' }}
-            </span>
+                  <span>{{ subject.interro || '-' }}</span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span
-                    class="{{ subject.devoir && subject.devoir >= 15 ? 'text-green-600' : (subject.devoir && subject.devoir >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
-                  >
-                    {{ subject.devoir || '-' }}
-            </span>
+                  <span>{{ subject.devoir || '-' }}</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span>{{ subject.exam || '-' }}</span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <span
@@ -161,7 +157,7 @@
               <td class="px-4 py-3 text-center">
                 {{ totalCoefficient || 0 }}
               </td>
-              <td colspan="3" class="px-4 py-3">
+              <td colspan="4" class="px-4 py-3">
               </td>
               <td
                 class="px-4 py-3 text-center text-lg {{ termAverage >= 15 ? 'text-green-600' : (termAverage >= 10 ? 'text-yellow-600' : 'text-red-600') }}"

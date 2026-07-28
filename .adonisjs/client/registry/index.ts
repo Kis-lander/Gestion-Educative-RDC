@@ -726,6 +726,12 @@ const routes = {
     tokens: [{"old":"/api/student/forum/export","type":0,"val":"api","end":""},{"old":"/api/student/forum/export","type":0,"val":"student","end":""},{"old":"/api/student/forum/export","type":0,"val":"forum","end":""},{"old":"/api/student/forum/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['api.student.forum.export']['types'],
   },
+  'api.student.pending_assignments_count': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/student/pending-assignments-count',
+    tokens: [{"old":"/api/student/pending-assignments-count","type":0,"val":"api","end":""},{"old":"/api/student/pending-assignments-count","type":0,"val":"student","end":""},{"old":"/api/student/pending-assignments-count","type":0,"val":"pending-assignments-count","end":""}],
+    types: placeholder as Registry['api.student.pending_assignments_count']['types'],
+  },
   'api.teacher.forum.export': {
     methods: ["GET","HEAD"],
     pattern: '/api/teacher/forum/export',
@@ -1746,11 +1752,35 @@ const routes = {
     tokens: [{"old":"/settings/privacy","type":0,"val":"settings","end":""},{"old":"/settings/privacy","type":0,"val":"privacy","end":""}],
     types: placeholder as Registry['settings.privacy_page']['types'],
   },
+  'academic.grades.edit': {
+    methods: ["GET","HEAD"],
+    pattern: '/academic/grades/:id/edit',
+    tokens: [{"old":"/academic/grades/:id/edit","type":0,"val":"academic","end":""},{"old":"/academic/grades/:id/edit","type":0,"val":"grades","end":""},{"old":"/academic/grades/:id/edit","type":1,"val":"id","end":""},{"old":"/academic/grades/:id/edit","type":0,"val":"edit","end":""}],
+    types: placeholder as Registry['academic.grades.edit']['types'],
+  },
+  'academic.grades.update.web': {
+    methods: ["PUT"],
+    pattern: '/academic/grades/:id',
+    tokens: [{"old":"/academic/grades/:id","type":0,"val":"academic","end":""},{"old":"/academic/grades/:id","type":0,"val":"grades","end":""},{"old":"/academic/grades/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['academic.grades.update.web']['types'],
+  },
+  'academic.grades.delete.web': {
+    methods: ["DELETE"],
+    pattern: '/academic/grades/:id',
+    tokens: [{"old":"/academic/grades/:id","type":0,"val":"academic","end":""},{"old":"/academic/grades/:id","type":0,"val":"grades","end":""},{"old":"/academic/grades/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['academic.grades.delete.web']['types'],
+  },
   'academics.student_grades_page': {
     methods: ["GET","HEAD"],
     pattern: '/academic/grades/student/:studentId',
     tokens: [{"old":"/academic/grades/student/:studentId","type":0,"val":"academic","end":""},{"old":"/academic/grades/student/:studentId","type":0,"val":"grades","end":""},{"old":"/academic/grades/student/:studentId","type":0,"val":"student","end":""},{"old":"/academic/grades/student/:studentId","type":1,"val":"studentId","end":""}],
     types: placeholder as Registry['academics.student_grades_page']['types'],
+  },
+  'academics.publish_grades_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/academic/grades/publish',
+    tokens: [{"old":"/academic/grades/publish","type":0,"val":"academic","end":""},{"old":"/academic/grades/publish","type":0,"val":"grades","end":""},{"old":"/academic/grades/publish","type":0,"val":"publish","end":""}],
+    types: placeholder as Registry['academics.publish_grades_page']['types'],
   },
   'teachers.dashboard_page': {
     methods: ["GET","HEAD"],
@@ -2022,6 +2052,12 @@ const routes = {
     tokens: [{"old":"/student/assignments/submissions","type":0,"val":"student","end":""},{"old":"/student/assignments/submissions","type":0,"val":"assignments","end":""},{"old":"/student/assignments/submissions","type":0,"val":"submissions","end":""}],
     types: placeholder as Registry['student.assignments.submissions.index']['types'],
   },
+  'student.assignments.submissions.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/student/assignments/submissions/:id',
+    tokens: [{"old":"/student/assignments/submissions/:id","type":0,"val":"student","end":""},{"old":"/student/assignments/submissions/:id","type":0,"val":"assignments","end":""},{"old":"/student/assignments/submissions/:id","type":0,"val":"submissions","end":""},{"old":"/student/assignments/submissions/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['student.assignments.submissions.show']['types'],
+  },
   'students.assignment_show_page': {
     methods: ["GET","HEAD"],
     pattern: '/student/assignments/:id',
@@ -2106,6 +2142,12 @@ const routes = {
     tokens: [{"old":"/student/forum/reply/:id","type":0,"val":"student","end":""},{"old":"/student/forum/reply/:id","type":0,"val":"forum","end":""},{"old":"/student/forum/reply/:id","type":0,"val":"reply","end":""},{"old":"/student/forum/reply/:id","type":1,"val":"id","end":""}],
     types: placeholder as Registry['student.forum.reply.delete']['types'],
   },
+  'students.grades_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/student/grades',
+    tokens: [{"old":"/student/grades","type":0,"val":"student","end":""},{"old":"/student/grades","type":0,"val":"grades","end":""}],
+    types: placeholder as Registry['students.grades_page']['types'],
+  },
   'parents.dashboard_page': {
     methods: ["GET","HEAD"],
     pattern: '/parent/dashboard',
@@ -2117,6 +2159,24 @@ const routes = {
     pattern: '/parent/children',
     tokens: [{"old":"/parent/children","type":0,"val":"parent","end":""},{"old":"/parent/children","type":0,"val":"children","end":""}],
     types: placeholder as Registry['parents.children_page']['types'],
+  },
+  'parents.classes_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/classes',
+    tokens: [{"old":"/parent/classes","type":0,"val":"parent","end":""},{"old":"/parent/classes","type":0,"val":"classes","end":""}],
+    types: placeholder as Registry['parents.classes_page']['types'],
+  },
+  'parents.subjects_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/subjects',
+    tokens: [{"old":"/parent/subjects","type":0,"val":"parent","end":""},{"old":"/parent/subjects","type":0,"val":"subjects","end":""}],
+    types: placeholder as Registry['parents.subjects_page']['types'],
+  },
+  'parents.teachers_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/teachers',
+    tokens: [{"old":"/parent/teachers","type":0,"val":"parent","end":""},{"old":"/parent/teachers","type":0,"val":"teachers","end":""}],
+    types: placeholder as Registry['parents.teachers_page']['types'],
   },
   'parents.child_show_page': {
     methods: ["GET","HEAD"],
@@ -2208,6 +2268,36 @@ const routes = {
     tokens: [{"old":"/parent/payments/status","type":0,"val":"parent","end":""},{"old":"/parent/payments/status","type":0,"val":"payments","end":""},{"old":"/parent/payments/status","type":0,"val":"status","end":""}],
     types: placeholder as Registry['parents.payments_status_page']['types'],
   },
+  'parents.payment_status_pdf_redirect': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/payments/status/pdf',
+    tokens: [{"old":"/parent/payments/status/pdf","type":0,"val":"parent","end":""},{"old":"/parent/payments/status/pdf","type":0,"val":"payments","end":""},{"old":"/parent/payments/status/pdf","type":0,"val":"status","end":""},{"old":"/parent/payments/status/pdf","type":0,"val":"pdf","end":""}],
+    types: placeholder as Registry['parents.payment_status_pdf_redirect']['types'],
+  },
+  'parents.initiate_payment_redirect': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/payments/initiate',
+    tokens: [{"old":"/parent/payments/initiate","type":0,"val":"parent","end":""},{"old":"/parent/payments/initiate","type":0,"val":"payments","end":""},{"old":"/parent/payments/initiate","type":0,"val":"initiate","end":""}],
+    types: placeholder as Registry['parents.initiate_payment_redirect']['types'],
+  },
+  'parents.payment_plan_request_redirect': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/payments/payment-plan/request',
+    tokens: [{"old":"/parent/payments/payment-plan/request","type":0,"val":"parent","end":""},{"old":"/parent/payments/payment-plan/request","type":0,"val":"payments","end":""},{"old":"/parent/payments/payment-plan/request","type":0,"val":"payment-plan","end":""},{"old":"/parent/payments/payment-plan/request","type":0,"val":"request","end":""}],
+    types: placeholder as Registry['parents.payment_plan_request_redirect']['types'],
+  },
+  'parents.payment_receipt_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/payments/receipt/:id',
+    tokens: [{"old":"/parent/payments/receipt/:id","type":0,"val":"parent","end":""},{"old":"/parent/payments/receipt/:id","type":0,"val":"payments","end":""},{"old":"/parent/payments/receipt/:id","type":0,"val":"receipt","end":""},{"old":"/parent/payments/receipt/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['parents.payment_receipt_page']['types'],
+  },
+  'parents.print_payment_receipt_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/parent/payments/print-receipt/:id',
+    tokens: [{"old":"/parent/payments/print-receipt/:id","type":0,"val":"parent","end":""},{"old":"/parent/payments/print-receipt/:id","type":0,"val":"payments","end":""},{"old":"/parent/payments/print-receipt/:id","type":0,"val":"print-receipt","end":""},{"old":"/parent/payments/print-receipt/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['parents.print_payment_receipt_page']['types'],
+  },
   'parents.parent_messages_page': {
     methods: ["GET","HEAD"],
     pattern: '/parent/messages',
@@ -2285,6 +2375,12 @@ const routes = {
     pattern: '/api/parent/attendance/export',
     tokens: [{"old":"/api/parent/attendance/export","type":0,"val":"api","end":""},{"old":"/api/parent/attendance/export","type":0,"val":"parent","end":""},{"old":"/api/parent/attendance/export","type":0,"val":"attendance","end":""},{"old":"/api/parent/attendance/export","type":0,"val":"export","end":""}],
     types: placeholder as Registry['parents.export_attendance']['types'],
+  },
+  'api.parent.attendance.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/parent/attendance/:studentId',
+    tokens: [{"old":"/api/parent/attendance/:studentId","type":0,"val":"api","end":""},{"old":"/api/parent/attendance/:studentId","type":0,"val":"parent","end":""},{"old":"/api/parent/attendance/:studentId","type":0,"val":"attendance","end":""},{"old":"/api/parent/attendance/:studentId","type":1,"val":"studentId","end":""}],
+    types: placeholder as Registry['api.parent.attendance.show']['types'],
   },
   'api.parent.payments.export': {
     methods: ["GET","HEAD"],
@@ -3305,6 +3401,12 @@ const routes = {
     pattern: '/api/v1/student/assignments',
     tokens: [{"old":"/api/v1/student/assignments","type":0,"val":"api","end":""},{"old":"/api/v1/student/assignments","type":0,"val":"v1","end":""},{"old":"/api/v1/student/assignments","type":0,"val":"student","end":""},{"old":"/api/v1/student/assignments","type":0,"val":"assignments","end":""}],
     types: placeholder as Registry['students.get_assignments']['types'],
+  },
+  'students.pending_assignments_count': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/student/pending-assignments-count',
+    tokens: [{"old":"/api/v1/student/pending-assignments-count","type":0,"val":"api","end":""},{"old":"/api/v1/student/pending-assignments-count","type":0,"val":"v1","end":""},{"old":"/api/v1/student/pending-assignments-count","type":0,"val":"student","end":""},{"old":"/api/v1/student/pending-assignments-count","type":0,"val":"pending-assignments-count","end":""}],
+    types: placeholder as Registry['students.pending_assignments_count']['types'],
   },
   'students.submit_assignment': {
     methods: ["POST"],

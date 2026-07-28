@@ -29,21 +29,12 @@
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Période scolaire</label>
           <select id="termFilter" class="w-full px-3 py-2 border rounded-lg text-sm" onchange="changeTerm()">
-            <option value="T1" {{ term === 'T1' ? 'selected' : '' }}>
-              Trimestre 1
-            </option>
-            <option value="T2" {{ term === 'T2' ? 'selected' : '' }}>
-              Trimestre 2
-            </option>
-            <option value="T3" {{ term === 'T3' ? 'selected' : '' }}>
-              Trimestre 3
-            </option>
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Type examen</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Type d'évaluation</label>
           <select
             id="examTypeFilter"
             class="w-full px-3 py-2 border rounded-lg text-sm"
@@ -51,18 +42,6 @@
           >
             <option value="">
               Tous
-            </option>
-            <option value="Composition">
-              Composition
-            </option>
-            <option value="Interrogation">
-              Interrogation
-            </option>
-            <option value="Devoir">
-              Devoir
-            </option>
-            <option value="Projet">
-              Projet
             </option>
           </select>
         </div>
@@ -195,6 +174,42 @@
     </div>
 
     <script>
+      const classEvaluationPolicies = {{ classEvaluationPolicies|json_encode|raw }};
+      const fallbackTermOptions = {{ fallbackTermOptions|json_encode|raw }};
+      const fallbackEvaluationTypeOptions = {{ fallbackEvaluationTypeOptions|json_encode|raw }};
+      const selectedTerm = "{{ term }}";
+      const selectedExamType = "{{ examType || '' }}";
+      const translate = (text) => window.AppTranslations?.translate(text) || text;
+      const classPolicy = classEvaluationPolicies["{{ classId }}"] || Object.values(classEvaluationPolicies)[0] || {
+        periods: fallbackTermOptions,
+        evaluationTypes: fallbackEvaluationTypeOptions
+      };
+      const termFilter = document.getElementById("termFilter");
+      const examTypeFilter = document.getElementById("examTypeFilter");
+
+      function renderPolicyFilters() {
+        termFilter.innerHTML = "";
+        const periods = classPolicy.periods?.length ? classPolicy.periods : fallbackTermOptions;
+        const evaluationTypes = classPolicy.evaluationTypes?.length ? classPolicy.evaluationTypes : fallbackEvaluationTypeOptions;
+        periods.forEach((period) => {
+          const option = document.createElement("option");
+          option.value = period.value;
+          option.textContent = translate(period.label);
+          termFilter.appendChild(option);
+        });
+        termFilter.value = selectedTerm && periods.some((period) => period.value === selectedTerm)
+          ? selectedTerm
+          : periods[0]?.value || "";
+
+        evaluationTypes.forEach((type) => {
+          const option = document.createElement("option");
+          option.value = type.value;
+          option.textContent = translate(type.label);
+          examTypeFilter.appendChild(option);
+        });
+        examTypeFilter.value = selectedExamType;
+      }
+
       function changeSubject() {
         const subjectId = document.getElementById("subjectFilter").value;
         const term = document.getElementById("termFilter").value;
@@ -217,6 +232,8 @@
         const term = document.getElementById("termFilter").value;
         window.location.href = `/api/grades/class/{{ classId }}/export?subject_id=${subjectId}&term=${term}`;
       }
+
+      renderPolicyFilters();
     </script>
   @endsection
   

@@ -26,7 +26,7 @@
 
           <div class="space-y-4">
             <!-- Info élève -->
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex justify-between items-center">
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
               <div>
                 <p class="font-medium">
                   {{ submission.studentName }}
@@ -35,9 +35,14 @@
                   {{ submission.registrationNumber }} - {{ assignment.className }}
                 </p>
               </div>
-              <span class="text-xs bg-gray-200 px-2 py-1 rounded">
-                Soumis le {{ formatDateTime(submission.submittedAt) }}
-          </span>
+              <div class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-right text-sm dark:border-gray-600 dark:bg-gray-800 sm:min-w-44">
+                <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Soumis le
+                </p>
+                <p class="font-semibold text-gray-800 dark:text-gray-100">
+                  {{ submission.submittedAt ? formatDateTime(submission.submittedAt) : '-' }}
+                </p>
+              </div>
             </div>
 
             <!-- Fichier soumis -->

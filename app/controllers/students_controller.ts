@@ -41,6 +41,23 @@ import { getGovernanceContext } from '#services/school_governance_service'
 
 // Import des validateurs VineJS
 import { submitAssignmentValidator, postForumQuestionValidator } from '#validators/student'
+import {
+  assignmentDeadlineAt,
+  assignmentStatusMeta,
+  assignmentSubmissionMeta,
+} from '#services/assignment_status_service'
+import {
+  studentAssignmentClassIds,
+  visibleAssignmentsForStudent,
+} from '#services/assignment_visibility_service'
+import {
+  evaluationPeriodLabel,
+  evaluationPolicyForClass,
+  evaluationTypeLabel,
+} from '#services/academic_evaluation_service'
+import {
+  formatScore,
+} from '#services/grade_score_service'
 
 export default class StudentController {
   private mailService = new OtpMailService()
@@ -72,8 +89,8 @@ export default class StudentController {
       .where('studentId', student.id)
       .first()
 
-    const daysRemaining = Math.ceil(assignment.dueDate.diff(DateTime.now(), 'days').days)
-    const status = submission ? submission.status : 'pending'
+    const assignmentMeta = assignmentStatusMeta(assignment)
+    const submissionMeta = assignmentSubmissionMeta(assignment, submission)
 
     return {
       id: assignment.id,
@@ -86,15 +103,30 @@ export default class StudentController {
       dueDate: assignment.dueDate,
       dueTime: assignment.dueTime,
       maxPoints: assignment.maxPoints,
+      term: assignment.term || null,
+      termLabel: evaluationPeriodLabel(assignment.term),
+      evaluationType: assignment.evaluationType || 'devoir',
+      evaluationTypeLabel: evaluationTypeLabel(assignment.evaluationType || 'devoir'),
       attachmentUrl: assignment.attachmentUrl,
       publishedAt: assignment.publishedAt,
-      status,
+      status: submissionMeta.status,
+      rawStatus: assignment.status,
+      statusLabel: submissionMeta.label,
+      statusClass: submissionMeta.badgeClass,
+      borderClass: submissionMeta.isSubmitted
+        ? submissionMeta.badgeClass.includes('orange')
+          ? 'border-orange-500'
+          : 'border-green-500'
+        : assignmentMeta.borderClass,
+      canSubmit: submissionMeta.canSubmit,
       submissionId: submission?.id || null,
       submission,
       grade: submission?.grade ? Number(submission.grade) : null,
       teacherFeedback: submission?.teacherFeedback || null,
-      daysRemaining,
-      isOverdue: daysRemaining < 0,
+      daysRemaining: assignmentMeta.daysRemaining,
+      daysLate: assignmentMeta.daysLate,
+      isOverdue: assignmentMeta.isOverdue,
+      deadlineAt: assignmentMeta.deadlineAt,
     }
   }
 
@@ -629,6 +661,203 @@ export default class StudentController {
     })
   }
 
+  public async gradesPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const student = await this.getCurrentStudent(user)
+    const section = student.class?.schoolSectionId
+      ? await db.from('school_sections').where('id', student.class.schoolSectionId).first()
+      : null
+    const studentEvaluationPolicy = evaluationPolicyForClass(
+      section?.code || null,
+      student.class?.gradeLevel
+    )
+    const requestedTerm = String(ctx.request.input('term', '')).trim()
+    const availableTermRows = await Grade.query()
+      .where('studentId', student.id)
+      .whereNotNull('term')
+      .select('term')
+      .orderBy('examDate', 'desc')
+    const availableAssignmentTermRows = await db
+      .from('assignment_submissions')
+      .join('assignments', 'assignment_submissions.assignment_id', 'assignments.id')
+      .where('assignment_submissions.student_id', student.id)
+      .where('assignment_submissions.status', 'graded')
+      .whereNotNull('assignment_submissions.grade')
+      .whereNotNull('assignments.term')
+      .select('assignments.term')
+      .orderBy('assignment_submissions.submitted_at', 'desc')
+    const availableTerms = Array.from(
+      new Set(
+        [
+          ...availableTermRows.map((grade) => grade.term),
+          ...availableAssignmentTermRows.map((row) => row.term),
+        ]
+          .map((term) => String(term || '').trim())
+          .filter(Boolean)
+      )
+    )
+    const selectedTerm =
+      requestedTerm ||
+      availableTerms[0] ||
+      studentEvaluationPolicy.periods[0]?.value ||
+      'T1-P1'
+    const selectedTermLabel = evaluationPeriodLabel(selectedTerm)
+    const studentTermOptions = [
+      ...studentEvaluationPolicy.periods,
+      ...availableTerms
+        .filter((term) => !studentEvaluationPolicy.periods.some((option) => option.value === term))
+        .map((term) => ({ value: term, label: evaluationPeriodLabel(term) })),
+    ]
+    const grades = await Grade.query()
+      .where('studentId', student.id)
+      .where('term', selectedTerm)
+      .preload('subject')
+      .orderBy('examDate', 'desc')
+    const assignmentSubmissions = await AssignmentSubmission.query()
+      .where('studentId', student.id)
+      .where('status', 'graded')
+      .whereNotNull('grade')
+      .preload('assignment', (assignmentQuery) => {
+        assignmentQuery.where('term', selectedTerm).preload('subject')
+      })
+      .orderBy('submittedAt', 'desc')
+
+    const scoreLabel = (score: unknown, maxScore: unknown) =>
+      `${formatScore(Number(score))}/${formatScore(Number(maxScore || 20))}`
+    const fieldForEvaluation = (examType: string) => {
+      const normalized = examType.toLowerCase()
+      if (normalized.includes('examen')) return 'exam'
+      if (normalized.includes('devoir')) return 'devoir'
+      if (normalized.includes('interro')) return 'interro'
+      if (normalized.includes('travail')) return 'compo'
+      return 'compo'
+    }
+    const subjectsById = new Map<string, any>()
+
+    for (const grade of grades) {
+      const rawScore = Number(grade.score)
+      const rawMaxScore = Number(grade.maxScore || 20)
+      if (!Number.isFinite(rawScore) || !Number.isFinite(rawMaxScore) || rawMaxScore <= 0) continue
+
+      const subjectId = grade.subjectId
+      if (!subjectsById.has(subjectId)) {
+        subjectsById.set(subjectId, {
+          id: subjectId,
+          name: grade.subject?.name || '-',
+          coefficient: grade.subject?.coefficient || 1,
+          compo: null,
+          interro: null,
+          devoir: null,
+          exam: null,
+          totalScore: 0,
+          totalMaxScore: 0,
+          appreciation: grade.teacherComments || '',
+        })
+      }
+
+      const subject = subjectsById.get(subjectId)
+      const field = fieldForEvaluation(String(grade.examType || ''))
+      subject[field] = scoreLabel(rawScore, rawMaxScore)
+      subject.totalScore += rawScore
+      subject.totalMaxScore += rawMaxScore
+      if (!subject.appreciation && grade.teacherComments) subject.appreciation = grade.teacherComments
+    }
+
+    for (const submission of assignmentSubmissions) {
+      if (!submission.assignment) continue
+
+      const rawScore = Number(submission.grade)
+      const rawMaxScore = Number(submission.assignment.maxPoints || 20)
+      if (!Number.isFinite(rawScore) || !Number.isFinite(rawMaxScore) || rawMaxScore <= 0) continue
+
+      const subjectId = submission.assignment.subjectId
+      if (!subjectsById.has(subjectId)) {
+        subjectsById.set(subjectId, {
+          id: subjectId,
+          name: submission.assignment.subject?.name || '-',
+          coefficient: submission.assignment.subject?.coefficient || 1,
+          compo: null,
+          interro: null,
+          devoir: null,
+          exam: null,
+          totalScore: 0,
+          totalMaxScore: 0,
+          appreciation: submission.teacherFeedback || '',
+        })
+      }
+
+      const subject = subjectsById.get(subjectId)
+      const field =
+        submission.assignment.evaluationType === 'interrogation' ? 'interro' : 'devoir'
+      subject[field] = scoreLabel(rawScore, rawMaxScore)
+      subject.totalScore += rawScore
+      subject.totalMaxScore += rawMaxScore
+      if (!subject.appreciation && submission.teacherFeedback) {
+        subject.appreciation = submission.teacherFeedback
+      }
+    }
+
+    const subjectsGrades = Array.from(subjectsById.values()).map((subject) => {
+      const average = subject.totalMaxScore > 0
+        ? (subject.totalScore / subject.totalMaxScore) * 20
+        : null
+
+      return {
+        ...subject,
+        totalScore: undefined,
+        totalMaxScore: undefined,
+        average: formatScore(average),
+      }
+    })
+
+    const termScores = subjectsGrades
+      .map((subject) => Number(subject.average))
+      .filter(Number.isFinite)
+    const termAverage = termScores.length
+      ? formatScore(termScores.reduce((sum, score) => sum + score, 0) / termScores.length)
+      : '-'
+    const best = subjectsGrades
+      .filter((subject) => Number.isFinite(Number(subject.average)))
+      .sort((left, right) => Number(right.average) - Number(left.average))[0]
+    const totalCoefficient = subjectsGrades.reduce(
+      (sum, subject) => sum + Number(subject.coefficient || 0),
+      0
+    )
+    const classRows = student.classId
+      ? await db.from('students').where('class_id', student.classId).count('* as total').first()
+      : null
+
+    return ctx.view.render(
+      'student/grades/index',
+      await edgePageContext(ctx, {
+        student: { name: student.user?.fullName || '' },
+        selectedTerm,
+        selectedTermLabel,
+        studentEvaluationPolicy,
+        studentTermOptions,
+        subjectsGrades,
+        termAverage,
+        termRank: '-',
+        totalStudents: Number(classRows?.total || 0),
+        bestSubject: best?.name || '-',
+        bestGrade: best?.average || '-',
+        appreciation:
+          termAverage === '-'
+            ? '-'
+            : Number(termAverage) >= 15
+              ? 'Très bien'
+              : Number(termAverage) >= 10
+                ? 'Satisfaisant'
+                : 'À améliorer',
+        totalCoefficient,
+        subjectNames: subjectsGrades.map((subject) => subject.name),
+        subjectAverages: subjectsGrades.map((subject) => Number(subject.average) || 0),
+        classAverages: subjectsGrades.map(() => 0),
+        generalAppreciation: '',
+      })
+    )
+  }
+
   private async calculateRank(
     studentId: string,
     classId: string,
@@ -660,14 +889,12 @@ export default class StudentController {
     const status = ctx.request.input('status')
     const search = String(ctx.request.input('search', '')).trim()
 
-    const assignments = await Assignment.query()
-      .where('classId', student.classId!)
-      .where('status', 'published')
-      .if(subjectId, (assignmentQuery) => assignmentQuery.where('subjectId', subjectId))
-      .if(search, (assignmentQuery) => assignmentQuery.whereILike('title', `%${search}%`))
-      .preload('subject')
-      .preload('class')
-      .orderBy('dueDate', 'asc')
+    let assignments = await visibleAssignmentsForStudent(student)
+    assignments = assignments.filter((assignment) => {
+      if (subjectId && assignment.subjectId !== subjectId) return false
+      if (search && !assignment.title.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
 
     let formattedAssignments = await Promise.all(
       assignments.map((assignment) => this.formatStudentAssignment(assignment, student))
@@ -676,8 +903,9 @@ export default class StudentController {
     if (status) {
       formattedAssignments = formattedAssignments.filter((assignment) => {
         if (status === 'pending') return assignment.status === 'pending'
-        if (status === 'submitted') return assignment.status === 'submitted'
-        if (status === 'graded') return assignment.status === 'graded'
+        if (status === 'submitted') return ['submitted', 'late_submitted'].includes(assignment.status)
+        if (status === 'graded') return ['graded', 'late_graded'].includes(assignment.status)
+        if (status === 'missing') return assignment.status === 'missing'
         return true
       })
     }
@@ -697,8 +925,13 @@ export default class StudentController {
         stats: {
           total: formattedAssignments.length,
           pending: formattedAssignments.filter((assignment) => assignment.status === 'pending').length,
-          submitted: formattedAssignments.filter((assignment) => assignment.status === 'submitted').length,
-          graded: formattedAssignments.filter((assignment) => assignment.status === 'graded').length,
+          submitted: formattedAssignments.filter((assignment) =>
+            ['submitted', 'late_submitted'].includes(assignment.status)
+          ).length,
+          graded: formattedAssignments.filter((assignment) =>
+            ['graded', 'late_graded'].includes(assignment.status)
+          ).length,
+          missing: formattedAssignments.filter((assignment) => assignment.status === 'missing').length,
         },
         pagination: { total: formattedAssignments.length, perPage: 50, currentPage: 1, lastPage: 1 },
       })
@@ -708,9 +941,10 @@ export default class StudentController {
   public async assignmentShowPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
     const student = await this.getCurrentStudent(user)
+    const visibleClassIds = await studentAssignmentClassIds(student)
     const assignment = await Assignment.query()
       .where('id', ctx.params.id)
-      .where('classId', student.classId!)
+      .whereIn('classId', visibleClassIds)
       .whereIn('status', ['published', 'closed'])
       .preload('subject')
       .preload('class')
@@ -727,14 +961,19 @@ export default class StudentController {
   public async assignmentSubmitPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
     const student = await this.getCurrentStudent(user)
+    const visibleClassIds = await studentAssignmentClassIds(student)
     const assignment = await Assignment.query()
       .where('id', ctx.params.id)
-      .where('classId', student.classId!)
+      .whereIn('classId', visibleClassIds)
       .where('status', 'published')
       .preload('subject')
       .preload('class')
       .firstOrFail()
     const formattedAssignment = await this.formatStudentAssignment(assignment, student)
+    if (!formattedAssignment.canSubmit) {
+      ctx.session.flash('error', 'La date limite est dépassée. Ce devoir est clôturé et ne peut plus être soumis.')
+      return ctx.response.redirect(`/student/assignments/${assignment.id}`)
+    }
 
     return ctx.view.render(
       'student/assignments/submit',
@@ -748,11 +987,18 @@ export default class StudentController {
   public async submitAssignmentWeb({ auth, params, request, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
     const student = await this.getCurrentStudent(user)
+    const visibleClassIds = await studentAssignmentClassIds(student)
     const assignment = await Assignment.query()
       .where('id', params.id)
-      .where('classId', student.classId!)
+      .whereIn('classId', visibleClassIds)
       .where('status', 'published')
       .firstOrFail()
+
+    const deadlineAt = assignmentDeadlineAt(assignment)
+    if (DateTime.now() > deadlineAt) {
+      session.flash('error', 'La date limite est dépassée. Ce devoir est clôturé et ne peut plus être soumis.')
+      return response.redirect(`/student/assignments/${assignment.id}`)
+    }
 
     let attachmentUrl: string | null = null
     try {
@@ -782,7 +1028,7 @@ export default class StudentController {
         submissionContent: content,
         attachmentUrl: attachmentUrl || existing?.attachmentUrl || null,
         submittedAt: DateTime.now(),
-        isLate: DateTime.now() > assignment.dueDate,
+        isLate: DateTime.now() > deadlineAt,
         status: 'submitted',
       }
     )
@@ -829,18 +1075,37 @@ export default class StudentController {
     )
   }
 
+  public async submissionShowPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const student = await this.getCurrentStudent(user)
+    const visibleClassIds = await studentAssignmentClassIds(student)
+    const submission = await AssignmentSubmission.query()
+      .where('id', ctx.params.id)
+      .where('studentId', student.id)
+      .preload('assignment')
+      .firstOrFail()
+
+    if (!submission.assignment || !visibleClassIds.includes(submission.assignment.classId)) {
+      return ctx.response.notFound()
+    }
+
+    return ctx.response.redirect(
+      `/student/assignments/${submission.assignmentId}?submission=${submission.id}`
+    )
+  }
+
   public async getAssignments({ auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const student = await Student.findByOrFail('user_id', user.id)
 
-    const assignments = await Assignment.query()
-      .where('class_id', student.classId!)
-      .where('status', 'published')
-      .preload('subject')
-      .preload('teacher', (teacherQuery) => {
-        teacherQuery.preload('user')
-      })
-      .orderBy('due_date', 'asc')
+    const assignments = await visibleAssignmentsForStudent(student)
+    await Promise.all(
+      assignments.map((assignment) =>
+        assignment.load('teacher', (teacherQuery) => {
+          teacherQuery.preload('user')
+        })
+      )
+    )
 
     const assignmentsWithStatus = await Promise.all(
       assignments.map(async (assignment) => {
@@ -849,16 +1114,20 @@ export default class StudentController {
           .where('student_id', student.id)
           .first()
 
-        const isLate = submission?.submittedAt && submission.submittedAt > assignment.dueDate
-        const daysRemaining = Math.ceil(assignment.dueDate.diff(DateTime.now(), 'days').days)
+        const assignmentMeta = assignmentStatusMeta(assignment)
+        const submissionMeta = assignmentSubmissionMeta(assignment, submission)
 
         return {
           ...assignment.toJSON(),
           submission: submission,
-          status: submission ? submission.status : 'not_submitted',
-          isLate: !!isLate,
-          daysRemaining: daysRemaining,
-          isOverdue: daysRemaining < 0,
+          status: submissionMeta.status,
+          statusLabel: submissionMeta.label,
+          canSubmit: submissionMeta.canSubmit,
+          isLate: submissionMeta.isLate,
+          daysRemaining: assignmentMeta.daysRemaining,
+          daysLate: assignmentMeta.daysLate,
+          isOverdue: assignmentMeta.isOverdue,
+          deadlineAt: assignmentMeta.deadlineAt,
         }
       })
     )
@@ -869,6 +1138,46 @@ export default class StudentController {
     })
   }
 
+  public async pendingAssignmentsCount({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const student = await Student.findByOrFail('user_id', user.id)
+    const assignments = await visibleAssignmentsForStudent(student)
+    if (!assignments.length) return response.ok({ success: true, count: 0 })
+
+    const submissionRows = await db
+      .from('assignment_submissions')
+      .where('student_id', student.id)
+      .whereIn(
+        'assignment_id',
+        assignments.map((assignment) => assignment.id)
+      )
+      .select('assignment_id', 'status', 'submitted_at', 'is_late')
+
+    const submissionByAssignmentId = new Map(
+      submissionRows.map((submission) => [
+        String(submission.assignment_id),
+        {
+          status: submission.status,
+          submittedAt: submission.submitted_at
+            ? DateTime.fromJSDate(new Date(submission.submitted_at))
+            : null,
+          isLate: !!submission.is_late,
+        },
+      ])
+    )
+
+    const count = assignments.filter((assignment) => {
+      const submissionMeta = assignmentSubmissionMeta(
+        assignment,
+        submissionByAssignmentId.get(assignment.id) || null
+      )
+
+      return !submissionMeta.isSubmitted
+    }).length
+
+    return response.ok({ success: true, count })
+  }
+
   /**
    * Soumettre un devoir
    */
@@ -877,16 +1186,28 @@ export default class StudentController {
     const user = auth.getUserOrFail()
     const student = await Student.findByOrFail('user_id', user.id)
 
-    const assignment = await Assignment.findOrFail(payload.assignmentId)
+    const visibleClassIds = await studentAssignmentClassIds(student)
+    const assignment = await Assignment.query()
+      .where('id', payload.assignmentId)
+      .whereIn('classId', visibleClassIds)
+      .firstOrFail()
 
-    if (assignment.classId !== student.classId) {
+    if (!visibleClassIds.includes(assignment.classId)) {
       return response.forbidden({
         success: false,
         message: "Ce devoir n'est pas pour votre classe",
       })
     }
 
-    const isLate = DateTime.now() > assignment.dueDate
+    const deadlineAt = assignmentDeadlineAt(assignment)
+    if (assignment.status !== 'published' || DateTime.now() > deadlineAt) {
+      return response.badRequest({
+        success: false,
+        message: 'La date limite est dépassée. Ce devoir est clôturé et ne peut plus être soumis.',
+      })
+    }
+
+    const isLate = DateTime.now() > deadlineAt
 
     const submission = await AssignmentSubmission.updateOrCreate(
       {

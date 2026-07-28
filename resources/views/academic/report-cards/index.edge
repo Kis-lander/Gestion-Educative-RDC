@@ -89,19 +89,10 @@
           />
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Période scolaire</label>
           <select id="filterTerm" class="w-full px-3 py-2 border rounded-lg text-sm">
             <option value="">
               Tous
-            </option>
-            <option value="T1">
-              Trimestre 1
-            </option>
-            <option value="T2">
-              Trimestre 2
-            </option>
-            <option value="T3">
-              Trimestre 3
             </option>
           </select>
         </div>
@@ -146,7 +137,7 @@
                 Moyenne
               </th>
               <th class="px-4 py-3 text-center">
-                Trimestre
+                <span data-i18n>Période scolaire</span>
               </th>
               <th class="px-4 py-3 text-center">
                 Année
@@ -245,6 +236,28 @@
       const filterStudent = document.getElementById("filterStudent");
 
       const filterTerm = document.getElementById("filterTerm");
+      const classEvaluationPolicies = {{ classEvaluationPolicies|json_encode|raw }};
+      const fallbackTermOptions = {{ fallbackTermOptions|json_encode|raw }};
+      const allTermOptions = Object.values(classEvaluationPolicies).flatMap((policy) => policy.periods || []);
+      const translate = (text) => window.AppTranslations?.translate(text) || text;
+      const selectedTerm = new URLSearchParams(window.location.search).get("term") || "";
+
+      function renderTermOptions() {
+        const optionsByValue = new Map();
+        const policyTerms = classEvaluationPolicies[filterClass.value]?.periods || [];
+        const terms = filterClass.value && policyTerms.length
+          ? policyTerms
+          : (allTermOptions.length ? allTermOptions : fallbackTermOptions);
+        terms.forEach((term) => optionsByValue.set(term.value, term.label));
+        filterTerm.innerHTML = `<option value="">${translate("Tous")}</option>`;
+        optionsByValue.forEach((label, value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = translate(label);
+          filterTerm.appendChild(option);
+        });
+        filterTerm.value = selectedTerm;
+      }
 
       const filterYear = document.getElementById("filterYear");
 
@@ -264,6 +277,7 @@
       resetBtn.addEventListener("click", () => {
         window.location.href = "/academic/report-cards";
       });
+      filterClass.addEventListener("change", renderTermOptions);
 
       function downloadPDF(reportId) {
         window.open(`/academic/report-cards/${reportId}/pdf`, "_blank");
@@ -276,6 +290,8 @@
         if (filterYear.value) params.set("year", filterYear.value);
         window.location.href = `/api/report-cards/export?${params.toString()}`;
       }
+
+      renderTermOptions();
     </script>
   @endsection
   

@@ -1,6 +1,7 @@
 import { AssignmentSchema } from '#database/schema'
 import { DateTime } from 'luxon'
-import { column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import { randomUUID } from 'node:crypto'
+import { column, belongsTo, hasMany, beforeCreate } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 
 // Utilisation des alias de chemin (#models)
@@ -43,6 +44,12 @@ export default class Assignment extends AssignmentSchema {
   declare maxPoints: number
 
   @column()
+  declare term: string | null
+
+  @column()
+  declare evaluationType: 'devoir' | 'interrogation'
+
+  @column()
   declare attachmentUrl: string | null
 
   @column()
@@ -76,4 +83,9 @@ export default class Assignment extends AssignmentSchema {
   // Les copies (soumissions) des élèves
   @hasMany(() => AssignmentSubmission)
   declare submissions: HasMany<typeof AssignmentSubmission>
+
+  @beforeCreate()
+  public static assignId(assignment: Assignment) {
+    assignment.id = assignment.id ?? randomUUID()
+  }
 }

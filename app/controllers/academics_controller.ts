@@ -31,6 +31,13 @@ import {
   getPrimaryGuardianForStudent,
   getPrimaryGuardiansForStudents,
 } from '#services/guardian_service'
+import {
+  SECTION_EVALUATION_POLICIES,
+  allEvaluationPeriodOptions,
+  allEvaluationTypeOptions,
+  evaluationPolicyForClass,
+  evaluationPeriodLabel,
+} from '#services/academic_evaluation_service'
 
 export default class AcademicController {
   private getPaginationMeta(paginator: { toJSON: () => any }) {
@@ -81,15 +88,75 @@ export default class AcademicController {
     return subjects.filter((subject) => subject.code && allowedCodes.includes(subject.code))
   }
 
+  private async evaluationClassOptions(
+    classes: Array<{ id: string; schoolSectionId?: string | null; gradeLevel?: number | null }>
+  ) {
+    const sectionIds = Array.from(
+      new Set(classes.map((classObj) => classObj.schoolSectionId).filter(Boolean))
+    ) as string[]
+    const sections = sectionIds.length
+      ? await db.from('school_sections').whereIn('id', sectionIds).select('id', 'code')
+      : []
+    const sectionCodeById = new Map(sections.map((section) => [String(section.id), section.code]))
+
+    return Object.fromEntries(
+      classes.map((classObj) => [
+        classObj.id,
+        evaluationPolicyForClass(
+          sectionCodeById.get(String(classObj.schoolSectionId || '')),
+          classObj.gradeLevel
+        ),
+      ])
+    )
+  }
+
+  private evaluationTermOptionsFromPolicies(classEvaluationPolicies: Record<string, any>) {
+    const options = new Map<string, string>()
+
+    for (const policy of Object.values(classEvaluationPolicies)) {
+      for (const period of policy.periods || []) {
+        options.set(period.value, evaluationPeriodLabel(period.value))
+      }
+    }
+
+    return options.size
+      ? Array.from(options.entries()).map(([value, label]) => ({ value, label }))
+      : allEvaluationPeriodOptions()
+  }
+
   public async gradesPage(ctx: HttpContext) {
     const { auth, request, view } = ctx
     const user = auth.getUserOrFail()
     const page = Number(request.input('page', 1))
-    const classId = request.input('class_id')
-    const subjectId = request.input('subject_id')
+    const requestedClassId = String(request.input('class_id', '')).trim()
+    const requestedSubjectId = String(request.input('subject_id', '')).trim()
     const term = request.input('term')
     const published = request.input('published')
     const governance = await getGovernanceContext(user)
+    const classes = await Class.query()
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
+      .orderBy('gradeLevel', 'asc')
+      .orderBy('name', 'asc')
+    const allowedClassIds = classes.map((classObj) => classObj.id)
+    const classId = allowedClassIds.includes(requestedClassId) ? requestedClassId : ''
+    const subjectRows = allowedClassIds.length
+      ? await db
+          .from('class_subject')
+          .join('classes', 'class_subject.class_id', 'classes.id')
+          .join('subjects', 'class_subject.subject_id', 'subjects.id')
+          .whereIn('class_subject.class_id', classId ? [classId] : allowedClassIds)
+          .where('classes.school_id', user.schoolId)
+          .whereNull('classes.archived_at')
+          .select('subjects.id', 'subjects.name')
+          .distinct()
+          .orderBy('subjects.name', 'asc')
+      : []
+    const allowedSubjectIds = subjectRows.map((subject) => String(subject.id))
+    const subjectId = allowedSubjectIds.includes(requestedSubjectId) ? requestedSubjectId : ''
 
     const gradesQuery = Grade.query()
       .whereHas('class', (classQuery) =>
@@ -111,17 +178,7 @@ export default class AcademicController {
       .orderBy('examDate', 'desc')
 
     const paginator = await gradesQuery.paginate(page, 20)
-    const classes = await Class.query()
-      .where('schoolId', user.schoolId)
-      .whereNull('archivedAt')
-      .if(!governance.canManageAllSections, (query) =>
-        query.where('schoolSectionId', governance.sectionId)
-      )
-      .orderBy('name', 'asc')
-    const subjects = this.filterSubjectsBySection(
-      await Subject.query().orderBy('name', 'asc'),
-      governance.canManageAllSections ? null : governance.sectionCode
-    )
+    const subjects = subjectRows.map((subject) => ({ id: subject.id, name: subject.name }))
     const stats = await db
       .from('grades')
       .join('classes', 'grades.class_id', 'classes.id')
@@ -136,12 +193,27 @@ export default class AcademicController {
         db.raw('count(distinct grades.student_id) as students_concerned')
       )
       .first()
+    const classEvaluationPolicies = await this.evaluationClassOptions(classes)
+    const visibleEvaluationPolicy = governance.canManageAllSections
+      ? null
+      : evaluationPolicyForClass(governance.sectionCode)
+    const filterTermOptions =
+      visibleEvaluationPolicy?.periods ||
+      this.evaluationTermOptionsFromPolicies(classEvaluationPolicies)
 
     return view.render('academic/grades/index', {
       ...(await edgePageContext(ctx)),
       school: this.getFallbackSchool(user),
       classes,
       subjects,
+      selectedClassId: classId,
+      selectedSubjectId: subjectId,
+      selectedPublished: published || '',
+      classEvaluationPolicies,
+      filterTermOptions,
+      fallbackTermOptions: allEvaluationPeriodOptions(governance.sectionCode),
+      fallbackEvaluationTypeOptions: allEvaluationTypeOptions(governance.sectionCode),
+      filterPeriodLabel: 'Période scolaire',
       grades: paginator.all().map((grade) => ({
         id: grade.id,
         examDate: grade.examDate,
@@ -151,7 +223,7 @@ export default class AcademicController {
         examType: grade.examType,
         score: grade.score ?? 0,
         maxScore: grade.maxScore,
-        term: grade.term,
+        term: evaluationPeriodLabel(grade.term),
         published: grade.published,
       })),
       stats: {
@@ -179,8 +251,37 @@ export default class AcademicController {
     return view.render('academic/grades/add', {
       school: this.getFallbackSchool(user),
       classes,
+      evaluationPolicies: SECTION_EVALUATION_POLICIES,
+      classEvaluationPolicies: await this.evaluationClassOptions(classes),
+      fallbackTermOptions: allEvaluationPeriodOptions(governance.sectionCode),
+      fallbackEvaluationTypeOptions: allEvaluationTypeOptions(governance.sectionCode),
       selectedClassId: request.input('class_id', ''),
     })
+  }
+
+  public async publishGradesPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const classes = await Class.query()
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
+      .orderBy('name', 'asc')
+    const classEvaluationPolicies = await this.evaluationClassOptions(classes)
+
+    return ctx.view.render(
+      'academic/grades/publish',
+      await edgePageContext(ctx, {
+        school: this.getFallbackSchool(user),
+        classes,
+        classEvaluationPolicies,
+        fallbackTermOptions: allEvaluationPeriodOptions(governance.sectionCode),
+        pending: { classes: 0, grades: 0 },
+        classStatsList: [],
+      })
+    )
   }
 
   public async timetablePage({ auth, request, view }: HttpContext) {
@@ -219,9 +320,7 @@ export default class AcademicController {
         .orderBy('gradeLevel', 'asc')
         .orderBy('name', 'asc'),
       this.scopeTeachersToSection(
-        Teacher.query()
-          .where('schoolId', user.schoolId)
-          .where('status', 'active'),
+        Teacher.query().where('schoolId', user.schoolId).where('status', 'active'),
         governance.canManageAllSections ? null : governance.sectionId
       )
         .preload('user')
@@ -395,9 +494,7 @@ export default class AcademicController {
     const user = auth.getUserOrFail()
     const governance = await getGovernanceContext(user)
     const teachers = await this.scopeTeachersToSection(
-      Teacher.query()
-        .where('schoolId', user.schoolId)
-        .where('status', 'active'),
+      Teacher.query().where('schoolId', user.schoolId).where('status', 'active'),
       governance.canManageAllSections ? null : governance.sectionId
     )
       .preload('user')
@@ -482,14 +579,14 @@ export default class AcademicController {
       .from('class_subject')
       .where('class_subject.class_id', classObj.id)
       .join('subjects', 'class_subject.subject_id', 'subjects.id')
-      .join('teachers', 'class_subject.teacher_id', 'teachers.id')
-      .join('users', 'teachers.user_id', 'users.id')
+      .leftJoin('teachers', 'class_subject.teacher_id', 'teachers.id')
+      .leftJoin('users', 'teachers.user_id', 'users.id')
       .select(
         'class_subject.*',
         'subjects.name as subject_name',
         'users.first_name as teacher_first_name',
         'users.last_name as teacher_last_name'
-    )
+      )
     const assignedSubjectIds = subjects.map((subject) => subject.subject_id)
     const classOption = getClassSchoolOption(classObj)
     const classSectionCode = sectionCodeForLevel(classObj.level, classObj.gradeLevel)
@@ -505,12 +602,7 @@ export default class AcademicController {
           query.whereNull('school_option')
           if (classOption) query.orWhere('school_option', classOption)
         })
-        .select(
-          'subject_id',
-          'school_option',
-          'default_coefficient',
-          'default_hours_per_week'
-        )
+        .select('subject_id', 'school_option', 'default_coefficient', 'default_hours_per_week')
         .orderByRaw('case when school_option is null then 1 else 0 end'),
       this.scopeTeachersToSection(
         Teacher.query().where('schoolId', user.schoolId).where('status', 'active'),
@@ -801,15 +893,13 @@ export default class AcademicController {
     if (!governance.canManageAllSections && schoolSectionId !== governance.sectionId) {
       return response.forbidden({
         success: false,
-        message: "Vous ne pouvez créer une classe que dans votre section scolaire.",
+        message: 'Vous ne pouvez créer une classe que dans votre section scolaire.',
       })
     }
 
     if (payload.teacherId) {
       await this.scopeTeachersToSection(
-        Teacher.query()
-          .where('id', payload.teacherId)
-          .where('schoolId', user.schoolId),
+        Teacher.query().where('id', payload.teacherId).where('schoolId', user.schoolId),
         governance.canManageAllSections ? null : schoolSectionId
       ).firstOrFail()
     }
@@ -874,9 +964,7 @@ export default class AcademicController {
 
     if (payload.teacherId) {
       await this.scopeTeachersToSection(
-        Teacher.query()
-          .where('id', payload.teacherId)
-          .where('schoolId', user.schoolId),
+        Teacher.query().where('id', payload.teacherId).where('schoolId', user.schoolId),
         governance.canManageAllSections ? null : classObj.schoolSectionId
       ).firstOrFail()
     }
@@ -1001,12 +1089,22 @@ export default class AcademicController {
   /**
    * Obtenir les élèves d'une classe
    */
-  public async getClassStudents({ params, request, response }: HttpContext) {
+  public async getClassStudents({ auth, params, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const search = request.input('search')
     const status = request.input('status', 'active')
+    const classObj = await Class.query()
+      .where('id', params.id)
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
+      .firstOrFail()
 
     const query = Student.query()
-      .where('classId', params.id)
+      .where('classId', classObj.id)
       .where('academicStatus', status)
       .preload('user')
       .preload('parents', (parentQuery) => {
@@ -1074,10 +1172,7 @@ export default class AcademicController {
       .groupBy('class_subject.subject_id')
     const schoolSubjectIds = schoolSubjectRows.map((row) => row.subject_id)
     const localCoefficientBySubject = new Map(
-      schoolSubjectRows.map((row) => [
-        String(row.subject_id),
-        Number(row.average_coefficient || 1),
-      ])
+      schoolSubjectRows.map((row) => [String(row.subject_id), Number(row.average_coefficient || 1)])
     )
     const paginator = await Subject.query()
       .where('isStandard', true)
@@ -1319,9 +1414,7 @@ export default class AcademicController {
         .orderBy('name', 'asc'),
       Subject.query().where('isStandard', true).orderBy('name', 'asc'),
       this.scopeTeachersToSection(
-        Teacher.query()
-          .where('schoolId', user.schoolId)
-          .where('status', 'active'),
+        Teacher.query().where('schoolId', user.schoolId).where('status', 'active'),
         governance.canManageAllSections ? null : governance.sectionId
       )
         .preload('user')
@@ -1501,7 +1594,7 @@ export default class AcademicController {
     if (request.header('accept')?.includes('text/html')) {
       session.flash(
         'error',
-        "Le nom et le code sont imposés par le référentiel national des matières."
+        'Le nom et le code sont imposés par le référentiel national des matières.'
       )
       return response.redirect(`/schools/subjects/${subject.id}/edit`)
     }
@@ -1563,13 +1656,7 @@ export default class AcademicController {
   /**
    * Assigner une matière à une classe
    */
-  public async addSubjectToClass({
-    auth,
-    request,
-    params,
-    response,
-    session,
-  }: HttpContext) {
+  public async addSubjectToClass({ auth, request, params, response, session }: HttpContext) {
     const user = auth.getUserOrFail()
     const governance = await getGovernanceContext(user)
     const wantsHtml = request.accepts(['html', 'json']) === 'html'
@@ -1593,9 +1680,7 @@ export default class AcademicController {
       )
       .firstOrFail()
     await this.scopeTeachersToSection(
-      Teacher.query()
-        .where('id', payload.teacherId)
-        .where('schoolId', user.schoolId),
+      Teacher.query().where('id', payload.teacherId).where('schoolId', user.schoolId),
       governance.canManageAllSections ? null : classObj.schoolSectionId
     ).firstOrFail()
     const subject = await Subject.query()
@@ -1657,8 +1742,7 @@ export default class AcademicController {
       subject_id: payload.subjectId,
       teacher_id: payload.teacherId,
       hours_per_week: payload.hoursPerWeek || program.default_hours_per_week || 2,
-      coefficient:
-        payload.coefficient || program.default_coefficient || subject.coefficient || 1,
+      coefficient: payload.coefficient || program.default_coefficient || subject.coefficient || 1,
       created_at: DateTime.now().toSQL(),
     })
 
@@ -1746,13 +1830,24 @@ export default class AcademicController {
   /**
    * Obtenir les notes d'une classe
    */
-  public async getGradesByClass({ params, request, response }: HttpContext) {
+  public async getGradesByClass({ auth, params, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const term = request.input('term')
     const academicYear = request.input('academic_year')
     const subjectId = request.input('subject_id')
+    const examType = request.input('exam_type')
+    const classObj = await Class.query()
+      .where('id', params.classId)
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
+      .firstOrFail()
 
     const query = Grade.query()
-      .where('classId', params.classId)
+      .where('classId', classObj.id)
       .preload('student', (studentQuery) => {
         studentQuery.preload('user')
       })
@@ -1761,6 +1856,7 @@ export default class AcademicController {
     if (term) query.where('term', term)
     if (academicYear) query.where('academicYear', academicYear)
     if (subjectId) query.where('subjectId', subjectId)
+    if (examType) query.where('examType', examType)
 
     const grades = await query.orderBy('examDate', 'desc')
 
@@ -1907,9 +2003,8 @@ export default class AcademicController {
         name: classObj.name,
         hoursPerWeek: Number(classObj.hours_per_week || 0),
         teacherName:
-          [classObj.first_name, classObj.last_name, classObj.postnom]
-            .filter(Boolean)
-            .join(' ') || null,
+          [classObj.first_name, classObj.last_name, classObj.postnom].filter(Boolean).join(' ') ||
+          null,
       })),
     })
   }
@@ -1944,9 +2039,7 @@ export default class AcademicController {
       .from('attendances')
       .where('student_id', student.id)
       .select(
-        db.raw(
-          "sum(case when status in ('present', 'excused') then 1 else 0 end) as present_total"
-        )
+        db.raw("sum(case when status in ('present', 'excused') then 1 else 0 end) as present_total")
       )
       .count('* as total')
       .first()
@@ -2030,9 +2123,15 @@ export default class AcademicController {
       )
     }
     const termAverages = {
-      t1: weightedAverage(subjectRows.map((subject) => ({ value: subject.t1, coefficient: subject.coefficient }))),
-      t2: weightedAverage(subjectRows.map((subject) => ({ value: subject.t2, coefficient: subject.coefficient }))),
-      t3: weightedAverage(subjectRows.map((subject) => ({ value: subject.t3, coefficient: subject.coefficient }))),
+      t1: weightedAverage(
+        subjectRows.map((subject) => ({ value: subject.t1, coefficient: subject.coefficient }))
+      ),
+      t2: weightedAverage(
+        subjectRows.map((subject) => ({ value: subject.t2, coefficient: subject.coefficient }))
+      ),
+      t3: weightedAverage(
+        subjectRows.map((subject) => ({ value: subject.t3, coefficient: subject.coefficient }))
+      ),
     }
     const overallAverage = weightedAverage(
       subjectRows.map((subject) => ({ value: subject.average, coefficient: subject.coefficient }))
@@ -2080,11 +2179,18 @@ export default class AcademicController {
       .sort((a, b) => b.average - a.average)
     const rankIndex = rankedStudents.findIndex((item) => item.studentId === student.id)
     const rank = rankIndex >= 0 ? rankIndex + 1 : '-'
-    const decile = typeof rank === 'number' && totalStudents
-      ? Math.max(1, Math.ceil((rank / totalStudents) * 10))
-      : '-'
+    const decile =
+      typeof rank === 'number' && totalStudents
+        ? Math.max(1, Math.ceil((rank / totalStudents) * 10))
+        : '-'
     const parentName = formatGuardianLabel(primaryGuardian) || '-'
     const attendanceLabel = attendanceRate === null ? '-' : `${attendanceRate}%`
+    const studentEvaluationPolicies = student.class
+      ? await this.evaluationClassOptions([student.class])
+      : {}
+    const studentEvaluationPolicy =
+      studentEvaluationPolicies[student.class?.id || ''] || evaluationPolicyForClass()
+    const summaryPeriods = studentEvaluationPolicy.periods.slice(0, 3)
 
     return view.render('academic/grades/student-grades', {
       school: {
@@ -2102,11 +2208,33 @@ export default class AcademicController {
         parentPhone: primaryGuardian?.phone || student.parentPhone || '-',
       },
       termsSummary: [
-        { term: 'Trimestre 1', average: termAverages.t1, rank, attendance: attendanceRate || 0, attendanceLabel, hasGrades: termAverages.t1 > 0 },
-        { term: 'Trimestre 2', average: termAverages.t2, rank, attendance: attendanceRate || 0, attendanceLabel, hasGrades: termAverages.t2 > 0 },
-        { term: 'Trimestre 3', average: termAverages.t3, rank, attendance: attendanceRate || 0, attendanceLabel, hasGrades: termAverages.t3 > 0 },
+        {
+          term: summaryPeriods[0]?.label || evaluationPeriodLabel('T1-P1'),
+          average: termAverages.t1,
+          rank,
+          attendance: attendanceRate || 0,
+          attendanceLabel,
+          hasGrades: termAverages.t1 > 0,
+        },
+        {
+          term: summaryPeriods[1]?.label || evaluationPeriodLabel('T1-P2'),
+          average: termAverages.t2,
+          rank,
+          attendance: attendanceRate || 0,
+          attendanceLabel,
+          hasGrades: termAverages.t2 > 0,
+        },
+        {
+          term: summaryPeriods[2]?.label || evaluationPeriodLabel('T1-EX'),
+          average: termAverages.t3,
+          rank,
+          attendance: attendanceRate || 0,
+          attendanceLabel,
+          hasGrades: termAverages.t3 > 0,
+        },
       ],
       subjectsGrades: subjectRows,
+      summaryPeriods,
       termAverages,
       overallAverage,
       hasOverallAverage: overallAverage > 0,
@@ -2122,6 +2250,7 @@ export default class AcademicController {
    */
   public async addGrade({ request, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const payload = await request.validateUsing(addGradeValidator)
 
     // Vérifier que l'utilisateur a le droit d'ajouter une note
@@ -2134,6 +2263,38 @@ export default class AcademicController {
       return response.forbidden({
         success: false,
         message: "Vous n'êtes pas autorisé à ajouter des notes",
+      })
+    }
+
+    const classObj = await Class.query()
+      .where('id', payload.classId)
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
+      .first()
+
+    if (!classObj) {
+      return response.forbidden({
+        success: false,
+        message: "Vous n'etes pas autorise a gerer les notes de cette classe",
+      })
+    }
+
+    const classSubjectQuery = db
+      .from('class_subject')
+      .where('class_id', payload.classId)
+      .where('subject_id', payload.subjectId)
+    if (teacher && user.role !== 'director') {
+      classSubjectQuery.where('teacher_id', teacher.id)
+    }
+    const classSubject = await classSubjectQuery.first()
+
+    if (!classSubject) {
+      return response.badRequest({
+        success: false,
+        message: "Cette matiere n'est pas affectee a cette classe",
       })
     }
 
@@ -2154,29 +2315,32 @@ export default class AcademicController {
     const existingGrade = await Grade.query()
       .where('studentId', payload.studentId)
       .where('subjectId', payload.subjectId)
+      .where('classId', payload.classId)
       .where('term', payload.term)
       .where('examType', payload.examType)
       .first()
 
-    if (existingGrade) {
-      return response.conflict({
+    const maxScore = payload.maxScore || 20
+    if (payload.score > maxScore) {
+      return response.badRequest({
         success: false,
-        message: 'Une note existe déjà pour cet examen',
+        message: 'La note ne peut pas dépasser la pondération choisie',
       })
     }
 
-    const grade = new Grade()
+    const grade = existingGrade || new Grade()
     grade.fill({
       ...payload,
-      percentage: (payload.score / (payload.maxScore || 20)) * 100,
+      maxScore,
+      percentage: (payload.score / maxScore) * 100,
       published: false,
     })
 
     await grade.save()
 
-    return response.created({
+    return response.status(existingGrade ? 200 : 201).send({
       success: true,
-      message: 'Note ajoutée avec succès',
+      message: existingGrade ? 'Note mise à jour avec succès' : 'Note ajoutée avec succès',
       grade: grade,
     })
   }
@@ -2184,14 +2348,70 @@ export default class AcademicController {
   /**
    * Mettre à jour une note
    */
-  public async updateGrade({ request, params, response }: HttpContext) {
+  public async gradeEditPage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const grade = await Grade.query()
+      .where('id', ctx.params.id)
+      .whereHas('class', (classQuery) =>
+        classQuery
+          .where('schoolId', user.schoolId)
+          .whereNull('archivedAt')
+          .if(!governance.canManageAllSections, (query) =>
+            query.where('schoolSectionId', governance.sectionId)
+          )
+      )
+      .preload('student', (studentQuery) => studentQuery.preload('user'))
+      .preload('class')
+      .preload('subject')
+      .firstOrFail()
+
+    return ctx.view.render(
+      'academic/grades/edit',
+      await edgePageContext(ctx, {
+        grade: {
+          id: grade.id,
+          studentName: grade.student?.user?.fullName || grade.student?.registrationNumber || '-',
+          subjectName: grade.subject?.name || '-',
+          className: grade.class?.name || '-',
+          term: evaluationPeriodLabel(grade.term),
+          score: grade.score || 0,
+          maxScore: grade.maxScore || 20,
+          teacherComments: grade.teacherComments,
+          published: grade.published,
+        },
+      })
+    )
+  }
+
+  public async updateGrade({ auth, request, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const payload = await request.validateUsing(updateGradeValidator)
 
-    const grade = await Grade.findOrFail(params.id)
+    const grade = await Grade.query()
+      .where('id', params.id)
+      .whereHas('class', (classQuery) =>
+        classQuery
+          .where('schoolId', user.schoolId)
+          .whereNull('archivedAt')
+          .if(!governance.canManageAllSections, (query) =>
+            query.where('schoolSectionId', governance.sectionId)
+          )
+      )
+      .firstOrFail()
 
     if (payload.score !== undefined) {
+      const maxScore = grade.maxScore || 20
+      if (payload.score > maxScore) {
+        return response.badRequest({
+          success: false,
+          message: 'La note ne peut pas dépasser la pondération choisie',
+        })
+      }
       grade.score = payload.score
-      grade.percentage = grade.maxScore > 0 ? (grade.score / grade.maxScore) * 100 : 0
+      grade.maxScore = maxScore
+      grade.percentage = maxScore > 0 ? (grade.score / maxScore) * 100 : 0
     }
     if (payload.teacherComments !== undefined) grade.teacherComments = payload.teacherComments
     if (payload.published !== undefined) {
@@ -2203,6 +2423,10 @@ export default class AcademicController {
 
     await grade.save()
 
+    if (request.accepts(['html', 'json']) === 'html') {
+      return response.redirect('/academic/grades')
+    }
+
     return response.ok({
       success: true,
       message: 'Note mise à jour avec succès',
@@ -2213,7 +2437,9 @@ export default class AcademicController {
   /**
    * Publier les notes d'une classe
    */
-  public async publishGrades({ request, response }: HttpContext) {
+  public async publishGrades({ auth, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
     const publishSchema = vine.compile(
       vine.object({
         classId: vine.string().exists({ table: 'classes', column: 'id' }),
@@ -2223,6 +2449,21 @@ export default class AcademicController {
       })
     )
     const payload = await request.validateUsing(publishSchema)
+    const classObj = await Class.query()
+      .where('id', payload.classId)
+      .where('schoolId', user.schoolId)
+      .whereNull('archivedAt')
+      .if(!governance.canManageAllSections, (query) =>
+        query.where('schoolSectionId', governance.sectionId)
+      )
+      .first()
+
+    if (!classObj) {
+      return response.forbidden({
+        success: false,
+        message: "Vous n'etes pas autorise a publier les notes de cette classe",
+      })
+    }
 
     const updatedRows = await Grade.query()
       .where('classId', payload.classId)
@@ -2262,8 +2503,20 @@ export default class AcademicController {
   /**
    * Supprimer une note
    */
-  public async deleteGrade({ params, response }: HttpContext) {
-    const grade = await Grade.findOrFail(params.id)
+  public async deleteGrade({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const governance = await getGovernanceContext(user)
+    const grade = await Grade.query()
+      .where('id', params.id)
+      .whereHas('class', (classQuery) =>
+        classQuery
+          .where('schoolId', user.schoolId)
+          .whereNull('archivedAt')
+          .if(!governance.canManageAllSections, (query) =>
+            query.where('schoolSectionId', governance.sectionId)
+          )
+      )
+      .firstOrFail()
     await grade.delete()
 
     return response.ok({

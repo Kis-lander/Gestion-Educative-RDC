@@ -145,7 +145,7 @@
                   {{ assignment.className }} - {{ assignment.subjectName }}
                 </p>
                 <p class="text-xs text-gray-400 mt-1">
-                  Rendu: {{ assignment.dueDate }}
+                  <span data-i18n>{{ assignment.evaluationTypeLabel }}</span> - {{ assignment.termLabel }} - <span data-i18n>Rendu</span>: {{ assignment.dueDate }}
                 </p>
               </div>
               <div class="text-right">

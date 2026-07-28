@@ -6,6 +6,7 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 // Utilisation des alias de chemin (#models)
 import Assignment from '#models/assignment'
 import Student from '#models/student'
+import { assignmentDeadlineAt } from '#services/assignment_status_service'
 
 export default class AssignmentSubmission extends AssignmentSubmissionSchema {
   public static selfAssignPrimaryKey = true
@@ -72,7 +73,7 @@ export default class AssignmentSubmission extends AssignmentSubmissionSchema {
       // On charge le devoir pour comparer les dates si nécessaire
       const assignment = await Assignment.find(submission.assignmentId)
       if (assignment) {
-        submission.isLate = DateTime.now() > assignment.dueDate
+        submission.isLate = DateTime.now() > assignmentDeadlineAt(assignment)
       }
     }
   }

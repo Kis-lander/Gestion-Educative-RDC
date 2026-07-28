@@ -31,8 +31,7 @@
                 <i class="fas fa-clock text-yellow-600"></i>
                 <span class="text-sm">Date limite: <strong>{{ formatDate(assignment.dueDate) }} {{ assignment.dueTime ? 'à ' + assignment.dueTime : '' }}</strong></span>
                 <span class="text-sm {{ assignment.daysRemaining >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                  ({{ assignment.daysRemaining > 0 ? assignment.daysRemaining + ' jours restants' : 
-                 (assignment.daysRemaining >= 0 ? 'Dernier jour' : 'En retard de ' + Math.abs(assignment.daysRemaining) + ' jours') }})
+                  ({{ assignment.isOverdue ? 'Date dépassée' : (assignment.daysRemaining > 0 ? assignment.daysRemaining + ' jours restants' : 'Dernier jour') }})
             </span>
               </div>
             </div>
@@ -140,11 +139,11 @@
           </div>
         </div>
 
-        @if(assignment.daysRemaining < 0)
+        @if(assignment.isOverdue)
           <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4">
             <p class="text-sm flex gap-2">
               <i class="fas fa-exclamation-triangle text-red-600"></i>
-              <span>Le devoir est en retard. La soumission est toujours possible mais la note pourra être pénalisée.</span>
+              <span>La date limite est dépassée. Ce devoir est clôturé et ne peut plus être soumis.</span>
             </p>
           </div>
         @endif

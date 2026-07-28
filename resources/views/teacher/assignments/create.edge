@@ -49,6 +49,30 @@
               </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Période scolaire *</label>
+                <select name="term" required class="w-full px-3 py-2 border rounded-lg" id="termSelect">
+                  @each(termOption in termOptions)
+                    <option value="{{ termOption.value }}">
+                      {{ termOption.label }}
+                    </option>
+                  @end
+                </select>
+              </div>
+              <div>
+                <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Type d'épreuve *</label>
+                <select name="evaluationType" required class="w-full px-3 py-2 border rounded-lg">
+                  <option value="devoir" data-i18n>
+                    Devoir
+                  </option>
+                  <option value="interrogation" data-i18n>
+                    Interrogation
+                  </option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label class="block text-gray-700 dark:text-gray-300 mb-2">Titre *</label>
               <input
@@ -197,10 +221,73 @@
     </div>
 
     <script>
+      const classEvaluationPolicies = {{ classEvaluationPolicies|json_encode|raw }};
+      const evaluationPolicies = {{ evaluationPolicies|json_encode|raw }};
+      const fallbackTermOptions = {{ fallbackTermOptions|json_encode|raw }};
+      const allTermOptions = {{ termOptions|json_encode|raw }};
+      const defaultSecondaryTerms = [
+        { value: "S1-P1", label: "Semestre 1 - Période 1" },
+        { value: "S1-P2", label: "Semestre 1 - Période 2" },
+        { value: "S1-EX", label: "Semestre 1 - Examen semestriel" },
+        { value: "S2-P1", label: "Semestre 2 - Période 1" },
+        { value: "S2-P2", label: "Semestre 2 - Période 2" },
+        { value: "S2-EX", label: "Semestre 2 - Examen semestriel" }
+      ];
+
+      function choiceValue(choice) {
+        return Array.isArray(choice) ? choice[0] : choice.value;
+      }
+
+      function choiceLabel(choice) {
+        return Array.isArray(choice) ? choice[1] : choice.label;
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function populateTerms(classId) {
+        const termSelect = document.getElementById("termSelect");
+        const policy = classEvaluationPolicies[classId];
+        const firstPolicy = Object.values(classEvaluationPolicies)[0];
+        const periods = policy?.periods?.length
+          ? policy.periods
+          : (
+              firstPolicy?.periods?.length
+                ? firstPolicy.periods
+                : (
+                    allTermOptions.length
+                      ? allTermOptions
+                      : (
+                          fallbackTermOptions.length
+                            ? fallbackTermOptions
+                            : (evaluationPolicies.secondaire?.periods || defaultSecondaryTerms)
+                        )
+                  )
+            );
+
+        if (!periods.length) {
+          termSelect.innerHTML = defaultSecondaryTerms
+            .map((period) => `<option value="${period.value}">${period.label}</option>`)
+            .join("");
+          termSelect.disabled = false;
+          return;
+        }
+
+        termSelect.innerHTML = periods
+          .map((period) => `<option value="${escapeHtml(choiceValue(period))}">${escapeHtml(choiceLabel(period))}</option>`)
+          .join("");
+        termSelect.disabled = false;
+      }
       // Charger les matières selon la classe
       document.getElementById("classSelect")?.addEventListener("change", async function() {
         const classId = this.value;
         const subjectSelect = document.getElementById("subjectSelect");
+        populateTerms(classId);
         if (!classId) {
           subjectSelect.innerHTML = '<option value="">Sélectionnez d\'abord une classe</option>';
           subjectSelect.disabled = true;
@@ -219,6 +306,18 @@
           subjectSelect.disabled = true;
         }
       });
+      function refreshTermsFromSelectedClass() {
+        const classSelect = document.getElementById("classSelect");
+        populateTerms(classSelect?.value || Object.keys(classEvaluationPolicies)[0] || "");
+      }
+
+      refreshTermsFromSelectedClass();
+      window.addEventListener("pageshow", refreshTermsFromSelectedClass);
+      document.addEventListener("DOMContentLoaded", refreshTermsFromSelectedClass);
+      setTimeout(refreshTermsFromSelectedClass, 100);
+      setTimeout(refreshTermsFromSelectedClass, 500);
+      document.getElementById("termSelect")?.addEventListener("focus", refreshTermsFromSelectedClass);
+      document.getElementById("termSelect")?.addEventListener("mousedown", refreshTermsFromSelectedClass);
       // Gestion du fichier
 
       const fileInput = document.getElementById("fileInput");

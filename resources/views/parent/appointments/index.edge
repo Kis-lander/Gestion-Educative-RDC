@@ -150,7 +150,8 @@
                   </div>
                   <div class="mt-2 text-sm">
                     <p class="text-gray-600">
-                      <strong>Motif:</strong>{{ appointment.reason }}
+                      <strong data-i18n>Motif</strong><strong>:</strong>
+                      <span data-no-translate>{{ appointment.reason }}</span>
                     </p>
                   </div>
                   @if(appointment.teacherComment)
@@ -158,7 +159,7 @@
                       <p class="text-gray-500 font-medium">
                         Message de l'enseignant:
                       </p>
-                      <p class="text-gray-600">
+                      <p class="text-gray-600" data-no-translate>
                         {{ appointment.teacherComment }}
                       </p>
                     </div>
@@ -233,9 +234,10 @@
       function cancelAppointment(appointmentId) {
         if (confirm("Annuler ce rendez-vous ?")) {
           fetch(`/api/parent/appointments/${appointmentId}/cancel`, {
-            method: "POST",
+            method: "DELETE",
             headers: {
-              "X-CSRF-TOKEN": "{{ csrfToken }}"
+              "X-CSRF-TOKEN": "{{ csrfToken }}",
+              Accept: "application/json"
             }
           }).then(res => res.json()).then(data => {
             if (data.success) location.reload(); else alert("Erreur: " + data.message);

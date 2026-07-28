@@ -14,45 +14,85 @@
   @section('content')
     <div class="flex flex-wrap gap-2 mb-6">
       <button class="tuto-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all" data-i18n>Tous</button>
-      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="basics" data-i18n>Bases</button>
-      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="features" data-i18n>Fonctionnalités</button>
-      <button class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="advanced" data-i18n>Avancé</button>
+      @each(category in tutorialCategories)
+        <button
+          class="tuto-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50"
+          data-cat="{{ category.value }}"
+          data-i18n
+        >{{ category.label }}</button>
+      @end
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-      @each(tutorial in tutorials)
-        <article class="tutorial-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5" data-cat="{{ tutorial.category }}">
-          <div class="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
-            <i class="fas {{ tutorial.icon }} text-xl"></i>
-          </div>
-          <h3 class="font-bold text-lg" data-i18n>{{ tutorial.title }}</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n>{{ tutorial.description }}</p>
-          <div class="flex items-center gap-3 mt-4 text-xs text-gray-500">
-            <span><i class="fas fa-clock mr-1"></i>{{ tutorial.duration }}</span>
-            <span><i class="fas fa-list-check mr-1"></i>{{ tutorial.steps }} <span data-i18n>étapes</span></span>
-          </div>
-        </article>
-      @end
+      @if(tutorials.length)
+        @each(tutorial in tutorials)
+          <article
+            class="tutorial-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5"
+            data-cat="{{ tutorial.category }}"
+          >
+            <div class="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+              <i class="fas {{ tutorial.icon }} text-xl"></i>
+            </div>
+            <h3 class="font-bold text-lg" data-i18n>
+              {{ tutorial.title }}
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n>
+              {{ tutorial.description }}
+            </p>
+            <div class="flex items-center gap-3 mt-4 text-xs text-gray-500">
+              <span>                <i class="fas fa-clock mr-1"></i>{{ tutorial.duration }}</span>
+              <span>                <i class="fas fa-list-check mr-1"></i>{{ tutorial.steps }} <span data-i18n>étapes</span></span>
+            </div>
+          </article>
+        @end
+      @else
+        <div
+          class="md:col-span-2 xl:col-span-4 bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 text-sm text-gray-600 dark:text-gray-300"
+          data-i18n
+        >
+          Aucun tutoriel spécifique n'est disponible pour votre profil actuellement.
+        </div>
+      @endif
     </div>
 
     <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
       <section class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-        <h3 class="font-semibold text-lg mb-3" data-i18n>Méthode recommandée</h3>
+        <h3 class="font-semibold text-lg mb-3" data-i18n>
+          Méthode recommandée
+        </h3>
         <ol class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-          <li data-i18n>1. Ouvrez le module concerné depuis le menu latéral.</li>
-          <li data-i18n>2. Vérifiez le contexte : école, section, classe, trimestre ou élève.</li>
-          <li data-i18n>3. Enregistrez une petite opération de test avant les saisies massives.</li>
-          <li data-i18n>4. Contrôlez les rapports ou historiques après validation.</li>
+          <li data-i18n>
+            1. Ouvrez le module concerné depuis le menu latéral.
+          </li>
+          <li data-i18n>
+            2. Vérifiez le contexte : école, section, classe, trimestre ou élève.
+          </li>
+          <li data-i18n>
+            3. Enregistrez une petite opération de test avant les saisies massives.
+          </li>
+          <li data-i18n>
+            4. Contrôlez les rapports ou historiques après validation.
+          </li>
         </ol>
       </section>
 
       <section class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5">
-        <h3 class="font-semibold text-lg mb-3" data-i18n>À préparer avant une formation</h3>
+        <h3 class="font-semibold text-lg mb-3" data-i18n>
+          À préparer avant une formation
+        </h3>
         <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Un compte de test par rôle important.</span></li>
-          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Une classe, quelques élèves et au moins une matière.</span></li>
-          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Un exemple de frais scolaire et un paiement fictif.</span></li>
-          <li><i class="fas fa-check text-primary mr-2"></i><span data-i18n>Un message interne pour tester la communication.</span></li>
+          <li>
+            <i class="fas fa-check text-primary mr-2"></i>            <span data-i18n>Un compte de test par rôle important.</span>
+          </li>
+          <li>
+            <i class="fas fa-check text-primary mr-2"></i>            <span data-i18n>Une classe, quelques élèves et au moins une matière.</span>
+          </li>
+          <li>
+            <i class="fas fa-check text-primary mr-2"></i>            <span data-i18n>Un exemple de frais scolaires et un paiement fictif.</span>
+          </li>
+          <li>
+            <i class="fas fa-check text-primary mr-2"></i>            <span data-i18n>Un message interne pour tester la communication.</span>
+          </li>
         </ul>
       </section>
     </div>
@@ -61,14 +101,12 @@
       document.querySelectorAll(".tuto-cat").forEach(cat => {
         cat.addEventListener("click", () => {
           const selectedCat = cat.dataset.cat;
-
           document.querySelectorAll(".tuto-cat").forEach(item => {
             item.classList.remove("bg-primary", "text-white");
             item.classList.add("border");
           });
           cat.classList.add("bg-primary", "text-white");
           cat.classList.remove("border");
-
           document.querySelectorAll(".tutorial-card").forEach(card => {
             card.classList.toggle("hidden", selectedCat !== "all" && card.dataset.cat !== selectedCat);
           });

@@ -56,8 +56,8 @@ export const addGradeValidator = vine.create(
     classId: vine.string().exists({ table: 'classes', column: 'id' }),
     term: vine.string().trim(),
     examType: vine.string().trim(),
-    score: vine.number().range([0, 20]),
-    maxScore: vine.number().range([1, 100]).optional(),
+    score: vine.number().range([0, 500]),
+    maxScore: vine.number().range([1, 500]).optional(),
     teacherComments: vine.string().trim().optional(),
     examDate: vine.date({ formats: ['YYYY-MM-DD'] }),
   })
@@ -68,7 +68,7 @@ export const addGradeValidator = vine.create(
  */
 export const updateGradeValidator = vine.create(
   vine.object({
-    score: vine.number().range([0, 20]).optional(),
+    score: vine.number().range([0, 500]).optional(),
     teacherComments: vine.string().trim().optional(),
     published: vine.boolean().optional(),
   })

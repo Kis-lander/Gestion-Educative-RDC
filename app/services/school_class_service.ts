@@ -114,7 +114,7 @@ function getClassSectionIndex(name: string) {
   return match[1].split('').reduce((index, letter) => index * 26 + letter.charCodeAt(0) - 64, 0) - 1
 }
 
-function getClassFamilyName(name: string) {
+export function getClassFamilyName(name: string) {
   return name.replace(/\s[A-Z]+$/, '').trim()
 }
 

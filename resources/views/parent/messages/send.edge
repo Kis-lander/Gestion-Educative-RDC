@@ -3,62 +3,72 @@
   @section('title')
     Nouveau message - {{ school.name }}
   @endsection
-  
+
   @section('dashboardTitle')
     Nouveau message
   @endsection
   @section('dashboardSubtitle')
-    Envoyez un message à un enseignant
+    Envoyez un message à un membre de l'équipe scolaire.
   @endsection
-  
+
   @section('content')
     <div
-      class="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      class="grid grid-cols-1 gap-6 lg:grid-cols-3"
       x-data="{ loading: false, preview: false, confirmed: false, receiverLabel: '', subject: '', content: '', urgent: false }"
     >
-      <!-- Formulaire -->
-      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <div class="rounded-xl bg-white p-6 shadow-md dark:bg-gray-800 lg:col-span-2">
         <form
           x-ref="form"
           method="POST"
           action="/parent/messages/send"
+          x-init="$nextTick(() => { subject = $refs.subject.value; receiverLabel = $refs.receiver.selectedOptions[0]?.text.trim() || '' })"
           @submit.prevent="if (!confirmed) { preview = true; return } loading = true; $el.submit()"
         >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
 
           <div class="space-y-4">
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Destinataire *</label>
+              <label class="mb-2 block text-gray-700 dark:text-gray-300" data-i18n>Destinataire *</label>
               <select
                 name="receiverId"
                 required
-                class="w-full px-3 py-2 border rounded-lg"
+                class="w-full rounded-lg border px-3 py-2"
                 id="receiverSelect"
                 x-ref="receiver"
-                x-init="$nextTick(() => receiverLabel = $refs.receiver.selectedOptions[0]?.text.trim() || '')"
-                @change="receiverLabel = $event.target.selectedOptions[0]?.text.trim() || ''"
+                @change="receiverLabel = $event.target.selectedOptions[0]?.text.trim() || ''; if ($event.target.selectedOptions[0]?.dataset.subject && !subject) setSubject(`Question concernant ${$event.target.selectedOptions[0].dataset.subject}`)"
               >
-                <option value="">
-                  Sélectionner un enseignant
-                </option>
-                @each(teacher in teachers)
-                  <option
-                    value="{{ teacher.id }}"
-                    data-subject="{{ teacher.subject }}"
-                    {{ selectedTeacherId == teacher.id ? 'selected' : '' }}
-                  >
-                    {{ teacher.name }} - {{ teacher.subject }}
-                  </option>
-                @end
+                <option value="" data-i18n>Sélectionner un destinataire</option>
+                @if(staffRecipients && staffRecipients.length > 0)
+                  <option value="" disabled data-i18n>--- Direction et responsables ---</option>
+                  @each(staff in staffRecipients)
+                    <option
+                      value="{{ staff.id }}"
+                      data-subject="{{ staff.roleLabel }}"
+                      {{ selectedReceiverId === staff.id ? 'selected' : '' }}
+                    >
+                      {{ staff.name }} - {{ staff.subject }}
+                    </option>
+                  @end
+                @endif
+                @if(teachers && teachers.length > 0)
+                  <option value="" disabled data-i18n>--- Enseignants ---</option>
+                  @each(teacher in teachers)
+                    <option
+                      value="{{ teacher.id }}"
+                      data-subject="{{ teacher.subject }}"
+                      {{ selectedReceiverId === teacher.id ? 'selected' : '' }}
+                    >
+                      {{ teacher.name }} - {{ teacher.subject }}
+                    </option>
+                  @end
+                @endif
               </select>
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Enfant concerné (optionnel)</label>
-              <select name="studentId" class="w-full px-3 py-2 border rounded-lg">
-                <option value="">
-                  -- Aucun --
-                </option>
+              <label class="mb-2 block text-gray-700 dark:text-gray-300" data-i18n>Enfant concerné (optionnel)</label>
+              <select name="studentId" class="w-full rounded-lg border px-3 py-2">
+                <option value="" data-i18n>-- Aucun --</option>
                 @each(child in children)
                   <option value="{{ child.id }}" {{ selectedChildId == child.id ? 'selected' : '' }}>
                     {{ child.name }} - {{ child.className }} - {{ child.currentParentRelationship || child.parentRelationship || 'Parent' }}
@@ -68,142 +78,146 @@
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Sujet *</label>
+              <label class="mb-2 block text-gray-700 dark:text-gray-300" data-i18n>Sujet *</label>
               <input
                 type="text"
                 name="subject"
+                x-ref="subject"
                 x-model="subject"
                 required
-                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-primary"
                 placeholder="Sujet du message"
                 id="subjectInput"
+                data-i18n-attr="placeholder"
               />
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Message *</label>
+              <label class="mb-2 block text-gray-700 dark:text-gray-300" data-i18n>Message *</label>
               <textarea
                 name="content"
                 x-model="content"
                 required
                 rows="8"
-                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-primary"
                 placeholder="Rédigez votre message ici..."
+                data-i18n-attr="placeholder"
               ></textarea>
             </div>
 
             <div>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="urgent" x-model="urgent" class="w-4 h-4" />
-                <span class="text-red-600">Marquer comme urgent</span>
+              <label class="flex cursor-pointer items-center gap-2">
+                <input type="checkbox" name="urgent" x-model="urgent" class="h-4 w-4" />
+                <span class="text-red-600" data-i18n>Marquer comme urgent</span>
               </label>
             </div>
           </div>
 
-          <div class="flex gap-3 mt-6 pt-4 border-t">
+          <div class="mt-6 flex gap-3 border-t pt-4">
             <button
               type="submit"
               :disabled="loading"
-              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+              class="rounded-lg bg-primary px-6 py-2 text-white hover:bg-blue-700"
             >
               <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              Envoyer le message
-        </button>
-            <a href="/parent/messages" class="px-6 py-2 border rounded-lg hover:bg-gray-50">
+              <span data-i18n>Envoyer le message</span>
+            </button>
+            <a href="/parent/messages" class="rounded-lg border px-6 py-2 hover:bg-gray-50 dark:hover:bg-gray-700" data-i18n>
               Annuler
-        </a>
+            </a>
           </div>
         </form>
       </div>
 
-      <!-- Informations -->
       <div class="space-y-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4" x-show="preview" x-cloak>
-          <h3 class="font-semibold mb-3">
-            Apercu du message
-          </h3>
-          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
+        <div class="rounded-xl bg-white p-4 shadow-md dark:bg-gray-800" x-show="preview" x-cloak>
+          <h3 class="mb-3 font-semibold" data-i18n>Aperçu du message</h3>
+          <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+            <div class="mb-2 flex items-center gap-2 text-xs text-gray-500">
               <i class="fas fa-envelope"></i>
-              <span x-text="receiverLabel || 'Destinataire non selectionne'"></span>
-              <span x-show="urgent" class="bg-red-100 text-red-800 px-2 py-0.5 rounded">Urgent</span>
+              <span x-text="receiverLabel || window.AppTranslations?.translate('Destinataire non sélectionné') || 'Destinataire non sélectionné'"></span>
+              <span x-show="urgent" class="rounded bg-red-100 px-2 py-0.5 text-red-800" data-i18n>Urgent</span>
             </div>
-            <p class="font-semibold text-gray-800 dark:text-white" x-text="subject || 'Sujet'"></p>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap" x-text="content || 'Message...'"></p>
+            <p class="font-semibold text-gray-800 dark:text-white" x-text="subject || window.AppTranslations?.translate('Sujet') || 'Sujet'"></p>
+            <p class="mt-2 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300" x-text="content || 'Message...'"></p>
             <div class="mt-4 flex gap-2">
-              <button type="button" @click="preview = false; confirmed = false" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600">
+              <button type="button" @click="preview = false; confirmed = false" class="rounded-lg border px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-600" data-i18n>
                 Modifier
               </button>
               <button
                 type="button"
                 @click="confirmed = true; $nextTick(() => $refs.form.requestSubmit())"
                 :disabled="loading"
-                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700"
+                class="flex-1 rounded-lg bg-primary px-4 py-2 text-white hover:bg-blue-700"
               >
                 <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-                Confirmer l'envoi
+                <span data-i18n>Confirmer l'envoi</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
-          <h3 class="font-semibold mb-2">
-            Conseils
-          </h3>
-          <ul class="text-sm space-y-2">
+        <div class="rounded-xl bg-blue-50 p-4 dark:bg-blue-900/20">
+          <h3 class="mb-2 font-semibold" data-i18n>Conseils</h3>
+          <ul class="space-y-2 text-sm">
             <li class="flex gap-2">
-              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-              <span>Soyez clair et précis dans votre message</span>
+              <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+              <span data-i18n>Soyez clair et précis dans votre message.</span>
             </li>
             <li class="flex gap-2">
-              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-              <span>Indiquez l'enfant concerné si nécessaire</span>
+              <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+              <span data-i18n>Indiquez l'enfant concerné si nécessaire.</span>
             </li>
             <li class="flex gap-2">
-              <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-              <span>Les messages urgents sont traités en priorité</span>
+              <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+              <span data-i18n>Les messages urgents sont traités en priorité.</span>
             </li>
           </ul>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-          <h3 class="font-semibold mb-2">
-            Exemples de sujets
-          </h3>
+        <div class="rounded-xl bg-white p-4 shadow-md dark:bg-gray-800">
+          <h3 class="mb-2 font-semibold" data-i18n>Exemples de sujets</h3>
           <div class="space-y-1 text-sm">
             <button
+              type="button"
               onclick="setSubject('Suivi scolaire de mon enfant')"
-              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+              class="block w-full rounded p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              data-i18n
             >
-              📚 Suivi scolaire de mon enfant
-        </button>
+              Suivi scolaire de mon enfant
+            </button>
             <button
+              type="button"
               onclick="setSubject('Demande de rendez-vous')"
-              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+              class="block w-full rounded p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              data-i18n
             >
-              📅 Demande de rendez-vous
-        </button>
+              Demande de rendez-vous
+            </button>
             <button
+              type="button"
               onclick="setSubject('Information importante')"
-              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+              class="block w-full rounded p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              data-i18n
             >
-              ⚠️ Information importante
-        </button>
+              Information importante
+            </button>
             <button
+              type="button"
               onclick="setSubject('Question sur les devoirs')"
-              class="block w-full text-left p-2 hover:bg-gray-50 rounded"
+              class="block w-full rounded p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              data-i18n
             >
-              📝 Question sur les devoirs
-        </button>
+              Question sur les devoirs
+            </button>
           </div>
         </div>
 
-        @if(selectedTeacherId)
-          <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
-            <p class="text-sm flex gap-2">
+        @if(selectedReceiverId && selectedSubject)
+          <div class="rounded-xl bg-green-50 p-4 dark:bg-green-900/20">
+            <p class="flex gap-2 text-sm">
               <i class="fas fa-info-circle text-green-600"></i>
-              <span>Vous allez envoyer un message à l'enseignant de {{ selectedSubject }}</span>
+              <span><span data-i18n>Vous allez envoyer un message à</span> <span data-no-translate>{{ selectedSubject }}</span>.</span>
             </p>
           </div>
         @endif
@@ -216,15 +230,5 @@
         input.value = subject;
         input.dispatchEvent(new Event("input", { bubbles: true }));
       }
-      // Pré-remplir le sujet si destinataire sélectionné
-
-      document.getElementById("receiverSelect")?.addEventListener("change", e => {
-        const option = e.target.options[e.target.selectedIndex];
-        const subject = option.dataset.subject;
-        if (subject && !document.getElementById("subjectInput").value) {
-          setSubject(`Question concernant ${subject}`);
-        }
-      });
     </script>
   @endsection
-  

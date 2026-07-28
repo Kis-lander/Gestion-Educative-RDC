@@ -1,0 +1,55 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Enseignants de mes enfants - {{ school.name }}
+  @endsection
+
+  @section('dashboardTitle')
+    Enseignants
+  @endsection
+  @section('dashboardSubtitle')
+    Enseignants rattachés aux classes et matières de vos enfants.
+  @endsection
+
+  @section('content')
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      @each(teacher in teachers)
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+              {{ teacher.name.charAt(0) }}
+            </div>
+            <div class="min-w-0">
+              <h3 class="font-bold text-gray-900 dark:text-white truncate">{{ teacher.name }}</h3>
+              <p class="text-sm text-gray-500">{{ teacher.specialization }}</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-sm">
+            <div>
+              <p class="text-gray-500 mb-1">Classe(s)</p>
+              <p class="font-semibold">{{ teacher.classes.join(', ') || '-' }}</p>
+            </div>
+            <div>
+              <p class="text-gray-500 mb-1">Matière(s)</p>
+              <p class="font-semibold">{{ teacher.subjects.join(', ') || 'Titulaire' }}</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-4">
+            <a href="/parent/messages/send?teacher_id={{ teacher.id }}" class="text-center px-3 py-2 bg-primary text-white rounded-lg text-sm hover:bg-blue-700">
+              <i class="fas fa-envelope mr-1"></i>Message
+            </a>
+            <a href="/parent/appointments/request?teacher_id={{ teacher.id }}" class="text-center px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+              <i class="fas fa-calendar-plus mr-1"></i>Rendez-vous
+            </a>
+          </div>
+        </div>
+      @else
+        <div class="md:col-span-2 xl:col-span-3 text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+          <i class="fas fa-chalkboard-user text-5xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500">Aucun enseignant lié aux classes de vos enfants.</p>
+        </div>
+      @end
+    </div>
+  @endsection

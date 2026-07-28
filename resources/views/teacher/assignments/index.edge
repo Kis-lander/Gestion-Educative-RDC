@@ -59,6 +59,22 @@
           Soumissions à noter
         </p>
       </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-red-600">
+          {{ stats.expired || 0 }}
+        </p>
+        <p class="text-sm text-gray-500" data-i18n>
+          Expirés
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-orange-600">
+          {{ stats.missingSubmissions || 0 }}
+        </p>
+        <p class="text-sm text-gray-500" data-i18n>
+          Non rendus
+        </p>
+      </div>
     </div>
   @endsection
   
@@ -107,6 +123,9 @@
             <option value="closed">
               Clôturés
             </option>
+            <option value="expired">
+              Expirés
+            </option>
           </select>
         </div>
         <div>
@@ -139,9 +158,7 @@
           data-status="{{ assignment.status }}"
           data-title="{{ assignment.title.toLowerCase() }}"
         >
-          <div
-            class="border-l-4 {{ assignment.status === 'published' ? 'border-green-500' : (assignment.status === 'draft' ? 'border-yellow-500' : 'border-gray-400') }}"
-          >
+          <div class="border-l-4 {{ assignment.borderClass }}">
             <div class="p-4">
               <div class="flex flex-wrap justify-between items-start gap-3">
                 <div class="flex-1">
@@ -149,12 +166,12 @@
                     <h3 class="font-bold text-lg">
                       {{ assignment.title }}
                     </h3>
-                    <span
-                      class="px-2 py-1 rounded-full text-xs {{ assignment.status === 'published' ? 'bg-green-100 text-green-800' : (assignment.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}"
-                    >
-                      {{ assignment.status === 'published' ? 'Publié' : (assignment.status === 'draft' ? 'Brouillon' : 'Clôturé') }}
+                    <span class="px-2 py-1 rounded-full text-xs {{ assignment.statusClass }}" data-i18n>
+                      {{ assignment.statusLabel }}
               </span>
                     <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ assignment.className }} - {{ assignment.subjectName }}</span>
+                    <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">{{ assignment.termLabel }}</span>
+                    <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded" data-i18n>{{ assignment.evaluationTypeLabel }}</span>
                   </div>
                   <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                     {{ assignment.description }}
@@ -178,7 +195,7 @@
                   >
                     <i class="fas fa-edit mr-1"></i>
                   </a>
-                  @if(assignment.status === 'published')
+                  @if(assignment.status !== 'draft')
                     <a
                       href="/teacher/assignments/{{ assignment.id }}/submissions"
                       class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
@@ -190,7 +207,7 @@
               </div>
 
               <!-- Barre de progression -->
-              @if(assignment.status === 'published')
+              @if(assignment.status !== 'draft')
                 <div class="mt-3 pt-2 border-t">
                   <div class="flex justify-between text-xs mb-1">
                     <span>Taux de rendu</span>

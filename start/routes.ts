@@ -500,6 +500,11 @@ router
   .use(middleware.auth())
 
 router
+  .get('/api/student/pending-assignments-count', [controllers.Students, 'pendingAssignmentsCount'])
+  .as('api.student.pending_assignments_count')
+  .use([middleware.auth(), middleware.role({ allowedRoles: ['student', 'director'] })])
+
+router
   .get('/api/teacher/forum/export', [forumsController, 'exportTeacherForum'])
   .as('api.teacher.forum.export')
   .use(middleware.auth())
@@ -1258,16 +1263,16 @@ router
     router.get('/grades/bulk', async (ctx) =>
       ctx.view.render('academic/grades/bulk', await edgePageContext(ctx))
     )
-    router.get('/grades/:id/edit', async (ctx) =>
-      ctx.view.render('academic/grades/edit', await edgePageContext(ctx))
-    )
+    router.get('/grades/:id/edit', [controllers.Academics, 'gradeEditPage']).as('academic.grades.edit')
+    router.put('/grades/:id', [controllers.Academics, 'updateGrade']).as('academic.grades.update.web')
+    router
+      .delete('/grades/:id', [controllers.Academics, 'deleteGrade'])
+      .as('academic.grades.delete.web')
     router.get('/grades/class/:classId/view', async (ctx) =>
       ctx.view.render('academic/grades/class-grades', await edgePageContext(ctx))
     )
     router.get('/grades/student/:studentId', [controllers.Academics, 'studentGradesPage'])
-    router.get('/grades/publish', async (ctx) =>
-      ctx.view.render('academic/grades/publish', await edgePageContext(ctx))
-    )
+    router.get('/grades/publish', [controllers.Academics, 'publishGradesPage'])
     router.get('/report-cards', async (ctx) =>
       ctx.view.render('academic/report-cards/index', await edgePageContext(ctx))
     )
@@ -1389,6 +1394,9 @@ router
     router
       .get('/assignments/submissions', [controllers.Students, 'submissionsPage'])
       .as('student.assignments.submissions.index')
+    router
+      .get('/assignments/submissions/:id', [controllers.Students, 'submissionShowPage'])
+      .as('student.assignments.submissions.show')
     router.get('/assignments/:id', [controllers.Students, 'assignmentShowPage'])
     router.get('/assignments/:id/submit', [controllers.Students, 'assignmentSubmitPage'])
     router.post('/assignments/:id/submit', [controllers.Students, 'submitAssignmentWeb'])
@@ -1425,9 +1433,7 @@ router
     router
       .delete('/forum/reply/:id', [forumsController, 'deleteReply'])
       .as('student.forum.reply.delete')
-    router.get('/grades', async (ctx) =>
-      ctx.view.render('student/grades/index', await edgePageContext(ctx))
-    )
+    router.get('/grades', [controllers.Students, 'gradesPage'])
     router.get('/grades/details', async (ctx) =>
       ctx.view.render('student/grades/details', await edgePageContext(ctx))
     )
@@ -1641,11 +1647,11 @@ router
         }))
         .sort((a, b) => b.average - a.average)
       const rankIndex = rankedAverages.findIndex((entry) => entry.id === studentId)
+      const totalStudentsRow = classId
+        ? await db.from('students').where('class_id', classId).count('* as total').first()
+        : null
       const totalStudents = classId
-        ? Number(
-            (await db.from('students').where('class_id', classId).count('* as total').first())
-              ?.total || context.totalStudents
-          )
+        ? Number(totalStudentsRow?.total || context.totalStudents)
         : context.totalStudents
 
       const attendanceRows = studentId
@@ -1720,6 +1726,9 @@ router
   .group(() => {
     router.get('/dashboard', [controllers.Parents, 'dashboardPage'])
     router.get('/children', [controllers.Parents, 'childrenPage'])
+    router.get('/classes', [controllers.Parents, 'classesPage'])
+    router.get('/subjects', [controllers.Parents, 'subjectsPage'])
+    router.get('/teachers', [controllers.Parents, 'teachersPage'])
     router.get('/children/:id', [controllers.Parents, 'childShowPage'])
     router.get('/children/:id/profile', [controllers.Parents, 'childProfilePage'])
     router.get('/grades', [controllers.Parents, 'gradesPage'])
@@ -1754,6 +1763,14 @@ router
     )
     router.get('/payments/history', [controllers.Parents, 'paymentsHistoryPage'])
     router.get('/payments/status', [controllers.Parents, 'paymentsStatusPage'])
+    router.get('/payments/status/pdf', [controllers.Parents, 'paymentStatusPdfRedirect'])
+    router.get('/payments/initiate', [controllers.Parents, 'initiatePaymentRedirect'])
+    router.get('/payments/payment-plan/request', [
+      controllers.Parents,
+      'paymentPlanRequestRedirect',
+    ])
+    router.get('/payments/receipt/:id', [controllers.Parents, 'paymentReceiptPage'])
+    router.get('/payments/print-receipt/:id', [controllers.Parents, 'printPaymentReceiptPage'])
     router.get('/messages', [controllers.Parents, 'parentMessagesPage'])
     router.get('/messages/send', [controllers.Parents, 'parentMessageSendPage'])
     router
@@ -1771,7 +1788,7 @@ router
       .get('/appointments/reschedule', [controllers.Parents, 'appointmentRequestPage'])
       .as('parent.appointments.reschedule')
     router
-      .get('/appointments/:id', [controllers.Parents, 'appointmentsPage'])
+      .get('/appointments/:id', [controllers.Parents, 'appointmentDetailsPage'])
       .as('parent.appointments.show.alias')
   })
   .prefix('/parent')
@@ -1782,6 +1799,9 @@ router
     router.get('/children/stats', [controllers.Parents, 'childrenStats'])
     router.get('/grades/export', [controllers.Parents, 'exportGrades'])
     router.get('/attendance/export', [controllers.Parents, 'exportAttendance'])
+    router
+      .get('/attendance/:studentId', [controllers.Parents, 'getChildAttendance'])
+      .as('api.parent.attendance.show')
     router
       .get('/payments/export', [controllers.Parents, 'exportPayments'])
       .as('api.parent.payments.export')
@@ -2367,6 +2387,7 @@ router
 
             // Devoirs
             router.get('/assignments', [controllers.Students, 'getAssignments'])
+            router.get('/pending-assignments-count', [controllers.Students, 'pendingAssignmentsCount'])
             router.post('/assignments/submit', [controllers.Students, 'submitAssignment'])
 
             // Forum

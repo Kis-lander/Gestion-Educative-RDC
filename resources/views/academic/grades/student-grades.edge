@@ -63,7 +63,7 @@
       <!-- Résumé des performances -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 min-h-[260px]">
         <h3 class="font-semibold mb-3">
-          Résumé par trimestre
+          Résumé par période scolaire
         </h3>
         <div class="space-y-5">
           @each(termSummary in termsSummary)
@@ -121,13 +121,13 @@
                 Matière
               </th>
               <th class="px-4 py-3 text-center">
-                T1
+                {{ summaryPeriods[0]?.label || 'Période 1' }}
               </th>
               <th class="px-4 py-3 text-center">
-                T2
+                {{ summaryPeriods[1]?.label || 'Période 2' }}
               </th>
               <th class="px-4 py-3 text-center">
-                T3
+                {{ summaryPeriods[2]?.label || 'Période 3' }}
               </th>
               <th class="px-4 py-3 text-center">
                 Moyenne
@@ -231,7 +231,7 @@
       function renderChart() {
         const ctx = document.getElementById("evolutionChart").getContext("2d");
         const data = {
-          labels: [ "Trimestre 1", "Trimestre 2", "Trimestre 3" ],
+          labels: {{ summaryPeriods.map((period) => period.label)|json_encode|raw }},
           datasets: [ {
             label: "Moyenne générale",
             data: [ {{ termAverages.t1 || 0 }}, {{ termAverages.t2 || 0 }}, {{ termAverages.t3 || 0 }} ],

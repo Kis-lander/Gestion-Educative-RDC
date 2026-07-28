@@ -15,7 +15,9 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
       <div class="grid grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] gap-6 items-center">
         <div>
-          <p class="text-sm font-semibold text-primary mb-2" data-i18n>Assistance Gestion Éducative RDC</p>
+          <p class="text-sm font-semibold text-primary mb-2" data-i18n>
+            Assistance Gestion Éducative RDC
+          </p>
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3" data-i18n>
             Trouvez rapidement l'aide adaptée à votre rôle
           </h2>
@@ -35,79 +37,181 @@
       </div>
     </div>
 
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold text-primary" data-i18n>
+            Aide personnalisée
+          </p>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-1">
+            <span data-i18n>Profil</span>: <span data-i18n>{{ helpProfile.roleLabel || 'Utilisateur' }}</span>
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n>
+            {{ helpProfile.summary }}
+          </p>
+        </div>
+        <a
+          href="/help/documentation"
+          class="inline-flex items-center gap-2 text-primary text-sm font-medium hover:underline"
+        >
+          <span data-i18n>Voir ma documentation</span>
+          <i class="fas fa-arrow-right text-xs"></i>
+        </a>
+      </div>
+      <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4 text-sm text-gray-700 dark:text-gray-200">
+        @each(action in helpProfile.recommendedActions)
+          <li class="flex items-start gap-2">
+            <i class="fas fa-check text-primary mt-1"></i>
+            <span data-i18n>{{ action }}</span>
+          </li>
+        @end
+      </ul>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-8" id="helpCards">
-      <a href="/help/faq" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="faq questions comptes école notes paiements discipline transferts messages rapports">
+      <a
+        href="/help/faq"
+        class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition"
+        data-search="faq questions comptes école notes paiements discipline transferts messages rapports"
+      >
         <i class="fas fa-circle-question text-primary text-2xl mb-3"></i>
-        <h3 class="font-semibold text-lg" data-i18n>FAQ</h3>
-        <p class="text-sm text-gray-500 mt-1" data-i18n>Réponses courtes aux questions fréquentes par module.</p>
+        <h3 class="font-semibold text-lg" data-i18n>
+          FAQ
+        </h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>
+          Réponses courtes aux questions fréquentes par module.
+        </p>
       </a>
-      <a href="/help/guides" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="guides démarrage comptes classes élèves enseignants parents finances discipline">
+      <a
+        href="/help/guides"
+        class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition"
+        data-search="guides démarrage comptes classes élèves enseignants parents finances discipline"
+      >
         <i class="fas fa-book-open text-green-600 text-2xl mb-3"></i>
-        <h3 class="font-semibold text-lg" data-i18n>Guides pratiques</h3>
-        <p class="text-sm text-gray-500 mt-1" data-i18n>Procédures étape par étape pour les opérations importantes.</p>
+        <h3 class="font-semibold text-lg" data-i18n>
+          Guides pratiques
+        </h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>
+          Procédures étape par étape pour les opérations importantes.
+        </p>
       </a>
-      <a href="/help/tutorial" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="tutoriels parcours tableau de bord messages rapports transferts">
+      <a
+        href="/help/tutorial"
+        class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition"
+        data-search="tutoriels parcours tableau de bord messages rapports transferts"
+      >
         <i class="fas fa-route text-indigo-600 text-2xl mb-3"></i>
-        <h3 class="font-semibold text-lg" data-i18n>Parcours tutoriels</h3>
-        <p class="text-sm text-gray-500 mt-1" data-i18n>Suites d'actions pour apprendre sans quitter l'application.</p>
+        <h3 class="font-semibold text-lg" data-i18n>
+          Parcours tutoriels
+        </h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>
+          Suites d'actions pour apprendre sans quitter l'application.
+        </p>
       </a>
-      <a href="/help/documentation" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="documentation modules rôles inspection scolaire financier discipline communication inter-écoles">
+      <a
+        href="/help/documentation"
+        class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition"
+        data-search="documentation modules rôles inspection scolaire financier discipline communication inter-écoles"
+      >
         <i class="fas fa-file-lines text-amber-600 text-2xl mb-3"></i>
-        <h3 class="font-semibold text-lg" data-i18n>Documentation fonctionnelle</h3>
-        <p class="text-sm text-gray-500 mt-1" data-i18n>Vue complète des rôles, modules et flux de travail.</p>
+        <h3 class="font-semibold text-lg" data-i18n>
+          Documentation fonctionnelle
+        </h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>
+          Vue complète des rôles, modules et flux de travail.
+        </p>
       </a>
-      <a href="/help/contact" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="support contact problème technique assistance">
+      <a
+        href="/help/contact"
+        class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition"
+        data-search="support contact problème technique assistance"
+      >
         <i class="fas fa-headset text-red-600 text-2xl mb-3"></i>
-        <h3 class="font-semibold text-lg" data-i18n>Support</h3>
-        <p class="text-sm text-gray-500 mt-1" data-i18n>Signaler un blocage ou demander une amélioration.</p>
+        <h3 class="font-semibold text-lg" data-i18n>
+          Support
+        </h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>
+          Signaler un blocage ou demander une amélioration.
+        </p>
       </a>
-      <a href="/help/guides#quick-start" class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition" data-search="démarrage rapide première configuration école production">
+      <a
+        href="/help/guides#quick-start"
+        class="help-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 hover:shadow-lg transition"
+        data-search="démarrage rapide première configuration école production"
+      >
         <i class="fas fa-rocket text-purple-600 text-2xl mb-3"></i>
-        <h3 class="font-semibold text-lg" data-i18n>Démarrage rapide</h3>
-        <p class="text-sm text-gray-500 mt-1" data-i18n>Les premières actions à faire après validation d'une école.</p>
+        <h3 class="font-semibold text-lg" data-i18n>
+          Démarrage rapide
+        </h3>
+        <p class="text-sm text-gray-500 mt-1" data-i18n>
+          Les premières actions à faire après validation d'une école.
+        </p>
       </a>
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
       <div class="px-5 py-4 border-b dark:border-gray-700">
-        <h3 class="font-semibold" data-i18n>Articles recommandés</h3>
+        <h3 class="font-semibold" data-i18n>
+          Articles recommandés
+        </h3>
       </div>
       <div class="divide-y dark:divide-gray-700" id="popularArticles">
-        @each(article in popularArticles)
-          <a href="{{ article.link }}" class="help-article block p-4 hover:bg-gray-50 dark:hover:bg-gray-700" data-search="{{ article.title }} {{ article.description }}" data-help-view-slug="{{ article.slug }}">
-            <div class="flex items-start gap-3">
-              <i class="fas {{ article.icon }} text-primary mt-1 w-5"></i>
-              <div>
-                <p class="font-medium" data-i18n>{{ article.title }}</p>
-                <p class="text-sm text-gray-500 mt-1" data-i18n>{{ article.description }}</p>
-                <p class="text-xs text-gray-400 mt-2"><span>{{ article.views }}</span> <span data-i18n>vues</span></p>
+        @if(popularArticles.length)
+          @each(article in popularArticles)
+            <a
+              href="{{ article.link }}"
+              class="help-article block p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+              data-search="{{ article.title }} {{ article.description }}"
+              data-help-view-slug="{{ article.slug }}"
+            >
+              <div class="flex items-start gap-3">
+                <i class="fas {{ article.icon }} text-primary mt-1 w-5"></i>
+                <div>
+                  <p class="font-medium" data-i18n>
+                    {{ article.title }}
+                  </p>
+                  <p class="text-sm text-gray-500 mt-1" data-i18n>
+                    {{ article.description }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-2">
+                    <span>{{ article.views }}</span>                    <span data-i18n>vues</span>
+                  </p>
+                </div>
               </div>
-            </div>
-          </a>
-        @end
+            </a>
+          @end
+        @else
+          <div class="p-4 text-sm text-gray-500" data-i18n>
+            Aucun article prioritaire n'est requis pour votre profil actuellement. Consultez les guides ou contactez le support.
+          </div>
+        @endif
       </div>
     </div>
 
-    <div id="emptySearch" class="hidden bg-amber-50 dark:bg-amber-900/20 rounded-xl p-5 text-sm text-gray-700 dark:text-gray-200" data-i18n>
+    <div
+      id="emptySearch"
+      class="hidden bg-amber-50 dark:bg-amber-900/20 rounded-xl p-5 text-sm text-gray-700 dark:text-gray-200"
+      data-i18n
+    >
       Aucun contenu ne correspond à votre recherche. Essayez avec un module comme notes, paiements, transferts, messages ou rapports.
     </div>
 
     <script>
       const helpSearch = document.getElementById("searchHelp");
+
       const searchableItems = Array.from(document.querySelectorAll(".help-card, .help-article"));
+
       const emptySearch = document.getElementById("emptySearch");
 
       helpSearch?.addEventListener("input", () => {
         const query = helpSearch.value.trim().toLowerCase();
         let visible = 0;
-
         searchableItems.forEach(item => {
           const text = `${item.textContent} ${item.dataset.search || ""}`.toLowerCase();
           const matches = !query || text.includes(query);
           item.classList.toggle("hidden", !matches);
           if (matches) visible += 1;
         });
-
         emptySearch.classList.toggle("hidden", visible > 0);
       });
 
@@ -115,14 +219,15 @@
         link.addEventListener("click", () => {
           const slug = link.dataset.helpViewSlug;
           if (!slug) return;
-
           fetch("/api/help/views", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "X-CSRF-TOKEN": "{{ csrfToken }}"
             },
-            body: JSON.stringify({ slug }),
+            body: JSON.stringify({
+              slug: slug
+            }),
             keepalive: true
           }).catch(() => {});
         });

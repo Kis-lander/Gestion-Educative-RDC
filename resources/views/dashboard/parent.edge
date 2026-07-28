@@ -107,6 +107,34 @@
                 </div>
               </div>
 
+              <div class="mb-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                <div class="mb-2 flex items-center justify-between">
+                  <p class="text-sm font-semibold text-gray-800 dark:text-white" data-i18n>
+                    Devoirs
+                  </p>
+                  <a href="/parent/messages/send?student_id={{ child.id }}" class="text-xs text-primary hover:underline" data-i18n>Question</a>
+                </div>
+                <div class="space-y-2">
+                  @each(assignment in child.assignments)
+                    <div class="flex items-start justify-between gap-3 border-b border-gray-200 pb-2 last:border-0 last:pb-0 dark:border-gray-600">
+                      <div>
+                        <p class="text-sm font-medium text-gray-800 dark:text-white">
+                          {{ assignment.title }}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                          {{ assignment.subjectName }} · <span data-i18n>{{ assignment.evaluationTypeLabel }}</span> · {{ assignment.termLabel }} · <span data-i18n>{{ assignment.isOverdue ? 'Date dépassée' : assignment.dueDate }}</span>
+                        </p>
+                      </div>
+                      <span class="shrink-0 rounded-full px-2 py-1 text-xs {{ assignment.statusClass }}" data-i18n>{{ assignment.statusLabel }}</span>
+                    </div>
+                    @else
+                    <p class="py-2 text-center text-sm text-gray-500" data-i18n>
+                      Aucun devoir en attente
+                    </p>
+                  @end
+                </div>
+              </div>
+
               <div class="flex flex-wrap gap-2">
                 <a
                   href="/parent/grades/child/{{ child.id }}"

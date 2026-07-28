@@ -1,0 +1,157 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Détails du rendez-vous - {{ appointment.teacherName }}
+  @endsection
+
+  @section('dashboardTitle')
+    Détails du rendez-vous
+  @endsection
+  @section('dashboardSubtitle')
+    <span data-no-translate>{{ appointment.childName }}</span> - <span data-no-translate>{{ appointment.teacherName }}</span>
+  @endsection
+
+  @section('actions')
+    <div class="flex flex-wrap gap-2">
+      <a
+        href="/parent/appointments"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        <i class="fas fa-arrow-left mr-2"></i><span data-i18n>Retour</span>
+      </a>
+      @if(appointment.status === 'pending')
+        <button
+          onclick="cancelAppointment('{{ appointment.id }}')"
+          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          <i class="fas fa-times mr-2"></i><span data-i18n>Annuler</span>
+        </button>
+      @endif
+    </div>
+  @endsection
+
+  @section('content')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+        <div class="border-l-4 border-yellow-500">
+          <div class="p-5">
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white" data-no-translate>
+                  {{ appointment.teacherName }}
+                </h3>
+                <p class="text-sm text-gray-500">
+                  <span data-i18n>{{ appointment.subject }}</span>
+                </p>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium" data-i18n>
+                En attente
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-gray-500 mb-1" data-i18n>Enfant</p>
+                <p class="font-semibold" data-no-translate>{{ appointment.childName }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-gray-500 mb-1" data-i18n>Date proposée</p>
+                <p class="font-semibold" data-no-translate>{{ formatDate(appointment.date) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-gray-500 mb-1" data-i18n>Créneau</p>
+                <p class="font-semibold" data-no-translate>{{ appointment.time }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-gray-500 mb-1" data-i18n>Demandé le</p>
+                <p class="font-semibold" data-no-translate>{{ formatDate(appointment.requestedAt) }}</p>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <h4 class="font-semibold text-gray-800 dark:text-white mb-2" data-i18n>Motif</h4>
+              <p class="text-gray-600 dark:text-gray-300" data-no-translate>
+                {{ appointment.reason }}
+              </p>
+            </div>
+
+            @if(appointment.teacherComment)
+              <div class="mt-5 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-2" data-i18n>
+                  Message de l'enseignant
+                </h4>
+                <p class="text-gray-600 dark:text-gray-300" data-no-translate>
+                  {{ appointment.teacherComment }}
+                </p>
+              </div>
+            @endif
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+          <h3 class="font-semibold mb-4" data-i18n>Actions</h3>
+          <div class="space-y-2">
+            <a
+              href="/parent/appointments/reschedule?appointment_id={{ appointment.id }}"
+              class="w-full inline-flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <i class="fas fa-calendar-alt mr-2"></i><span data-i18n>Reporter</span>
+            </a>
+            <a
+              href="/parent/messages/send"
+              class="w-full inline-flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <i class="fas fa-envelope mr-2"></i><span data-i18n>Envoyer un message</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+          <h3 class="font-semibold mb-3" data-i18n>Message envoyé</h3>
+          <div class="space-y-2 text-sm">
+            <p>
+              <span class="text-gray-500" data-i18n>Élève</span><span class="text-gray-500">:</span>
+              <span data-no-translate>{{ appointment.childName }}</span>
+            </p>
+            <p>
+              <span class="text-gray-500" data-i18n>Date proposée</span><span class="text-gray-500">:</span>
+              <span data-no-translate>{{ formatDate(appointment.date) }}</span>
+            </p>
+            <p>
+              <span class="text-gray-500" data-i18n>Créneau</span><span class="text-gray-500">:</span>
+              <span data-no-translate>{{ appointment.time }}</span>
+            </p>
+            <p>
+              <span class="text-gray-500" data-i18n>Motif</span><span class="text-gray-500">:</span>
+              <span data-no-translate>{{ appointment.reason }}</span>
+            </p>
+            @if(appointment.userMessage)
+              <p>
+                <span class="text-gray-500" data-i18n>Message</span><span class="text-gray-500">:</span>
+                <span data-no-translate>{{ appointment.userMessage }}</span>
+              </p>
+            @endif
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function cancelAppointment(appointmentId) {
+        if (confirm("Annuler ce rendez-vous ?")) {
+          fetch(`/api/parent/appointments/${appointmentId}/cancel`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": "{{ csrfToken }}",
+              Accept: "application/json"
+            }
+          }).then(res => res.json()).then(data => {
+            if (data.success) window.location.href = "/parent/appointments";
+            else alert("Erreur: " + (data.message || "Action impossible"));
+          });
+        }
+      }
+    </script>
+  @endsection

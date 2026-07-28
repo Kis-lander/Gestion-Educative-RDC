@@ -39,17 +39,8 @@
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Trimestre *</label>
-              <select name="term" required class="w-full px-3 py-2 border rounded-lg">
-                <option value="T1">
-                  Trimestre 1
-                </option>
-                <option value="T2">
-                  Trimestre 2
-                </option>
-                <option value="T3">
-                  Trimestre 3
-                </option>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Période scolaire *</label>
+              <select id="termSelect" name="term" required class="w-full px-3 py-2 border rounded-lg">
               </select>
             </div>
 
@@ -206,8 +197,40 @@
     </div>
 
     <script>
+      const classSelect = document.querySelector('select[name="classId"]');
+      const termSelect = document.getElementById("termSelect");
+      const classEvaluationPolicies = {{ classEvaluationPolicies|json_encode|raw }};
+      const fallbackTermOptions = {{ fallbackTermOptions|json_encode|raw }};
+
+      function allTermOptions() {
+        const options = new Map();
+        Object.values(classEvaluationPolicies).forEach((policy) => {
+          (policy.periods || []).forEach((period) => options.set(period.value, period.label));
+        });
+        return options.size
+          ? Array.from(options.entries()).map(([value, label]) => ({ value, label }))
+          : fallbackTermOptions;
+      }
+
+      function renderTermOptions() {
+        const policy = classEvaluationPolicies[classSelect.value];
+        const terms = policy?.periods?.length ? policy.periods : allTermOptions();
+        termSelect.innerHTML = "";
+        terms.forEach((term) => {
+          const option = document.createElement("option");
+          option.value = term.value;
+          option.textContent = window.AppTranslations?.translate(term.label) || term.label;
+          termSelect.appendChild(option);
+        });
+      }
+
+      classSelect?.addEventListener("change", renderTermOptions);
+      renderTermOptions();
+
       function publishClass(classId) {
         if (confirm("Publier toutes les notes de cette classe ?")) {
+          const policy = classEvaluationPolicies[classId];
+          const selectedTerm = policy?.periods?.[0]?.value || termSelect.value;
           fetch("/academic/grades/publish", {
             method: "POST",
             headers: {
@@ -216,7 +239,7 @@
             },
             body: JSON.stringify({
               classId: classId,
-              term: "T1",
+              term: selectedTerm,
               notifyParents: true
             })
           }).then(res => res.json()).then(data => {

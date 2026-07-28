@@ -43,23 +43,8 @@
             </div>
 
             <div>
-              <label class="block text-gray-700 dark:text-gray-300 mb-2">Période *</label>
-              <select name="period" required class="w-full px-3 py-2 border rounded-lg">
-                <option value="T1" {{ exam.period == 'T1' ? 'selected' : '' }}>
-                  Trimestre 1
-                </option>
-                <option value="T2" {{ exam.period == 'T2' ? 'selected' : '' }}>
-                  Trimestre 2
-                </option>
-                <option value="T3" {{ exam.period == 'T3' ? 'selected' : '' }}>
-                  Trimestre 3
-                </option>
-                <option value="Examens Blancs" {{ exam.period == 'Examens Blancs' ? 'selected' : '' }}>
-                  Examens Blancs
-                </option>
-                <option value="Examen National" {{ exam.period == 'Examen National' ? 'selected' : '' }}>
-                  Examen National
-                </option>
+              <label class="block text-gray-700 dark:text-gray-300 mb-2" data-i18n>Période / épreuve *</label>
+              <select name="period" id="periodSelect" required class="w-full px-3 py-2 border rounded-lg">
               </select>
             </div>
 
@@ -107,7 +92,8 @@
                     type="checkbox"
                     name="classIds[]"
                     value="{{ classObj.id }}"
-                    class="w-4 h-4"
+                    class="w-4 h-4 class-choice"
+                    data-grade-level="{{ classObj.gradeLevel || 0 }}"
                     {{ exam.classIds && exam.classIds.includes(classObj.id) ? 'checked' : '' }}
                   />
                   <span class="text-sm">{{ classObj.name }}</span>
@@ -211,6 +197,63 @@
 
     <script>
       let subjectIndex = {{ examSubjects.length }};
+      const classEvaluationPolicies = {{ classEvaluationPolicies|json_encode|raw }};
+      const fallbackTermOptions = {{ fallbackTermOptions|json_encode|raw }};
+      const periodSelect = document.getElementById("periodSelect");
+      const selectedPeriod = "{{ exam.period }}";
+      const translate = (text) => window.AppTranslations?.translate(text) || text;
+
+      function nationalExamOptionsFor(classInput, policy) {
+        const gradeLevel = Number(classInput.dataset.gradeLevel || 0);
+        if (policy.section === "primaire" && gradeLevel === 6) {
+          return [{ value: "ENAFEP", label: "ENAFEP - Date officielle à fixer" }];
+        }
+        if (policy.section === "secondaire" && gradeLevel === 8) {
+          return [{ value: "TENASOSP", label: "TENASOSP - Date officielle à fixer" }];
+        }
+        if (policy.section === "secondaire" && gradeLevel === 12) {
+          return [{ value: "EXETAT", label: "EXETAT - Date officielle à fixer" }];
+        }
+        return [];
+      }
+
+      function renderPeriodOptions() {
+        const selectedClasses = Array.from(document.querySelectorAll(".class-choice:checked"));
+        const classInputs = selectedClasses.length
+          ? selectedClasses
+          : Array.from(document.querySelectorAll(".class-choice"));
+        const optionsByValue = new Map();
+
+        classInputs.forEach((classInput) => {
+          const policy = classEvaluationPolicies[classInput.value];
+          if (!policy) return;
+          (policy.periods || []).forEach((period) => optionsByValue.set(period.value, period.label));
+          nationalExamOptionsFor(classInput, policy).forEach((exam) =>
+            optionsByValue.set(exam.value, exam.label)
+          );
+        });
+        if (!optionsByValue.size) {
+          fallbackTermOptions.forEach((period) => optionsByValue.set(period.value, period.label));
+        }
+
+        if (selectedPeriod && !optionsByValue.has(selectedPeriod)) {
+          optionsByValue.set(selectedPeriod, selectedPeriod);
+        }
+
+        periodSelect.innerHTML = "";
+        optionsByValue.forEach((label, value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = translate(label);
+          periodSelect.appendChild(option);
+        });
+        periodSelect.value = selectedPeriod;
+      }
+
+      document.querySelectorAll(".class-choice").forEach((input) => {
+        input.addEventListener("change", renderPeriodOptions);
+      });
+      renderPeriodOptions();
 
       function addSubjectLine() {
         const container = document.getElementById("subjectsContainer");

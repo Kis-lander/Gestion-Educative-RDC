@@ -3,6 +3,147 @@ import { migrate } from 'edge.js/plugins/migrate'
 
 edge.use(migrate)
 
+const exactPageAreas = [
+  {
+    path: '/parent/dashboard',
+    title: 'Espace Parent',
+    subtitle: 'Suivez la scolarité de vos enfants.',
+  },
+  {
+    path: '/parent/classes',
+    title: 'Classes',
+    subtitle: 'Consultez uniquement les classes de vos enfants.',
+  },
+  {
+    path: '/parent/subjects',
+    title: 'Matières',
+    subtitle: 'Matières suivies par vos enfants, selon leurs classes.',
+  },
+  {
+    path: '/parent/children',
+    title: 'Mes enfants',
+    subtitle: 'Liste de tous vos enfants inscrits.',
+  },
+  {
+    path: '/parent/teachers',
+    title: 'Enseignants',
+    subtitle: 'Enseignants rattachés aux classes et matières de vos enfants.',
+  },
+  {
+    path: '/parent/grades',
+    title: 'Notes des enfants',
+    subtitle: 'Consultez les résultats scolaires.',
+  },
+  {
+    path: '/parent/discipline',
+    title: 'Suivi disciplinaire',
+    subtitle: 'Consultez le comportement de vos enfants.',
+  },
+  {
+    path: '/parent/attendance',
+    title: 'Suivi des présences',
+    subtitle: "Consultez l'assiduité de vos enfants.",
+  },
+  {
+    path: '/parent/attendance/justify',
+    title: "Justification d'absence",
+    subtitle: 'Expliquez une absence et joignez les informations utiles.',
+  },
+  {
+    path: '/parent/payments',
+    title: 'Paiements des enfants',
+    subtitle: "Consultez l'historique des transactions.",
+  },
+  {
+    path: '/parent/payments/history',
+    title: 'Historique des paiements',
+    subtitle: 'Consultez toutes les transactions enregistrées.',
+  },
+  {
+    path: '/parent/payments/status',
+    title: 'Situation financière',
+    subtitle: 'Suivez les montants dus, payés et restants.',
+  },
+  {
+    path: '/parent/messages',
+    title: 'Messagerie',
+    subtitle: 'Consultez et gérez vos messages.',
+  },
+  {
+    path: '/parent/messages/send',
+    title: 'Nouveau message',
+    subtitle: "Envoyez un message à un membre de l'équipe scolaire.",
+  },
+  {
+    path: '/parent/messages/notifications',
+    title: 'Notifications',
+    subtitle: 'Centre de notifications.',
+  },
+  {
+    path: '/parent/appointments',
+    title: 'Rendez-vous',
+    subtitle: 'Gérez vos rendez-vous avec les enseignants.',
+  },
+  {
+    path: '/parent/appointments/request',
+    title: 'Demande de rendez-vous',
+    subtitle: 'Prenez rendez-vous avec un enseignant.',
+  },
+  {
+    path: '/parent/appointments/reschedule',
+    title: 'Demande de rendez-vous',
+    subtitle: 'Prenez rendez-vous avec un enseignant.',
+  },
+  {
+    path: '/parent/appointments/schedule',
+    title: 'Planning des rendez-vous',
+    subtitle: 'Vue hebdomadaire de vos rendez-vous.',
+  },
+]
+
+const patternPageAreas = [
+  {
+    pattern: /^\/parent\/children\/[^/]+\/profile$/,
+    title: "Profil de l'élève",
+    subtitle: "Consultez les informations détaillées de l'élève.",
+  },
+  {
+    pattern: /^\/parent\/children\/[^/]+$/,
+    title: "Détails de l'élève",
+    subtitle: "Consultez le dossier scolaire de l'élève.",
+  },
+  {
+    pattern: /^\/parent\/grades\/child\/[^/]+$/,
+    title: 'Détail des résultats',
+    subtitle: 'Consultez les notes détaillées par matière.',
+  },
+  {
+    pattern: /^\/parent\/(?:grades\/report-card|report-card\/child)\/[^/]+$/,
+    title: 'Bulletin scolaire',
+    subtitle: "Consultez le bulletin de l'élève.",
+  },
+  {
+    pattern: /^\/parent\/discipline\/(?:details\/)?[^/]+$/,
+    title: "Détail de l'incident",
+    subtitle: 'Consultez les informations de discipline.',
+  },
+  {
+    pattern: /^\/parent\/payments\/(?:receipt|print-receipt)\/[^/]+$/,
+    title: 'Reçu de paiement',
+    subtitle: 'Consultez le reçu de la transaction.',
+  },
+  {
+    pattern: /^\/parent\/messages\/[^/]+$/,
+    title: 'Conversation',
+    subtitle: 'Suivez vos échanges avec l’école.',
+  },
+  {
+    pattern: /^\/parent\/appointments\/[^/]+$/,
+    title: 'Rendez-vous',
+    subtitle: 'Consultez les détails du rendez-vous.',
+  },
+]
+
 const pageAreas = [
   {
     prefixes: ['/schools/subjects'],
@@ -135,9 +276,39 @@ const pageAreas = [
     subtitle: 'Configurez les préférences et les règles de supervision.',
   },
   {
+    prefixes: ['/parent/dashboard'],
+    title: 'Espace Parent',
+    subtitle: 'Suivez la scolarité de vos enfants.',
+  },
+  {
+    prefixes: ['/parent/classes'],
+    title: 'Classes',
+    subtitle: 'Consultez uniquement les classes de vos enfants.',
+  },
+  {
+    prefixes: ['/parent/subjects'],
+    title: 'Matières',
+    subtitle: 'Matières suivies par vos enfants, selon leurs classes.',
+  },
+  {
     prefixes: ['/parent/children'],
     title: 'Suivi des enfants',
     subtitle: 'Consultez les informations scolaires et la progression de vos enfants.',
+  },
+  {
+    prefixes: ['/parent/teachers'],
+    title: 'Enseignants',
+    subtitle: 'Enseignants rattachés aux classes et matières de vos enfants.',
+  },
+  {
+    prefixes: ['/parent/messages'],
+    title: 'Messages',
+    subtitle: "Échangez avec l'équipe scolaire et suivez vos conversations.",
+  },
+  {
+    prefixes: ['/parent/appointments'],
+    title: 'Rendez-vous',
+    subtitle: 'Planifiez et suivez les rendez-vous scolaires.',
   },
   {
     prefixes: ['/student/assignments', '/teacher/assignments'],
@@ -172,14 +343,21 @@ const pageAreas = [
 ]
 
 edge.global('pageHeader', (requestUrl: unknown) => {
-  const path = String(requestUrl || '/').split('?')[0].replace(/\/+$/, '') || '/'
-  const area = pageAreas.find(({ prefixes }) =>
-    prefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
-  )
+  const path =
+    String(requestUrl || '/')
+      .split('?')[0]
+      .replace(/\/+$/, '') || '/'
+  const exactArea = exactPageAreas.find((item) => item.path === path)
+  const patternArea = patternPageAreas.find((item) => item.pattern.test(path))
+  const area =
+    exactArea ||
+    patternArea ||
+    pageAreas.find(({ prefixes }) =>
+      prefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+    )
 
   let title = area?.title || 'Tableau de bord'
-  let subtitle =
-    area?.subtitle || 'Consultez les informations essentielles et gérez vos activités.'
+  let subtitle = area?.subtitle || 'Consultez les informations essentielles et gérez vos activités.'
 
   if (path.includes('/classes-archives')) {
     return {

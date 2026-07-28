@@ -63,6 +63,25 @@
   @endsection
   
   @section('content')
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-white" data-i18n>
+          Notes de vos classes
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400" data-i18n>
+          Consultez les notes existantes ou inscrivez une nouvelle évaluation.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a
+          href="/teacher/grades/add"
+          class="inline-flex items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+        >
+          <i class="fas fa-plus mr-2"></i><span data-i18n>Inscrire une note</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Filtres -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -93,20 +112,12 @@
           </select>
         </div>
         <div>
-          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1">Trimestre</label>
+          <label class="block text-gray-700 dark:text-gray-300 text-sm mb-1" data-i18n>Période scolaire</label>
           <select id="filterTerm" class="w-full px-3 py-2 border rounded-lg text-sm">
-            <option value="">
-              Tous
-            </option>
-            <option value="T1">
-              Trimestre 1
-            </option>
-            <option value="T2">
-              Trimestre 2
-            </option>
-            <option value="T3">
-              Trimestre 3
-            </option>
+            <option value="" data-i18n>Tous</option>
+            @each(term in filterTermOptions)
+              <option value="{{ term.value }}" data-i18n>{{ term.label }}</option>
+            @end
           </select>
         </div>
         <div>
@@ -156,7 +167,7 @@
                 Note
               </th>
               <th class="px-4 py-3 text-center">
-                Trimestre
+                <span data-i18n>Période scolaire</span>
               </th>
               <th class="px-4 py-3 text-center">
                 Type
@@ -249,12 +260,34 @@
       const filterSubject = document.getElementById("filterSubject");
 
       const filterTerm = document.getElementById("filterTerm");
+      const classEvaluationPolicies = {{ classEvaluationPolicies|json_encode|raw }};
+      const allTermOptions = {{ filterTermOptions|json_encode|raw }};
+      const fallbackTermOptions = {{ fallbackTermOptions|json_encode|raw }};
+      const selectedTerm = new URLSearchParams(window.location.search).get("term") || "";
 
       const filterStatus = document.getElementById("filterStatus");
 
       const applyBtn = document.getElementById("applyFilters");
 
       const resetBtn = document.getElementById("resetFilters");
+
+      function renderTermOptions() {
+        const policy = classEvaluationPolicies[filterClass.value];
+        const terms = policy?.periods?.length
+          ? policy.periods
+          : (allTermOptions.length ? allTermOptions : fallbackTermOptions);
+        filterTerm.innerHTML = `<option value="">${window.AppTranslations?.translate("Tous") || "Tous"}</option>`;
+        terms.forEach((term) => {
+          const option = document.createElement("option");
+          option.value = term.value;
+          option.textContent = window.AppTranslations?.translate(term.label) || term.label;
+          filterTerm.appendChild(option);
+        });
+        filterTerm.value = selectedTerm;
+      }
+
+      filterClass.addEventListener("change", renderTermOptions);
+      renderTermOptions();
 
       applyBtn.addEventListener("click", () => {
         const params = new URLSearchParams();

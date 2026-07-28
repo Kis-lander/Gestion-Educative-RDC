@@ -1,4 +1,5 @@
 import { type HttpContext } from '@adonisjs/core/http'
+import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 import Class from '#models/class'
 import Student from '#models/student'
@@ -11,6 +12,14 @@ import {
   navigationPolicyFor,
   type NavigationPolicy,
 } from '#services/school_governance_service'
+import { getSubjectCodesForSection } from '#services/national_subject_catalog'
+import {
+  SECTION_EVALUATION_POLICIES,
+  allEvaluationPeriodOptions,
+  allEvaluationTypeOptions,
+  evaluationPeriodLabel,
+  evaluationPolicyForClass,
+} from '#services/academic_evaluation_service'
 
 export async function edgePageContext(
   { auth, request, session }: Pick<HttpContext, 'auth' | 'request' | 'session'>,
@@ -23,9 +32,8 @@ export async function edgePageContext(
     name: 'Gestion Éducative RDC',
   }
   const currentYear = DateTime.now().year
-  const selectedTerm = String(request.input('term', 'T1'))
-  const selectedTermLabel =
-    selectedTerm === 'T2' ? 'Trimestre 2' : selectedTerm === 'T3' ? 'Trimestre 3' : 'Trimestre 1'
+  let selectedTerm = String(request.input('term', ''))
+  let selectedTermLabel = evaluationPeriodLabel(selectedTerm || 'T1-P1')
 
   let classes: any[] = []
   let students: any[] = []
@@ -45,6 +53,9 @@ export async function edgePageContext(
       classes = await Class.query()
         .where('schoolId', user.schoolId)
         .whereNull('archivedAt')
+        .if(governance && !governance.canManageAllSections, (query) =>
+          query.where('schoolSectionId', governance.sectionId)
+        )
         .orderBy('gradeLevel', 'asc')
         .orderBy('name', 'asc')
     } catch {}
@@ -52,6 +63,11 @@ export async function edgePageContext(
     try {
       students = await Student.query()
         .where('schoolId', user.schoolId)
+        .if(governance && !governance.canManageAllSections, (query) =>
+          query.whereHas('class', (classQuery) =>
+            classQuery.where('schoolSectionId', governance.sectionId)
+          )
+        )
         .preload('user')
         .preload('class')
         .orderBy('createdAt', 'desc')
@@ -69,19 +85,57 @@ export async function edgePageContext(
 
   try {
     subjects = await Subject.query().orderBy('name', 'asc').limit(100)
+    const allowedSubjectCodes =
+      governance && !governance.canManageAllSections
+        ? getSubjectCodesForSection(governance.sectionCode)
+        : null
+    if (allowedSubjectCodes) {
+      subjects = subjects.filter((subject) => subject.code && allowedSubjectCodes.includes(subject.code))
+    }
   } catch {}
 
   try {
     users = await User.query().orderBy('createdAt', 'desc').limit(50)
   } catch {}
 
-  const firstClass = classes[0] || { id: '', name: 'Classe non sélectionnée', level: '', students: [] }
+  const sectionIds = Array.from(
+    new Set(classes.map((classObj) => classObj.schoolSectionId).filter(Boolean))
+  ) as string[]
+  const sections = sectionIds.length
+    ? await db.from('school_sections').whereIn('id', sectionIds).select('id', 'code')
+    : []
+  const sectionCodeById = new Map(sections.map((section) => [String(section.id), section.code]))
+
+  const classEvaluationPolicies = Object.fromEntries(
+    classes.map((classObj) => [
+      classObj.id,
+      evaluationPolicyForClass(
+        sectionCodeById.get(String(classObj.schoolSectionId || '')),
+        classObj.gradeLevel
+      ),
+    ])
+  )
+
+  const firstClass = classes[0] || {
+    id: '',
+    name: 'Classe non sélectionnée',
+    level: '',
+    students: [],
+  }
   const firstStudent = students[0] || {
     id: '',
     name: user?.fullName || 'Élève',
     user,
     class: firstClass,
     registrationNumber: '-',
+  }
+  const studentClass = firstStudent.class || firstClass
+  const studentEvaluationPolicy =
+    classEvaluationPolicies[studentClass.id] ||
+    evaluationPolicyForClass(undefined, studentClass.gradeLevel)
+  if (!selectedTerm) {
+    selectedTerm = studentEvaluationPolicy.periods[0]?.value || 'T1-P1'
+    selectedTermLabel = evaluationPeriodLabel(selectedTerm)
   }
 
   return {
@@ -96,6 +150,12 @@ export async function edgePageContext(
     user,
     governance,
     navigation,
+    evaluationPolicies: SECTION_EVALUATION_POLICIES,
+    classEvaluationPolicies,
+    fallbackTermOptions: allEvaluationPeriodOptions(governance?.sectionCode),
+    fallbackEvaluationTypeOptions: allEvaluationTypeOptions(governance?.sectionCode),
+    studentEvaluationPolicy,
+    studentTermOptions: studentEvaluationPolicy.periods,
     users,
     classes,
     classObj: firstClass,

@@ -1,7 +1,12 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
-import { positionLabel } from '#services/school_governance_service'
+import { edgePageContext } from '#start/view_context'
+import {
+  getGovernanceContext,
+  navigationPolicyFor,
+  positionLabel,
+} from '#services/school_governance_service'
 import { randomBytes } from 'node:crypto'
 import { extname } from 'node:path'
 
@@ -9,9 +14,11 @@ const popularArticles = [
   {
     slug: 'accounts',
     title: 'Créer les comptes de votre école',
-    description: 'Directeurs, enseignants, élèves, parents, responsables de section et personnel administratif.',
+    description:
+      'Directeurs, enseignants, élèves, parents, responsables de section et personnel administratif.',
     link: '/help/guides#accounts',
     icon: 'fa-user-plus',
+    modules: ['accounts'],
   },
   {
     slug: 'grades',
@@ -19,6 +26,7 @@ const popularArticles = [
     description: 'De la saisie enseignant à la consultation par les parents et les élèves.',
     link: '/help/guides#grades',
     icon: 'fa-star',
+    modules: ['grades'],
   },
   {
     slug: 'finance',
@@ -26,6 +34,7 @@ const popularArticles = [
     description: 'Frais scolaires, paiements, reçus, bourses, plans de paiement et impayés.',
     link: '/help/guides#finance',
     icon: 'fa-receipt',
+    modules: ['finance'],
   },
   {
     slug: 'transfers',
@@ -33,6 +42,7 @@ const popularArticles = [
     description: "Circuit entre l'école de départ, l'école d'accueil et l'inspection.",
     link: '/help/documentation#transfers',
     icon: 'fa-right-left',
+    modules: ['transfers'],
   },
   {
     slug: 'communication',
@@ -40,6 +50,7 @@ const popularArticles = [
     description: 'Messages, notifications, conversations et suivi des échanges.',
     link: '/help/documentation#communication',
     icon: 'fa-comments',
+    modules: ['communication'],
   },
 ]
 
@@ -55,78 +66,91 @@ const guides = [
     icon: 'fa-rocket',
     color: 'from-blue-600 to-indigo-600',
     link: '/help/documentation#getting-started',
+    modules: ['getting-started'],
   },
   {
     id: 'accounts',
     category: 'administrators',
     categoryLabel: 'Administration',
     title: 'Créer les utilisateurs et limiter leurs accès',
-    description: "Attribuez les rôles, sections et périmètres pour protéger les données de l'école.",
+    description:
+      "Attribuez les rôles, sections et périmètres pour protéger les données de l'école.",
     readTime: 7,
     difficulty: 'Intermédiaire',
     icon: 'fa-users-gear',
     color: 'from-slate-700 to-slate-900',
     link: '/help/documentation#user-management',
+    modules: ['accounts'],
   },
   {
     id: 'students',
     category: 'administrators',
     categoryLabel: 'Scolarité',
     title: 'Gérer élèves, classes et matières',
-    description: 'Inscrivez les élèves, organisez les classes et assignez les matières du programme national.',
+    description:
+      'Inscrivez les élèves, organisez les classes et assignez les matières du programme national.',
     readTime: 10,
     difficulty: 'Essentiel',
     icon: 'fa-school',
     color: 'from-emerald-600 to-teal-600',
     link: '/help/documentation#academic',
+    modules: ['classes', 'students', 'subjects'],
   },
   {
     id: 'grades',
     category: 'teachers',
     categoryLabel: 'Enseignants',
     title: 'Saisir, corriger et publier les notes',
-    description: 'Utilisez les vues par classe, matière et trimestre avant la génération des bulletins.',
+    description:
+      'Utilisez les vues par classe, matière et trimestre avant la génération des bulletins.',
     readTime: 6,
     difficulty: 'Essentiel',
     icon: 'fa-pen-to-square',
     color: 'from-amber-500 to-orange-600',
     link: '/help/documentation#academic',
+    modules: ['grades'],
   },
   {
     id: 'finance',
     category: 'administrators',
     categoryLabel: 'Finances',
     title: 'Piloter frais scolaires et paiements',
-    description: 'Définissez les frais, encaissez les paiements, imprimez les reçus et suivez les impayés.',
+    description:
+      'Définissez les frais, encaissez les paiements, imprimez les reçus et suivez les impayés.',
     readTime: 9,
     difficulty: 'Intermédiaire',
     icon: 'fa-coins',
     color: 'from-green-600 to-lime-600',
     link: '/help/documentation#financial',
+    modules: ['finance'],
   },
   {
     id: 'discipline',
     category: 'administrators',
     categoryLabel: 'Discipline',
     title: 'Suivre incidents, sanctions et appels',
-    description: 'Déclarez un incident, appliquez une sanction, notifiez les parents et consultez les rapports.',
+    description:
+      'Déclarez un incident, appliquez une sanction, notifiez les parents et consultez les rapports.',
     readTime: 7,
     difficulty: 'Intermédiaire',
     icon: 'fa-scale-balanced',
     color: 'from-red-600 to-rose-700',
     link: '/help/documentation#discipline',
+    modules: ['discipline'],
   },
   {
     id: 'parents',
     category: 'parents',
     categoryLabel: 'Parents',
     title: "Suivre la scolarité d'un enfant",
-    description: "Consultez notes, présences, discipline, paiements et messages depuis l'espace parent.",
+    description:
+      "Consultez notes, présences, discipline, paiements et messages depuis l'espace parent.",
     readTime: 5,
     difficulty: 'Facile',
     icon: 'fa-children',
     color: 'from-pink-600 to-rose-600',
     link: '/help/documentation#family-spaces',
+    modules: ['family'],
   },
 ]
 
@@ -134,18 +158,22 @@ const tutorials = [
   {
     category: 'basics',
     title: 'Prendre en main le tableau de bord',
-    description: 'Repérez les raccourcis, notifications, modules visibles et actions rapides selon votre rôle.',
+    description:
+      'Repérez les raccourcis, notifications, modules visibles et actions rapides selon votre rôle.',
     duration: '4 min',
     steps: 4,
     icon: 'fa-gauge-high',
+    modules: ['dashboard'],
   },
   {
     category: 'features',
     title: 'Créer une classe et y affecter les matières',
-    description: "Préparez la structure pédagogique avant l'inscription ou l'affectation des élèves.",
+    description:
+      "Préparez la structure pédagogique avant l'inscription ou l'affectation des élèves.",
     duration: '6 min',
     steps: 5,
     icon: 'fa-chalkboard',
+    modules: ['classes', 'subjects'],
   },
   {
     category: 'features',
@@ -154,23 +182,76 @@ const tutorials = [
     duration: '5 min',
     steps: 4,
     icon: 'fa-envelope-open-text',
+    modules: ['communication'],
   },
   {
     category: 'features',
     title: 'Traiter une demande de transfert',
-    description: "Vérifiez l'autorisation, le statut et l'historique avant de finaliser la décision.",
+    description:
+      "Vérifiez l'autorisation, le statut et l'historique avant de finaliser la décision.",
     duration: '6 min',
     steps: 5,
     icon: 'fa-right-left',
+    modules: ['transfers'],
   },
   {
     category: 'advanced',
     title: 'Analyser les rapports scolaires et financiers',
-    description: 'Comparez performance, recouvrement, discipline et transferts pour décider avec de bons indicateurs.',
+    description:
+      'Comparez performance, recouvrement, discipline et transferts pour décider avec de bons indicateurs.',
     duration: '8 min',
     steps: 6,
     icon: 'fa-chart-line',
+    modules: ['reports', 'finance', 'discipline', 'grades'],
   },
+]
+
+const guideCategories = [
+  { value: 'quick-start', label: 'Demarrage' },
+  { value: 'administrators', label: 'Administration' },
+  { value: 'teachers', label: 'Enseignants' },
+  { value: 'parents', label: 'Parents' },
+]
+
+const tutorialCategories = [
+  { value: 'basics', label: 'Bases' },
+  { value: 'features', label: 'Fonctionnalites' },
+  { value: 'advanced', label: 'Avance' },
+]
+
+const faqCategories = [
+  { value: 'account', label: 'Comptes', modules: ['accounts'] },
+  { value: 'school', label: 'Ecole', modules: ['school', 'inspection'] },
+  { value: 'academic', label: 'Scolarite', modules: ['classes', 'students', 'grades'] },
+  { value: 'finance', label: 'Finances', modules: ['finance'] },
+  { value: 'discipline', label: 'Discipline', modules: ['discipline'] },
+  { value: 'communication', label: 'Communication', modules: ['communication', 'transfers'] },
+  { value: 'technical', label: 'Technique', modules: ['technical'] },
+]
+
+const documentationSections = [
+  { id: 'getting-started', number: 1, title: 'Demarrage', modules: ['getting-started'] },
+  { id: 'user-management', number: 2, title: 'Roles et acces', modules: ['accounts'] },
+  {
+    id: 'school-management',
+    number: 3,
+    title: 'Ecole et inspection',
+    modules: ['school', 'inspection'],
+  },
+  {
+    id: 'academic',
+    number: 4,
+    title: 'Scolarite',
+    modules: ['classes', 'students', 'subjects', 'grades'],
+  },
+  { id: 'financial', number: 5, title: 'Finances', modules: ['finance'] },
+  { id: 'discipline', number: 6, title: 'Discipline', modules: ['discipline'] },
+  { id: 'communication', number: 7, title: 'Communication', modules: ['communication'] },
+  { id: 'transfers', number: 8, title: 'Transferts', modules: ['transfers'] },
+  { id: 'inter-school', number: 9, title: 'Inter-écoles', modules: ['inter-school'] },
+  { id: 'family-spaces', number: 10, title: 'Espaces famille', modules: ['family'] },
+  { id: 'reports', number: 11, title: 'Rapports', modules: ['reports'] },
+  { id: 'troubleshooting', number: 12, title: 'Depannage', modules: ['technical'] },
 ]
 
 const contactSubjectLabels: Record<string, string> = {
@@ -196,6 +277,155 @@ const contactRoleLabels: Record<string, string> = {
 }
 
 export default class HelpController {
+  private async getHelpProfile(ctx: HttpContext) {
+    const user = ctx.auth.user
+    const modules = new Set(['dashboard', 'communication', 'technical'])
+    let roleLabel = 'Utilisateur'
+    let summary =
+      'Consultez les aides générales, puis connectez-vous pour voir les contenus limités à votre rôle.'
+    let primaryAction = 'Vérifiez les modules visibles dans le menu latéral.'
+    let governance = null
+    const governanceRoles = [
+      'director',
+      'finance_director',
+      'discipline_director',
+      'secretary',
+      'teacher',
+    ]
+
+    if (user) {
+      roleLabel = contactRoleLabels[user.role] || user.role
+      summary = "Votre centre d'aide met en avant les modules visibles et les actions autorisées."
+      primaryAction = 'Commencez par les guides recommandés pour votre tableau de bord.'
+
+      if (user.schoolId && governanceRoles.includes(user.role)) {
+        try {
+          governance = await getGovernanceContext(user)
+          roleLabel = governance.positionLabel || roleLabel
+        } catch {}
+      }
+
+      const navigation = governance?.navigation || navigationPolicyFor(user.role)
+
+      if (user.role === 'inspection') {
+        ;['inspection', 'school', 'teachers', 'reports', 'communication', 'technical'].forEach(
+          (module) => modules.add(module)
+        )
+      }
+
+      if (user.role === 'parent') {
+        ;[
+          'family',
+          'students',
+          'grades',
+          'discipline',
+          'finance',
+          'communication',
+          'technical',
+        ].forEach((module) => modules.add(module))
+      }
+
+      if (user.role === 'student') {
+        ;['family', 'grades', 'classes', 'communication', 'transfers', 'technical'].forEach(
+          (module) => modules.add(module)
+        )
+      }
+
+      if (navigation?.canViewClasses) modules.add('classes')
+      if (navigation?.canViewSubjects) modules.add('subjects')
+      if (navigation?.canViewStudents) modules.add('students')
+      if (navigation?.canViewTeachers) modules.add('teachers')
+      if (navigation?.canViewAccounts) modules.add('accounts')
+      if (navigation?.canViewGrades) modules.add('grades')
+      if (navigation?.canViewDiscipline) modules.add('discipline')
+      if (navigation?.canViewFinance) modules.add('finance')
+      if (navigation?.canViewTransfers) modules.add('transfers')
+
+      if (
+        ['director', 'finance_director', 'discipline_director', 'secretary', 'teacher'].includes(
+          user.role
+        )
+      ) {
+        modules.add('school')
+      }
+
+      if (
+        ['director', 'finance_director', 'discipline_director', 'inspection'].includes(user.role)
+      ) {
+        modules.add('reports')
+      }
+
+      if (['director', 'inspection'].includes(user.role)) {
+        modules.add('inter-school')
+      }
+    } else {
+      ;[
+        'getting-started',
+        'school',
+        'inspection',
+        'accounts',
+        'classes',
+        'students',
+        'grades',
+        'finance',
+        'discipline',
+        'communication',
+        'transfers',
+        'inter-school',
+        'family',
+        'reports',
+      ].forEach((module) => modules.add(module))
+    }
+
+    modules.add('getting-started')
+
+    const visibleModules = [...modules]
+    const hasModule = (contentModules: string[]) =>
+      !user || contentModules.some((module) => modules.has(module))
+
+    const recommendedActions = [
+      primaryAction,
+      modules.has('accounts')
+        ? 'Vérifiez les rôles et les périmètres avant de créer des comptes.'
+        : null,
+      modules.has('grades')
+        ? 'Contrôlez la classe, la matière et le trimestre avant toute saisie de notes.'
+        : null,
+      modules.has('finance') ? 'Consulter les historiques avant de corriger un paiement.' : null,
+      modules.has('discipline')
+        ? 'Vérifiez l’élève, l’incident et la sanction avant notification aux parents.'
+        : null,
+      modules.has('family')
+        ? 'Sélectionnez l’enfant ou le dossier lié avant de lire les données.'
+        : null,
+    ].filter(Boolean)
+
+    return {
+      roleLabel,
+      summary,
+      visibleModules,
+      recommendedActions,
+      filterContent: <T extends { modules?: string[] }>(items: T[]) =>
+        items.filter((item) => hasModule(item.modules || [])),
+      visibleFaqCategories: faqCategories.filter((category) => hasModule(category.modules)),
+      visibleDocumentationSections: documentationSections.filter((section) =>
+        hasModule(section.modules)
+      ),
+    }
+  }
+
+  private async renderHelp(ctx: HttpContext, template: string, data: Record<string, any> = {}) {
+    const helpProfile = data.helpProfile || (await this.getHelpProfile(ctx))
+
+    return ctx.view.render(
+      template,
+      await edgePageContext(ctx, {
+        helpProfile,
+        ...data,
+      })
+    )
+  }
+
   private getHelpContentTitles() {
     return new Map([
       ...popularArticles.map((article) => [article.slug, article.title] as const),
@@ -225,7 +455,11 @@ export default class HelpController {
   }
 
   private async incrementHelpView(slug: string) {
-    const normalizedSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 120)
+    const normalizedSlug = slug
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
+      .slice(0, 120)
     const title = this.getHelpContentTitles().get(normalizedSlug)
 
     if (!normalizedSlug || !title) return 0
@@ -326,53 +560,75 @@ export default class HelpController {
     return contactRoleLabels[user.role] || user.role
   }
 
-  public async index({ view }: HttpContext) {
+  public async index(ctx: HttpContext) {
     await this.incrementHelpView('help-index')
+    const helpProfile = await this.getHelpProfile(ctx)
+    const visibleArticles = helpProfile.filterContent(popularArticles)
     const viewCounts = await this.getHelpViewCounts(popularArticles.map((article) => article.slug))
 
-    return view.render('help/index', {
-      popularArticles: popularArticles.map((article) => ({
+    return this.renderHelp(ctx, 'help/index', {
+      helpProfile,
+      popularArticles: visibleArticles.map((article) => ({
         ...article,
         views: viewCounts.get(article.slug) || 0,
       })),
     })
   }
 
-  public async faq({ view }: HttpContext) {
+  public async faq(ctx: HttpContext) {
     await this.incrementHelpView('faq')
-    return view.render('help/faq')
+    const helpProfile = await this.getHelpProfile(ctx)
+    return this.renderHelp(ctx, 'help/faq', {
+      helpProfile,
+      faqCategories: helpProfile.visibleFaqCategories,
+      visibleFaqCategoryValues: helpProfile.visibleFaqCategories.map((category) => category.value),
+    })
   }
 
-  public async guides({ view }: HttpContext) {
+  public async guides(ctx: HttpContext) {
     await this.incrementHelpView('guides')
+    const helpProfile = await this.getHelpProfile(ctx)
     const viewCounts = await this.getHelpViewCounts(guides.map((guide) => guide.id))
-    const guidesWithViews = guides.map((guide) => ({
+    const guidesWithViews = helpProfile.filterContent(guides).map((guide) => ({
       ...guide,
       views: viewCounts.get(guide.id) || 0,
     }))
 
-    return view.render('help/guides', {
+    return this.renderHelp(ctx, 'help/guides', {
+      helpProfile,
       guides: guidesWithViews,
+      guideCategories: guideCategories.filter((category) =>
+        guidesWithViews.some((guide) => guide.category === category.value)
+      ),
       popularGuides: [...guidesWithViews]
         .sort((left, right) => right.views - left.views)
         .slice(0, 5)
         .map((guide) => ({
-        id: guide.id,
-        title: guide.title,
-        link: guide.link,
-        views: guide.views,
-      })),
+          id: guide.id,
+          title: guide.title,
+          link: guide.link,
+          views: guide.views,
+        })),
     })
   }
 
-  public async tutorial({ view }: HttpContext) {
+  public async tutorial(ctx: HttpContext) {
     await this.incrementHelpView('tutorial')
-    return view.render('help/tutorial', { tutorials })
+    const helpProfile = await this.getHelpProfile(ctx)
+    const visibleTutorials = helpProfile.filterContent(tutorials)
+
+    return this.renderHelp(ctx, 'help/tutorial', {
+      helpProfile,
+      tutorials: visibleTutorials,
+      tutorialCategories: tutorialCategories.filter((category) =>
+        visibleTutorials.some((tutorial) => tutorial.category === category.value)
+      ),
+    })
   }
 
-  public async contact({ view }: HttpContext) {
+  public async contact(ctx: HttpContext) {
     await this.incrementHelpView('contact')
-    return view.render('help/contact')
+    return this.renderHelp(ctx, 'help/contact')
   }
 
   public async sendContact({ request, response, session, auth }: HttpContext) {
@@ -393,7 +649,10 @@ export default class HelpController {
       .where('status', 'active')
 
     if (!inspectionUsers.length) {
-      session.flash('error', "Aucun compte inspection actif n'est disponible pour recevoir votre demande.")
+      session.flash(
+        'error',
+        "Aucun compte inspection actif n'est disponible pour recevoir votre demande."
+      )
       return response.redirect('/help/contact')
     }
 
@@ -443,13 +702,23 @@ export default class HelpController {
       }))
     )
 
-    session.flash('success', 'Votre demande a été enregistrée. Le support vous répondra dès que possible.')
+    session.flash(
+      'success',
+      'Votre demande a été enregistrée. Le support vous répondra dès que possible.'
+    )
     return response.redirect('/help/contact')
   }
 
-  public async documentation({ view }: HttpContext) {
+  public async documentation(ctx: HttpContext) {
     await this.incrementHelpView('documentation')
-    return view.render('help/documentation')
+    const helpProfile = await this.getHelpProfile(ctx)
+    return this.renderHelp(ctx, 'help/documentation', {
+      helpProfile,
+      documentationSections: helpProfile.visibleDocumentationSections,
+      visibleDocumentationSectionIds: helpProfile.visibleDocumentationSections.map(
+        (section) => section.id
+      ),
+    })
   }
 
   public async trackView({ request, response }: HttpContext) {
@@ -468,7 +737,8 @@ export default class HelpController {
 
   public async feedback({ request, response, auth }: HttpContext) {
     const helpful = request.input('helpful') === true || request.input('helpful') === 'true'
-    const page = String(request.input('page', 'documentation')).trim().slice(0, 120) || 'documentation'
+    const page =
+      String(request.input('page', 'documentation')).trim().slice(0, 120) || 'documentation'
     const remark = String(request.input('remark', '')).trim().slice(0, 2000)
     const user = auth.user
 

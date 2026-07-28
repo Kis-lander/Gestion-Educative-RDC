@@ -14,15 +14,11 @@
   @section('actions')
     <div class="flex gap-2">
       <select id="termSelect" class="px-3 py-2 border rounded-lg text-sm">
-        <option value="T1" {{ selectedTerm == 'T1' ? 'selected' : '' }}>
-          Trimestre 1
-        </option>
-        <option value="T2" {{ selectedTerm == 'T2' ? 'selected' : '' }}>
-          Trimestre 2
-        </option>
-        <option value="T3" {{ selectedTerm == 'T3' ? 'selected' : '' }}>
-          Trimestre 3
-        </option>
+        @each(termOption in studentTermOptions)
+          <option value="{{ termOption.value }}" {{ selectedTerm == termOption.value ? 'selected' : '' }} data-i18n>
+            {{ termOption.label }}
+          </option>
+        @end
       </select>
       <button id="applyTerm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
         <i class="fas fa-sync-alt mr-2"></i>Actualiser
@@ -152,15 +148,15 @@
       </div>
     </div>
 
-    <!-- Progression trimestrielle -->
+    <!-- Progression par période scolaire -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
       <h3 class="font-semibold mb-3">
-        Progression trimestrielle
+        Progression par période scolaire
       </h3>
       <div class="flex justify-around text-center">
         <div>
           <p class="text-gray-500 text-sm">
-            Trimestre 1
+            {{ studentTermOptions[0]?.label || 'Période 1' }}
           </p>
           <p
             class="text-2xl font-bold {{ t1 >= 15 ? 'text-green-600' : (t1 >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
@@ -170,7 +166,7 @@
         </div>
         <div>
           <p class="text-gray-500 text-sm">
-            Trimestre 2
+            {{ studentTermOptions[1]?.label || 'Période 2' }}
           </p>
           <p
             class="text-2xl font-bold {{ t2 >= 15 ? 'text-green-600' : (t2 >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
@@ -180,7 +176,7 @@
         </div>
         <div>
           <p class="text-gray-500 text-sm">
-            Trimestre 3
+            {{ studentTermOptions[2]?.label || 'Période 3' }}
           </p>
           <p
             class="text-2xl font-bold {{ t3 >= 15 ? 'text-green-600' : (t3 >= 10 ? 'text-yellow-600' : 'text-red-600') }}"

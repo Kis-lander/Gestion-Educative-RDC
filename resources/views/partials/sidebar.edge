@@ -51,6 +51,98 @@
         <span x-show="sidebarOpen">Écoles</span>
       </a>
     @endif
+
+    @if(auth?.user?.role === 'parent')
+      <a
+        href="/parent/classes"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/classes'])"
+      >
+        <i class="fas fa-chalkboard w-5" :class="iconClass(['/parent/classes'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Classes</span>
+      </a>
+
+      <a
+        href="/parent/subjects"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/subjects'])"
+      >
+        <i class="fas fa-book-open w-5" :class="iconClass(['/parent/subjects'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Matières</span>
+      </a>
+
+      <a
+        href="/parent/children"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/children'])"
+      >
+        <i class="fas fa-child-reaching w-5" :class="iconClass(['/parent/children'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Mes enfants</span>
+      </a>
+
+      <a
+        href="/parent/teachers"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/teachers'])"
+      >
+        <i class="fas fa-chalkboard-user w-5" :class="iconClass(['/parent/teachers'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Enseignants</span>
+      </a>
+
+      <a
+        href="/parent/grades"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/grades', '/parent/report-card'])"
+      >
+        <i class="fas fa-star w-5" :class="iconClass(['/parent/grades', '/parent/report-card'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Notes</span>
+      </a>
+
+      <a
+        href="/parent/attendance"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/attendance'])"
+      >
+        <i class="fas fa-calendar-check w-5" :class="iconClass(['/parent/attendance'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Présences</span>
+      </a>
+
+      <a
+        href="/parent/discipline"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/discipline'])"
+      >
+        <i class="fas fa-gavel w-5" :class="iconClass(['/parent/discipline'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Discipline</span>
+      </a>
+
+      <a
+        href="/parent/payments"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/payments'])"
+      >
+        <i class="fas fa-coins w-5" :class="iconClass(['/parent/payments'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Finances</span>
+      </a>
+
+      <a
+        href="/parent/messages"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/messages'])"
+      >
+        <i class="fas fa-envelope w-5" :class="iconClass(['/parent/messages'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Messages</span>
+      </a>
+
+      <a
+        href="/parent/appointments"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/parent/appointments'])"
+      >
+        <i class="fas fa-calendar-plus w-5" :class="iconClass(['/parent/appointments'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Rendez-vous</span>
+      </a>
+    @else
     
     <!-- Classes -->
     @if(navigation ? navigation.canViewClasses : ['director', 'teacher'].includes(auth?.user?.role))
@@ -171,6 +263,8 @@
     </a>
 
     <!-- Paramètres -->
+    @endif
+
     <!-- Forum -->
     @if(['teacher', 'student', 'director', 'discipline_director'].includes(auth?.user?.role))
       <a

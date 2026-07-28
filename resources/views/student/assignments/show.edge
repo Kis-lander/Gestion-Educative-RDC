@@ -1,7 +1,7 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Détails devoir - {{ assignment.title }}
+    Détails du devoir - {{ assignment.title }}
   @endsection
   
   @section('dashboardTitle')
@@ -12,7 +12,7 @@
   @endsection
   
   @section('actions')
-    @if(assignment.status === 'pending')
+    @if(assignment.canSubmit)
       <a
         href="/student/assignments/{{ assignment.id }}/submit"
         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -28,18 +28,8 @@
       <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
         <div class="mb-4">
           <div class="flex items-center gap-2 mb-2">
-            <span
-              class=px-2
-              py-1
-              rounded-full
-              text-xs
-              {{ assignment.status === 'pending' && assignment.daysRemaining < 0 ? 'bg-red-100 text-red-800' : 
-             (assignment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-             (assignment.status === 'graded' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}
-            >
-              {{ assignment.status === 'pending' && assignment.daysRemaining < 0 ? 'En retard' : 
-             (assignment.status === 'pending' ? 'À rendre' : 
-             (assignment.status === 'graded' ? 'Noté' : 'Soumis')) }}
+            <span class="px-2 py-1 rounded-full text-xs {{ assignment.statusClass }}" data-i18n>
+              {{ assignment.statusLabel }}
         </span>
             <span class="text-xs text-gray-400">Publié le: {{ formatDate(assignment.publishedAt) }}</span>
           </div>
@@ -61,12 +51,18 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <div>
-            <span class="text-gray-500">Date limite:</span>            <strong>{{ formatDate(assignment.dueDate) }} {{ assignment.dueTime ? 'à ' + assignment.dueTime : '' }}</strong>
+          <span class="text-gray-500" data-i18n>Date limite</span><span class="text-gray-500">:</span>            <strong>{{ formatDate(assignment.dueDate) }} {{ assignment.dueTime ? 'à ' + assignment.dueTime : '' }}</strong>
           </div>
           <div>
-            <span class="text-gray-500">Points maximum:</span>            <strong>{{ assignment.maxPoints }}</strong>
+          <span class="text-gray-500" data-i18n>Points maximum</span><span class="text-gray-500">:</span>            <strong>{{ assignment.maxPoints }}</strong>
+          </div>
+          <div>
+          <span class="text-gray-500" data-i18n>Période scolaire</span><span class="text-gray-500">:</span>            <strong>{{ assignment.termLabel }}</strong>
+          </div>
+          <div>
+          <span class="text-gray-500" data-i18n>Type d'épreuve</span><span class="text-gray-500">:</span>            <strong>{{ assignment.evaluationTypeLabel }}</strong>
           </div>
         </div>
 
@@ -93,50 +89,51 @@
           <h3 class="font-semibold border-b pb-2 mb-3">
             Statut
           </h3>
-          @if(assignment.submission)
+          @if(assignment.submission && (assignment.submission.status === 'submitted' || assignment.submission.status === 'graded'))
             <div class="text-center">
-              @if(assignment.submission.status === 'submitted')
-                <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                  <i class="fas fa-check-circle text-green-600 text-2xl"></i>
-                </div>
-                <p class="font-medium text-green-600">
-                  Travail soumis
-                </p>
-                <p class="text-sm text-gray-500 mt-1">
-                  Soumis le {{ formatDateTime(assignment.submission.submittedAt) }}
-                </p>
-                @if(assignment.submission.grade !== null)
-                  <div class="mt-3 pt-3 border-t">
-                    <p class="text-gray-500">
-                      Note obtenue
-                    </p>
-                    <p
-                      class="text-3xl font-bold {{ assignment.submission.grade >= 15 ? 'text-green-600' : (assignment.submission.grade >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
-                    >
-                      {{ assignment.submission.grade }}/{{ assignment.maxPoints }}
-                    </p>
-                  </div>
-                @endif
+              <div class="{{ assignment.status === 'late_submitted' || assignment.status === 'late_graded' ? 'bg-orange-100' : 'bg-green-100' }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-check-circle {{ assignment.status === 'late_submitted' || assignment.status === 'late_graded' ? 'text-orange-600' : 'text-green-600' }} text-2xl"></i>
               </div>
-            @else
-              <div class="text-center">
-                <div class="bg-yellow-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                  <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+              <p class="font-medium {{ assignment.status === 'late_submitted' || assignment.status === 'late_graded' ? 'text-orange-600' : 'text-green-600' }}" data-i18n>
+                {{ assignment.statusLabel }}
+              </p>
+              <p class="text-sm text-gray-500 mt-1">
+                Soumis le {{ formatDateTime(assignment.submission.submittedAt) }}
+              </p>
+              @if(assignment.submission.grade !== null)
+                <div class="mt-3 pt-3 border-t">
+                  <p class="text-gray-500">
+                    Note obtenue
+                  </p>
+                  <p
+                    class="text-3xl font-bold {{ assignment.submission.grade >= 15 ? 'text-green-600' : (assignment.submission.grade >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  >
+                    {{ assignment.submission.grade }}/{{ assignment.maxPoints }}
+                  </p>
                 </div>
-                <p class="font-medium text-yellow-600">
-                  Non soumis
-                </p>
-                <p class="text-sm text-gray-500 mt-1">
-                  Date limite: {{ formatDate(assignment.dueDate) }}
-                </p>
+              @endif
+            </div>
+          @else
+            <div class="text-center">
+              <div class="bg-yellow-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+              </div>
+              <p class="font-medium {{ assignment.isOverdue ? 'text-red-600' : 'text-yellow-600' }}" data-i18n>
+                {{ assignment.statusLabel }}
+              </p>
+              <p class="text-sm text-gray-500 mt-1">
+                Date limite: {{ formatDate(assignment.dueDate) }}
+              </p>
+              @if(assignment.canSubmit)
                 <a
                   href="/student/assignments/{{ assignment.id }}/submit"
                   class="mt-3 inline-block px-4 py-2 bg-primary text-white rounded-lg"
                 >
-                  Soumettre maintenant
-          </a>
-              </div>
-            @endif
+                  <span data-i18n>Soumettre maintenant</span>
+                </a>
+              @endif
+            </div>
+          @endif
           </div>
 
           <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">

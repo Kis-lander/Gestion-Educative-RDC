@@ -58,6 +58,8 @@ export const createAssignmentValidator = vine.create(
     dueDate: vine.date({ formats: ['YYYY-MM-DD'] }),
     dueTime: vine.string().optional(),
     maxPoints: vine.number().range([0, 100]).optional(),
+    term: vine.string().trim().maxLength(100),
+    evaluationType: vine.enum(['devoir', 'interrogation']).optional(),
     attachmentUrl: vine.string().trim().optional(),
   })
 )

@@ -14,47 +14,81 @@
   @section('content')
     <div class="flex flex-wrap gap-2 mb-6">
       <button class="guide-cat px-4 py-2 rounded-full text-sm bg-primary text-white" data-cat="all" data-i18n>Tous</button>
-      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="quick-start" data-i18n>Démarrage</button>
-      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="administrators" data-i18n>Administration</button>
-      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="teachers" data-i18n>Enseignants</button>
-      <button class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50" data-cat="parents" data-i18n>Parents</button>
+      @each(category in guideCategories)
+        <button
+          class="guide-cat px-4 py-2 rounded-full text-sm border hover:bg-gray-50"
+          data-cat="{{ category.value }}"
+          data-i18n
+        >{{ category.label }}</button>
+      @end
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-      @each(guide in guides)
-        <article id="{{ guide.id }}" class="guide-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden" data-cat="{{ guide.category }}">
-          <div class="h-28 bg-gradient-to-r {{ guide.color }} p-5 text-white flex items-end justify-between">
-            <span class="px-2 py-1 rounded-full text-xs bg-white/20" data-i18n>{{ guide.categoryLabel }}</span>
-            <i class="fas {{ guide.icon }} text-3xl opacity-90"></i>
-          </div>
-          <div class="p-5">
-            <h3 class="font-bold text-lg" data-i18n>{{ guide.title }}</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n>{{ guide.description }}</p>
-            <div class="flex items-center gap-3 mt-4 text-xs text-gray-500">
-              <span><i class="fas fa-clock mr-1"></i>{{ guide.readTime }} min</span>
-              <span><i class="fas fa-chart-line mr-1"></i><span data-i18n>{{ guide.difficulty }}</span></span>
+      @if(guides.length)
+        @each(guide in guides)
+          <article
+            id="{{ guide.id }}"
+            class="guide-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+            data-cat="{{ guide.category }}"
+          >
+            <div class="h-28 bg-gradient-to-r {{ guide.color }} p-5 text-white flex items-end justify-between">
+              <span class="px-2 py-1 rounded-full text-xs bg-white/20" data-i18n>{{ guide.categoryLabel }}</span>
+              <i class="fas {{ guide.icon }} text-3xl opacity-90"></i>
             </div>
-            <a href="{{ guide.link }}" class="inline-flex items-center gap-2 mt-4 text-primary text-sm hover:underline" data-help-view-slug="{{ guide.id }}">
-              <span data-i18n>Lire la procédure</span> <i class="fas fa-arrow-right text-xs"></i>
-            </a>
-          </div>
-        </article>
-      @end
+            <div class="p-5">
+              <h3 class="font-bold text-lg" data-i18n>
+                {{ guide.title }}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n>
+                {{ guide.description }}
+              </p>
+              <div class="flex items-center gap-3 mt-4 text-xs text-gray-500">
+                <span>                  <i class="fas fa-clock mr-1"></i>{{ guide.readTime }} min</span>
+                <span>                  <i class="fas fa-chart-line mr-1"></i>                  <span data-i18n>{{ guide.difficulty }}</span></span>
+              </div>
+              <a
+                href="{{ guide.link }}"
+                class="inline-flex items-center gap-2 mt-4 text-primary text-sm hover:underline"
+                data-help-view-slug="{{ guide.id }}"
+              >
+                <span data-i18n>Lire la procédure</span>                <i class="fas fa-arrow-right text-xs"></i>
+              </a>
+            </div>
+          </article>
+        @end
+      @else
+        <div
+          class="md:col-span-2 xl:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 text-sm text-gray-600 dark:text-gray-300"
+          data-i18n
+        >
+          Aucun guide spécifique n'est disponible pour votre profil. Le support peut vous orienter selon votre action.
+        </div>
+      @endif
     </div>
 
     <div class="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_0.8fr] gap-5">
       <section class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
         <div class="px-5 py-4 border-b dark:border-gray-700">
-          <h3 class="font-semibold" data-i18n>Guides les plus consultés</h3>
+          <h3 class="font-semibold" data-i18n>
+            Guides les plus consultés
+          </h3>
         </div>
         <div class="divide-y dark:divide-gray-700">
           @each(popular in popularGuides)
-            <a href="{{ popular.link }}" class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700" data-help-view-slug="{{ popular.id }}">
+            <a
+              href="{{ popular.link }}"
+              class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+              data-help-view-slug="{{ popular.id }}"
+            >
               <div class="flex items-center gap-3">
                 <i class="fas fa-star text-yellow-500"></i>
                 <div>
-                  <p class="font-medium" data-i18n>{{ popular.title }}</p>
-                  <p class="text-sm text-gray-500"><span>{{ popular.views }}</span> <span data-i18n>lectures</span></p>
+                  <p class="font-medium" data-i18n>
+                    {{ popular.title }}
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    <span>{{ popular.views }}</span>                    <span data-i18n>lectures</span>
+                  </p>
                 </div>
               </div>
             </a>
@@ -63,12 +97,22 @@
       </section>
 
       <section class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5">
-        <h3 class="font-semibold text-lg mb-3" data-i18n>Ordre conseillé pour démarrer</h3>
+        <h3 class="font-semibold text-lg mb-3" data-i18n>
+          Ordre conseillé pour démarrer
+        </h3>
         <ol class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-          <li data-i18n>1. Valider l'école et ses informations administratives.</li>
-          <li data-i18n>2. Créer les sections, classes, matières et enseignants.</li>
-          <li data-i18n>3. Inscrire les élèves et lier les parents.</li>
-          <li data-i18n>4. Configurer les frais, présences, devoirs, notes et communications.</li>
+          <li data-i18n>
+            1. Valider l'école et ses informations administratives.
+          </li>
+          <li data-i18n>
+            2. Créer les sections, classes, matières et enseignants.
+          </li>
+          <li data-i18n>
+            3. Inscrire les élèves et lier les parents.
+          </li>
+          <li data-i18n>
+            4. Configurer les frais, présences, devoirs, notes et communications.
+          </li>
         </ol>
       </section>
     </div>
@@ -77,14 +121,12 @@
       document.querySelectorAll(".guide-cat").forEach(cat => {
         cat.addEventListener("click", () => {
           const selectedCat = cat.dataset.cat;
-
           document.querySelectorAll(".guide-cat").forEach(item => {
             item.classList.remove("bg-primary", "text-white");
             item.classList.add("border");
           });
           cat.classList.add("bg-primary", "text-white");
           cat.classList.remove("border");
-
           document.querySelectorAll(".guide-card").forEach(card => {
             card.classList.toggle("hidden", selectedCat !== "all" && card.dataset.cat !== selectedCat);
           });
@@ -95,14 +137,15 @@
         link.addEventListener("click", () => {
           const slug = link.dataset.helpViewSlug;
           if (!slug) return;
-
           fetch("/api/help/views", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "X-CSRF-TOKEN": "{{ csrfToken }}"
             },
-            body: JSON.stringify({ slug }),
+            body: JSON.stringify({
+              slug: slug
+            }),
             keepalive: true
           }).catch(() => {});
         });

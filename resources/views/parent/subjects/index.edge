@@ -1,0 +1,59 @@
+@layout('layouts/dashboard')
+
+  @section('title')
+    Matières de mes enfants - {{ school.name }}
+  @endsection
+
+  @section('dashboardTitle')
+    Matières
+  @endsection
+  @section('dashboardSubtitle')
+    Matières suivies par vos enfants, selon leurs classes.
+  @endsection
+
+  @section('content')
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">Matière</th>
+              <th class="px-4 py-3 text-left">Classe</th>
+              <th class="px-4 py-3 text-left">Enfant(s)</th>
+              <th class="px-4 py-3 text-left">Enseignant</th>
+              <th class="px-4 py-3 text-center">Coefficient</th>
+              <th class="px-4 py-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            @each(subject in subjects)
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-4 py-3">
+                  <p class="font-semibold">{{ subject.name }}</p>
+                  <p class="text-xs text-gray-500">{{ subject.code || '-' }}</p>
+                </td>
+                <td class="px-4 py-3">{{ subject.class_name || '-' }}</td>
+                <td class="px-4 py-3">
+                  {{ subject.childNames.join(', ') || '-' }}
+                </td>
+                <td class="px-4 py-3">{{ subject.teacher_name || '-' }}</td>
+                <td class="px-4 py-3 text-center font-semibold">{{ subject.coefficient || 0 }}</td>
+                <td class="px-4 py-3 text-center">
+                  <a href="/parent/grades?subject_id={{ subject.id }}" class="text-primary hover:underline">
+                    Notes
+                  </a>
+                </td>
+              </tr>
+            @else
+              <tr>
+                <td colspan="6" class="text-center py-12 text-gray-500">
+                  <i class="fas fa-book-open text-4xl mb-2 block"></i>
+                  Aucune matière liée aux classes de vos enfants.
+                </td>
+              </tr>
+            @end
+          </tbody>
+        </table>
+      </div>
+    </div>
+  @endsection

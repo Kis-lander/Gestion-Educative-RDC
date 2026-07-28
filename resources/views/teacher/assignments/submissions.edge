@@ -20,7 +20,7 @@
   @endsection
   
   @section('stats')
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
         <p class="text-2xl font-bold text-primary">
           {{ stats.total || 0 }}
@@ -46,11 +46,19 @@
         </p>
       </div>
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
-        <p class="text-2xl font-bold text-yellow-600">
+        <p class="text-2xl font-bold text-orange-600">
+          {{ stats.late || 0 }}
+        </p>
+        <p class="text-sm text-gray-500">
+          En retard
+        </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md text-center">
+        <p class="text-2xl font-bold text-red-600">
           {{ stats.notSubmitted || 0 }}
         </p>
         <p class="text-sm text-gray-500">
-          Non soumis
+          Non rendu
         </p>
       </div>
     </div>
@@ -69,8 +77,11 @@
             <option value="submitted">
               Soumis
             </option>
+            <option value="late">
+              Remis en retard
+            </option>
             <option value="not_submitted">
-              Non soumis
+              Non rendu
             </option>
             <option value="graded">
               Notés
@@ -146,6 +157,8 @@
                 class="border-b dark:border-gray-700 submission-row"
                 data-status="{{ submission.status }}"
                 data-graded="{{ submission.isGraded }}"
+                data-submitted="{{ submission.isSubmitted }}"
+                data-late="{{ submission.isLate }}"
                 data-name="{{ submission.studentName }}"
                 data-matricule="{{ submission.registrationNumber }}"
               >
@@ -156,11 +169,7 @@
                   {{ submission.studentName }}
                 </td>
                 <td class="px-4 py-3 text-center">
-                  @if(submission.status === 'submitted')
-                    <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Soumis</span>
-                  @else
-                    <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">Non soumis</span>
-                  @endif
+                  <span class="px-2 py-1 rounded-full text-xs {{ submission.statusClass }}">{{ submission.statusLabel }}</span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   {{ submission.submittedAt ? formatDateTime(submission.submittedAt) : '-' }}
@@ -173,7 +182,7 @@
                   @endif
                 </td>
                 <td class="px-4 py-3 text-center">
-                  @if(submission.status === 'submitted')
+                  @if(submission.isSubmitted)
                     @if(submission.grade === null)
                       <a
                         href="/teacher/assignments/submissions/{{ submission.id }}/grade"
@@ -189,14 +198,16 @@
                         Modifier
               </a>
                     @endif
-                    <a
-                      href="{{ submission.attachmentUrl }}"
-                      target="_blank"
-                      class="text-blue-600 text-xs ml-2"
-                      title="Voir fichier"
-                    >
-                      <i class="fas fa-file-alt"></i>
-                    </a>
+                    @if(submission.attachmentUrl)
+                      <a
+                        href="{{ submission.attachmentUrl }}"
+                        target="_blank"
+                        class="text-blue-600 text-xs ml-2"
+                        title="Voir fichier"
+                      >
+                        <i class="fas fa-file-alt"></i>
+                      </a>
+                    @endif
                   @else
                     <span class="text-gray-400 text-xs">-</span>
                   @endif
@@ -223,11 +234,14 @@
           let show = true;
           const rowStatus = row.dataset.status;
           const rowGraded = row.dataset.graded === "true";
+          const rowSubmitted = row.dataset.submitted === "true";
+          const rowLate = row.dataset.late === "true";
           const name = row.dataset.name?.toLowerCase() || "";
           const matricule = row.dataset.matricule?.toLowerCase() || "";
           if (status !== "all") {
-            if (status === "submitted" && rowStatus !== "submitted") show = false;
-            if (status === "not_submitted" && rowStatus === "submitted") show = false;
+            if (status === "submitted" && !rowSubmitted) show = false;
+            if (status === "late" && !rowLate) show = false;
+            if (status === "not_submitted" && rowSubmitted) show = false;
             if (status === "graded" && !rowGraded) show = false;
             if (status === "ungraded" && rowGraded) show = false;
           }

@@ -5,6 +5,14 @@ import { DateTime } from 'luxon'
 import { randomBytes } from 'node:crypto'
 import { extname } from 'node:path'
 import { edgePageContext } from '#start/view_context'
+import {
+  assignmentStatusMeta,
+  assignmentSubmissionMeta,
+} from '#services/assignment_status_service'
+import {
+  activeStudentCountForAssignment,
+  activeStudentsForAssignment,
+} from '#services/assignment_visibility_service'
 
 // Imports des modèles via subpath alias
 import Teacher from '#models/teacher'
@@ -16,10 +24,15 @@ import ForumTopic from '#models/forum_topic'
 import Grade from '#models/grade'
 import Message from '#models/message'
 // import ForumPost from '#models/forum_post'
+import { formatGuardianLabel, getPrimaryGuardiansForStudents } from '#services/guardian_service'
 import {
-  formatGuardianLabel,
-  getPrimaryGuardiansForStudents,
-} from '#services/guardian_service'
+  SECTION_EVALUATION_POLICIES,
+  allEvaluationPeriodOptions,
+  allEvaluationTypeOptions,
+  evaluationPolicyForClass,
+  evaluationPeriodLabel,
+  evaluationTypeLabel,
+} from '#services/academic_evaluation_service'
 
 // Imports des validateurs VineJS
 import {
@@ -29,6 +42,12 @@ import {
 } from '#validators/teacher'
 
 export default class TeacherController {
+  private isUuid(value: unknown) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      String(value || '')
+    )
+  }
+
   private async storeAssignmentAttachment(
     request: HttpContext['request'],
     folder: 'assignments' | 'submissions' = 'assignments'
@@ -148,19 +167,15 @@ export default class TeacherController {
 
   private async formatAssignment(assignment: Assignment) {
     const submissions = assignment.submissions || []
-    const totalStudentsRow = await db
-      .from('students')
-      .where('class_id', assignment.classId)
-      .where('academic_status', 'active')
-      .count('* as total')
-      .first()
-
-    const totalStudents = Number(totalStudentsRow?.total || 0)
+    const statusMeta = assignmentStatusMeta(assignment)
+    const totalStudents = await activeStudentCountForAssignment(assignment)
     const submittedCount = submissions.filter((submission) =>
       ['submitted', 'graded'].includes(submission.status)
     ).length
     const gradedCount = submissions.filter((submission) => submission.status === 'graded').length
-    const daysRemaining = Math.ceil(assignment.dueDate.diff(DateTime.now(), 'days').days)
+    const lateCount = submissions.filter((submission) =>
+      assignmentSubmissionMeta(assignment, submission).isLate
+    ).length
 
     return {
       id: assignment.id,
@@ -172,8 +187,16 @@ export default class TeacherController {
       dueDate: assignment.dueDate,
       dueTime: assignment.dueTime,
       maxPoints: assignment.maxPoints,
+      term: assignment.term || null,
+      termLabel: evaluationPeriodLabel(assignment.term),
+      evaluationType: assignment.evaluationType || 'devoir',
+      evaluationTypeLabel: evaluationTypeLabel(assignment.evaluationType || 'devoir'),
       attachmentUrl: assignment.attachmentUrl,
-      status: assignment.status,
+      status: statusMeta.effectiveStatus,
+      rawStatus: assignment.status,
+      statusLabel: statusMeta.statusLabel,
+      statusClass: statusMeta.statusClass,
+      borderClass: statusMeta.borderClass,
       publishedAt: assignment.publishedAt,
       createdAt: assignment.createdAt,
       className: assignment.class?.name || '-',
@@ -181,9 +204,14 @@ export default class TeacherController {
       totalStudents,
       submittedCount,
       gradedCount,
+      lateCount,
+      missingCount: Math.max(totalStudents - submittedCount, 0),
       submissionRate: totalStudents ? Math.round((submittedCount / totalStudents) * 100) : 0,
-      daysRemaining,
-      isOverdue: daysRemaining < 0,
+      daysRemaining: statusMeta.daysRemaining,
+      daysLate: statusMeta.daysLate,
+      isOverdue: statusMeta.isOverdue,
+      canSubmit: statusMeta.canSubmit,
+      deadlineAt: statusMeta.deadlineAt,
     }
   }
 
@@ -212,7 +240,7 @@ export default class TeacherController {
       .from('class_subject')
       .join('subjects', 'class_subject.subject_id', 'subjects.id')
       .where('class_subject.class_id', classId)
-      .select('subjects.id', 'subjects.name', 'subjects.coefficient')
+      .select('subjects.id', 'subjects.name', 'class_subject.coefficient')
       .distinct()
       .orderBy('subjects.name', 'asc')
 
@@ -284,6 +312,7 @@ export default class TeacherController {
       name: classObj.name,
       level: classObj.level,
       gradeLevel: classObj.gradeLevel,
+      schoolSectionId: classObj.schoolSectionId,
       shift: classObj.shift,
       academicYear: classObj.academicYear,
       maxCapacity: classObj.maxCapacity,
@@ -306,6 +335,42 @@ export default class TeacherController {
       classes.map((classObj) => this.formatClassForTeacher(classObj, teacher, user))
     )
     return { teacher, classes, formatted }
+  }
+
+  private async evaluationClassOptions(
+    classes: Array<{ id: string; schoolSectionId?: string | null; gradeLevel?: number | null }>
+  ) {
+    const sectionIds = Array.from(
+      new Set(classes.map((classObj) => classObj.schoolSectionId).filter(Boolean))
+    ) as string[]
+    const sections = sectionIds.length
+      ? await db.from('school_sections').whereIn('id', sectionIds).select('id', 'code')
+      : []
+    const sectionCodeById = new Map(sections.map((section) => [String(section.id), section.code]))
+
+    return Object.fromEntries(
+      classes.map((classObj) => [
+        classObj.id,
+        evaluationPolicyForClass(
+          sectionCodeById.get(String(classObj.schoolSectionId || '')),
+          classObj.gradeLevel
+        ),
+      ])
+    )
+  }
+
+  private evaluationTermOptionsFromPolicies(classEvaluationPolicies: Record<string, any>) {
+    const options = new Map<string, string>()
+
+    for (const policy of Object.values(classEvaluationPolicies)) {
+      for (const period of policy.periods || []) {
+        options.set(period.value, evaluationPeriodLabel(period.value))
+      }
+    }
+
+    return options.size
+      ? Array.from(options.entries()).map(([value, label]) => ({ value, label }))
+      : allEvaluationPeriodOptions()
   }
 
   private async authorizeAttendanceClass(user: any, classId: string) {
@@ -529,26 +594,34 @@ export default class TeacherController {
     const subjects = await this.assignmentSubjects(classIds)
     const classId = ctx.request.input('class_id')
     const subjectId = ctx.request.input('subject_id')
-    const status = ctx.request.input('status')
+    const status = String(ctx.request.input('status', '')).trim()
     const search = String(ctx.request.input('search', '')).trim()
 
     const query = this.assignmentQueryForUser(user, teacher)
     query
       .if(classId, (assignmentQuery) => assignmentQuery.where('classId', classId))
       .if(subjectId, (assignmentQuery) => assignmentQuery.where('subjectId', subjectId))
-      .if(status, (assignmentQuery) => assignmentQuery.where('status', status))
       .if(search, (assignmentQuery) => assignmentQuery.whereILike('title', `%${search}%`))
       .orderBy('createdAt', 'desc')
 
     const assignments = await query
-    const formattedAssignments = await Promise.all(
+    let formattedAssignments = await Promise.all(
       assignments.map((assignment) => this.formatAssignment(assignment))
     )
+    if (status) {
+      formattedAssignments = formattedAssignments.filter((assignment) => assignment.status === status)
+    }
     const stats = {
       total: formattedAssignments.length,
       published: formattedAssignments.filter((assignment) => assignment.status === 'published')
         .length,
       draft: formattedAssignments.filter((assignment) => assignment.status === 'draft').length,
+      closed: formattedAssignments.filter((assignment) => assignment.status === 'closed').length,
+      expired: formattedAssignments.filter((assignment) => assignment.status === 'expired').length,
+      missingSubmissions: formattedAssignments.reduce(
+        (total, assignment) => total + assignment.missingCount,
+        0
+      ),
       pendingSubmissions: formattedAssignments.reduce(
         (total, assignment) =>
           total + Math.max(assignment.submittedCount - assignment.gradedCount, 0),
@@ -874,12 +947,19 @@ export default class TeacherController {
 
     const gradeRows = await query.orderBy('examDate', 'desc').limit(200)
     const scores = gradeRows.map((grade) => Number(grade.score)).filter(Number.isFinite)
+    const classEvaluationPolicies = await this.evaluationClassOptions(classes)
+    const filterTermOptions = this.evaluationTermOptionsFromPolicies(classEvaluationPolicies)
 
     return ctx.view.render(
       'teacher/grades/index',
       await edgePageContext(ctx, {
         classes: formatted,
         subjects,
+        classEvaluationPolicies,
+        filterTermOptions,
+        fallbackTermOptions: allEvaluationPeriodOptions(),
+        fallbackEvaluationTypeOptions: allEvaluationTypeOptions(),
+        filterPeriodLabel: 'Période scolaire',
         grades: gradeRows.map((grade) => ({
           id: grade.id,
           examDate: grade.examDate,
@@ -889,7 +969,7 @@ export default class TeacherController {
           subjectName: grade.subject?.name || '-',
           score: grade.score,
           maxScore: grade.maxScore || 20,
-          term: grade.term,
+          term: evaluationPeriodLabel(grade.term),
           examType: grade.examType,
           published: grade.published,
         })),
@@ -908,9 +988,18 @@ export default class TeacherController {
   public async gradeAddPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
     const { formatted } = await this.teacherClassesData(user)
+    const selectedClassId = String(ctx.request.input('class_id', '')).trim()
+
     return ctx.view.render(
       'teacher/grades/add',
-      await edgePageContext(ctx, { myClasses: formatted })
+      await edgePageContext(ctx, {
+        myClasses: formatted,
+        selectedClassId,
+        evaluationPolicies: SECTION_EVALUATION_POLICIES,
+        classEvaluationPolicies: await this.evaluationClassOptions(formatted),
+        fallbackTermOptions: allEvaluationPeriodOptions(),
+        fallbackEvaluationTypeOptions: allEvaluationTypeOptions(),
+      })
     )
   }
 
@@ -920,7 +1009,11 @@ export default class TeacherController {
     const classModel = await this.authorizeAttendanceClass(user, ctx.params.classId)
     const subjects = await this.classSubjects(classModel.id, teacher, user)
     const subjectId = String(ctx.request.input('subject_id', '')).trim()
-    const term = String(ctx.request.input('term', 'T1')).trim()
+    const classEvaluationPolicies = await this.evaluationClassOptions([classModel])
+    const evaluationPolicy = classEvaluationPolicies[classModel.id]
+    const term = String(
+      ctx.request.input('term', evaluationPolicy.periods[0]?.value || 'T1-P1')
+    ).trim()
     const students = await this.classStudents(classModel.id)
     const grades = await Grade.query()
       .where('classId', classModel.id)
@@ -969,6 +1062,8 @@ export default class TeacherController {
         classId: classModel.id,
         className: classModel.name,
         term,
+        termLabel: evaluationPeriodLabel(term),
+        evaluationPolicy,
         subjectId,
         subjectName: subjects.find((subject) => subject.id === subjectId)?.name || '',
         subjects,
@@ -1025,11 +1120,17 @@ export default class TeacherController {
     const user = ctx.auth.getUserOrFail()
     const teacher = await this.currentTeacher(user)
     const classes = await this.assignmentClasses(user, teacher)
+    const classEvaluationPolicies = await this.evaluationClassOptions(classes)
+    const termOptions = this.evaluationTermOptionsFromPolicies(classEvaluationPolicies)
 
     return ctx.view.render(
       'teacher/assignments/create',
       await edgePageContext(ctx, {
         classes,
+        evaluationPolicies: SECTION_EVALUATION_POLICIES,
+        classEvaluationPolicies,
+        termOptions,
+        fallbackTermOptions: allEvaluationPeriodOptions(),
       })
     )
   }
@@ -1078,6 +1179,8 @@ export default class TeacherController {
       dueDate: payload.dueDate,
       dueTime: payload.dueTime || null,
       maxPoints: payload.maxPoints || 20,
+      term: payload.term || null,
+      evaluationType: payload.evaluationType || 'devoir',
       attachmentUrl,
       status: saveAsDraft ? 'draft' : 'published',
       publishedAt: saveAsDraft ? null : DateTime.now(),
@@ -1088,6 +1191,10 @@ export default class TeacherController {
 
   public async assignmentShowPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
+    if (!this.isUuid(ctx.params.id)) {
+      ctx.session.flash('error', 'Identifiant du devoir invalide.')
+      return ctx.response.redirect('/teacher/assignments')
+    }
     const assignment = await this.getTeacherAssignment(user, ctx.params.id)
     const formatted = await this.formatAssignment(assignment)
     const recentSubmissions = (assignment.submissions || [])
@@ -1115,12 +1222,17 @@ export default class TeacherController {
 
   public async assignmentEditPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
+    if (!this.isUuid(ctx.params.id)) {
+      ctx.session.flash('error', 'Identifiant du devoir invalide.')
+      return ctx.response.redirect('/teacher/assignments')
+    }
     const assignment = await this.getTeacherAssignment(user, ctx.params.id)
 
     return ctx.view.render(
       'teacher/assignments/edit',
       await edgePageContext(ctx, {
         assignment: await this.formatAssignment(assignment),
+        termOptions: allEvaluationPeriodOptions(),
       })
     )
   }
@@ -1149,6 +1261,10 @@ export default class TeacherController {
       dueDate: DateTime.fromISO(String(request.input('dueDate') || assignment.dueDate.toISODate())),
       dueTime: String(request.input('dueTime') || '').trim() || null,
       maxPoints: Number(request.input('maxPoints') || assignment.maxPoints || 20),
+      term: String(request.input('term') || assignment.term || '').trim() || null,
+      evaluationType: String(request.input('evaluationType') || assignment.evaluationType || 'devoir') as
+        | 'devoir'
+        | 'interrogation',
       attachmentUrl,
       status,
       publishedAt:
@@ -1161,6 +1277,9 @@ export default class TeacherController {
   }
 
   public async publishAssignment({ auth, params, response }: HttpContext) {
+    if (!this.isUuid(params.id)) {
+      return response.badRequest({ success: false, message: 'Identifiant du devoir invalide.' })
+    }
     const assignment = await this.getTeacherAssignment(auth.getUserOrFail(), params.id)
     assignment.status = 'published'
     assignment.publishedAt = assignment.publishedAt || DateTime.now()
@@ -1170,6 +1289,9 @@ export default class TeacherController {
   }
 
   public async closeAssignment({ auth, params, response }: HttpContext) {
+    if (!this.isUuid(params.id)) {
+      return response.badRequest({ success: false, message: 'Identifiant du devoir invalide.' })
+    }
     const assignment = await this.getTeacherAssignment(auth.getUserOrFail(), params.id)
     assignment.status = 'closed'
     await assignment.save()
@@ -1178,6 +1300,9 @@ export default class TeacherController {
   }
 
   public async removeAssignmentAttachment({ auth, params, response }: HttpContext) {
+    if (!this.isUuid(params.id)) {
+      return response.badRequest({ success: false, message: 'Identifiant du devoir invalide.' })
+    }
     const assignment = await this.getTeacherAssignment(auth.getUserOrFail(), params.id)
     assignment.attachmentUrl = null
     await assignment.save()
@@ -1187,33 +1312,37 @@ export default class TeacherController {
 
   public async assignmentSubmissionsPage(ctx: HttpContext) {
     const user = ctx.auth.getUserOrFail()
+    if (!this.isUuid(ctx.params.id)) {
+      ctx.session.flash('error', 'Identifiant du devoir invalide.')
+      return ctx.response.redirect('/teacher/assignments')
+    }
     const assignment = await this.getTeacherAssignment(user, ctx.params.id)
-    const students = await Student.query()
-      .where('classId', assignment.classId)
-      .where('academicStatus', 'active')
-      .preload('user')
-      .orderBy('registrationNumber', 'asc')
+    const students = await activeStudentsForAssignment(assignment)
 
     const submissionByStudent = new Map(
       (assignment.submissions || []).map((submission) => [submission.studentId, submission])
     )
     const submissions = students.map((student) => {
       const submission = submissionByStudent.get(student.id)
+      const submissionMeta = assignmentSubmissionMeta(assignment, submission || null)
       return {
         id: submission?.id || '',
         studentName: student.user?.fullName || '-',
         registrationNumber: student.registrationNumber,
-        status: submission ? submission.status : 'not_submitted',
+        status: submissionMeta.status,
+        statusLabel: submissionMeta.label,
+        statusClass: submissionMeta.badgeClass,
         submittedAt: submission?.submittedAt || null,
         grade: submission?.grade ? Number(submission.grade) : null,
         attachmentUrl: submission?.attachmentUrl || null,
-        isGraded: submission?.status === 'graded',
+        isGraded: submissionMeta.isGraded,
+        isSubmitted: submissionMeta.isSubmitted,
+        isLate: submissionMeta.isLate,
       }
     })
-    const submitted = submissions.filter((submission) =>
-      ['submitted', 'graded'].includes(submission.status)
-    ).length
+    const submitted = submissions.filter((submission) => submission.isSubmitted).length
     const graded = submissions.filter((submission) => submission.isGraded).length
+    const late = submissions.filter((submission) => submission.isLate).length
 
     return ctx.view.render(
       'teacher/assignments/submissions',
@@ -1224,6 +1353,7 @@ export default class TeacherController {
           total: students.length,
           submitted,
           graded,
+          late,
           notSubmitted: Math.max(students.length - submitted, 0),
         },
       })
@@ -1409,7 +1539,15 @@ export default class TeacherController {
     const user = auth.getUserOrFail()
     const classObj = await this.authorizeAttendanceClass(user, params.id)
     const students = await this.classStudents(params.id)
-    const header = ['Matricule', 'Eleve', 'Tuteur principal', 'Lien', 'Telephone parent', 'Moyenne', 'Presence']
+    const header = [
+      'Matricule',
+      'Eleve',
+      'Tuteur principal',
+      'Lien',
+      'Telephone parent',
+      'Moyenne',
+      'Presence',
+    ]
     const rows = students.map((student) =>
       [
         student.registrationNumber,
@@ -1437,6 +1575,7 @@ export default class TeacherController {
     await this.authorizeAttendanceClass(user, params.classId)
     const subjectId = request.input('subject_id')
     const term = request.input('term')
+    const examType = request.input('exam_type')
 
     const query = Grade.query()
       .where('classId', params.classId)
@@ -1446,6 +1585,7 @@ export default class TeacherController {
 
     if (subjectId) query.where('subjectId', subjectId)
     if (term) query.where('term', term)
+    if (examType) query.where('examType', examType)
 
     const grades = await query
     const gradesByStudent = new Map<string, any>()
@@ -1484,21 +1624,46 @@ export default class TeacherController {
     const classId = request.input('classId')
     await this.authorizeAttendanceClass(user, classId)
 
-    const grade = await Grade.create({
+    const score = Number(request.input('score'))
+    const maxScore = Number(request.input('maxScore', 20))
+    if (!Number.isFinite(score) || !Number.isFinite(maxScore) || maxScore <= 0 || maxScore > 500) {
+      return response.badRequest({
+        success: false,
+        message: 'La note ou la pondération est invalide',
+      })
+    }
+    if (score < 0 || score > maxScore) {
+      return response.badRequest({
+        success: false,
+        message: 'La note ne peut pas dépasser la pondération choisie',
+      })
+    }
+
+    const existingGrade = await Grade.query()
+      .where('studentId', request.input('studentId'))
+      .where('subjectId', request.input('subjectId'))
+      .where('classId', classId)
+      .where('term', request.input('term'))
+      .where('examType', request.input('examType'))
+      .first()
+    const grade = existingGrade || new Grade()
+
+    grade.fill({
       studentId: request.input('studentId'),
       classId,
       subjectId: request.input('subjectId'),
       term: request.input('term'),
       examType: request.input('examType'),
-      score: Number(request.input('score')),
-      maxScore: Number(request.input('maxScore', 20)),
+      score,
+      maxScore,
       teacherComments: request.input('teacherComments') || request.input('comment') || null,
       examDate: DateTime.fromISO(request.input('examDate') || DateTime.now().toISODate()!),
       published: Boolean(request.input('published', false)),
       publishedAt: request.input('published') ? DateTime.now() : null,
     })
+    await grade.save()
 
-    return response.created({ success: true, grade })
+    return response.status(existingGrade ? 200 : 201).send({ success: true, grade })
   }
 
   public async updateGradeWeb(ctx: HttpContext) {
@@ -1512,7 +1677,17 @@ export default class TeacherController {
 
     await this.authorizeAttendanceClass(user, grade.classId)
 
-    grade.score = Number(ctx.request.input('score', grade.score))
+    const score = Number(ctx.request.input('score', grade.score))
+    const maxScore = grade.maxScore || 20
+    if (!Number.isFinite(score) || score < 0 || score > maxScore) {
+      return ctx.response.badRequest({
+        success: false,
+        message: 'La note ne peut pas dépasser la pondération choisie',
+      })
+    }
+
+    grade.score = score
+    grade.maxScore = maxScore
     grade.teacherComments = ctx.request.input('teacherComments', grade.teacherComments)
     grade.published = Boolean(ctx.request.input('published', grade.published))
     grade.publishedAt = grade.published ? DateTime.now() : null
@@ -1844,6 +2019,11 @@ export default class TeacherController {
       })
     }
 
+    const saveAsDraft = Boolean(request.input('saveAsDraft'))
+    const shouldPublish =
+      !saveAsDraft &&
+      ['published', 'true', '1', 'on'].includes(String(request.input('status', 'published')))
+
     const assignment = await Assignment.create({
       teacherId: teacher.id,
       classId: payload.classId,
@@ -1854,8 +2034,11 @@ export default class TeacherController {
       dueDate: payload.dueDate,
       dueTime: payload.dueTime,
       maxPoints: payload.maxPoints || 20,
+      term: payload.term || null,
+      evaluationType: payload.evaluationType || 'devoir',
       attachmentUrl: payload.attachmentUrl,
-      status: 'draft',
+      status: shouldPublish ? 'published' : 'draft',
+      publishedAt: shouldPublish ? DateTime.now() : null,
     })
 
     return response.created({ success: true, assignment })

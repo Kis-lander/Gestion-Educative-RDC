@@ -8,7 +8,7 @@
     Bulletin scolaire
   @endsection
   @section('dashboardSubtitle')
-    {{ student.name }} - {{ className }} - {{ term }} {{ academicYear }}
+    {{ student.name }} - {{ className }} - {{ termLabel || selectedTermLabel || term }} {{ academicYear }}
   @endsection
   
   @section('actions')
@@ -51,7 +51,7 @@
               {{ schoolName }}
             </h3>
             <p class="text-sm">
-              BULLETIN SCOLAIRE - {{ term === 'T1' ? 'PREMIER TRIMESTRE' : (term === 'T2' ? 'DEUXIÈME TRIMESTRE' : 'TROISIÈME TRIMESTRE') }}
+              BULLETIN SCOLAIRE - {{ termLabel || selectedTermLabel || term }}
             </p>
             <p class="text-sm">
               Année scolaire {{ academicYear }}

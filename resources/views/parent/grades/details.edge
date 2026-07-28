@@ -1,11 +1,11 @@
 @layout('layouts/dashboard')
 
   @section('title')
-    Detail des notes - {{ child.name }}
+    Détail des notes - {{ child.name }}
   @endsection
 
   @section('dashboardTitle')
-    Detail des resultats
+    Détail des résultats
   @endsection
   @section('dashboardSubtitle')
     {{ child.name }} - {{ subject.name }}
@@ -15,14 +15,14 @@
     <div class="flex flex-wrap gap-2">
       @if(subject.id)
         <button onclick="printDetails()" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-          <i class="fas fa-print mr-2"></i>Imprimer
+          <i class="fas fa-print mr-2"></i><span data-i18n>Imprimer</span>
         </button>
       @endif
       <a
         href="/parent/grades?child_id={{ child.id }}&term={{ selectedTerm }}"
         class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
       >
-        <i class="fas fa-arrow-left mr-2"></i>Retour
+        <i class="fas fa-arrow-left mr-2"></i><span data-i18n>Retour</span>
       </a>
     </div>
   @endsection
@@ -33,17 +33,19 @@
         <div class="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
           <i class="fas fa-book-open text-3xl"></i>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-          Aucune matiere evaluee
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white" data-i18n>
+          Aucune matière évaluée
         </h3>
         <p class="mt-2 text-gray-500 dark:text-gray-400">
-          Aucune note n'est encore disponible pour {{ child.name }} sur cette periode.
+          <span data-i18n>Aucune note n'est encore disponible pour</span>
+          {{ child.name }}
+          <span data-i18n>sur cette période.</span>
         </p>
         <a
           href="/parent/grades?child_id={{ child.id }}&term={{ selectedTerm }}"
           class="mt-6 inline-flex items-center px-4 py-2 rounded-lg border dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
-          <i class="fas fa-arrow-left mr-2"></i>Retour aux notes
+          <i class="fas fa-arrow-left mr-2"></i><span data-i18n>Retour aux notes</span>
         </a>
       </div>
     @else
@@ -58,44 +60,44 @@
                 {{ subject.name }}
               </h3>
               <p class="text-sm text-gray-500 mt-1">
-                Coefficient {{ subject.coefficient }}
+                <span data-i18n>Coefficient</span> {{ subject.coefficient }}
               </p>
               <div class="mt-5 pt-4 border-t dark:border-gray-700">
                 <p
-                  class="text-3xl font-bold {{ subject.average >= 15 ? 'text-green-600' : (subject.average >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
+                  class="text-3xl font-bold {{ subject.averageNormalized >= 15 ? 'text-green-600' : (subject.averageNormalized >= 10 ? 'text-yellow-600' : 'text-red-600') }}"
                 >
-                  {{ subject.average }}/20
+                  {{ subject.average }}/{{ subject.maxScore }}
                 </p>
                 <p class="text-xs text-gray-500 mt-1">
-                  Moyenne en {{ currentTerm }}
+                  <span data-i18n>Moyenne en</span> {{ currentTerm }}
                 </p>
               </div>
             </div>
           </div>
 
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 min-h-[250px]">
-            <h3 class="font-semibold border-b dark:border-gray-700 pb-3 mb-4">
+            <h3 class="font-semibold border-b dark:border-gray-700 pb-3 mb-4" data-i18n>
               Statistiques
             </h3>
             <div class="space-y-3 text-sm">
               <div class="flex justify-between gap-4">
-                <span class="text-gray-500">Meilleure note</span>
-                <span class="font-bold text-green-600">{{ subject.bestGrade }}/20</span>
+                <span class="text-gray-500" data-i18n>Meilleure note</span>
+                <span class="font-bold text-green-600">{{ subject.bestGrade }}/{{ subject.bestGradeMaxScore }}</span>
               </div>
               <div class="flex justify-between gap-4">
-                <span class="text-gray-500">Note la plus basse</span>
-                <span class="font-bold text-red-600">{{ subject.worstGrade }}/20</span>
+                <span class="text-gray-500" data-i18n>Note la plus basse</span>
+                <span class="font-bold text-red-600">{{ subject.worstGrade }}/{{ subject.worstGradeMaxScore }}</span>
               </div>
               <div class="flex justify-between gap-4">
-                <span class="text-gray-500">Moyenne classe</span>
-                <span>{{ subject.classAverage }}/20</span>
+                <span class="text-gray-500" data-i18n>Moyenne classe</span>
+                <span>{{ subject.rawClassAverage }}/{{ subject.classAverageMaxScore }}</span>
               </div>
               <div class="flex justify-between gap-4">
-                <span class="text-gray-500">Position</span>
+                <span class="text-gray-500" data-i18n>Position</span>
                 <span>{{ subject.rank }}/{{ subject.totalStudents }}</span>
               </div>
               <div class="flex justify-between gap-4">
-                <span class="text-gray-500">Ecart avec moyenne</span>
+                <span class="text-gray-500" data-i18n>Écart avec la moyenne</span>
                 <span class="{{ subject.diffFromAverage > 0 ? 'text-green-600' : 'text-red-600' }}">
                   {{ subject.diffFromAverage > 0 ? '+' : '' }}{{ subject.diffFromAverage }}
                 </span>
@@ -104,41 +106,35 @@
           </div>
 
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 min-h-[250px]">
-            <h3 class="font-semibold border-b dark:border-gray-700 pb-3 mb-4">
+            <h3 class="font-semibold border-b dark:border-gray-700 pb-3 mb-4" data-i18n>
               Progression
             </h3>
             <div class="text-center">
-              <div class="grid grid-cols-3 gap-4 mb-5">
-                <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3">
-                  <p class="text-xs text-gray-500">
-                    T1
-                  </p>
-                  <p class="text-xl font-bold {{ subject.t1 >= 15 ? 'text-green-600' : (subject.t1 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-                    {{ subject.t1 || '-' }}
-                  </p>
-                </div>
-                <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3">
-                  <p class="text-xs text-gray-500">
-                    T2
-                  </p>
-                  <p class="text-xl font-bold {{ subject.t2 >= 15 ? 'text-green-600' : (subject.t2 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-                    {{ subject.t2 || '-' }}
-                  </p>
-                </div>
-                <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3">
-                  <p class="text-xs text-gray-500">
-                    T3
-                  </p>
-                  <p class="text-xl font-bold {{ subject.t3 >= 15 ? 'text-green-600' : (subject.t3 >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-                    {{ subject.t3 || '-' }}
-                  </p>
-                </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-5">
+                @each(item in subject.progressItems)
+                  <div class="rounded-lg bg-gray-50 dark:bg-gray-700/60 p-3">
+                    <p class="text-xs text-gray-500" title="{{ item.label }}">
+                      {{ item.shortLabel }}
+                    </p>
+                    <p class="text-xl font-bold {{ item.colorClass }}">
+                      {{ item.average || '-' }}
+                    </p>
+                  </div>
+                @end
               </div>
               <div class="flex items-center justify-center gap-2">
                 <i
                   class="fas fa-arrow-{{ subject.trend > 0 ? 'up text-green-500' : (subject.trend < 0 ? 'down text-red-500' : 'right text-gray-400') }}"
                 ></i>
-                <span class="text-sm">Evolution: {{ subject.trend > 0 ? '+' : '' }}{{ subject.trend }} points</span>
+                <span class="text-sm">
+                  @if(subject.hasTrend)
+                    <span data-i18n>Évolution :</span>
+                    {{ subject.trend > 0 ? '+' : '' }}{{ subject.trend }}
+                    <span data-i18n>points</span>
+                  @else
+                    <span data-i18n>Évolution non disponible</span>
+                  @endif
+                </span>
               </div>
             </div>
           </div>
@@ -146,19 +142,19 @@
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
           <div class="px-5 py-4 border-b dark:border-gray-700">
-            <h3 class="font-semibold">
-              Detail des evaluations
+            <h3 class="font-semibold" data-i18n>
+              Détail des évaluations
             </h3>
           </div>
           <div class="table-responsive">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th class="px-4 py-3">Type</th>
-                  <th class="px-4 py-3 text-center">Date</th>
-                  <th class="px-4 py-3 text-center">Note /20</th>
-                  <th class="px-4 py-3 text-left">Appreciation</th>
-                  <th class="px-4 py-3 text-center">Moyenne classe</th>
+                  <th class="px-4 py-3" data-i18n>Type</th>
+                  <th class="px-4 py-3 text-center" data-i18n>Date</th>
+                  <th class="px-4 py-3 text-center" data-i18n>Note</th>
+                  <th class="px-4 py-3 text-left" data-i18n>Appréciation</th>
+                  <th class="px-4 py-3 text-center" data-i18n>Moyenne classe</th>
                 </tr>
               </thead>
               <tbody>
@@ -171,21 +167,21 @@
                       {{ grade.date }}
                     </td>
                     <td class="px-4 py-3 text-center">
-                      <span class="font-bold {{ grade.score >= 15 ? 'text-green-600' : (grade.score >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
-                        {{ grade.score }}/20
+                      <span class="font-bold {{ grade.normalizedScore >= 15 ? 'text-green-600' : (grade.normalizedScore >= 10 ? 'text-yellow-600' : 'text-red-600') }}">
+                        {{ grade.score }}/{{ grade.maxScore }}
                       </span>
                     </td>
                     <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
                       {{ grade.comment || '-' }}
                     </td>
                     <td class="px-4 py-3 text-center">
-                      {{ grade.classAverage || '-' }}/20
+                      {{ grade.classAverage || '-' }}/{{ grade.classAverageMaxScore }}
                     </td>
                   </tr>
                 @else
                   <tr>
-                    <td colspan="5" class="px-4 py-10 text-center text-gray-500">
-                      Aucune evaluation disponible pour cette matiere
+                    <td colspan="5" class="px-4 py-10 text-center text-gray-500" data-i18n>
+                      Aucune évaluation disponible pour cette matière.
                     </td>
                   </tr>
                 @end
@@ -195,8 +191,8 @@
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-          <h3 class="font-semibold mb-4">
-            Evolution des notes dans la matiere
+          <h3 class="font-semibold mb-4" data-i18n>
+            Évolution des notes dans la matière
           </h3>
           <div class="relative h-72">
             <canvas id="subjectEvolutionChart"></canvas>
@@ -207,11 +203,11 @@
           <div class="flex gap-3">
             <i class="fas fa-lightbulb text-yellow-500 text-xl mt-0.5"></i>
             <div>
-              <h4 class="font-semibold">
+              <h4 class="font-semibold" data-i18n>
                 Conseils pour progresser
               </h4>
               <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                {{ subject.tips || 'Continuez vos efforts et n\'hesitez pas a demander de l\'aide a votre professeur.' }}
+                {{ subject.tips || 'Continuez vos efforts et n\'hésitez pas à demander de l\'aide à votre professeur.' }}
               </p>
             </div>
           </div>
@@ -232,14 +228,14 @@
           data: {
             labels: {{ evalLabels|json_encode|raw }},
             datasets: [ {
-              label: "Note de l'eleve",
+              label: window.AppTranslations?.translate("Note de l'élève") || "Note de l'élève",
               data: {{ evalScores|json_encode|raw }},
               borderColor: "#2563eb",
               backgroundColor: "rgba(37, 99, 235, 0.1)",
               fill: true,
               tension: .4
             }, {
-              label: "Moyenne de la classe",
+              label: window.AppTranslations?.translate("Moyenne de la classe") || "Moyenne de la classe",
               data: {{ evalClassAverages|json_encode|raw }},
               borderColor: "#16a34a",
               borderDash: [ 5, 5 ],
@@ -251,7 +247,7 @@
             maintainAspectRatio: false,
             scales: {
               y: {
-                max: 20,
+                max: {{ subject.chartMaxScore || 20 }},
                 min: 0
               }
             }

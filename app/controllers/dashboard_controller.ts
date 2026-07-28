@@ -21,8 +21,20 @@ import {
   positionLabel,
 } from '#services/school_governance_service'
 import { formatGuardianLabel, getPrimaryGuardianForStudent } from '#services/guardian_service'
+import {
+  assignmentStatusMeta,
+  assignmentSubmissionMeta,
+} from '#services/assignment_status_service'
+import { visibleAssignmentsForStudent } from '#services/assignment_visibility_service'
+import { evaluationPeriodLabel, evaluationTypeLabel } from '#services/academic_evaluation_service'
+import { formatScore, normalizedGradeScore } from '#services/grade_score_service'
 
 export default class DashboardController {
+  private formatScore(value: number | null | undefined) {
+    if (value === null || value === undefined || !Number.isFinite(value)) return '-'
+    return Number(value).toFixed(1).replace(/\.0$/, '')
+  }
+
   public async workspace({ auth, request, response, view }: HttpContext) {
     const user = auth.getUserOrFail()
 
@@ -361,16 +373,32 @@ export default class DashboardController {
   private async teacherDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
     const user = auth.getUserOrFail()
     const teacher = await Teacher.query().where('userId', user.id).first()
+    const assignedRows = teacher
+      ? await db
+          .from('class_subject')
+          .where('teacher_id', teacher.id)
+          .select('class_id')
+          .distinct()
+      : []
+    const assignedClassIds = assignedRows.map((row) => String(row.class_id)).filter(Boolean)
     const classes = teacher
       ? await Class.query()
-          .where('teacherId', teacher.id)
           .whereNull('archivedAt')
+          .where((classQuery) => {
+            classQuery.where('teacherId', teacher.id)
+            if (assignedClassIds.length) classQuery.orWhereIn('id', assignedClassIds)
+          })
           .orderBy('name', 'asc')
       : []
     const classIds = classes.map((classObj) => classObj.id)
     const [assignments, studentRows] = await Promise.all([
-      classIds.length
-        ? Assignment.query().whereIn('classId', classIds).orderBy('createdAt', 'desc').limit(5)
+      teacher
+        ? Assignment.query()
+            .where('teacherId', teacher.id)
+            .preload('subject')
+            .preload('submissions')
+            .orderBy('createdAt', 'desc')
+            .limit(5)
         : [],
       classIds.length
         ? db
@@ -405,10 +433,14 @@ export default class DashboardController {
         id: assignment.id,
         title: assignment.title,
         className: classes.find((classObj) => classObj.id === assignment.classId)?.name || '-',
-        subjectName: '-',
+        subjectName: assignment.subject?.name || '-',
+        termLabel: evaluationPeriodLabel(assignment.term),
+        evaluationTypeLabel: evaluationTypeLabel(assignment.evaluationType || 'devoir'),
         dueDate: assignment.dueDate?.toFormat('dd/MM/yyyy') || '-',
-        submissionsCount: 0,
-        totalStudents: 0,
+        submissionsCount: (assignment.submissions || []).filter((submission) =>
+          ['submitted', 'graded'].includes(submission.status)
+        ).length,
+        totalStudents: studentsByClass.get(assignment.classId) || 0,
       })),
       todayAttendance: classes.map((classObj) => ({
         className: classObj.name,
@@ -428,18 +460,119 @@ export default class DashboardController {
           .preload('user')
           .preload('class')
       : []
+    const childIds = children.map((child) => child.id)
+    const childSchoolIds = Array.from(new Set(children.map((child) => child.schoolId).filter(Boolean)))
+    const grades = childIds.length
+      ? await Grade.query().whereIn('studentId', childIds).where('published', true)
+      : []
+    const gradesByStudent = new Map<string, number[]>()
+    for (const grade of grades) {
+      const score = Number(grade.score)
+      const maxScore = Number(grade.maxScore || 20)
+      if (!Number.isFinite(score) || !Number.isFinite(maxScore) || maxScore <= 0) continue
+      const normalizedScore = (score / maxScore) * 20
+      gradesByStudent.set(grade.studentId, [
+        ...(gradesByStudent.get(grade.studentId) || []),
+        normalizedScore,
+      ])
+    }
+    const childAverage = (childId: string) => {
+      const scores = gradesByStudent.get(childId) || []
+      if (!scores.length) return null
+      return scores.reduce((sum, score) => sum + score, 0) / scores.length
+    }
+    const averages = children
+      .map((child) => childAverage(child.id))
+      .filter((average): average is number => average !== null)
+    const schoolFees = childSchoolIds.length
+      ? await db
+          .from('school_fees')
+          .whereIn('school_id', childSchoolIds)
+          .where('is_mandatory', true)
+          .select('school_id', 'amount')
+      : []
+    const feesBySchool = new Map<string, number>()
+    for (const fee of schoolFees) {
+      feesBySchool.set(String(fee.school_id), (feesBySchool.get(String(fee.school_id)) || 0) + Number(fee.amount || 0))
+    }
+    const expectedPayments = children.reduce(
+      (sum, child) => sum + (feesBySchool.get(child.schoolId) || 0),
+      0
+    )
+    const paidRow = childIds.length
+      ? await db.from('fee_payments').whereIn('student_id', childIds).sum('amount_paid as total').first()
+      : null
+    const paidAmount = Number(paidRow?.total || 0)
     const messages = await Message.query()
-      .where('receiverId', user.id)
+      .where((query) => query.where('senderId', user.id).orWhere('receiverId', user.id))
       .preload('sender')
       .orderBy('createdAt', 'desc')
       .limit(5)
+    const parentAssignments = Array.from(
+      new Map(
+        (await Promise.all(children.map((child) => visibleAssignmentsForStudent(child))))
+          .flat()
+          .map((assignment) => [assignment.id, assignment])
+      ).values()
+    )
+    const parentAssignmentIds = parentAssignments.map((assignment) => assignment.id)
+    const parentSubmissionRows =
+      childIds.length && parentAssignmentIds.length
+        ? await db
+            .from('assignment_submissions')
+            .whereIn('student_id', childIds)
+            .whereIn('assignment_id', parentAssignmentIds)
+            .select('assignment_id', 'student_id', 'status', 'submitted_at', 'is_late')
+        : []
+    const parentSubmissionsByKey = new Map(
+      parentSubmissionRows.map((submission) => [
+        `${submission.student_id}:${submission.assignment_id}`,
+        {
+          status: submission.status,
+          submittedAt: submission.submitted_at ? DateTime.fromJSDate(new Date(submission.submitted_at)) : null,
+          isLate: !!submission.is_late,
+        },
+      ])
+    )
+    const childAssignments = (child: Student) =>
+      parentAssignments
+        .filter((assignment) => {
+          const assignmentClasses = assignment.$extras.visibleClassIds as string[] | undefined
+          if (assignmentClasses && !assignmentClasses.includes(child.classId || '')) return false
+          const submissionMeta = assignmentSubmissionMeta(
+            assignment,
+            parentSubmissionsByKey.get(`${child.id}:${assignment.id}`) || null
+          )
+          return !submissionMeta.isSubmitted
+        })
+        .slice(0, 3)
+        .map((assignment) => {
+          const assignmentMeta = assignmentStatusMeta(assignment)
+          const submissionMeta = assignmentSubmissionMeta(
+            assignment,
+            parentSubmissionsByKey.get(`${child.id}:${assignment.id}`) || null
+          )
+          return {
+            id: assignment.id,
+            title: assignment.title,
+            subjectName: assignment.subject?.name || '-',
+            termLabel: evaluationPeriodLabel(assignment.term),
+            evaluationTypeLabel: evaluationTypeLabel(assignment.evaluationType || 'devoir'),
+            dueDate: assignmentMeta.deadlineAt.toFormat('dd/MM/yyyy HH:mm'),
+            statusLabel: submissionMeta.label,
+            statusClass: submissionMeta.badgeClass,
+            isOverdue: assignmentMeta.isOverdue,
+          }
+        })
 
     return view.render('dashboard/parent', {
       stats: {
         childrenCount: children.length,
-        averageGrade: '-',
-        unreadMessages: messages.filter((message) => !message.isRead).length,
-        pendingPayments: 0,
+        averageGrade: this.formatScore(
+          averages.length ? averages.reduce((sum, average) => sum + average, 0) / averages.length : null
+        ),
+        unreadMessages: messages.filter((message) => message.receiverId === user.id && !message.isRead).length,
+        pendingPayments: Math.max(0, expectedPayments - paidAmount),
       },
       children: children.map((child) => ({
         ...child.toJSON(),
@@ -447,12 +580,15 @@ export default class DashboardController {
         registrationNumber: child.registrationNumber || '-',
         user: child.user,
         class: child.class || { name: 'Non affecté' },
-        averageGrade: '-',
+        averageGrade: this.formatScore(childAverage(child.id)),
+        assignments: childAssignments(child),
       })),
       recentMessages: messages.map((message) => ({
         id: message.id,
         senderName: message.sender?.fullName || 'Expéditeur',
         subject: message.subject,
+        time: message.createdAt?.toFormat('dd/MM/yyyy') || '',
+        isRead: message.receiverId === user.id ? message.isRead : true,
       })),
     })
   }
@@ -467,8 +603,61 @@ export default class DashboardController {
     const grades = studentProfile
       ? await Grade.query().where('studentId', studentProfile.id).preload('subject').orderBy('examDate', 'desc').limit(5)
       : []
-    const averageGrade = grades.length
-      ? (grades.reduce((sum, grade) => sum + Number(grade.score || 0), 0) / grades.length).toFixed(1)
+    const publishedAssignments = studentProfile ? await visibleAssignmentsForStudent(studentProfile) : []
+    const submissionRows =
+      studentProfile && publishedAssignments.length
+        ? await db
+            .from('assignment_submissions')
+            .where('student_id', studentProfile.id)
+            .whereIn(
+              'assignment_id',
+              publishedAssignments.map((assignment) => assignment.id)
+            )
+            .select('assignment_id', 'status', 'submitted_at', 'is_late')
+        : []
+    const submissionByAssignmentId = new Map(
+      submissionRows.map((submission) => [
+        String(submission.assignment_id),
+        {
+          status: submission.status,
+          submittedAt: submission.submitted_at ? DateTime.fromJSDate(new Date(submission.submitted_at)) : null,
+          isLate: !!submission.is_late,
+        },
+      ])
+    )
+    const pendingAssignments = publishedAssignments
+      .filter((assignment) => {
+        const submissionMeta = assignmentSubmissionMeta(
+          assignment,
+          submissionByAssignmentId.get(assignment.id) || null
+        )
+        return !submissionMeta.isSubmitted
+      })
+      .slice(0, 5)
+      .map((assignment) => {
+        const assignmentMeta = assignmentStatusMeta(assignment)
+        const submissionMeta = assignmentSubmissionMeta(
+          assignment,
+          submissionByAssignmentId.get(assignment.id) || null
+        )
+        return {
+          id: assignment.id,
+          title: assignment.title,
+          subjectName: assignment.subject?.name || '-',
+          className: assignment.class?.name || studentProfile?.class?.name || '-',
+          dueDate: assignmentMeta.deadlineAt?.toFormat('dd/MM/yyyy HH:mm') || '-',
+          daysLeft: assignmentMeta.daysRemaining,
+          statusLabel: submissionMeta.label,
+          statusClass: submissionMeta.badgeClass,
+          canSubmit: submissionMeta.canSubmit,
+          isOverdue: assignmentMeta.isOverdue,
+        }
+      })
+    const normalizedGrades = grades
+      .map((grade) => normalizedGradeScore(grade))
+      .filter((score): score is number => score !== null)
+    const averageGrade = normalizedGrades.length
+      ? formatScore(normalizedGrades.reduce((sum, score) => sum + score, 0) / normalizedGrades.length)
       : '-'
     const primaryGuardian = studentProfile
       ? await getPrimaryGuardianForStudent(studentProfile.id)
@@ -480,7 +669,7 @@ export default class DashboardController {
         averageGrade,
         rank: '-',
         totalStudents: 0,
-        pendingAssignments: 0,
+        pendingAssignments: pendingAssignments.length,
         attendanceRate: 0,
       },
       student: {
@@ -499,9 +688,9 @@ export default class DashboardController {
         subjectName: grade.subject?.name || '-',
         examType: grade.examType,
         date: grade.examDate?.toFormat('dd/MM/yyyy') || '-',
-        score: Number(grade.score || 0),
+        score: formatScore(normalizedGradeScore(grade)),
       })),
-      pendingAssignments: [],
+      pendingAssignments,
       timetable: [],
       forumTopics: [],
     })
@@ -780,18 +969,13 @@ export default class DashboardController {
       return response.notFound({ success: false, message: 'Profil étudiant non trouvé' })
     }
 
-    const [grades, assignments, completed] = await Promise.all([
+    const visibleAssignments = await visibleAssignmentsForStudent(student)
+    const [grades, completed] = await Promise.all([
       db.from('grades').where('student_id', student.id).avg('score as average').first(),
-      db
-        .from('assignments')
-        .where('class_id', student.classId!)
-        .where('status', 'published')
-        .count('* as total')
-        .first(),
       db
         .from('assignment_submissions')
         .where('student_id', student.id)
-        .where('status', 'submitted')
+        .whereIn('status', ['submitted', 'graded'])
         .count('* as total')
         .first(),
     ])
@@ -800,7 +984,7 @@ export default class DashboardController {
       success: true,
       stats: {
         averageGrade: Number(grades?.average || 0),
-        assignments: Number(assignments?.total || 0),
+        assignments: visibleAssignments.length,
         completedAssignments: Number(completed?.total || 0),
         attendanceRate: 0,
       },

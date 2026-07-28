@@ -1447,6 +1447,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['exportStudentForum']>>>
     }
   }
+  'api.student.pending_assignments_count': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/student/pending-assignments-count'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['pendingAssignmentsCount']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['pendingAssignmentsCount']>>>
+    }
+  }
   'api.teacher.forum.export': {
     methods: ["GET","HEAD"]
     pattern: '/api/teacher/forum/export'
@@ -3487,6 +3499,42 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/settings_controller').default['privacyPage']>>>
     }
   }
+  'academic.grades.edit': {
+    methods: ["GET","HEAD"]
+    pattern: '/academic/grades/:id/edit'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['gradeEditPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['gradeEditPage']>>>
+    }
+  }
+  'academic.grades.update.web': {
+    methods: ["PUT"]
+    pattern: '/academic/grades/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#validators/academic').updateGradeValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#validators/academic').updateGradeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateGrade']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['updateGrade']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'academic.grades.delete.web': {
+    methods: ["DELETE"]
+    pattern: '/academic/grades/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['deleteGrade']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['deleteGrade']>>>
+    }
+  }
   'academics.student_grades_page': {
     methods: ["GET","HEAD"]
     pattern: '/academic/grades/student/:studentId'
@@ -3497,6 +3545,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['studentGradesPage']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['studentGradesPage']>>>
+    }
+  }
+  'academics.publish_grades_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/academic/grades/publish'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['publishGradesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/academics_controller').default['publishGradesPage']>>>
     }
   }
   'teachers.dashboard_page': {
@@ -4039,6 +4099,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['submissionsPage']>>>
     }
   }
+  'student.assignments.submissions.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/student/assignments/submissions/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['submissionShowPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['submissionShowPage']>>>
+    }
+  }
   'students.assignment_show_page': {
     methods: ["GET","HEAD"]
     pattern: '/student/assignments/:id'
@@ -4207,6 +4279,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['deleteReply']>>>
     }
   }
+  'students.grades_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/student/grades'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['gradesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['gradesPage']>>>
+    }
+  }
   'parents.dashboard_page': {
     methods: ["GET","HEAD"]
     pattern: '/parent/dashboard'
@@ -4229,6 +4313,42 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['childrenPage']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['childrenPage']>>>
+    }
+  }
+  'parents.classes_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/classes'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['classesPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['classesPage']>>>
+    }
+  }
+  'parents.subjects_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/subjects'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['subjectsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['subjectsPage']>>>
+    }
+  }
+  'parents.teachers_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/teachers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['teachersPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['teachersPage']>>>
     }
   }
   'parents.child_show_page': {
@@ -4411,6 +4531,66 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentsStatusPage']>>>
     }
   }
+  'parents.payment_status_pdf_redirect': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/payments/status/pdf'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentStatusPdfRedirect']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentStatusPdfRedirect']>>>
+    }
+  }
+  'parents.initiate_payment_redirect': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/payments/initiate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['initiatePaymentRedirect']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['initiatePaymentRedirect']>>>
+    }
+  }
+  'parents.payment_plan_request_redirect': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/payments/payment-plan/request'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentPlanRequestRedirect']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentPlanRequestRedirect']>>>
+    }
+  }
+  'parents.payment_receipt_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/payments/receipt/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentReceiptPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['paymentReceiptPage']>>>
+    }
+  }
+  'parents.print_payment_receipt_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/parent/payments/print-receipt/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['printPaymentReceiptPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['printPaymentReceiptPage']>>>
+    }
+  }
   'parents.parent_messages_page': {
     methods: ["GET","HEAD"]
     pattern: '/parent/messages'
@@ -4527,8 +4707,8 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentsPage']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentsPage']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentDetailsPage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['appointmentDetailsPage']>>>
     }
   }
   'parents.children_stats': {
@@ -4565,6 +4745,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['exportAttendance']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['exportAttendance']>>>
+    }
+  }
+  'api.parent.attendance.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/parent/attendance/:studentId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { studentId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getChildAttendance']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/parents_controller').default['getChildAttendance']>>>
     }
   }
   'api.parent.payments.export': {
@@ -6605,6 +6797,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['getAssignments']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['getAssignments']>>>
+    }
+  }
+  'students.pending_assignments_count': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/student/pending-assignments-count'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['pendingAssignmentsCount']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['pendingAssignmentsCount']>>>
     }
   }
   'students.submit_assignment': {

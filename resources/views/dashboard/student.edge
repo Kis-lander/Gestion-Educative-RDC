@@ -44,7 +44,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
           <div class="flex justify-between items-start">
             <div>
-              <p class="text-gray-500 dark:text-gray-400 text-sm">
+              <p class="text-gray-500 dark:text-gray-400 text-sm" data-i18n>
                 Devoirs à rendre
               </p>
               <p class="text-2xl font-bold text-orange-600">
@@ -58,7 +58,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md card-hover">
           <div class="flex justify-between items-start">
             <div>
-              <p class="text-gray-500 dark:text-gray-400 text-sm">
+              <p class="text-gray-500 dark:text-gray-400 text-sm" data-i18n>
                 Présences
               </p>
               <p class="text-2xl font-bold text-green-600">
@@ -92,15 +92,15 @@
           </div>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
-              <span class="text-gray-500">Matricule</span>
+              <span class="text-gray-500" data-i18n>Matricule</span>
               <span class="font-mono">{{ student.registrationNumber }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-500">Date naissance</span>
+              <span class="text-gray-500" data-i18n>Date de naissance</span>
               <span>{{ student.birthDate || '-' }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-500">Tuteur</span>
+              <span class="text-gray-500" data-i18n>Tuteur</span>
               <span class="text-right">{{ student.parentName || 'Non renseigné' }}</span>
             </div>
           </div>
@@ -109,10 +109,10 @@
         <!-- Dernières notes -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="font-semibold text-gray-800 dark:text-white">
-              Dernières notes
-            </h3>
-            <a href="/student/grades" class="text-primary text-sm hover:underline">Voir tout</a>
+              <h3 class="font-semibold text-gray-800 dark:text-white" data-i18n>
+                Dernières notes
+              </h3>
+            <a href="/student/grades" class="text-primary text-sm hover:underline" data-i18n>Voir tout</a>
           </div>
           <div class="space-y-2">
             @each(grade in recentGrades)
@@ -132,7 +132,7 @@
                   </div>
                 </div>
                 @else
-                <p class="text-gray-500 text-center py-6">
+                <p class="text-gray-500 text-center py-6" data-i18n>
                   Aucune note disponible
                 </p>
               @end
@@ -142,10 +142,10 @@
           <!-- Devoirs à rendre -->
           <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="font-semibold text-gray-800 dark:text-white">
+              <h3 class="font-semibold text-gray-800 dark:text-white" data-i18n>
                 Devoirs à rendre
               </h3>
-              <a href="/student/assignments" class="text-primary text-sm hover:underline">Voir tout</a>
+              <a href="/student/assignments" class="text-primary text-sm hover:underline" data-i18n>Voir tout</a>
             </div>
             <div class="space-y-2">
               @each(assignment in pendingAssignments)
@@ -159,16 +159,19 @@
                         {{ assignment.subjectName }} - {{ assignment.className }}
                       </p>
                     </div>
-                    <span class="text-xs text-red-500">{{ assignment.daysLeft }} jours restants</span>
+                    <span class="px-2 py-1 rounded-full text-xs {{ assignment.statusClass }}" data-i18n>{{ assignment.statusLabel }}</span>
                   </div>
+                  <p class="text-xs {{ assignment.isOverdue ? 'text-red-500' : 'text-gray-500' }} mt-1" data-i18n>
+                    {{ assignment.isOverdue ? 'Date dépassée' : assignment.daysLeft + ' jours restants' }}
+                  </p>
                   <div class="mt-2">
                     <a href="/student/assignments/{{ assignment.id }}" class="text-primary text-xs hover:underline">
-                      <i class="fas fa-upload mr-1"></i>Soumettre
+                      <i class="fas {{ assignment.canSubmit ? 'fa-upload' : 'fa-eye' }} mr-1"></i><span data-i18n>{{ assignment.canSubmit ? 'Soumettre' : 'Voir le détail' }}</span>
           </a>
                   </div>
                 </div>
                 @else
-                <p class="text-gray-500 text-center py-6">
+                <p class="text-gray-500 text-center py-6" data-i18n>
                   Aucun devoir en attente
                 </p>
               @end
