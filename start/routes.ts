@@ -216,6 +216,7 @@ router
     router.get('/schools/:id/reject', [controllers.Inspections, 'rejectSchoolRedirect'])
     router.post('/schools/:id/reject', [controllers.Inspections, 'rejectSchool'])
     router.post('/schools/:id/toggle-suspend', [controllers.Inspections, 'toggleSuspendSchool'])
+    router.delete('/schools/:id/delete', [controllers.Inspections, 'deleteSchool'])
     router.get('/teachers', [controllers.Inspections, 'inspectionTeachersPage'])
     router.get('/communications/global', [controllers.Inspections, 'communicationsGlobalPage'])
     router

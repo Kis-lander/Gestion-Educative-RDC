@@ -731,6 +731,30 @@ export default class InspectionController {
     return response.ok({ success: true, status: school.status })
   }
 
+  public async deleteSchool({ params, request, response, session }: HttpContext) {
+    const school = await School.findOrFail(params.id)
+    const schoolName = school.name
+
+    await db.transaction(async (trx) => {
+      await deleteSchoolWithLinkedAccounts(school.id, trx)
+    })
+
+    const message = `L'établissement "${schoolName}" a été supprimé avec ses comptes liés.`
+    const wantsJson =
+      String(request.header('accept') || '').includes('application/json') ||
+      String(request.header('content-type') || '').includes('application/json')
+
+    if (wantsJson) {
+      return response.ok({
+        success: true,
+        message,
+      })
+    }
+
+    session.flash('success', message)
+    return response.redirect('/inspection/schools')
+  }
+
   public async communicationsGlobalPage({ view }: HttpContext) {
     const messages = await Message.query()
       .where('is_global', true)

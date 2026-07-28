@@ -211,6 +211,14 @@
                     >
                       <i class="fas fa-chart-line"></i>
                     </button>
+                    <button
+                      data-school-name="{{ school.name }}"
+                      onclick="deleteSchool('{{ school.id }}', this.dataset.schoolName)"
+                      class="text-red-600 hover:text-red-800"
+                      title="Supprimer"
+                    >
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -267,6 +275,30 @@
 
       function generateReport(schoolId) {
         window.open(`/inspection/reports/school/${schoolId}`, "_blank");
+      }
+
+      function deleteSchool(schoolId, schoolName) {
+        const confirmed = confirm(
+          `Supprimer définitivement l'établissement "${schoolName}" ?\n\nCette action supprimera aussi les comptes liés à cette école.`
+        );
+
+        if (!confirmed) return;
+
+        fetch(`/inspection/schools/${schoolId}/delete`, {
+          method: "DELETE",
+          headers: {
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const data = await response.json().catch(() => ({}));
+              throw new Error(data.message || "La suppression a échoué.");
+            }
+            location.reload();
+          })
+          .catch((error) => alert(error.message));
       }
 
       function exportSchools() {

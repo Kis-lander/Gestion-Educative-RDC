@@ -27,6 +27,12 @@
       >
         <i class="fas fa-file-pdf mr-2"></i>Rapport complet
   </button>
+      <button
+        onclick="deleteCurrentSchool()"
+        class="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
+      >
+        <i class="fas fa-trash-alt mr-2"></i>Supprimer
+      </button>
     </div>
   @endsection
   
@@ -333,6 +339,31 @@
 
       function startInspection() {
         window.location.href = `/inspection/schools/{{ school.id }}/inspect`;
+      }
+
+      function deleteCurrentSchool() {
+        const schoolName = {{ JSON.stringify(school.name) }};
+        const confirmed = confirm(
+          `Supprimer définitivement l'établissement "${schoolName}" ?\n\nCette action supprimera aussi les comptes liés à cette école.`
+        );
+
+        if (!confirmed) return;
+
+        fetch(`/inspection/schools/{{ school.id }}/delete`, {
+          method: "DELETE",
+          headers: {
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          }
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const data = await response.json().catch(() => ({}));
+              throw new Error(data.message || "La suppression a échoué.");
+            }
+            window.location.href = "/inspection/schools";
+          })
+          .catch((error) => alert(error.message));
       }
     </script>
   @endsection
