@@ -5,8 +5,7 @@ services:
     plan: free
     region: frankfurt
     buildCommand: npm ci && npm run build && cd build && npm ci --omit=dev
-    preDeployCommand: cd build && node ace migration:run --force
-    startCommand: cd build && node bin/server.js
+    startCommand: cd build && node ace migration:run --force && node bin/server.js
     healthCheckPath: /home
     envVars:
       - key: NODE_VERSION

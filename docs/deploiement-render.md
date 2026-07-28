@@ -21,7 +21,7 @@ Cette configuration sert uniquement aux tests.
 
 - Service web Node.js gratuit.
 - Base PostgreSQL gratuite.
-- Migrations exécutées avant le démarrage du service.
+- Migrations exécutées au démarrage du service, car Render ne supporte pas `preDeployCommand` sur le plan gratuit.
 - Sessions en cookies.
 - Emails en mode console pour les tests.
 
