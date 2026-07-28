@@ -22,6 +22,7 @@ Cette configuration sert uniquement aux tests.
 - Service web Node.js gratuit.
 - Base PostgreSQL gratuite.
 - Migrations exécutées au démarrage du service, car Render ne supporte pas `preDeployCommand` sur le plan gratuit.
+- Node.js fixé à `24.14.1`, la version par défaut récente de Render compatible avec AdonisJS.
 - Sessions en cookies.
 - Emails en mode console pour les tests.
 

@@ -9,7 +9,7 @@ services:
     healthCheckPath: /home
     envVars:
       - key: NODE_VERSION
-        value: 25.9.0
+        value: 24.14.1
       - key: NODE_ENV
         value: production
       - key: HOST
