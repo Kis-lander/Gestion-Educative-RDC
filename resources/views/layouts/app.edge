@@ -336,15 +336,50 @@
       }
       
       .dark body {
-        background-color: #111827;
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 30rem),
+          linear-gradient(180deg, #0f172a 0%, #111827 100%);
         color: #e5e7eb;
       }
 
       .dark main {
+        background:
+          linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.98)),
+          radial-gradient(circle at 100% 0, rgba(22, 163, 74, 0.08), transparent 26rem);
         color: #e5e7eb;
       }
 
+      .dark [data-page-header] h1,
+      .dark main h1,
+      .dark main h2,
+      .dark main h3 {
+        color: #f8fafc !important;
+        text-shadow: none !important;
+      }
+
+      .dark [data-page-header] p,
+      .dark main p,
+      .dark main .text-gray-500,
+      .dark main .text-gray-400 {
+        color: #cbd5e1 !important;
+      }
+
+      .dark [data-page-header] button {
+        background-color: rgba(15, 23, 42, 0.72);
+        border-color: #64748b !important;
+        color: #e2e8f0 !important;
+      }
+
       .dark .bg-white {
+        background-color: #1f2937 !important;
+      }
+
+      .dark main .bg-white,
+      .dark main .dark\:bg-gray-800,
+      .dark main .shadow-md,
+      .dark main .shadow-lg,
+      .dark main .shadow-xl {
+        border-color: rgba(148, 163, 184, 0.22) !important;
         background-color: #1f2937 !important;
       }
 
@@ -363,6 +398,29 @@
       .dark .text-gray-500,
       .dark .text-gray-400 {
         color: #d1d5db !important;
+      }
+
+      .dark main label,
+      .dark main strong,
+      .dark main th,
+      .dark main td,
+      .dark main span {
+        color: inherit;
+      }
+
+      .dark main label {
+        color: #e5e7eb !important;
+        font-weight: 700;
+      }
+
+      .dark main strong {
+        color: #f8fafc;
+      }
+
+      .dark main .border-t,
+      .dark main .border-b,
+      .dark main .border {
+        border-color: rgba(148, 163, 184, 0.28) !important;
       }
 
       html:not(.dark) main input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([type='color']),
