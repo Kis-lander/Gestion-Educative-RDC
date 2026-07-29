@@ -7,6 +7,7 @@ export type ScannedRoutes = {
     'welcome.index': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
     'about': { paramsTuple?: []; params?: {} }
+    'errors.maintenance': { paramsTuple?: []; params?: {} }
     'welcome.landing': { paramsTuple?: []; params?: {} }
     'welcome.testimonials.store': { paramsTuple?: []; params?: {} }
     'welcome.about': { paramsTuple?: []; params?: {} }
@@ -41,6 +42,7 @@ export type ScannedRoutes = {
     'inspections.reject_school_redirect': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.reject_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.toggle_suspend_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.delete_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.inspection_teachers_page': { paramsTuple?: []; params?: {} }
     'inspections.communications_global_page': { paramsTuple?: []; params?: {} }
     'inspection.communications.global.store': { paramsTuple?: []; params?: {} }
@@ -116,6 +118,7 @@ export type ScannedRoutes = {
     'communication.messages.restore_all': { paramsTuple?: []; params?: {} }
     'communication.messages.send.redirect': { paramsTuple?: []; params?: {} }
     'communication.messages.send': { paramsTuple?: []; params?: {} }
+    'api.messages.unread_count': { paramsTuple?: []; params?: {} }
     'api.messages.conversation': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'api.messages.send': { paramsTuple?: []; params?: {} }
     'api.messages.update_conversation': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -129,6 +132,7 @@ export type ScannedRoutes = {
     'api.student.forum.topic.resolve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'api.student.forum.topic.view': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'api.forum.topic.view': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.forum.message.react': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'api.teacher.assignments.export': { paramsTuple?: []; params?: {} }
     'api.teacher.assignments.submissions.export': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'api.messages.restore': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -169,6 +173,8 @@ export type ScannedRoutes = {
     'profile.change_password': { paramsTuple?: []; params?: {} }
     'profile.preferences': { paramsTuple?: []; params?: {} }
     'profile.preferences.update': { paramsTuple?: []; params?: {} }
+    'profile.notifications_preferences.update': { paramsTuple?: []; params?: {} }
+    'api.profile.advanced_preferences.update': { paramsTuple?: []; params?: {} }
     'profile.activity': { paramsTuple?: []; params?: {} }
     'profile.avatar.update': { paramsTuple?: []; params?: {} }
     'academic.classes.index': { paramsTuple?: []; params?: {} }
@@ -343,6 +349,7 @@ export type ScannedRoutes = {
     'forums.toggle_lock': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'forums.toggle_pin': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teachers.timetable_page': { paramsTuple?: []; params?: {} }
+    'students.profile_page': { paramsTuple?: []; params?: {} }
     'students.assignments_page': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.index': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -615,6 +622,7 @@ export type ScannedRoutes = {
     'welcome.index': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
     'about': { paramsTuple?: []; params?: {} }
+    'errors.maintenance': { paramsTuple?: []; params?: {} }
     'welcome.landing': { paramsTuple?: []; params?: {} }
     'welcome.about': { paramsTuple?: []; params?: {} }
     'welcome.features': { paramsTuple?: []; params?: {} }
@@ -675,6 +683,7 @@ export type ScannedRoutes = {
     'communication.messages.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'communication.messages.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'communication.messages.send.redirect': { paramsTuple?: []; params?: {} }
+    'api.messages.unread_count': { paramsTuple?: []; params?: {} }
     'api.messages.conversation': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'api.messages.conversation.export': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'api.messages.attachment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -806,6 +815,7 @@ export type ScannedRoutes = {
     'forums.my_teacher_topics': { paramsTuple?: []; params?: {} }
     'forums.teacher_topic': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teachers.timetable_page': { paramsTuple?: []; params?: {} }
+    'students.profile_page': { paramsTuple?: []; params?: {} }
     'students.assignments_page': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.index': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -971,6 +981,7 @@ export type ScannedRoutes = {
     'welcome.index': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
     'about': { paramsTuple?: []; params?: {} }
+    'errors.maintenance': { paramsTuple?: []; params?: {} }
     'welcome.landing': { paramsTuple?: []; params?: {} }
     'welcome.about': { paramsTuple?: []; params?: {} }
     'welcome.features': { paramsTuple?: []; params?: {} }
@@ -1031,6 +1042,7 @@ export type ScannedRoutes = {
     'communication.messages.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'communication.messages.edit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'communication.messages.send.redirect': { paramsTuple?: []; params?: {} }
+    'api.messages.unread_count': { paramsTuple?: []; params?: {} }
     'api.messages.conversation': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'api.messages.conversation.export': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'api.messages.attachment': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -1162,6 +1174,7 @@ export type ScannedRoutes = {
     'forums.my_teacher_topics': { paramsTuple?: []; params?: {} }
     'forums.teacher_topic': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'teachers.timetable_page': { paramsTuple?: []; params?: {} }
+    'students.profile_page': { paramsTuple?: []; params?: {} }
     'students.assignments_page': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.index': { paramsTuple?: []; params?: {} }
     'student.assignments.submissions.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -1370,6 +1383,7 @@ export type ScannedRoutes = {
     'api.student.forum.topic.resolve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'api.student.forum.topic.view': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'api.forum.topic.view': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.forum.message.react': { paramsTuple: [ParamValue,ParamValue]; params: {'type': ParamValue,'id': ParamValue} }
     'api.messages.restore': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'api.messages.restore_all': { paramsTuple?: []; params?: {} }
     'api.notifications.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -1380,6 +1394,8 @@ export type ScannedRoutes = {
     'api.teacher.send_message': { paramsTuple?: []; params?: {} }
     'profile.change_password': { paramsTuple?: []; params?: {} }
     'profile.preferences.update': { paramsTuple?: []; params?: {} }
+    'profile.notifications_preferences.update': { paramsTuple?: []; params?: {} }
+    'api.profile.advanced_preferences.update': { paramsTuple?: []; params?: {} }
     'profile.avatar.update': { paramsTuple?: []; params?: {} }
     'academic.classes.seed_rdc_das': { paramsTuple?: []; params?: {} }
     'academic.classes.store': { paramsTuple?: []; params?: {} }
@@ -1513,37 +1529,8 @@ export type ScannedRoutes = {
     'admin.suspend_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.create_role': { paramsTuple?: []; params?: {} }
   }
-  PUT: {
-    'settings.update_email': { paramsTuple?: []; params?: {} }
-    'api.messages.update_conversation': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'api.notifications.read.put': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'api.notifications.read_all': { paramsTuple?: []; params?: {} }
-    'academic.classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'schools.classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'schools.teachers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'discipline.incidents.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'financial.fees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'schools.subjects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'transfers.update_reason': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'academic.grades.update.web': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'teacher.assignments.submissions.grade.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'teacher.assignments.update.put': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'teacher.grades.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'teacher.forum.topic.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'teacher.forum.reply.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'student.forum.topic.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'student.forum.reply.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'auth.update_profile': { paramsTuple?: []; params?: {} }
-    'schools.update_school_profile': { paramsTuple?: []; params?: {} }
-    'academics.update_class': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'academics.update_subject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'academics.update_grade': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'financials.update_fees': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'messages.mark_as_read': { paramsTuple?: []; params?: {} }
-    'admin.update_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'admin.update_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-  }
   DELETE: {
+    'inspections.delete_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'settings.delete_account': { paramsTuple?: []; params?: {} }
     'settings.delete_data': { paramsTuple?: []; params?: {} }
     'settings.unblock_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -1580,6 +1567,36 @@ export type ScannedRoutes = {
     'financials.delete_fees': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'disciplines.delete_incident': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'admin.delete_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  PUT: {
+    'settings.update_email': { paramsTuple?: []; params?: {} }
+    'api.messages.update_conversation': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.notifications.read.put': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'api.notifications.read_all': { paramsTuple?: []; params?: {} }
+    'academic.classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'schools.classes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'schools.teachers.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'discipline.incidents.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'financial.fees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'schools.subjects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'transfers.update_reason': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'academic.grades.update.web': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.assignments.submissions.grade.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.assignments.update.put': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.grades.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.forum.topic.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'teacher.forum.reply.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'student.forum.topic.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'student.forum.reply.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'auth.update_profile': { paramsTuple?: []; params?: {} }
+    'schools.update_school_profile': { paramsTuple?: []; params?: {} }
+    'academics.update_class': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'academics.update_subject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'academics.update_grade': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'financials.update_fees': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'messages.mark_as_read': { paramsTuple?: []; params?: {} }
+    'admin.update_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'admin.update_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

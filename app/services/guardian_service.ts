@@ -1,4 +1,6 @@
 import db from '@adonisjs/lucid/services/db'
+import Student from '#models/student'
+import Parent from '#models/parent'
 
 export type GuardianSummary = {
   id: string
@@ -93,6 +95,24 @@ export async function getPrimaryGuardiansForStudents(studentIds: string[]) {
   }
 
   return guardiansByStudent
+}
+
+export async function getChildrenForParentUser(userId: string) {
+  const parent = await Parent.query().where('userId', userId).first()
+
+  if (!parent) {
+    return []
+  }
+
+  return Student.query()
+    .whereIn(
+      'id',
+      db.from('parent_student').select('student_id').where('parent_id', parent.id)
+    )
+    .preload('user')
+    .preload('class')
+    .preload('school')
+    .orderBy('created_at', 'desc')
 }
 
 export function formatGuardianLabel(guardian: GuardianSummary | null | undefined) {

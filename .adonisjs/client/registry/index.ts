@@ -24,6 +24,12 @@ const routes = {
     tokens: [{"old":"/about","type":0,"val":"about","end":""}],
     types: placeholder as Registry['about']['types'],
   },
+  'errors.maintenance': {
+    methods: ["GET","HEAD"],
+    pattern: '/maintenance',
+    tokens: [{"old":"/maintenance","type":0,"val":"maintenance","end":""}],
+    types: placeholder as Registry['errors.maintenance']['types'],
+  },
   'welcome.landing': {
     methods: ["GET","HEAD"],
     pattern: '/welcome',
@@ -227,6 +233,12 @@ const routes = {
     pattern: '/inspection/schools/:id/toggle-suspend',
     tokens: [{"old":"/inspection/schools/:id/toggle-suspend","type":0,"val":"inspection","end":""},{"old":"/inspection/schools/:id/toggle-suspend","type":0,"val":"schools","end":""},{"old":"/inspection/schools/:id/toggle-suspend","type":1,"val":"id","end":""},{"old":"/inspection/schools/:id/toggle-suspend","type":0,"val":"toggle-suspend","end":""}],
     types: placeholder as Registry['inspections.toggle_suspend_school']['types'],
+  },
+  'inspections.delete_school': {
+    methods: ["DELETE"],
+    pattern: '/inspection/schools/:id/delete',
+    tokens: [{"old":"/inspection/schools/:id/delete","type":0,"val":"inspection","end":""},{"old":"/inspection/schools/:id/delete","type":0,"val":"schools","end":""},{"old":"/inspection/schools/:id/delete","type":1,"val":"id","end":""},{"old":"/inspection/schools/:id/delete","type":0,"val":"delete","end":""}],
+    types: placeholder as Registry['inspections.delete_school']['types'],
   },
   'inspections.inspection_teachers_page': {
     methods: ["GET","HEAD"],
@@ -678,6 +690,12 @@ const routes = {
     tokens: [{"old":"/communication/messages/send","type":0,"val":"communication","end":""},{"old":"/communication/messages/send","type":0,"val":"messages","end":""},{"old":"/communication/messages/send","type":0,"val":"send","end":""}],
     types: placeholder as Registry['communication.messages.send']['types'],
   },
+  'api.messages.unread_count': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/messages/unread-count',
+    tokens: [{"old":"/api/messages/unread-count","type":0,"val":"api","end":""},{"old":"/api/messages/unread-count","type":0,"val":"messages","end":""},{"old":"/api/messages/unread-count","type":0,"val":"unread-count","end":""}],
+    types: placeholder as Registry['api.messages.unread_count']['types'],
+  },
   'api.messages.conversation': {
     methods: ["GET","HEAD"],
     pattern: '/api/messages/conversation/:userId',
@@ -755,6 +773,12 @@ const routes = {
     pattern: '/api/forum/topic/:id/view',
     tokens: [{"old":"/api/forum/topic/:id/view","type":0,"val":"api","end":""},{"old":"/api/forum/topic/:id/view","type":0,"val":"forum","end":""},{"old":"/api/forum/topic/:id/view","type":0,"val":"topic","end":""},{"old":"/api/forum/topic/:id/view","type":1,"val":"id","end":""},{"old":"/api/forum/topic/:id/view","type":0,"val":"view","end":""}],
     types: placeholder as Registry['api.forum.topic.view']['types'],
+  },
+  'api.forum.message.react': {
+    methods: ["POST"],
+    pattern: '/api/forum/:type/:id/react',
+    tokens: [{"old":"/api/forum/:type/:id/react","type":0,"val":"api","end":""},{"old":"/api/forum/:type/:id/react","type":0,"val":"forum","end":""},{"old":"/api/forum/:type/:id/react","type":1,"val":"type","end":""},{"old":"/api/forum/:type/:id/react","type":1,"val":"id","end":""},{"old":"/api/forum/:type/:id/react","type":0,"val":"react","end":""}],
+    types: placeholder as Registry['api.forum.message.react']['types'],
   },
   'api.teacher.assignments.export': {
     methods: ["GET","HEAD"],
@@ -995,6 +1019,18 @@ const routes = {
     pattern: '/profile/preferences',
     tokens: [{"old":"/profile/preferences","type":0,"val":"profile","end":""},{"old":"/profile/preferences","type":0,"val":"preferences","end":""}],
     types: placeholder as Registry['profile.preferences.update']['types'],
+  },
+  'profile.notifications_preferences.update': {
+    methods: ["POST"],
+    pattern: '/profile/notifications-prefs',
+    tokens: [{"old":"/profile/notifications-prefs","type":0,"val":"profile","end":""},{"old":"/profile/notifications-prefs","type":0,"val":"notifications-prefs","end":""}],
+    types: placeholder as Registry['profile.notifications_preferences.update']['types'],
+  },
+  'api.profile.advanced_preferences.update': {
+    methods: ["POST"],
+    pattern: '/api/profile/advanced-preferences',
+    tokens: [{"old":"/api/profile/advanced-preferences","type":0,"val":"api","end":""},{"old":"/api/profile/advanced-preferences","type":0,"val":"profile","end":""},{"old":"/api/profile/advanced-preferences","type":0,"val":"advanced-preferences","end":""}],
+    types: placeholder as Registry['api.profile.advanced_preferences.update']['types'],
   },
   'profile.activity': {
     methods: ["GET","HEAD"],
@@ -2039,6 +2075,12 @@ const routes = {
     pattern: '/teacher/timetable',
     tokens: [{"old":"/teacher/timetable","type":0,"val":"teacher","end":""},{"old":"/teacher/timetable","type":0,"val":"timetable","end":""}],
     types: placeholder as Registry['teachers.timetable_page']['types'],
+  },
+  'students.profile_page': {
+    methods: ["GET","HEAD"],
+    pattern: '/student/profile',
+    tokens: [{"old":"/student/profile","type":0,"val":"student","end":""},{"old":"/student/profile","type":0,"val":"profile","end":""}],
+    types: placeholder as Registry['students.profile_page']['types'],
   },
   'students.assignments_page': {
     methods: ["GET","HEAD"],

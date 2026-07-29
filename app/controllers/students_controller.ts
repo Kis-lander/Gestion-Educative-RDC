@@ -57,7 +57,9 @@ import {
 } from '#services/academic_evaluation_service'
 import {
   formatScore,
+  normalizedGradeScore,
 } from '#services/grade_score_service'
+import { getStudentPublishedClassRank } from '#services/student_ranking_service'
 
 export default class StudentController {
   private mailService = new OtpMailService()
@@ -505,11 +507,17 @@ export default class StudentController {
     const disciplineCount = await Discipline.query()
       .where('student_id', student.id)
       .count('* as total')
+    const primaryGuardian = await getPrimaryGuardianForStudent(student.id)
 
     return response.ok({
       success: true,
       profile: {
         ...student.toJSON(),
+        primaryGuardian,
+        parentName: formatGuardianLabel(primaryGuardian) || null,
+        parentRelationship: primaryGuardian?.relationship || null,
+        parentPhone: primaryGuardian?.phone || student.parentPhone || null,
+        hasLinkedGuardian: Boolean(primaryGuardian),
         stats: {
           averageGrade: Number(grades[0].$extras.average || 0),
           assignmentsSubmitted: submitted,
@@ -518,6 +526,68 @@ export default class StudentController {
         },
       },
     })
+  }
+
+  public async profilePage(ctx: HttpContext) {
+    const user = ctx.auth.getUserOrFail()
+    const student = await Student.query()
+      .where('user_id', user.id)
+      .preload('user')
+      .preload('class', (classQuery) => {
+        classQuery.preload('teacher', (teacherQuery) => {
+          teacherQuery.preload('user')
+        })
+      })
+      .preload('school')
+      .firstOrFail()
+
+    const primaryGuardian = await getPrimaryGuardianForStudent(student.id)
+    const publishedGrades = await Grade.query()
+      .where('student_id', student.id)
+      .where('published', true)
+      .orderBy('exam_date', 'desc')
+    const normalizedScores = publishedGrades
+      .map((grade) => normalizedGradeScore(grade))
+      .filter((score): score is number => score !== null)
+    const averageGrade = normalizedScores.length
+      ? formatScore(normalizedScores.reduce((sum, score) => sum + score, 0) / normalizedScores.length)
+      : '-'
+    const ranking = await getStudentPublishedClassRank(student.id, student.classId)
+
+    return ctx.view.render(
+      'student/profile',
+      await edgePageContext(ctx, {
+        school: student.school || { id: user.schoolId, name: 'Gestion Educative RDC' },
+        currentYear: DateTime.now().year,
+        mainTeacher: student.class?.teacher?.user?.fullName || '-',
+        student: {
+          id: student.id,
+          name: student.user?.fullName || user.fullName,
+          className: student.class?.name || 'Non affecté',
+          registrationNumber: student.registrationNumber || '-',
+          birthDate: student.birthDate?.toFormat('dd/MM/yyyy') || '-',
+          birthPlace: student.birthPlace || '-',
+          nationality: student.nationality || 'Congolaise',
+          gender: student.gender,
+          address: student.address || '-',
+          enrollmentDate: student.enrollmentDate?.toFormat('dd/MM/yyyy') || '-',
+          medicalInfo: student.medicalInfo,
+          hasLinkedGuardian: Boolean(primaryGuardian),
+        },
+        parent: {
+          name: formatGuardianLabel(primaryGuardian) || '',
+          phone: primaryGuardian?.phone || student.parentPhone || '',
+          email: primaryGuardian?.email || '',
+          relationship: primaryGuardian?.relationship || '',
+          isLinked: Boolean(primaryGuardian),
+        },
+        stats: {
+          averageGrade,
+          rank: ranking.rank || '-',
+          totalStudents: ranking.totalStudents,
+        },
+      })
+    )
   }
 
   /**

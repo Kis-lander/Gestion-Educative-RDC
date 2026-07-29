@@ -50,6 +50,7 @@
                 localStorage.setItem('appLanguage', this.currentLanguage)
                 localStorage.setItem('appLanguageExplicit', 'true')
                 window.AppTranslations?.setLanguage(this.currentLanguage)
+                window.dispatchEvent(new CustomEvent('app-language-change', { detail: { language: this.currentLanguage } }))
               }
             } catch {}
           },
@@ -74,6 +75,7 @@
               localStorage.setItem('appLanguage', language)
               localStorage.setItem('appLanguageExplicit', 'true')
               window.AppTranslations?.setLanguage(language)
+              window.dispatchEvent(new CustomEvent('app-language-change', { detail: { language } }))
               window.location.reload()
             }
           }

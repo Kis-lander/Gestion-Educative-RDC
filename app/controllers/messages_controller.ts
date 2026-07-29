@@ -716,6 +716,23 @@ export default class MessageController {
     })
   }
 
+  public async unreadCount({ auth, response }: HttpContext) {
+    const user = auth.user!
+
+    const unreadCountResult = await db
+      .from('messages')
+      .where('receiver_id', user.id)
+      .whereNull('deleted_at')
+      .where('is_read', false)
+      .count('* as total')
+      .first()
+
+    return response.ok({
+      success: true,
+      unreadCount: Number(unreadCountResult?.total || 0),
+    })
+  }
+
   public async markNotificationRead({ auth, params, response }: HttpContext) {
     const user = auth.user!
     const message = await Message.query()

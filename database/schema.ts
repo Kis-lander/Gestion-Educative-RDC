@@ -336,6 +336,25 @@ export class ForumPostSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class ForumReactionSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'reaction', 'targetId', 'targetType', 'updatedAt', 'userId'] as const
+  $columns = ForumReactionSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare reaction: string
+  @column()
+  declare targetId: string
+  @column()
+  declare targetType: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
 export class ForumTopicSchema extends BaseModel {
   static $columns = ['attachmentMime', 'attachmentName', 'attachmentSize', 'attachmentUrl', 'classId', 'content', 'createdAt', 'createdBy', 'editedAt', 'id', 'isLocked', 'isPinned', 'isResolved', 'schoolSectionId', 'subjectId', 'title', 'updatedAt', 'viewsCount'] as const
   $columns = ForumTopicSchema.$columns

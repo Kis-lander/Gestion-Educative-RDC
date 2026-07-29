@@ -8,7 +8,6 @@ import Teacher from '#models/teacher'
 import Message from '#models/message'
 import Grade from '#models/grade'
 import Assignment from '#models/assignment'
-import Parent from '#models/parent'
 import { DateTime } from 'luxon'
 import {
   getAcademicStatsValidator,
@@ -20,7 +19,11 @@ import {
   listSchoolSections,
   positionLabel,
 } from '#services/school_governance_service'
-import { formatGuardianLabel, getPrimaryGuardianForStudent } from '#services/guardian_service'
+import {
+  formatGuardianLabel,
+  getChildrenForParentUser,
+  getPrimaryGuardianForStudent,
+} from '#services/guardian_service'
 import {
   assignmentStatusMeta,
   assignmentSubmissionMeta,
@@ -28,6 +31,7 @@ import {
 import { visibleAssignmentsForStudent } from '#services/assignment_visibility_service'
 import { evaluationPeriodLabel, evaluationTypeLabel } from '#services/academic_evaluation_service'
 import { formatScore, normalizedGradeScore } from '#services/grade_score_service'
+import { getStudentPublishedClassRank } from '#services/student_ranking_service'
 
 export default class DashboardController {
   private formatScore(value: number | null | undefined) {
@@ -453,13 +457,7 @@ export default class DashboardController {
 
   private async parentDashboardPage({ auth, view }: Pick<HttpContext, 'auth' | 'view'>) {
     const user = auth.getUserOrFail()
-    const parent = await Parent.query().where('userId', user.id).first()
-    const children = parent
-      ? await Student.query()
-          .whereIn('id', db.from('parent_student').select('student_id').where('parent_id', parent.id))
-          .preload('user')
-          .preload('class')
-      : []
+    const children = await getChildrenForParentUser(user.id)
     const childIds = children.map((child) => child.id)
     const childSchoolIds = Array.from(new Set(children.map((child) => child.schoolId).filter(Boolean)))
     const grades = childIds.length
@@ -659,6 +657,9 @@ export default class DashboardController {
     const averageGrade = normalizedGrades.length
       ? formatScore(normalizedGrades.reduce((sum, score) => sum + score, 0) / normalizedGrades.length)
       : '-'
+    const ranking = studentProfile
+      ? await getStudentPublishedClassRank(studentProfile.id, studentProfile.classId)
+      : { rank: null, totalStudents: 0 }
     const primaryGuardian = studentProfile
       ? await getPrimaryGuardianForStudent(studentProfile.id)
       : null
@@ -667,8 +668,8 @@ export default class DashboardController {
     return view.render('dashboard/student', {
       stats: {
         averageGrade,
-        rank: '-',
-        totalStudents: 0,
+        rank: ranking.rank || '-',
+        totalStudents: ranking.totalStudents,
         pendingAssignments: pendingAssignments.length,
         attendanceRate: 0,
       },
@@ -683,6 +684,8 @@ export default class DashboardController {
         birthDate: studentProfile?.birthDate?.toFormat('dd/MM/yyyy') || '-',
         parentName,
         parentRelationship: primaryGuardian?.relationship || '-',
+        parentPhone: primaryGuardian?.phone || studentProfile?.parentPhone || '',
+        hasLinkedGuardian: Boolean(primaryGuardian),
       },
       recentGrades: grades.map((grade) => ({
         subjectName: grade.subject?.name || '-',

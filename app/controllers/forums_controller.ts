@@ -16,8 +16,19 @@ import { DateTime } from 'luxon'
 
 type ForumAudience = 'student' | 'teacher'
 type SectionScope = { sectionId: string | null; classId: string | null; schoolId: string | null }
+type ForumReactionTargetType = 'topic' | 'post'
+type ForumReactionValue = 'like' | 'dislike'
 
 export default class ForumsController {
+  private isMissingForumReactionsTable(error: unknown) {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: string }).code === '42P01'
+    )
+  }
+
   private contentDispositionFilename(filename: string) {
     const asciiFallback =
       filename
@@ -88,6 +99,74 @@ export default class ForumsController {
       attachmentMime: data.attachmentMime,
       attachmentIsImage: Boolean(data.attachmentMime?.startsWith('image/')),
     }
+  }
+
+  private emptyReactionSummary() {
+    return { likes: 0, dislikes: 0, myReaction: null as ForumReactionValue | null }
+  }
+
+  private reactionKey(targetType: ForumReactionTargetType, targetId: string) {
+    return `${targetType}:${targetId}`
+  }
+
+  private async getReactionSummaries(
+    targets: { type: ForumReactionTargetType; id: string }[],
+    userId: string
+  ) {
+    const summaries = new Map<string, ReturnType<typeof this.emptyReactionSummary>>()
+    targets.forEach((target) => {
+      summaries.set(this.reactionKey(target.type, target.id), this.emptyReactionSummary())
+    })
+
+    if (!targets.length) return summaries
+
+    const targetIdsByType = targets.reduce<Record<ForumReactionTargetType, string[]>>(
+      (acc, target) => {
+        acc[target.type].push(target.id)
+        return acc
+      },
+      { topic: [], post: [] }
+    )
+
+    let rows: any[] = []
+
+    try {
+      rows = await db
+        .from('forum_reactions')
+        .where((query) => {
+          if (targetIdsByType.topic.length) {
+            query.where((topicQuery) => {
+              topicQuery.where('target_type', 'topic').whereIn('target_id', targetIdsByType.topic)
+            })
+          }
+
+          if (targetIdsByType.post.length) {
+            const method = targetIdsByType.topic.length ? 'orWhere' : 'where'
+            query[method]((postQuery: any) => {
+              postQuery.where('target_type', 'post').whereIn('target_id', targetIdsByType.post)
+            })
+          }
+        })
+        .select('target_type', 'target_id', 'reaction', 'user_id')
+    } catch (error) {
+      if (this.isMissingForumReactionsTable(error)) return summaries
+      throw error
+    }
+
+    rows.forEach((row) => {
+      const key = this.reactionKey(row.target_type, String(row.target_id))
+      const summary = summaries.get(key) || this.emptyReactionSummary()
+
+      if (row.reaction === 'like') summary.likes += 1
+      if (row.reaction === 'dislike') summary.dislikes += 1
+      if (String(row.user_id) === userId && ['like', 'dislike'].includes(String(row.reaction))) {
+        summary.myReaction = row.reaction
+      }
+
+      summaries.set(key, summary)
+    })
+
+    return summaries
   }
 
   private async resolveSection(user: User) {
@@ -212,7 +291,11 @@ export default class ForumsController {
     )
   }
 
-  private formatTopic(topic: ForumTopic & { posts?: ForumPost[] }, currentUserId?: string) {
+  private formatTopic(
+    topic: ForumTopic & { posts?: ForumPost[] },
+    currentUserId?: string,
+    reactionSummary = this.emptyReactionSummary()
+  ) {
     const posts = topic.posts || []
     const participants = new Set([topic.createdBy, ...posts.map((post) => post.userId).filter(Boolean)])
     const lastReply = posts
@@ -227,10 +310,15 @@ export default class ForumsController {
       subjectName: topic.subject?.name || 'Discussion générale',
       className: topic.class?.name || 'Section',
       authorName: topic.creator?.fullName || 'Membre supprimé',
+      authorAvatarUrl: topic.creator?.avatarUrl || null,
       isTeacher: topic.creator?.role === 'teacher' || topic.creator?.role === 'director',
       isMine: topic.createdBy === currentUserId,
       canEdit: topic.createdBy === currentUserId,
       canDelete: topic.createdBy === currentUserId,
+      canReact: Boolean(currentUserId) && topic.createdBy !== currentUserId,
+      likesCount: reactionSummary.likes,
+      dislikesCount: reactionSummary.dislikes,
+      myReaction: reactionSummary.myReaction,
       isPinned: topic.isPinned,
       isLocked: topic.isLocked,
       isResolved: Boolean(topic.isResolved),
@@ -247,15 +335,24 @@ export default class ForumsController {
     }
   }
 
-  private formatReply(reply: ForumPost, currentUserId?: string) {
+  private formatReply(
+    reply: ForumPost,
+    currentUserId?: string,
+    reactionSummary = this.emptyReactionSummary()
+  ) {
     return {
       id: reply.id,
       content: reply.content,
       authorName: reply.user?.fullName || 'Membre supprimé',
+      authorAvatarUrl: reply.user?.avatarUrl || null,
       isTeacher: reply.user?.role === 'teacher' || reply.user?.role === 'director',
       isMine: reply.userId === currentUserId,
       canEdit: reply.userId === currentUserId,
       canDelete: reply.userId === currentUserId,
+      canReact: Boolean(currentUserId) && reply.userId !== currentUserId,
+      likesCount: reactionSummary.likes,
+      dislikesCount: reactionSummary.dislikes,
+      myReaction: reactionSummary.myReaction,
       parentPostId: reply.parentPostId,
       parentTopicId: reply.parentTopicId,
       parentTarget: reply.parentPost
@@ -483,11 +580,29 @@ export default class ForumsController {
       })
       .firstOrFail()
 
+    await this.incrementTopicView(topic.id, scope.sectionId)
+    topic.viewsCount = (topic.viewsCount || 0) + 1
+
+    const replies = topic.posts || []
+    const reactionSummaries = await this.getReactionSummaries(
+      [
+        { type: 'topic', id: topic.id },
+        ...replies.map((reply) => ({ type: 'post' as const, id: reply.id })),
+      ],
+      user.id
+    )
+
     return ctx.view.render(
       `${audience}/forum/topic`,
       await edgePageContext(ctx, {
-        topic: this.formatTopic(topic, user.id),
-        replies: (topic.posts || []).map((reply) => this.formatReply(reply, user.id)),
+        topic: this.formatTopic(
+          topic,
+          user.id,
+          reactionSummaries.get(this.reactionKey('topic', topic.id))
+        ),
+        replies: replies.map((reply) =>
+          this.formatReply(reply, user.id, reactionSummaries.get(this.reactionKey('post', reply.id)))
+        ),
       })
     )
   }
@@ -745,6 +860,106 @@ export default class ForumsController {
     return response.ok({ success: true })
   }
 
+  public async reactToMessage({ auth, params, request, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const scope = await this.resolveSection(user)
+    if (!scope.sectionId) return response.badRequest({ success: false, message: 'Section introuvable' })
+
+    const targetType = String(params.type || '') as ForumReactionTargetType
+    const targetId = String(params.id || '')
+    const reaction = String(request.input('reaction') || '') as ForumReactionValue
+
+    if (!['topic', 'post'].includes(targetType)) {
+      return response.badRequest({ success: false, message: 'Type de message invalide' })
+    }
+
+    if (!['like', 'dislike'].includes(reaction)) {
+      return response.badRequest({ success: false, message: 'Réaction invalide' })
+    }
+
+    let authorId: string | null = null
+
+    if (targetType === 'topic') {
+      const topic = await ForumTopic.query()
+        .where('id', targetId)
+        .where('school_section_id', scope.sectionId)
+        .firstOrFail()
+
+      authorId = topic.createdBy
+    } else {
+      const reply = await ForumPost.query().where('id', targetId).firstOrFail()
+      await ForumTopic.query()
+        .where('id', reply.topicId)
+        .where('school_section_id', scope.sectionId)
+        .firstOrFail()
+
+      authorId = reply.userId
+    }
+
+    if (authorId === user.id) {
+      return response.forbidden({
+        success: false,
+        message: 'Vous ne pouvez pas réagir à votre propre message.',
+      })
+    }
+
+    let existingReaction: any
+
+    try {
+      existingReaction = await db
+        .from('forum_reactions')
+        .where('target_type', targetType)
+        .where('target_id', targetId)
+        .where('user_id', user.id)
+        .first()
+    } catch (error) {
+      if (this.isMissingForumReactionsTable(error)) {
+        return response.serviceUnavailable({
+          success: false,
+          message: 'Le système de réactions doit encore être activé par migration de la base.',
+        })
+      }
+
+      throw error
+    }
+
+    if (existingReaction?.reaction === reaction) {
+      await db
+        .from('forum_reactions')
+        .where('target_type', targetType)
+        .where('target_id', targetId)
+        .where('user_id', user.id)
+        .delete()
+    } else if (existingReaction) {
+      await db
+        .from('forum_reactions')
+        .where('target_type', targetType)
+        .where('target_id', targetId)
+        .where('user_id', user.id)
+        .update({ reaction, updated_at: new Date() })
+    } else {
+      await db.table('forum_reactions').insert({
+        target_type: targetType,
+        target_id: targetId,
+        user_id: user.id,
+        reaction,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+    }
+
+    const summary = (
+      await this.getReactionSummaries([{ type: targetType, id: targetId }], user.id)
+    ).get(this.reactionKey(targetType, targetId)) || this.emptyReactionSummary()
+
+    return response.ok({
+      success: true,
+      likesCount: summary.likes,
+      dislikesCount: summary.dislikes,
+      myReaction: summary.myReaction,
+    })
+  }
+
   private csvValue(value: unknown) {
     const text = String(value ?? '').replace(/\r?\n/g, ' ').trim()
     return `"${text.replace(/"/g, '""')}"`
@@ -867,6 +1082,14 @@ export default class ForumsController {
     return this.recordTopicView(ctx)
   }
 
+  private async incrementTopicView(topicId: string, sectionId: string) {
+    await db
+      .from('forum_topics')
+      .where('id', topicId)
+      .where('school_section_id', sectionId)
+      .increment('views_count', 1)
+  }
+
   private async recordTopicView({ auth, params, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const scope = await this.resolveSection(user)
@@ -877,8 +1100,8 @@ export default class ForumsController {
       .where('school_section_id', scope.sectionId)
       .firstOrFail()
 
+    await this.incrementTopicView(topic.id, scope.sectionId)
     topic.viewsCount = (topic.viewsCount || 0) + 1
-    await topic.save()
 
     return response.ok({ success: true, views: topic.viewsCount })
   }

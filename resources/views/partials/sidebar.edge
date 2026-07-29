@@ -4,6 +4,24 @@
   x-data="{
     currentPath: window.location.pathname,
     helpOpen: window.location.pathname === '/help' || window.location.pathname.startsWith('/help/'),
+    messageUnreadCount: 0,
+    messageUnreadTimer: null,
+    init() {
+      this.fetchMessageUnreadCount()
+      this.messageUnreadTimer = setInterval(() => this.fetchMessageUnreadCount(), 15000)
+      window.addEventListener('focus', () => this.fetchMessageUnreadCount())
+      window.addEventListener('messages:read', () => this.fetchMessageUnreadCount())
+      window.addEventListener('messages:sent', () => this.fetchMessageUnreadCount())
+    },
+    async fetchMessageUnreadCount() {
+      try {
+        const res = await fetch('/api/messages/unread-count', { headers: { Accept: 'application/json' } })
+        const data = await res.json()
+        if (data.success) {
+          this.messageUnreadCount = Number(data.unreadCount || 0)
+        }
+      } catch {}
+    },
     isActive(paths) {
       return paths.some(path => this.currentPath === path || this.currentPath.startsWith(`${path}/`))
     },
@@ -132,6 +150,12 @@
       >
         <i class="fas fa-envelope w-5" :class="iconClass(['/parent/messages'])"></i>
         <span x-show="sidebarOpen" data-i18n>Messages</span>
+        <span
+          x-show="messageUnreadCount > 0"
+          x-text="messageUnreadCount > 99 ? '99+' : messageUnreadCount"
+          class="ml-auto min-w-[1.25rem] h-5 inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-sm"
+          aria-label="Messages non lus"
+        ></span>
       </a>
 
       <a
@@ -141,6 +165,84 @@
       >
         <i class="fas fa-calendar-plus w-5" :class="iconClass(['/parent/appointments'])"></i>
         <span x-show="sidebarOpen" data-i18n>Rendez-vous</span>
+      </a>
+    @elseif(auth?.user?.role === 'student')
+      <a
+        href="/student/profile"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/profile'])"
+      >
+        <i class="fas fa-user-graduate w-5" :class="iconClass(['/student/profile'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Mon profil</span>
+      </a>
+
+      <a
+        href="/student/assignments"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/assignments'])"
+      >
+        <i class="fas fa-tasks w-5" :class="iconClass(['/student/assignments'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Devoirs</span>
+      </a>
+
+      <a
+        href="/student/grades"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/grades'])"
+      >
+        <i class="fas fa-star w-5" :class="iconClass(['/student/grades'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Notes</span>
+      </a>
+
+      <a
+        href="/student/attendance"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/attendance'])"
+      >
+        <i class="fas fa-calendar-check w-5" :class="iconClass(['/student/attendance'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Présences</span>
+      </a>
+
+      <a
+        href="/student/discipline"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/discipline'])"
+      >
+        <i class="fas fa-gavel w-5" :class="iconClass(['/student/discipline'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Discipline</span>
+      </a>
+
+      <a
+        href="/student/timetable"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/timetable'])"
+      >
+        <i class="fas fa-clock w-5" :class="iconClass(['/student/timetable'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Horaire</span>
+      </a>
+
+      <a
+        href="/student/transfers/status"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/transfers'])"
+      >
+        <i class="fas fa-right-left w-5" :class="iconClass(['/student/transfers'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Transferts</span>
+      </a>
+
+      <a
+        href="/student/messages"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
+        :class="linkClass(['/student/messages', '/communication/messages'])"
+      >
+        <i class="fas fa-envelope w-5" :class="iconClass(['/student/messages', '/communication/messages'])"></i>
+        <span x-show="sidebarOpen" data-i18n>Messages</span>
+        <span
+          x-show="messageUnreadCount > 0"
+          x-text="messageUnreadCount > 99 ? '99+' : messageUnreadCount"
+          class="ml-auto min-w-[1.25rem] h-5 inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-sm"
+          aria-label="Messages non lus"
+        ></span>
       </a>
     @else
     
@@ -260,6 +362,12 @@
     >
       <i class="fas fa-envelope w-5" :class="iconClass(['/communication/messages', '/inspection/communications'])"></i>
       <span x-show="sidebarOpen">Messages</span>
+      <span
+        x-show="messageUnreadCount > 0"
+        x-text="messageUnreadCount > 99 ? '99+' : messageUnreadCount"
+        class="ml-auto min-w-[1.25rem] h-5 inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white shadow-sm"
+        aria-label="Messages non lus"
+      ></span>
     </a>
 
     <!-- Paramètres -->

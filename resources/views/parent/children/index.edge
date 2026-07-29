@@ -83,6 +83,16 @@
               </div>
             </div>
 
+            <div class="mb-3 rounded-lg border {{ child.linkedToCurrentParent ? 'border-green-200 bg-green-50 text-green-800 dark:border-green-700/60 dark:bg-green-900/20 dark:text-green-200' : 'border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-700/60 dark:bg-yellow-900/20 dark:text-yellow-200' }} px-3 py-2 text-xs">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold">
+                  <i class="fas {{ child.linkedToCurrentParent ? 'fa-link' : 'fa-triangle-exclamation' }} mr-1"></i>
+                  {{ child.linkedToCurrentParent ? 'Enfant lié à votre compte' : 'Lien parent-enfant à vérifier' }}
+                </span>
+                <span>{{ child.currentParentRelationship || 'Parent/Tuteur' }}</span>
+              </div>
+            </div>
+
             <div class="mb-3">
               <div class="flex justify-between text-xs mb-1">
                 <span>Taux présence</span>

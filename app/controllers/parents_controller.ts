@@ -24,6 +24,7 @@ import {
 } from '#services/academic_evaluation_service'
 import {
   formatGuardianLabel,
+  getChildrenForParentUser,
   getPrimaryGuardianForStudent,
   getPrimaryGuardiansForStudents,
 } from '#services/guardian_service'
@@ -310,8 +311,6 @@ export default class ParentController {
   }
 
   private async getAppointmentChildren(user: User) {
-    const parentProfile =
-      user.role === 'director' ? null : await Parent.findByOrFail('user_id', user.id)
     const childrenModels =
       user.role === 'director'
         ? await Student.query()
@@ -321,12 +320,7 @@ export default class ParentController {
             .preload('school')
             .orderBy('created_at', 'desc')
             .limit(100)
-        : await parentProfile!
-            .related('children')
-            .query()
-            .preload('user')
-            .preload('class')
-            .preload('school')
+        : await getChildrenForParentUser(user.id)
 
     return childrenModels.map((child) => ({
       id: child.id,
@@ -515,12 +509,7 @@ export default class ParentController {
             .preload('school')
             .orderBy('created_at', 'desc')
             .limit(100)
-        : await parentProfile!
-            .related('children')
-            .query()
-            .preload('user')
-            .preload('class')
-            .preload('school')
+        : await getChildrenForParentUser(user.id)
 
     const childIds = childrenModels.map((child) => child.id)
     const guardiansByStudent = await getPrimaryGuardiansForStudents(childIds)
@@ -587,6 +576,8 @@ export default class ParentController {
           address: child.address || '-',
           medicalInfo: child.medicalInfo,
           primaryGuardian,
+          hasLinkedGuardian: Boolean(primaryGuardian),
+          linkedToCurrentParent: Boolean(currentParentLink),
           parentName: formatGuardianLabel(primaryGuardian) || '-',
           parentRelationship: primaryGuardian?.relationship || '-',
           currentParentRelationship: currentParentLink?.relationship || '-',
@@ -714,10 +705,12 @@ export default class ParentController {
 
     const parent = await Parent.findByOrFail('user_id', user.id)
 
-    return parent
-      .related('children')
-      .query()
+    return Student.query()
       .where('students.id', studentId)
+      .whereIn(
+        'students.id',
+        db.from('parent_student').select('student_id').where('parent_id', parent.id)
+      )
       .preload('user')
       .preload('class')
       .preload('school')
@@ -978,8 +971,6 @@ export default class ParentController {
     const selectedPeriod = String(request.input('period', 'all')).trim() || 'all'
     const requestedChildId = String(request.input('child_id', '')).trim() || null
 
-    const parentProfile =
-      user.role === 'director' ? null : await Parent.findByOrFail('user_id', user.id)
     const childrenModels =
       user.role === 'director'
         ? await Student.query()
@@ -989,12 +980,7 @@ export default class ParentController {
             .preload('school')
             .orderBy('created_at', 'desc')
             .limit(100)
-        : await parentProfile!
-            .related('children')
-            .query()
-            .preload('user')
-            .preload('class')
-            .preload('school')
+        : await getChildrenForParentUser(user.id)
 
     const children = childrenModels.map((child) => ({
       id: child.id,
@@ -1099,8 +1085,6 @@ export default class ParentController {
     const selectedYear = Number(request.input('year', currentYear))
     const requestedChildId = String(request.input('child_id', '')).trim() || null
 
-    const parentProfile =
-      user.role === 'director' ? null : await Parent.findByOrFail('user_id', user.id)
     const childrenModels =
       user.role === 'director'
         ? await Student.query()
@@ -1110,12 +1094,7 @@ export default class ParentController {
             .preload('school')
             .orderBy('created_at', 'desc')
             .limit(100)
-        : await parentProfile!
-            .related('children')
-            .query()
-            .preload('user')
-            .preload('class')
-            .preload('school')
+        : await getChildrenForParentUser(user.id)
 
     const children = childrenModels.map((child) => ({
       id: child.id,
@@ -1211,8 +1190,6 @@ export default class ParentController {
     const selectedPeriod = String(request.input('period', 'month')).trim() || 'month'
     const requestedChildId = String(request.input('child_id', '')).trim() || null
 
-    const parentProfile =
-      user.role === 'director' ? null : await Parent.findByOrFail('user_id', user.id)
     const childrenModels =
       user.role === 'director'
         ? await Student.query()
@@ -1222,12 +1199,7 @@ export default class ParentController {
             .preload('school')
             .orderBy('created_at', 'desc')
             .limit(100)
-        : await parentProfile!
-            .related('children')
-            .query()
-            .preload('user')
-            .preload('class')
-            .preload('school')
+        : await getChildrenForParentUser(user.id)
 
     const children = childrenModels.map((child) => ({
       id: child.id,
@@ -1512,14 +1484,7 @@ export default class ParentController {
    */
   public async getChildren({ auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
-    const parent = await Parent.findByOrFail('user_id', user.id)
-
-    const children = await parent
-      .related('children')
-      .query()
-      .preload('user')
-      .preload('class')
-      .preload('school')
+    const children = await getChildrenForParentUser(user.id)
 
     const childrenWithStats = await Promise.all(
       children.map(async (child) => {
@@ -1569,10 +1534,9 @@ export default class ParentController {
     const subjectId = String(request.input('subject_id', '')).trim() || null
 
     const user = auth.getUserOrFail()
-    const parent = await Parent.findByOrFail('user_id', user.id)
+    await this.getAuthorizedChild(user, params.studentId)
 
     // Vérifier l'association
-    await parent.related('children').query().where('students.id', params.studentId).firstOrFail()
 
     const query = Grade.query()
       .where('student_id', params.studentId)
@@ -1638,12 +1602,7 @@ export default class ParentController {
     message.type = 'parent_teacher'
 
     if (payload.studentId) {
-      const parent = await Parent.findByOrFail('user_id', user.id)
-      const child = await parent
-        .related('children')
-        .query()
-        .where('students.id', payload.studentId)
-        .firstOrFail()
+      const child = await this.getAuthorizedChild(user, payload.studentId)
 
       message.schoolId = child.schoolId
     }
@@ -1662,7 +1621,6 @@ export default class ParentController {
    */
   public async justifyAbsence({ request, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
-    const parent = await Parent.findByOrFail('user_id', user.id)
     const absenceId = String(request.input('absenceId') || request.input('recordId') || '').trim()
     const reason = String(request.input('reason') || '').trim()
     const details = String(request.input('justification') || '').trim()
@@ -1680,7 +1638,7 @@ export default class ParentController {
     }
 
     // Vérifier que l'enfant appartient bien au parent
-    await parent.related('children').query().where('students.id', absence.student_id).firstOrFail()
+    await this.getAuthorizedChild(user, absence.student_id)
 
     await db.from('attendances').where('id', absenceId).update({
       status: 'excused',

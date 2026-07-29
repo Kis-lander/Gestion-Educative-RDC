@@ -25,19 +25,32 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     '500..599': (_, { inertia }) => inertia.render('errors/server_error', {}),
   }
 
+  private wantsJson(ctx: HttpContext) {
+    return (
+      String(ctx.request.header('accept') || '').includes('application/json') ||
+      String(ctx.request.header('content-type') || '').includes('application/json')
+    )
+  }
+
+  private async renderErrorPage(ctx: HttpContext, status: number, template: string, data = {}) {
+    return ctx.response.status(status).send(
+      await ctx.view.render(`errors/${template}`, {
+        url: ctx.request.url(),
+        showDetails: !app.inProduction,
+        ...data,
+      })
+    )
+  }
+
   /**
    * The method is used for handling errors and returning
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
-    const exception = error as { code?: string; status?: number }
+    const exception = error as { code?: string; status?: number; message?: string }
 
     if (exception.code === 'E_BAD_CSRF_TOKEN') {
-      const wantsJson =
-        String(ctx.request.header('accept') || '').includes('application/json') ||
-        String(ctx.request.header('content-type') || '').includes('application/json')
-
-      if (wantsJson) {
+      if (this.wantsJson(ctx)) {
         return ctx.response.status(419).send({
           success: false,
           message: 'Session expiree. Veuillez rafraichir la page puis reessayer.',
@@ -50,6 +63,26 @@ export default class HttpExceptionHandler extends ExceptionHandler {
       )
 
       return ctx.response.redirect().back()
+    }
+
+    const status = Number(exception.status || 500)
+
+    if ([401, 403, 404].includes(status) || status >= 500) {
+      if (this.wantsJson(ctx)) {
+        return ctx.response.status(status).send({
+          success: false,
+          message: status >= 500 ? 'Erreur interne du serveur.' : exception.message,
+        })
+      }
+
+      if (status === 401) return this.renderErrorPage(ctx, 401, '401')
+      if (status === 403) return this.renderErrorPage(ctx, 403, '403')
+      if (status === 404) return this.renderErrorPage(ctx, 404, '404')
+
+      return this.renderErrorPage(ctx, status, '500', {
+        errorCode: exception.code || `ERR-${status}`,
+        errorMessage: exception.message,
+      })
     }
 
     return super.handle(error, ctx)

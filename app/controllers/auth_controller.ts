@@ -2,7 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import hash from '@adonisjs/core/services/hash'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { DateTime } from 'luxon'
 import { resolveAppLanguage } from '#services/language_service'
 import { getGovernanceContext } from '#services/school_governance_service'
@@ -21,6 +21,74 @@ import {
 
 export default class AuthController {
   private otpService = new OtpService()
+
+  private deserializeSetting(value: string | null) {
+    if (value === null) return null
+
+    try {
+      return JSON.parse(value)
+    } catch {
+      return value
+    }
+  }
+
+  private profilePreferenceDefaults(language: string) {
+    return {
+      theme: 'dark',
+      language,
+      timezone: 'Africa/Kinshasa',
+      dateFormat: 'dd/mm/yyyy',
+      notifyMessages: true,
+      notifyGrades: true,
+      notifyDiscipline: true,
+      notifyPayments: true,
+      notifyEvents: true,
+      keyboardShortcuts: false,
+      confirmDelete: true,
+      autoSave: false,
+    }
+  }
+
+  private async getProfilePreferences(userId: string, defaults: Record<string, any>) {
+    const rows = await db.from('user_settings').where('user_id', userId).select('key', 'value')
+
+    return rows.reduce(
+      (preferences, row) => {
+        preferences[row.key] = this.deserializeSetting(row.value)
+        return preferences
+      },
+      { ...defaults }
+    )
+  }
+
+  private async saveProfilePreferences(userId: string, group: string, values: Record<string, any>) {
+    const now = new Date()
+
+    for (const [key, value] of Object.entries(values)) {
+      const payload = {
+        group,
+        value: JSON.stringify(value),
+        updated_at: now,
+      }
+      const existing = await db
+        .from('user_settings')
+        .where('user_id', userId)
+        .where('key', key)
+        .first()
+
+      if (existing) {
+        await db.from('user_settings').where('id', existing.id).update(payload)
+      } else {
+        await db.table('user_settings').insert({
+          id: randomUUID(),
+          user_id: userId,
+          key,
+          created_at: now,
+          ...payload,
+        })
+      }
+    }
+  }
 
   /**
    * Afficher la page profil.
@@ -225,35 +293,62 @@ export default class AuthController {
     const user = auth.getUserOrFail()
     await user.load('school')
     const language = await resolveAppLanguage({ auth, session })
+    const preferences = await this.getProfilePreferences(
+      user.id,
+      this.profilePreferenceDefaults(language)
+    )
+    preferences.language = language
 
     return view.render('profile/preferences', {
       title: `Préférences - ${user.fullName}`,
       user: await this.getProfileViewUser(user),
-      preferences: {
-        theme: 'dark',
-        language,
-        timezone: 'Africa/Kinshasa',
-        dateFormat: 'dd/mm/yyyy',
-        notifyMessages: true,
-        notifyReports: true,
-        notifySecurity: true,
-      },
+      preferences,
     })
   }
 
   public async updatePreferences({ auth, request, response, session }: HttpContext) {
+    const user = auth.getUserOrFail()
     const language = String(request.input('language', 'fr'))
+    const theme = String(request.input('theme', 'dark'))
     const supportedLanguages = ['fr', 'en', 'ln', 'sw', 'kg', 'lua']
+    const supportedThemes = ['light', 'dark']
 
     if (supportedLanguages.includes(language)) {
-      const user = auth.getUserOrFail()
       user.preferredLanguage = language
       await user.save()
       session.put('locale', language)
     }
 
     session.flash('success', 'Préférences enregistrées')
+    await this.saveProfilePreferences(user.id, 'profile', {
+      theme: supportedThemes.includes(theme) ? theme : 'dark',
+      language: supportedLanguages.includes(language) ? language : 'fr',
+    })
+
     return response.redirect('/profile/preferences')
+  }
+
+  public async updateNotificationPreferences({ auth, request, response, session }: HttpContext) {
+    await this.saveProfilePreferences(auth.getUserOrFail().id, 'notifications', {
+      notifyMessages: Boolean(request.input('notify_messages')),
+      notifyGrades: Boolean(request.input('notify_grades')),
+      notifyDiscipline: Boolean(request.input('notify_discipline')),
+      notifyPayments: Boolean(request.input('notify_payments')),
+      notifyEvents: Boolean(request.input('notify_events')),
+    })
+
+    session.flash('success', 'Préférences de notification enregistrées')
+    return response.redirect('/profile/preferences')
+  }
+
+  public async updateAdvancedPreferences({ auth, request, response }: HttpContext) {
+    await this.saveProfilePreferences(auth.getUserOrFail().id, 'profile', {
+      keyboardShortcuts: Boolean(request.input('keyboardShortcuts')),
+      confirmDelete: Boolean(request.input('confirmDelete')),
+      autoSave: Boolean(request.input('autoSave')),
+    })
+
+    return response.ok({ success: true })
   }
 
   public async activityPage({ auth, request, view }: HttpContext) {

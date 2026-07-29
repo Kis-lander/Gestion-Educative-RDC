@@ -422,6 +422,7 @@ export default class SettingsController {
     if (user) {
       user.preferredLanguage = language
       await user.save()
+      await this.saveSettings(user.id, 'profile', { language })
     }
 
     session.put('locale', language)

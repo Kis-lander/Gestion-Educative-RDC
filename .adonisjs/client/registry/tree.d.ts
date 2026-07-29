@@ -15,6 +15,9 @@ export interface ApiDefinition {
   }
   home: typeof routes['home']
   about: typeof routes['about']
+  errors: {
+    maintenance: typeof routes['errors.maintenance']
+  }
   schools: {
     register: typeof routes['schools.register'] & {
       create: typeof routes['schools.register.create']
@@ -179,6 +182,7 @@ export interface ApiDefinition {
     rejectSchoolRedirect: typeof routes['inspections.reject_school_redirect']
     rejectSchool: typeof routes['inspections.reject_school']
     toggleSuspendSchool: typeof routes['inspections.toggle_suspend_school']
+    deleteSchool: typeof routes['inspections.delete_school']
     inspectionTeachersPage: typeof routes['inspections.inspection_teachers_page']
     communicationsGlobalPage: typeof routes['inspections.communications_global_page']
     communicationsSchoolPage: typeof routes['inspections.communications_school_page']
@@ -309,6 +313,7 @@ export interface ApiDefinition {
   }
   api: {
     messages: {
+      unreadCount: typeof routes['api.messages.unread_count']
       conversation: typeof routes['api.messages.conversation'] & {
         export: typeof routes['api.messages.conversation.export']
       }
@@ -325,6 +330,9 @@ export interface ApiDefinition {
       attachment: typeof routes['api.forum.attachment']
       topic: {
         view: typeof routes['api.forum.topic.view']
+      }
+      message: {
+        react: typeof routes['api.forum.message.react']
       }
     }
     student: {
@@ -392,6 +400,11 @@ export interface ApiDefinition {
       resetPassword: typeof routes['api.teachers.reset_password']
       list: typeof routes['api.teachers.list']
     }
+    profile: {
+      advancedPreferences: {
+        update: typeof routes['api.profile.advanced_preferences.update']
+      }
+    }
     parent: {
       attendance: {
         show: typeof routes['api.parent.attendance.show']
@@ -454,6 +467,9 @@ export interface ApiDefinition {
     changePassword: typeof routes['profile.change_password']
     preferences: typeof routes['profile.preferences'] & {
       update: typeof routes['profile.preferences.update']
+    }
+    notificationsPreferences: {
+      update: typeof routes['profile.notifications_preferences.update']
     }
     activity: typeof routes['profile.activity']
     avatar: {
@@ -518,6 +534,7 @@ export interface ApiDefinition {
     create: typeof routes['students.create']
     store: typeof routes['students.store']
     show: typeof routes['students.show']
+    profilePage: typeof routes['students.profile_page']
     assignmentsPage: typeof routes['students.assignments_page']
     assignmentShowPage: typeof routes['students.assignment_show_page']
     assignmentSubmitPage: typeof routes['students.assignment_submit_page']

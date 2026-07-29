@@ -106,6 +106,14 @@ router
 router.get('/home', async ({ inertia }) => inertia.render('home', {})).as('home')
 router.get('/about', async ({ view }) => view.render('welcome/about')).as('about')
 router
+  .get('/maintenance', async ({ view }) => {
+    return view.render('errors/maintenance', {
+      title: 'Maintenance - Gestion Éducative RDC',
+      expectedReturn: 'dans quelques heures',
+    })
+  })
+  .as('errors.maintenance')
+router
   .get('/welcome', async ({ view, request }) => {
     return view.render('welcome/index', await getWelcomePageData(request))
   })
@@ -461,6 +469,11 @@ router
   .use(middleware.auth())
 
 router
+  .get('/api/messages/unread-count', [controllers.Messages, 'unreadCount'])
+  .as('api.messages.unread_count')
+  .use(middleware.auth())
+
+router
   .get('/api/messages/conversation/:userId', [controllers.Messages, 'getConversationWeb'])
   .as('api.messages.conversation')
   .use(middleware.auth())
@@ -523,6 +536,11 @@ router
 router
   .post('/api/forum/topic/:id/view', [forumsController, 'recordTeacherTopicView'])
   .as('api.forum.topic.view')
+  .use(middleware.auth())
+
+router
+  .post('/api/forum/:type/:id/react', [forumsController, 'reactToMessage'])
+  .as('api.forum.message.react')
   .use(middleware.auth())
 
 router
@@ -704,6 +722,14 @@ router
 router
   .post('/profile/preferences', [controllers.Auth, 'updatePreferences'])
   .as('profile.preferences.update')
+  .use(middleware.auth())
+router
+  .post('/profile/notifications-prefs', [controllers.Auth, 'updateNotificationPreferences'])
+  .as('profile.notifications_preferences.update')
+  .use(middleware.auth())
+router
+  .post('/api/profile/advanced-preferences', [controllers.Auth, 'updateAdvancedPreferences'])
+  .as('api.profile.advanced_preferences.update')
   .use(middleware.auth())
 router
   .get('/profile/activity', [controllers.Auth, 'activityPage'])
@@ -1388,9 +1414,9 @@ router
 
 router
   .group(() => {
-    router.get('/profile', async (ctx) =>
-      ctx.view.render('student/profile', await edgePageContext(ctx))
-    )
+    router.get('/profile', [controllers.Students, 'profilePage'])
+    router.get('/profile/preferences', ({ response }) => response.redirect('/profile/preferences'))
+    router.get('/profile/change-password', ({ response }) => response.redirect('/profile/security'))
     router.get('/assignments', [controllers.Students, 'assignmentsPage'])
     router
       .get('/assignments/submissions', [controllers.Students, 'submissionsPage'])

@@ -43,6 +43,18 @@ export interface Registry {
       errorResponse: unknown
     }
   }
+  'errors.maintenance': {
+    methods: ["GET","HEAD"]
+    pattern: '/maintenance'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+    }
+  }
   'welcome.landing': {
     methods: ["GET","HEAD"]
     pattern: '/welcome'
@@ -449,6 +461,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['toggleSuspendSchool']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['toggleSuspendSchool']>>>
+    }
+  }
+  'inspections.delete_school': {
+    methods: ["DELETE"]
+    pattern: '/inspection/schools/:id/delete'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['deleteSchool']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['deleteSchool']>>>
     }
   }
   'inspections.inspection_teachers_page': {
@@ -1351,6 +1375,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/messages_controller').default['sendWebMessage']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'api.messages.unread_count': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/messages/unread-count'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/messages_controller').default['unreadCount']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/messages_controller').default['unreadCount']>>>
+    }
+  }
   'api.messages.conversation': {
     methods: ["GET","HEAD"]
     pattern: '/api/messages/conversation/:userId'
@@ -1505,6 +1541,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['recordTeacherTopicView']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['recordTeacherTopicView']>>>
+    }
+  }
+  'api.forum.message.react': {
+    methods: ["POST"]
+    pattern: '/api/forum/:type/:id/react'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { type: ParamValue; id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['reactToMessage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/forums_controller').default['reactToMessage']>>>
     }
   }
   'api.teacher.assignments.export': {
@@ -1985,6 +2033,30 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updatePreferences']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updatePreferences']>>>
+    }
+  }
+  'profile.notifications_preferences.update': {
+    methods: ["POST"]
+    pattern: '/profile/notifications-prefs'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateNotificationPreferences']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateNotificationPreferences']>>>
+    }
+  }
+  'api.profile.advanced_preferences.update': {
+    methods: ["POST"]
+    pattern: '/api/profile/advanced-preferences'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateAdvancedPreferences']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/auth_controller').default['updateAdvancedPreferences']>>>
     }
   }
   'profile.activity': {
@@ -4073,6 +4145,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['timetablePage']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/teachers_controller').default['timetablePage']>>>
+    }
+  }
+  'students.profile_page': {
+    methods: ["GET","HEAD"]
+    pattern: '/student/profile'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/students_controller').default['profilePage']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/students_controller').default['profilePage']>>>
     }
   }
   'students.assignments_page': {

@@ -196,7 +196,7 @@
           container.innerHTML = data.messages.map(msg => `
                   <div class="flex ${msg.isMine ? "justify-end" : "justify-start"} mb-4">
                     <div class="max-w-[70%]">
-                      <div class="p-3 rounded-lg ${msg.isMine ? "bg-primary text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white"}">
+                      <div class="rounded-2xl border p-3 shadow-sm ${msg.isMine ? "rounded-br-md border-primary bg-primary text-white" : "rounded-bl-md border-gray-300 bg-gray-200 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"}">
                         <p class="text-sm whitespace-pre-wrap">${escapeHtml(msg.content)}</p>
                       </div>
                       <div class="flex items-center gap-2 mt-1 ${msg.isMine ? "justify-end" : "justify-start"}">
@@ -220,6 +220,7 @@
         await fetch(`/api/student/messages/mark-read/${userId}`, {
           method: "POST"
         });
+        window.dispatchEvent(new CustomEvent("messages:read"));
         // Mettre à jour le compteur dans la liste
         const conversationEl = document.querySelector(`.conversation-item[data-user-id="${userId}"]`);
         if (conversationEl) {
@@ -258,7 +259,10 @@
           headers: {
             "X-CSRF-TOKEN": "{{ csrfToken }}"
           }
-        }).then(() => location.reload());
+        }).then(() => {
+          window.dispatchEvent(new CustomEvent("messages:read"));
+          location.reload();
+        });
       }
 
       function escapeHtml(text) {

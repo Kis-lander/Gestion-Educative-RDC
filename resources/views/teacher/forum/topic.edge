@@ -85,14 +85,22 @@
       <div class="max-h-[62vh] space-y-4 overflow-y-auto p-5">
     <!-- Message original -->
     <div class="flex justify-start">
-      <div class="max-w-[82%]">
+      <div class="max-w-[82%] {{ topic.isMine ? '' : 'rounded-2xl border border-gray-300 bg-gray-100 p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800/80' }}">
       <div class="p-3 flex justify-between items-center">
         <div class="flex items-center gap-2">
-          <div
-            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold"
-          >
-            {{ topic.authorName.charAt(0) }}
-          </div>
+          @if(topic.authorAvatarUrl)
+            <img
+              src="{{ topic.authorAvatarUrl }}"
+              alt="Photo de profil de {{ topic.authorName }}"
+              class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+            />
+          @else
+            <div
+              class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold"
+            >
+              {{ topic.authorName.charAt(0) }}
+            </div>
+          @endif
           <div>
             <span class="font-medium">{{ topic.authorName }}</span>
             <span class="text-xs text-gray-500 ml-2">Enseignant</span>
@@ -102,9 +110,9 @@
           {{ topic.createdAt }} à {{ topic.createdTime }}{{ topic.edited ? ' · modifié' : '' }}
         </div>
       </div>
-      <div class="rounded-2xl rounded-bl-md bg-white p-4 shadow-sm dark:bg-gray-800">
+      <div class="rounded-2xl {{ topic.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-gray-300 bg-gray-200 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white' }} p-4 shadow-sm">
         <div class="prose max-w-none">
-          <p id="topicContent" class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+          <p id="topicContent" class="{{ topic.isMine ? 'text-white' : 'text-gray-700 dark:text-gray-200' }} whitespace-pre-wrap">
             {{ topic.content }}
           </p>
         </div>
@@ -123,6 +131,24 @@
         <button onclick="replyToTopic()" class="text-primary text-xs hover:underline">
           <i class="fas fa-reply mr-1"></i>Répondre à cette question
         </button>
+        @if(topic.canReact)
+          <button
+            type="button"
+            onclick="reactToForumMessage('topic', '{{ topic.id }}', 'like')"
+            data-reaction-button="topic:{{ topic.id }}:like"
+            class="text-xs hover:underline {{ topic.myReaction === 'like' ? 'text-green-600 font-semibold' : 'text-gray-500 dark:text-gray-300' }}"
+          >
+            <i class="fas fa-thumbs-up mr-1"></i><span data-reaction-count="topic:{{ topic.id }}:like">{{ topic.likesCount || 0 }}</span>
+          </button>
+          <button
+            type="button"
+            onclick="reactToForumMessage('topic', '{{ topic.id }}', 'dislike')"
+            data-reaction-button="topic:{{ topic.id }}:dislike"
+            class="text-xs hover:underline {{ topic.myReaction === 'dislike' ? 'text-red-500 font-semibold' : 'text-gray-500 dark:text-gray-300' }}"
+          >
+            <i class="fas fa-thumbs-down mr-1"></i><span data-reaction-count="topic:{{ topic.id }}:dislike">{{ topic.dislikesCount || 0 }}</span>
+          </button>
+        @endif
         @if(topic.canEdit)
           <button onclick="editTopic()" class="text-yellow-600 text-xs hover:underline">
             <i class="fas fa-pen mr-1"></i>Modifier
@@ -140,14 +166,22 @@
 
       @each(reply in replies)
         <div class="flex {{ reply.isMine ? 'justify-end' : 'justify-start' }}" data-reply-id="{{ reply.id }}">
-          <div class="max-w-[82%]">
+          <div class="max-w-[82%] {{ reply.isMine ? '' : 'rounded-2xl border border-gray-300 bg-gray-100 p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800/80' }}">
           <div class="p-3 flex justify-between items-center">
             <div class="flex items-center gap-2">
-              <div
-                class="w-8 h-8 rounded-full {{ reply.isTeacher ? 'bg-primary' : 'bg-gray-400' }} flex items-center justify-center text-white text-sm font-bold"
-              >
-                {{ reply.authorName.charAt(0) }}
-              </div>
+              @if(reply.authorAvatarUrl)
+                <img
+                  src="{{ reply.authorAvatarUrl }}"
+                  alt="Photo de profil de {{ reply.authorName }}"
+                  class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+                />
+              @else
+                <div
+                  class="w-8 h-8 rounded-full {{ reply.isTeacher ? 'bg-primary' : 'bg-gray-400' }} flex items-center justify-center text-white text-sm font-bold"
+                >
+                  {{ reply.authorName.charAt(0) }}
+                </div>
+              @endif
               <div>
                 <span class="font-medium" data-reply-author>{{ reply.authorName }}</span>
                 <span class="text-xs {{ reply.isTeacher ? 'text-primary' : 'text-gray-500' }} ml-2">{{ reply.userType }}</span>
@@ -157,7 +191,7 @@
               {{ reply.createdAt }} à {{ reply.createdTime }}{{ reply.edited ? ' · modifié' : '' }}
             </div>
           </div>
-          <div class="rounded-2xl {{ reply.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md bg-white text-gray-900 dark:bg-gray-800 dark:text-white' }} p-4 shadow-sm">
+          <div class="rounded-2xl {{ reply.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-gray-300 bg-gray-200 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white' }} p-4 shadow-sm">
             @if(reply.parentTarget)
               <div class="mb-3 rounded border-l-4 border-primary bg-gray-50 dark:bg-gray-700 px-3 py-2 text-xs">
                 <p class="font-semibold">Réponse à {{ reply.parentTarget.authorName }}</p>
@@ -184,6 +218,24 @@
             <button onclick="replyToPost('{{ reply.id }}')" class="text-primary text-xs hover:underline">
               <i class="fas fa-reply mr-1"></i>Répondre
             </button>
+          @if(reply.canReact)
+              <button
+                type="button"
+                onclick="reactToForumMessage('post', '{{ reply.id }}', 'like')"
+                data-reaction-button="post:{{ reply.id }}:like"
+                class="text-xs hover:underline {{ reply.myReaction === 'like' ? 'text-green-600 font-semibold' : 'text-gray-500 dark:text-gray-300' }}"
+              >
+                <i class="fas fa-thumbs-up mr-1"></i><span data-reaction-count="post:{{ reply.id }}:like">{{ reply.likesCount || 0 }}</span>
+              </button>
+              <button
+                type="button"
+                onclick="reactToForumMessage('post', '{{ reply.id }}', 'dislike')"
+                data-reaction-button="post:{{ reply.id }}:dislike"
+                class="text-xs hover:underline {{ reply.myReaction === 'dislike' ? 'text-red-500 font-semibold' : 'text-gray-500 dark:text-gray-300' }}"
+              >
+                <i class="fas fa-thumbs-down mr-1"></i><span data-reaction-count="post:{{ reply.id }}:dislike">{{ reply.dislikesCount || 0 }}</span>
+              </button>
+          @endif
           @if(reply.canEdit)
               <button onclick="editReply('{{ reply.id }}')" class="text-yellow-600 text-xs hover:underline">
                 <i class="fas fa-pen mr-1"></i>Modifier
@@ -339,6 +391,43 @@
         setReplyTarget(author, content, id, "");
       }
 
+      async function reactToForumMessage(type, id, reaction) {
+        const res = await fetch(`/api/forum/${type}/${id}/react`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({ reaction })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          alert("Erreur: " + (data.message || "Réaction impossible"));
+          return;
+        }
+
+        const key = `${type}:${id}`;
+        const likeCount = document.querySelector(`[data-reaction-count="${key}:like"]`);
+        const dislikeCount = document.querySelector(`[data-reaction-count="${key}:dislike"]`);
+        const likeButton = document.querySelector(`[data-reaction-button="${key}:like"]`);
+        const dislikeButton = document.querySelector(`[data-reaction-button="${key}:dislike"]`);
+
+        if (likeCount) likeCount.textContent = data.likesCount || 0;
+        if (dislikeCount) dislikeCount.textContent = data.dislikesCount || 0;
+
+        likeButton?.classList.toggle("text-green-600", data.myReaction === "like");
+        likeButton?.classList.toggle("font-semibold", data.myReaction === "like");
+        dislikeButton?.classList.toggle("text-red-500", data.myReaction === "dislike");
+        dislikeButton?.classList.toggle("font-semibold", data.myReaction === "dislike");
+
+        if (data.myReaction !== "like") likeButton?.classList.add("text-gray-500", "dark:text-gray-300");
+        else likeButton?.classList.remove("text-gray-500", "dark:text-gray-300");
+
+        if (data.myReaction !== "dislike") dislikeButton?.classList.add("text-gray-500", "dark:text-gray-300");
+        else dislikeButton?.classList.remove("text-gray-500", "dark:text-gray-300");
+      }
+
       async function editTopic() {
         const content = prompt("Modifier votre message", getTopicContent());
         if (content === null) return;
@@ -425,11 +514,6 @@
           });
         }
       }
-      // Incrémenter le compteur de vues
-
-      fetch("/api/forum/topic/{{ topic.id }}/view", {
-        method: "POST"
-      });
     </script>
   @endsection
   

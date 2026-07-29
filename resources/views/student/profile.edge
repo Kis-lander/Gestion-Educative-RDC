@@ -125,21 +125,25 @@
       <h3 class="font-semibold border-b pb-2 mb-3">
         Contact parent / tuteur
       </h3>
+      <div class="mb-4 rounded-lg border {{ parent.isLinked ? 'border-green-200 bg-green-50 text-green-800 dark:border-green-700/60 dark:bg-green-900/20 dark:text-green-200' : 'border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-700/60 dark:bg-yellow-900/20 dark:text-yellow-200' }} px-3 py-2 text-sm">
+        <i class="fas {{ parent.isLinked ? 'fa-link' : 'fa-triangle-exclamation' }} mr-1"></i>
+        {{ parent.isLinked ? 'Tuteur lié au dossier élève' : "Aucun tuteur n'est lié à ce dossier élève" }}
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <p>
-            <span class="text-gray-500">Nom:</span>{{ parent.name || '-' }}
+            <span class="text-gray-500">Nom : </span>{{ parent.name || '-' }}
           </p>
           <p class="mt-1">
-            <span class="text-gray-500">Téléphone:</span>{{ parent.phone || '-' }}
+            <span class="text-gray-500">Téléphone : </span>{{ parent.phone || '-' }}
           </p>
         </div>
         <div>
           <p>
-            <span class="text-gray-500">Email:</span>{{ parent.email || '-' }}
+            <span class="text-gray-500">Email : </span>{{ parent.email || '-' }}
           </p>
           <p class="mt-1">
-            <span class="text-gray-500">Relation:</span>{{ parent.relationship || '-' }}
+            <span class="text-gray-500">Relation : </span>{{ parent.relationship || '-' }}
           </p>
         </div>
       </div>
@@ -157,10 +161,10 @@
 
     <!-- Options -->
     <div class="mt-6 flex flex-wrap gap-3">
-      <a href="/student/profile/change-password" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+      <a href="/profile/security" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
         <i class="fas fa-key mr-2"></i>Changer mot de passe
   </a>
-      <a href="/student/profile/preferences" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+      <a href="/profile/preferences" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
         <i class="fas fa-bell mr-2"></i>Préférences notifications
   </a>
       <a href="/student/transfers/request" class="px-4 py-2 border rounded-lg hover:bg-gray-50">

@@ -241,7 +241,10 @@
           headers: {
             "X-CSRF-TOKEN": "{{ csrfToken }}"
           }
-        }).then(() => location.reload());
+        }).then(() => {
+          window.dispatchEvent(new CustomEvent("messages:read"));
+          location.reload();
+        });
       }
 
       async function deleteMessage(messageId) {

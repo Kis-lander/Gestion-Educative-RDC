@@ -1574,6 +1574,16 @@ export default class SchoolController {
               .where('classes.school_section_id', governance.sectionId)
               .select('students.user_id')
           )
+          scope.orWhereIn(
+            'id',
+            db
+              .from('parents')
+              .join('parent_student', 'parents.id', 'parent_student.parent_id')
+              .join('students', 'parent_student.student_id', 'students.id')
+              .join('classes', 'students.class_id', 'classes.id')
+              .where('classes.school_section_id', governance.sectionId)
+              .select('parents.user_id')
+          )
         })
       })
       .if(search, (query) => {
