@@ -14,13 +14,13 @@
   @section('actions')
     <div class="flex gap-2">
       @if(!topic.isLocked)
-        <button onclick="scrollToReply()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700">
-          <i class="fas fa-reply mr-2"></i>Répondre
+        <button onclick="scrollToReply()" class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white hover:bg-blue-700" title="Répondre" aria-label="Répondre">
+          <i class="fas fa-reply"></i>
   </button>
       @endif
       @if(topic.canDelete)
-        <button onclick="deleteTopic()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-          <i class="fas fa-trash mr-2"></i>Supprimer
+        <button onclick="deleteTopic()" class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 text-white hover:bg-red-700" title="Supprimer" aria-label="Supprimer">
+          <i class="fas fa-trash"></i>
         </button>
       @endif
       <a href="/student/forum" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
@@ -126,8 +126,8 @@
         @endif
       </div>
       <div class="px-4 pb-4 flex gap-3">
-        <button onclick="replyToTopic()" class="text-primary text-xs hover:underline">
-          <i class="fas fa-reply mr-1"></i>Répondre à cette question
+        <button onclick="replyToTopic()" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-primary transition hover:bg-primary/10" title="Répondre à cette question" aria-label="Répondre à cette question">
+          <i class="fas fa-reply text-xs"></i>
         </button>
         @if(topic.canReact)
           <button
@@ -148,8 +148,8 @@
           </button>
         @endif
         @if(topic.canEdit)
-          <button onclick="editTopic()" class="text-yellow-600 text-xs hover:underline">
-            <i class="fas fa-pen mr-1"></i>Modifier
+          <button onclick="editTopic()" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-yellow-500 transition hover:bg-yellow-500/10" title="Modifier" aria-label="Modifier">
+            <i class="fas fa-pen text-xs"></i>
           </button>
         @endif
       </div>
@@ -213,8 +213,8 @@
             @endif
           </div>
           <div class="px-4 pb-3 flex gap-3 {{ reply.isMine ? 'justify-end' : 'justify-start' }}">
-            <button onclick="replyToPost('{{ reply.id }}')" class="text-primary text-xs hover:underline">
-              <i class="fas fa-reply mr-1"></i>Répondre
+            <button onclick="replyToPost('{{ reply.id }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-primary transition hover:bg-primary/10" title="Répondre" aria-label="Répondre">
+              <i class="fas fa-reply text-xs"></i>
             </button>
           @if(reply.canReact)
               <button
@@ -235,13 +235,13 @@
               </button>
           @endif
           @if(reply.canEdit)
-              <button onclick="editReply('{{ reply.id }}')" class="text-yellow-600 text-xs hover:underline">
-                <i class="fas fa-pen mr-1"></i>Modifier
+              <button onclick="editReply('{{ reply.id }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-yellow-500 transition hover:bg-yellow-500/10" title="Modifier" aria-label="Modifier">
+                <i class="fas fa-pen text-xs"></i>
               </button>
           @endif
           @if(reply.canDelete)
-              <button onclick="deleteReply('{{ reply.id }}')" class="text-red-500 text-xs hover:underline">
-                <i class="fas fa-trash mr-1"></i>Supprimer
+              <button onclick="deleteReply('{{ reply.id }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-red-500 transition hover:bg-red-500/10" title="Supprimer" aria-label="Supprimer">
+                <i class="fas fa-trash text-xs"></i>
               </button>
           @endif
           </div>

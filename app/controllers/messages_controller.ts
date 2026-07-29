@@ -159,6 +159,17 @@ export default class MessageController {
       .trim()
   }
 
+  private removeDisplayedSenderPrefix(content: string, senderName: string) {
+    const cleanContent = content.trim()
+    const cleanName = senderName.replace(/\s+/g, ' ').trim()
+    if (!cleanContent || !cleanName) return cleanContent
+
+    const escapedName = cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const prefixPattern = new RegExp(`^${escapedName}\\s*:\\s*`, 'i')
+
+    return cleanContent.replace(prefixPattern, '').trim()
+  }
+
   private isValidUuid(value?: string | null) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       String(value || '')
@@ -168,15 +179,17 @@ export default class MessageController {
   private formatConversationMessage(message: Message, user: User) {
     const parent = message.parentMessage
     const forumLink = this.extractForumLink(message.content)
-    const content = this.cleanMessageMetadata(
-      this.formatMessageContent(message.content, message.subject)
+    const senderName = message.sender?.fullName || (message.senderId === user.id ? user.fullName : 'Auteur supprimé')
+    const content = this.removeDisplayedSenderPrefix(
+      this.cleanMessageMetadata(this.formatMessageContent(message.content, message.subject)),
+      senderName
     )
 
     return {
       id: message.id,
       content,
       forumLink,
-      senderName: message.sender?.fullName || (message.senderId === user.id ? user.fullName : 'Auteur supprimé'),
+      senderName,
       senderAvatarUrl: message.sender?.avatarUrl || (message.senderId === user.id ? user.avatarUrl : null),
       isMine: message.senderId === user.id,
       canEdit: message.senderId === user.id,
@@ -190,7 +203,10 @@ export default class MessageController {
         ? {
             id: parent.id,
             authorName: parent.sender?.fullName || 'Auteur supprimé',
-            content: this.cleanMessageMetadata(parent.content),
+            content: this.removeDisplayedSenderPrefix(
+              this.cleanMessageMetadata(parent.content),
+              parent.sender?.fullName || 'Auteur supprimé'
+            ),
             forumLink: this.extractForumLink(parent.content),
             attachmentName: parent.attachmentName,
           }

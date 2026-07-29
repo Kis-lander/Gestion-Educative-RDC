@@ -201,9 +201,11 @@
                       </div>
                       <div class="flex items-center gap-2 mt-1 ${msg.isMine ? "justify-end" : "justify-start"}">
                         <p class="text-xs text-gray-400">${msg.time}${msg.edited ? " · modifié" : ""}</p>
-                        <button type="button" onclick="replyToMessageById('${msg.id}')" class="text-xs text-primary hover:underline">Répondre</button>
-                        ${msg.canEdit ? `<button type="button" onclick="startEditMessageById('${msg.id}')" class="text-xs text-yellow-600 hover:underline">Modifier</button>` : ""}
-                        ${msg.canDelete ? `<button type="button" onclick="deleteMessage('${msg.id}')" class="text-xs text-red-500 hover:underline">Supprimer</button>` : ""}
+                        <button type="button" onclick="replyToMessageById('${msg.id}')" class="inline-flex h-7 w-7 items-center justify-center rounded-full text-primary transition hover:bg-primary/10" title="Répondre" aria-label="Répondre">
+                          <i class="fas fa-reply text-xs"></i>
+                        </button>
+                        ${msg.canEdit ? `<button type="button" onclick="startEditMessageById('${msg.id}')" class="inline-flex h-7 w-7 items-center justify-center rounded-full text-yellow-500 transition hover:bg-yellow-500/10" title="Modifier" aria-label="Modifier"><i class="fas fa-pen text-xs"></i></button>` : ""}
+                        ${msg.canDelete ? `<button type="button" onclick="deleteMessage('${msg.id}')" class="inline-flex h-7 w-7 items-center justify-center rounded-full text-red-500 transition hover:bg-red-500/10" title="Supprimer" aria-label="Supprimer"><i class="fas fa-trash text-xs"></i></button>` : ""}
                         ${msg.isMine && msg.read ? '<i class="fas fa-check-double text-xs text-primary"></i>' : ""}
                       </div>
                     </div>
