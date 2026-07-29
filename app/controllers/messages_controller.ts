@@ -145,6 +145,20 @@ export default class MessageController {
       : content
   }
 
+  private extractForumLink(content: string) {
+    const forumLink = content.match(/\[forum-link:([^\]]+)\]/)?.[1]?.trim() || null
+
+    return forumLink && !forumLink.includes('undefined') ? forumLink : null
+  }
+
+  private cleanMessageMetadata(content: string) {
+    return content
+      .replace(/\s*\[forum-link:[^\]]+\]\s*/g, '\n')
+      .replace(/\s*\[notification-link:[^\]]+\]\s*/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  }
+
   private isValidUuid(value?: string | null) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       String(value || '')
@@ -153,11 +167,17 @@ export default class MessageController {
 
   private formatConversationMessage(message: Message, user: User) {
     const parent = message.parentMessage
+    const forumLink = this.extractForumLink(message.content)
+    const content = this.cleanMessageMetadata(
+      this.formatMessageContent(message.content, message.subject)
+    )
 
     return {
       id: message.id,
-      content: this.formatMessageContent(message.content, message.subject),
+      content,
+      forumLink,
       senderName: message.sender?.fullName || (message.senderId === user.id ? user.fullName : 'Auteur supprimé'),
+      senderAvatarUrl: message.sender?.avatarUrl || (message.senderId === user.id ? user.avatarUrl : null),
       isMine: message.senderId === user.id,
       canEdit: message.senderId === user.id,
       canDelete: message.senderId === user.id,
@@ -170,7 +190,8 @@ export default class MessageController {
         ? {
             id: parent.id,
             authorName: parent.sender?.fullName || 'Auteur supprimé',
-            content: parent.content,
+            content: this.cleanMessageMetadata(parent.content),
+            forumLink: this.extractForumLink(parent.content),
             attachmentName: parent.attachmentName,
           }
         : null,
@@ -509,6 +530,7 @@ export default class MessageController {
         id: contact.id,
         name: contact.fullName,
         role: this.getRoleLabel(contact.role),
+        avatarUrl: contact.avatarUrl,
         status: contact.status === 'active' ? 'Actif' : 'Inactif',
       },
     })

@@ -270,6 +270,7 @@
               src="{{ auth.user.avatarUrl }}"
               alt="Photo de profil"
               class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+              onerror="this.replaceWith(Object.assign(document.createElement('div'), { className: 'w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold', textContent: '{{ auth?.user?.firstName?.charAt(0) || 'U' }}{{ auth?.user?.lastName?.charAt(0) || '' }}' }))"
             />
           @else
             <div
