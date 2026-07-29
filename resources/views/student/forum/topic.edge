@@ -108,14 +108,14 @@
           {{ topic.createdAt }} à {{ topic.createdTime }}{{ topic.edited ? ' · modifié' : '' }}
         </div>
       </div>
-      <div class="rounded-2xl {{ topic.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-gray-300 bg-gray-200 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white' }} p-4 shadow-sm">
+      <div class="w-fit max-w-[min(92%,34rem)] rounded-2xl {{ topic.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-gray-300 bg-gray-200 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white' }} px-3 py-2 shadow-sm">
         <div class="prose max-w-none">
           <p id="topicContent" class="{{ topic.isMine ? 'text-white' : 'text-gray-700 dark:text-gray-200' }} whitespace-pre-wrap">
             {{ topic.content }}
           </p>
         </div>
         @if(topic.attachmentUrl)
-          <div class="mt-4 rounded-lg border bg-gray-50 dark:bg-gray-700 p-3">
+          <div class="mt-3 rounded-lg border bg-gray-50 dark:bg-gray-700 p-2">
             @if(topic.attachmentIsImage)
               <img src="{{ topic.attachmentUrl }}" alt="{{ topic.attachmentName }}" class="mb-3 max-h-80 rounded-lg object-contain" />
             @endif
@@ -125,7 +125,7 @@
           </div>
         @endif
       </div>
-      <div class="px-4 pb-4 flex gap-3">
+      <div class="px-3 pb-3 flex gap-2">
         <button onclick="replyToTopic()" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-primary transition hover:bg-primary/10" title="Répondre à cette question" aria-label="Répondre à cette question">
           <i class="fas fa-reply text-xs"></i>
         </button>
@@ -164,8 +164,8 @@
 
       @each(reply in replies)
         <div class="flex {{ reply.isMine ? 'justify-end' : 'justify-start' }}" data-reply-id="{{ reply.id }}">
-          <div class="max-w-[82%] {{ reply.isMine ? '' : 'rounded-2xl border border-gray-300 bg-gray-100 p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800/80' }}">
-          <div class="p-3 flex justify-between items-center">
+          <div class="max-w-[min(72%,34rem)] {{ reply.isMine ? '' : 'rounded-2xl border border-gray-300 bg-gray-100 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800/80' }}">
+          <div class="px-2 py-2 flex justify-between items-center">
             <div class="flex items-center gap-2">
               @if(reply.authorAvatarUrl)
                 <img
@@ -191,9 +191,9 @@
               {{ reply.createdAt }} à {{ reply.createdTime }}{{ reply.edited ? ' · modifié' : '' }}
             </div>
           </div>
-          <div class="rounded-2xl {{ reply.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-gray-300 bg-gray-200 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white' }} p-4 shadow-sm">
+          <div class="rounded-2xl {{ reply.isMine ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-gray-300 bg-gray-200 text-gray-900 dark:border-gray-700 dark:bg-gray-700 dark:text-white' }} px-3 py-2 shadow-sm">
             @if(reply.parentTarget)
-              <div class="mb-3 rounded border-l-4 border-primary bg-gray-50 dark:bg-gray-700 px-3 py-2 text-xs">
+              <div class="mb-2 rounded border-l-4 border-primary bg-gray-50 dark:bg-gray-700 px-2 py-1.5 text-xs">
                 <p class="font-semibold">Réponse à {{ reply.parentTarget.authorName }}</p>
                 <p class="truncate text-gray-500 dark:text-gray-300">{{ reply.parentTarget.content || reply.parentTarget.attachmentName || 'Fichier joint' }}</p>
               </div>
@@ -202,7 +202,7 @@
               {{ reply.content }}
             </p>
             @if(reply.attachmentUrl)
-              <div class="mt-3 rounded-lg border bg-gray-50 dark:bg-gray-700 p-3">
+              <div class="mt-2 rounded-lg border bg-gray-50 dark:bg-gray-700 p-2">
                 @if(reply.attachmentIsImage)
                   <img src="{{ reply.attachmentUrl }}" alt="{{ reply.attachmentName }}" class="mb-3 max-h-72 rounded-lg object-contain" />
                 @endif
@@ -212,7 +212,7 @@
               </div>
             @endif
           </div>
-          <div class="px-4 pb-3 flex gap-3 {{ reply.isMine ? 'justify-end' : 'justify-start' }}">
+          <div class="px-3 pb-2 flex gap-2 {{ reply.isMine ? 'justify-end' : 'justify-start' }}">
             <button onclick="replyToPost('{{ reply.id }}')" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-primary transition hover:bg-primary/10" title="Répondre" aria-label="Répondre">
               <i class="fas fa-reply text-xs"></i>
             </button>

@@ -18,6 +18,17 @@
     </script>
     <script>
       (() => {
+        const path = window.location.pathname;
+        const surface = path.includes("/forum")
+          ? "forum"
+          : (path.includes("/messages") || path.includes("/communication/"))
+            ? "messages"
+            : "";
+
+        if (surface) document.documentElement.dataset.surface = surface;
+      })();
+
+      (() => {
         if (!window.Chart || window.Chart.__adaptiveHeightPatched) return;
 
         const NativeChart = window.Chart;
@@ -333,6 +344,95 @@
       html:not(.dark) main label {
         color: #344054 !important;
         font-weight: 700;
+      }
+
+      html[data-surface='forum'] main,
+      html[data-surface='messages'] main {
+        --thread-card: rgba(255, 255, 255, 0.9);
+        --thread-card-muted: rgba(241, 245, 249, 0.92);
+        --thread-border: rgba(148, 163, 184, 0.32);
+        --thread-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+        --thread-shadow-soft: 0 6px 16px rgba(15, 23, 42, 0.05);
+      }
+
+      html[data-surface='forum'].dark main,
+      html[data-surface='messages'].dark main {
+        --thread-card: rgba(31, 41, 55, 0.92);
+        --thread-card-muted: rgba(15, 23, 42, 0.7);
+        --thread-border: rgba(148, 163, 184, 0.24);
+        --thread-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+        --thread-shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.16);
+      }
+
+      html[data-surface='forum'] main .rounded-xl,
+      html[data-surface='messages'] main .rounded-xl {
+        border-radius: 14px !important;
+      }
+
+      html[data-surface='forum'] main .rounded-2xl,
+      html[data-surface='messages'] main .rounded-2xl {
+        border-radius: 14px !important;
+      }
+
+      html[data-surface='forum'] main .p-4.rounded-2xl,
+      html[data-surface='messages'] main .p-4.rounded-2xl,
+      html[data-surface='forum'] main .rounded-2xl.p-4,
+      html[data-surface='messages'] main .rounded-2xl.p-4 {
+        padding: 0.65rem 0.85rem !important;
+      }
+
+      html[data-surface='forum'] main .p-3.rounded-2xl,
+      html[data-surface='messages'] main .p-3.rounded-2xl,
+      html[data-surface='forum'] main .rounded-2xl.p-3,
+      html[data-surface='messages'] main .rounded-2xl.p-3 {
+        padding: 0.55rem 0.75rem !important;
+      }
+
+      html[data-surface='forum'] main .shadow-md,
+      html[data-surface='forum'] main .shadow-lg,
+      html[data-surface='forum'] main .shadow-xl,
+      html[data-surface='messages'] main .shadow-md,
+      html[data-surface='messages'] main .shadow-lg,
+      html[data-surface='messages'] main .shadow-xl {
+        box-shadow: var(--thread-shadow) !important;
+      }
+
+      html[data-surface='forum'] main .shadow-sm,
+      html[data-surface='messages'] main .shadow-sm {
+        box-shadow: var(--thread-shadow-soft) !important;
+      }
+
+      html[data-surface='forum'] main .border,
+      html[data-surface='messages'] main .border {
+        border-color: var(--thread-border) !important;
+      }
+
+      html[data-surface='forum'] main .bg-gray-100,
+      html[data-surface='forum'] main .bg-gray-200,
+      html[data-surface='messages'] main .bg-gray-100,
+      html[data-surface='messages'] main .bg-gray-200 {
+        background-color: var(--thread-card-muted) !important;
+      }
+
+      html[data-surface='forum'] main .max-w-\[82\%\],
+      html[data-surface='messages'] main .max-w-\[82\%\] {
+        max-width: min(72%, 34rem) !important;
+      }
+
+      html[data-surface='forum'] main .max-w-\[78\%\],
+      html[data-surface='messages'] main .max-w-\[78\%\],
+      html[data-surface='forum'] main .max-w-\[70\%\],
+      html[data-surface='messages'] main .max-w-\[70\%\] {
+        max-width: min(74%, 38rem) !important;
+      }
+
+      html[data-surface='forum'] main textarea,
+      html[data-surface='messages'] main textarea,
+      html[data-surface='forum'] main input,
+      html[data-surface='messages'] main input,
+      html[data-surface='forum'] main select,
+      html[data-surface='messages'] main select {
+        border-color: var(--thread-border) !important;
       }
       
       .dark body {
