@@ -282,7 +282,7 @@
           const placeholder = document.createElement("option");
           placeholder.value = "";
           placeholder.textContent = province
-            ? "Selectionner un territoire / une commune"
+            ? "Sélectionner un territoire / une commune"
             : "Choisir d'abord une province";
           select.appendChild(placeholder);
 
@@ -383,37 +383,223 @@
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
   }
-  // Gestion des toasts
+  // Gestion globale des messages d'action
 
   window.showToastFn = null;
 
-  document.addEventListener("alpine:init", () => {
-    window.showToastFn = (message, type) => {
-      const toastEvent = new CustomEvent("show-toast", {
-        detail: {
-          message: message,
-          type: type
-        }
-      });
-      window.dispatchEvent(toastEvent);
+  (() => {
+    const defaultMessages = {
+      success: "Opération effectuée avec succès.",
+      error: "L'action n'a pas pu être exécutée. Vérifiez les informations puis réessayez.",
+      warning: "Veuillez vérifier les informations saisies.",
+      info: "Information enregistrée."
     };
-  });
 
-  window.addEventListener("show-toast", e => {
-    const {
-      message,
-      type
-    } = e.detail;
-    const toastDiv = document.querySelector("[x-data]")?.__x?.$data;
-    if (toastDiv) {
-      toastDiv.toastMessage = message;
-      toastDiv.toastType = type;
-      toastDiv.showToast = true;
-      setTimeout(() => {
-        toastDiv.showToast = false;
-      }, 3e3);
+    const typeClasses = {
+      success: "bg-green-600",
+      error: "bg-red-600",
+      warning: "bg-yellow-500",
+      info: "bg-blue-600"
+    };
+
+    const icons = {
+      success: "fas fa-check-circle",
+      error: "fas fa-exclamation-circle",
+      warning: "fas fa-exclamation-triangle",
+      info: "fas fa-info-circle"
+    };
+
+    const normalizeType = (type) => ["success", "error", "warning", "info"].includes(type) ? type : "info";
+
+    const createToastContainer = () => {
+      let container = document.getElementById("global-toast-container");
+      if (container) return container;
+
+      container = document.createElement("div");
+      container.id = "global-toast-container";
+      container.className =
+        "fixed inset-x-3 bottom-4 z-[9999] flex flex-col gap-3 sm:left-auto sm:right-4 sm:w-[min(92vw,420px)]";
+      container.setAttribute("aria-live", "polite");
+      container.setAttribute("aria-atomic", "true");
+      document.body.appendChild(container);
+      return container;
+    };
+
+    const getMessageFromPayload = (payload, fallback) => {
+      if (!payload || typeof payload !== "object") return fallback;
+      if (typeof payload.message === "string" && payload.message.trim()) return payload.message.trim();
+      if (typeof payload.error === "string" && payload.error.trim()) return payload.error.trim();
+      if (payload.errors && typeof payload.errors === "object") {
+        const firstError = Array.isArray(payload.errors)
+          ? payload.errors[0]
+          : Object.values(payload.errors)[0];
+        if (typeof firstError === "string" && firstError.trim()) return firstError.trim();
+        if (Array.isArray(firstError) && firstError[0]) return String(firstError[0]);
+        if (firstError?.message) return String(firstError.message);
+      }
+      return fallback;
+    };
+
+    const translateFeedback = (message) => {
+      const text = String(message || "");
+      return window.AppTranslations?.translate ? window.AppTranslations.translate(text) : text;
+    };
+
+    const showToast = (message, type = "success", options = {}) => {
+      const normalizedType = normalizeType(type);
+      const cleanMessage = translateFeedback(message || defaultMessages[normalizedType]).trim();
+      if (!cleanMessage) return;
+
+      const container = createToastContainer();
+      const toast = document.createElement("div");
+      toast.className = `${typeClasses[normalizedType]} pointer-events-auto rounded-lg px-4 py-3 text-white shadow-lg transition duration-200`;
+      toast.setAttribute("role", normalizedType === "error" ? "alert" : "status");
+      toast.innerHTML = `
+        <div class="flex items-start gap-3">
+          <i class="${icons[normalizedType]} mt-0.5" aria-hidden="true"></i>
+          <p class="min-w-0 flex-1 text-sm leading-5"></p>
+          <button type="button" class="ml-2 text-white/80 hover:text-white" aria-label="Fermer">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      `;
+      toast.querySelector("p").textContent = cleanMessage;
+
+      const close = () => {
+        toast.classList.add("opacity-0", "translate-y-1");
+        setTimeout(() => toast.remove(), 200);
+      };
+
+      toast.querySelector("button").addEventListener("click", close);
+      container.appendChild(toast);
+      setTimeout(close, options.duration || (normalizedType === "error" ? 6500 : 3500));
+    };
+
+    const shouldInspectFetch = (input, init = {}) => {
+      const method = String(init.method || (input?.method || "GET")).toUpperCase();
+      return method !== "GET";
+    };
+
+    const installFetchFeedback = () => {
+      if (!window.fetch || window.fetch.__feedbackInstalled) return;
+      const originalFetch = window.fetch.bind(window);
+
+      const wrappedFetch = async (input, init = {}) => {
+        let response;
+        try {
+          response = await originalFetch(input, init);
+        } catch (error) {
+          showToast(
+            error?.message || "Connexion impossible. Vérifiez votre réseau puis réessayez.",
+            "error"
+          );
+          throw error;
+        }
+
+        if (!shouldInspectFetch(input, init)) return response;
+
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          response.clone().json().then((payload) => {
+            if (payload?.success === false || !response.ok) {
+              showToast(getMessageFromPayload(payload, defaultMessages.error), "error");
+              return;
+            }
+            if (payload?.success === true && payload?.message) {
+              showToast(payload.message, "success");
+            }
+          }).catch(() => {
+            if (!response.ok) showToast(defaultMessages.error, "error");
+          });
+        } else if (!response.ok) {
+          showToast(defaultMessages.error, "error");
+        }
+
+        return response;
+      };
+
+      wrappedFetch.__feedbackInstalled = true;
+      window.fetch = wrappedFetch;
+    };
+
+    const installAlertFeedback = () => {
+      if (window.alert.__feedbackInstalled) return;
+      const nativeAlert = window.alert.bind(window);
+
+      const toastAlert = (message) => {
+        const text = String(message || "").trim();
+        const type = /erreur|impossible|invalide|obligatoire|veuillez|échec|echec|refus/i.test(text)
+          ? "error"
+          : "success";
+        showToast(text || defaultMessages[type], type);
+      };
+
+      toastAlert.native = nativeAlert;
+      toastAlert.__feedbackInstalled = true;
+      window.alert = toastAlert;
+    };
+
+    const installFormFeedback = () => {
+      document.addEventListener("invalid", (event) => {
+        const field = event.target;
+        const label = field.id
+          ? document.querySelector(`label[for="${CSS.escape(field.id)}"]`)?.textContent
+          : "";
+        const fieldName = (label || field.getAttribute("aria-label") || field.name || "ce champ").trim();
+        const message = field.validationMessage || `Veuillez vérifier ${fieldName}.`;
+        showToast(`${fieldName}: ${message}`, "error");
+      }, true);
+
+      document.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        if (!form.checkValidity()) {
+          showToast("Le formulaire contient des champs invalides ou incomplets.", "error");
+          return;
+        }
+        const method = String(form.method || "GET").toUpperCase();
+        if (method !== "GET" && !form.dataset.noSubmitToast) {
+          showToast("Traitement en cours...", "info", { duration: 1800 });
+        }
+      }, true);
+    };
+
+    const showFlashMessages = () => {
+      const flash = document.getElementById("app-flash-messages");
+      if (!flash) return;
+      const success = flash.dataset.success?.trim();
+      const error = flash.dataset.error?.trim();
+      if (error) showToast(error, "error");
+      if (success) showToast(success, "success");
+    };
+
+    window.AppFeedback = {
+      show: showToast,
+      success: (message) => showToast(message, "success"),
+      error: (message) => showToast(message, "error"),
+      warning: (message) => showToast(message, "warning"),
+      info: (message) => showToast(message, "info"),
+      messageFromPayload: getMessageFromPayload
+    };
+
+    window.showToastFn = showToast;
+    window.addEventListener("show-toast", (event) => {
+      showToast(event.detail?.message, event.detail?.type || "success");
+    });
+
+    installFetchFeedback();
+    installAlertFeedback();
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        installFormFeedback();
+        showFlashMessages();
+      }, { once: true });
+    } else {
+      installFormFeedback();
+      showFlashMessages();
     }
-  });
+  })();
   // Gestion du chargement
 
   window.showLoading = () => {

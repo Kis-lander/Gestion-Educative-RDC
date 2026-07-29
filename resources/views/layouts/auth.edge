@@ -29,8 +29,8 @@
       
       body {
         background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(30, 64, 175, 0.98)),
-                                              url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png')
-                                          center / min(calc(520px + 25rem), 94vw) no-repeat fixed;
+                                                    url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png')
+                                                center / min(calc(520px + 25rem), 94vw) no-repeat fixed;
       }
       
       body::before {
@@ -38,7 +38,7 @@
         inset: 0;
         content: '';
         background: url('https://upload.wikimedia.org/wikipedia/commons/0/05/Coat_of_Arms_Democratic_Republic_of_Congo.png')
-                                        center / min(calc(520px + 25rem), 94vw) no-repeat;
+                                              center / min(calc(520px + 25rem), 94vw) no-repeat;
         opacity: 0.08;
         pointer-events: none;
       }
@@ -61,7 +61,7 @@
         box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
         backdrop-filter: blur(10px);
         transition: background-color 0.18s ease,
-                transform 0.18s ease;
+                      transform 0.18s ease;
       }
       
       .back-link:hover {
@@ -93,6 +93,14 @@
     </script>
   </head>
   <body>
+    <div
+      id="app-flash-messages"
+      class="hidden"
+      data-success="{{ flashMessages?.get('success') || '' }}"
+      data-error="{{ flashMessages?.get('error') || '' }}"
+    >
+    </div>
+
     <a
       href="/"
       class="back-link"
@@ -108,7 +116,9 @@
         @endsection
       </div>
     </div>
-    <script src="/js/app-translations.js?v=20260729-profile-preferences" defer></script>
+    <script src="/js/app-translations.js?v=20260729-profile-preferences" defer>
+
+    </script>
     @!include('partials/scripts')
   </body>
 </html>

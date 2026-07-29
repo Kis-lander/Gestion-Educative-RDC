@@ -21,7 +21,7 @@
     x-show="open"
     @click.away="open = false"
     x-cloak
-    class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border dark:border-gray-700"
+    class="fixed left-3 right-3 top-16 mt-0 max-h-[calc(100dvh-5rem)] overflow-hidden rounded-lg border bg-white shadow-xl z-50 dark:border-gray-700 dark:bg-gray-800 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80 sm:max-h-none"
   >
     <div class="p-3 border-b dark:border-gray-700 flex justify-between items-center">
       <h3 class="font-semibold text-gray-800 dark:text-white">
@@ -37,7 +37,7 @@
           :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }"
           @click="markAsRead(notif.id)"
         >
-          <p class="text-sm text-gray-800 dark:text-gray-200" x-text="notif.message">
+          <p class="text-sm text-gray-800 dark:text-gray-200 break-words leading-5" x-text="notif.message">
           </p>
           <div class="flex justify-between items-center mt-1">
             <p class="text-xs text-gray-500" x-text="notif.time">

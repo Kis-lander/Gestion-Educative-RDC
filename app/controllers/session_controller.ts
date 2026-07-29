@@ -50,12 +50,12 @@ export default class SessionController {
       if (user.mustChangePassword) {
         session.flash(
           'success',
-          'Connexion reussie. Veuillez changer votre mot de passe temporaire.'
+          'Connexion réussie. Veuillez changer votre mot de passe temporaire.'
         )
         return response.redirect('/profile/security')
       }
 
-      session.flash('success', 'Connexion reussie')
+      session.flash('success', 'Connexion réussie.')
       return response.redirect(this.getRedirectPath(user.role))
     } catch {
       session.flash('error', 'Email ou mot de passe incorrect ou compte inactif')
@@ -65,7 +65,7 @@ export default class SessionController {
 
   public async destroy({ auth, response, session }: HttpContext) {
     await auth.use('web').logout()
-    session.flash('success', 'Deconnexion reussie')
+    session.flash('success', 'Déconnexion réussie.')
 
     return response.redirect('/login')
   }

@@ -471,7 +471,7 @@ export default class InterSchoolController {
   public async exchangeShowPage(ctx: HttpContext) {
     const exchange = (await this.exchangesForSchool(this.schoolId(ctx))).find((item) => item.id === ctx.params.id)
     if (!exchange) return ctx.response.redirect('/inter-school/exchanges')
-    const activities = [{ date: exchange.createdAt, label: 'Demande creee', description: exchange.subject }]
+    const activities = [{ date: exchange.createdAt, label: 'Demande créée', description: exchange.subject }]
     return ctx.view.render('inter-school/exchanges/show', await this.context(ctx, { exchange, activities }))
   }
 
@@ -597,7 +597,7 @@ export default class InterSchoolController {
   }
 
   public async saveSchool({ response }: HttpContext) {
-    return response.ok({ success: true, message: 'Ecole enregistree dans vos favoris.' })
+    return response.ok({ success: true, message: 'École enregistrée dans vos favoris.' })
   }
 
   public async exportSearch(ctx: HttpContext) {
@@ -619,7 +619,7 @@ export default class InterSchoolController {
       created_at: new Date(),
       updated_at: new Date(),
     }).returning('*')
-    return response.created({ success: true, message: "Demande d'echange envoyee avec succes", exchange })
+    return response.created({ success: true, message: "Demande d'échange envoyée avec succès.", exchange })
   }
 
   public async updateExchangeStatus({ params, request, response }: HttpContext) {
@@ -703,7 +703,7 @@ export default class InterSchoolController {
       created_at: new Date(),
       updated_at: new Date(),
     }).returning('*')
-    return response.created({ success: true, message: 'Pratique partagee avec succes', bestPractice })
+    return response.created({ success: true, message: 'Pratique partagée avec succès.', bestPractice })
   }
 
   public async getBestPractices({ request, response }: HttpContext) {
@@ -752,7 +752,7 @@ export default class InterSchoolController {
       created_at: new Date(),
       updated_at: new Date(),
     }).returning('*')
-    return response.created({ success: true, message: 'Evenement cree avec succes', event })
+    return response.created({ success: true, message: 'Événement créé avec succès.', event })
   }
 
   public async getEvents({ response }: HttpContext) {
@@ -795,6 +795,6 @@ export default class InterSchoolController {
       created_at: new Date(),
       updated_at: new Date(),
     }).returning('*')
-    return response.created({ success: true, message: 'Participation enregistree avec succes', registration })
+    return response.created({ success: true, message: 'Participation enregistrée avec succès.', registration })
   }
 }

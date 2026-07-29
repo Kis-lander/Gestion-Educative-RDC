@@ -58,7 +58,7 @@ export default class NewAccountController {
       schoolId: null as unknown as string,
     })
 
-    session.flash('success', 'Compte cree avec succes')
+    session.flash('success', 'Compte créé avec succès.')
 
     return response.redirect('/login')
   }

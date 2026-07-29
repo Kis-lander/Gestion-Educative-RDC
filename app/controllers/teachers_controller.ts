@@ -1155,7 +1155,7 @@ export default class TeacherController {
     if (!classSubject) {
       session.flash(
         'error',
-        "Vous n'etes pas autorise a creer un devoir pour cette classe et cette matiere."
+        "Vous n'êtes pas autorisé à créer un devoir pour cette classe et cette matière."
       )
       return response.redirect().back()
     }
@@ -1697,7 +1697,7 @@ export default class TeacherController {
       return ctx.response.ok({ success: true, grade })
     }
 
-    ctx.session.flash('success', 'Note modifiee avec succes')
+    ctx.session.flash('success', 'Note modifiée avec succès.')
     return ctx.response.redirect('/teacher/grades')
   }
 

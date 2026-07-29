@@ -696,7 +696,7 @@ export default class AuthController {
 
       return response.ok({
         success: true,
-        message: 'Connexion reussie',
+        message: 'Connexion réussie.',
         mustChangePassword,
         redirectTo: mustChangePassword ? '/profile/security' : null,
         user: {
@@ -720,14 +720,14 @@ export default class AuthController {
   }
 
   /**
-   * Deconnexion.
+   * Déconnexion.
    */
   public async logout({ auth, response }: HttpContext) {
     await auth.use('web').logout()
 
     return response.ok({
       success: true,
-      message: 'Deconnexion reussie',
+      message: 'Déconnexion réussie.',
     })
   }
 

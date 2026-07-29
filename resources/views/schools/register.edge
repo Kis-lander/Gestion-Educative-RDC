@@ -139,6 +139,11 @@
       @media (max-width: 640px) {
         body {
           padding-top: 64px;
+          background-attachment: scroll !important;
+        }
+
+        body::before {
+          display: none !important;
         }
 
         body > .min-h-screen {
@@ -181,7 +186,10 @@
       </nav>
     </header>
 
-    <div class="school-register-card bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 md:p-8">
+    <div
+      class="school-register-card bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 md:p-8"
+      data-no-scroll-reveal
+    >
       <div class="text-center mb-6">
         <i class="fas fa-school text-white text-[4.25rem] mb-3"></i>
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white">

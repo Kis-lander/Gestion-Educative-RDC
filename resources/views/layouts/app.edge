@@ -19,52 +19,37 @@
     <script>
       (() => {
         const path = window.location.pathname;
-        const surface = path.includes("/forum")
-          ? "forum"
-          : (path.includes("/messages") || path.includes("/communication/"))
-            ? "messages"
-            : "";
-
+        const surface = path.includes("/forum") ? "forum" : path.includes("/messages") || path.includes("/communication/") ? "messages" : "";
         if (surface) document.documentElement.dataset.surface = surface;
       })();
 
       (() => {
         if (!window.Chart || window.Chart.__adaptiveHeightPatched) return;
-
         const NativeChart = window.Chart;
-
-        const getDataLength = (config) => {
+        const getDataLength = config => {
           const labelsLength = Array.isArray(config?.data?.labels) ? config.data.labels.length : 0;
           const datasetLength = (config?.data?.datasets || []).reduce((max, dataset) => {
             return Math.max(max, Array.isArray(dataset?.data) ? dataset.data.length : 0);
           }, 0);
-
           return Math.max(labelsLength, datasetLength);
         };
-
         const getAdaptiveHeight = (canvas, config) => {
           const dataLength = getDataLength(config);
           const baseHeight = Math.min(Math.max(Number(canvas.getAttribute("height")) || 240, 180), 320);
           const type = String(config?.type || "").toLowerCase();
-
-          if (["doughnut", "pie", "polararea", "radar"].includes(type)) {
+          if ([ "doughnut", "pie", "polararea", "radar" ].includes(type)) {
             return Math.min(Math.max(baseHeight, 220 + Math.max(dataLength - 12, 0) * 14), 480);
           }
-
           if (type === "bar") {
             return Math.min(Math.max(baseHeight, 220 + Math.max(dataLength - 18, 0) * 14), 560);
           }
-
           return Math.min(Math.max(baseHeight, 220 + Math.max(dataLength - 24, 0) * 8), 460);
         };
-
         function AdaptiveChart(item, config) {
           config.options = config.options || {};
           config.options.maintainAspectRatio = false;
-
           const chart = new NativeChart(item, config);
           const canvas = chart.canvas;
-
           if (canvas) {
             const height = getAdaptiveHeight(canvas, config);
             canvas.style.display = "block";
@@ -74,15 +59,12 @@
             chart.options.maintainAspectRatio = false;
             chart.resize();
           }
-
           return chart;
         }
-
         Object.setPrototypeOf(AdaptiveChart, NativeChart);
         AdaptiveChart.prototype = NativeChart.prototype;
         Object.assign(AdaptiveChart, NativeChart);
         AdaptiveChart.__adaptiveHeightPatched = true;
-
         window.Chart = AdaptiveChart;
       })();
     </script>
@@ -90,6 +72,7 @@
     <!-- Configuration Tailwind pour mode sombre -->
     <script>
       window.__APP_LANGUAGE__ = "{{ appLanguage || 'fr' }}";
+
       tailwind.config = {
         darkMode: "class",
         theme: {
@@ -123,31 +106,31 @@
         display: flex;
         flex-direction: column;
       }
-
+      
       .inspection-chart-body {
         position: relative;
         width: 100%;
         flex: 1 1 auto;
         min-height: 0;
       }
-
+      
       .inspection-chart-body canvas {
         width: 100% !important;
         height: 100% !important;
       }
-
+      
       @media (max-width: 1023px) {
         .inspection-chart-card {
           height: 420px;
         }
       }
-
+      
       @media (max-width: 640px) {
         .inspection-chart-card {
           height: 360px;
         }
       }
-
+      
       :root {
         --school-ink: #172033;
         --school-muted: #667085;
@@ -161,70 +144,68 @@
         --school-primary-2: #2563eb;
         --school-shadow: 0 16px 38px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
       }
-
+      
       * {
         font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         letter-spacing: 0;
       }
-
+      
       [x-cloak] {
         display: none !important;
       }
       
       body {
         min-height: 100vh;
-        background:
-          radial-gradient(circle at top left, rgba(37, 99, 235, 0.1), transparent 32rem),
-          linear-gradient(180deg, var(--school-page-2) 0%, var(--school-page) 100%);
+        background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.1), transparent 32rem),
+                linear-gradient(180deg, var(--school-page-2) 0%, var(--school-page) 100%);
         transition: background-color 0.3s ease;
         overflow-x: hidden;
         color: var(--school-ink);
       }
-
+      
       html:not(.dark) header {
         background: rgba(255, 255, 255, 0.88) !important;
         border-bottom: 1px solid rgba(15, 23, 42, 0.08);
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
         backdrop-filter: blur(16px);
       }
-
+      
       html:not(.dark) aside {
         background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)) !important;
         border-right: 1px solid rgba(148, 163, 184, 0.26);
         box-shadow: 18px 0 42px rgba(15, 23, 42, 0.08) !important;
       }
-
+      
       html:not(.dark) aside nav a {
         font-weight: 650;
         color: #344054;
       }
-
+      
       html:not(.dark) aside nav a:hover {
         background-color: #eef4ff !important;
         color: #1d4ed8 !important;
       }
-
+      
       html:not(.dark) aside nav a.bg-primary {
         background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
         box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22) !important;
       }
-
+      
       html:not(.dark) main {
-        background:
-          linear-gradient(180deg, rgba(248, 250, 252, 0.78), rgba(238, 243, 248, 0.98)),
-          radial-gradient(circle at 100% 0, rgba(15, 159, 110, 0.08), transparent 26rem);
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.78), rgba(238, 243, 248, 0.98)),
+                radial-gradient(circle at 100% 0, rgba(15, 159, 110, 0.08), transparent 26rem);
       }
-
+      
       html:not(.dark) main > div {
         max-width: 1480px;
         margin: 0 auto;
       }
-
+      
       html:not(.dark) [data-page-header] {
         margin: -0.25rem -0.25rem 1.55rem;
         padding: 0.25rem;
       }
-
+      
       html:not(.dark) [data-page-header] h1,
       html:not(.dark) h1,
       html:not(.dark) h2,
@@ -232,16 +213,16 @@
         font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
         color: var(--school-ink) !important;
       }
-
+      
       html:not(.dark) [data-page-header] h1 {
         font-weight: 800;
       }
-
+      
       html:not(.dark) [data-page-header] p {
         color: var(--school-muted) !important;
         font-size: 1rem;
       }
-
+      
       html:not(.dark) main .bg-white,
       html:not(.dark) main .shadow-md,
       html:not(.dark) main .shadow-lg,
@@ -251,58 +232,57 @@
         box-shadow: var(--school-shadow) !important;
         backdrop-filter: blur(8px);
       }
-
+      
       html:not(.dark) main .bg-gray-50,
       html:not(.dark) main .bg-gray-100 {
         background-color: #f4f7fb !important;
         border-color: var(--school-line) !important;
       }
-
+      
       html:not(.dark) main .rounded-xl {
         border-radius: 14px !important;
       }
-
+      
       html:not(.dark) main .rounded-lg {
         border-radius: 10px !important;
       }
-
+      
       html:not(.dark) main .text-gray-900,
       html:not(.dark) main .text-gray-800,
       html:not(.dark) main .text-gray-700 {
         color: var(--school-ink) !important;
       }
-
+      
       html:not(.dark) main .text-gray-600,
       html:not(.dark) main .text-gray-500,
       html:not(.dark) main .text-gray-400 {
         color: var(--school-muted) !important;
       }
-
+      
       html:not(.dark) main a.text-primary,
       html:not(.dark) main .text-primary {
         color: var(--school-primary) !important;
       }
-
+      
       html:not(.dark) main .bg-primary {
         background: linear-gradient(135deg, var(--school-primary), var(--school-primary-2)) !important;
         box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
       }
-
+      
       html:not(.dark) main button,
       html:not(.dark) main a {
-        transition:
-          background-color 0.18s ease,
-          border-color 0.18s ease,
-          box-shadow 0.18s ease,
-          color 0.18s ease,
-          transform 0.18s ease;
+        transition: background-color 0.18s ease,
+                border-color 0.18s ease,
+                box-shadow 0.18s ease,
+                color 0.18s ease,
+                transform 0.18s ease;
       }
-
+      
       html:not(.dark) main button:hover,
       html:not(.dark) main a:hover {
         transform: translateY(-1px);
       }
-
+      
       html:not(.dark) main button.border,
       html:not(.dark) main a.border {
         background: rgba(255, 255, 255, 0.78);
@@ -310,19 +290,19 @@
         color: #344054;
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
       }
-
+      
       html:not(.dark) main button.border:hover,
       html:not(.dark) main a.border:hover {
         background: #eef4ff !important;
         border-color: #93b4f7 !important;
         color: #1d4ed8 !important;
       }
-
+      
       html:not(.dark) main table {
         overflow: hidden;
         border-color: var(--school-line) !important;
       }
-
+      
       html:not(.dark) main thead,
       html:not(.dark) main th {
         background: linear-gradient(180deg, #f8fafc, #edf3fb) !important;
@@ -332,20 +312,20 @@
         letter-spacing: 0.02em;
         text-transform: uppercase;
       }
-
+      
       html:not(.dark) main tbody tr {
         border-color: #e5edf6 !important;
       }
-
+      
       html:not(.dark) main tbody tr:hover {
         background-color: #f7fbff !important;
       }
-
+      
       html:not(.dark) main label {
         color: #344054 !important;
         font-weight: 700;
       }
-
+      
       html[data-surface='forum'] main,
       html[data-surface='messages'] main {
         --thread-card: rgba(255, 255, 255, 0.9);
@@ -354,7 +334,7 @@
         --thread-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
         --thread-shadow-soft: 0 6px 16px rgba(15, 23, 42, 0.05);
       }
-
+      
       html[data-surface='forum'].dark main,
       html[data-surface='messages'].dark main {
         --thread-card: rgba(31, 41, 55, 0.92);
@@ -363,31 +343,31 @@
         --thread-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
         --thread-shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.16);
       }
-
+      
       html[data-surface='forum'] main .rounded-xl,
       html[data-surface='messages'] main .rounded-xl {
         border-radius: 14px !important;
       }
-
+      
       html[data-surface='forum'] main .rounded-2xl,
       html[data-surface='messages'] main .rounded-2xl {
         border-radius: 14px !important;
       }
-
+      
       html[data-surface='forum'] main .p-4.rounded-2xl,
       html[data-surface='messages'] main .p-4.rounded-2xl,
       html[data-surface='forum'] main .rounded-2xl.p-4,
       html[data-surface='messages'] main .rounded-2xl.p-4 {
         padding: 0.65rem 0.85rem !important;
       }
-
+      
       html[data-surface='forum'] main .p-3.rounded-2xl,
       html[data-surface='messages'] main .p-3.rounded-2xl,
       html[data-surface='forum'] main .rounded-2xl.p-3,
       html[data-surface='messages'] main .rounded-2xl.p-3 {
         padding: 0.55rem 0.75rem !important;
       }
-
+      
       html[data-surface='forum'] main .shadow-md,
       html[data-surface='forum'] main .shadow-lg,
       html[data-surface='forum'] main .shadow-xl,
@@ -396,36 +376,36 @@
       html[data-surface='messages'] main .shadow-xl {
         box-shadow: var(--thread-shadow) !important;
       }
-
+      
       html[data-surface='forum'] main .shadow-sm,
       html[data-surface='messages'] main .shadow-sm {
         box-shadow: var(--thread-shadow-soft) !important;
       }
-
+      
       html[data-surface='forum'] main .border,
       html[data-surface='messages'] main .border {
         border-color: var(--thread-border) !important;
       }
-
+      
       html[data-surface='forum'] main .bg-gray-100,
       html[data-surface='forum'] main .bg-gray-200,
       html[data-surface='messages'] main .bg-gray-100,
       html[data-surface='messages'] main .bg-gray-200 {
         background-color: var(--thread-card-muted) !important;
       }
-
+      
       html[data-surface='forum'] main .max-w-\[82\%\],
       html[data-surface='messages'] main .max-w-\[82\%\] {
         max-width: min(72%, 34rem) !important;
       }
-
+      
       html[data-surface='forum'] main .max-w-\[78\%\],
       html[data-surface='messages'] main .max-w-\[78\%\],
       html[data-surface='forum'] main .max-w-\[70\%\],
       html[data-surface='messages'] main .max-w-\[70\%\] {
         max-width: min(74%, 38rem) !important;
       }
-
+      
       html[data-surface='forum'] main textarea,
       html[data-surface='messages'] main textarea,
       html[data-surface='forum'] main input,
@@ -436,19 +416,17 @@
       }
       
       .dark body {
-        background:
-          radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 30rem),
-          linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 30rem),
+                linear-gradient(180deg, #0f172a 0%, #111827 100%);
         color: #e5e7eb;
       }
-
+      
       .dark main {
-        background:
-          linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.98)),
-          radial-gradient(circle at 100% 0, rgba(22, 163, 74, 0.08), transparent 26rem);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.98)),
+                radial-gradient(circle at 100% 0, rgba(22, 163, 74, 0.08), transparent 26rem);
         color: #e5e7eb;
       }
-
+      
       .dark [data-page-header] h1,
       .dark main h1,
       .dark main h2,
@@ -456,24 +434,24 @@
         color: #f8fafc !important;
         text-shadow: none !important;
       }
-
+      
       .dark [data-page-header] p,
       .dark main p,
       .dark main .text-gray-500,
       .dark main .text-gray-400 {
         color: #cbd5e1 !important;
       }
-
+      
       .dark [data-page-header] button {
         background-color: rgba(15, 23, 42, 0.72);
         border-color: #64748b !important;
         color: #e2e8f0 !important;
       }
-
+      
       .dark .bg-white {
         background-color: #1f2937 !important;
       }
-
+      
       .dark main .bg-white,
       .dark main .dark\:bg-gray-800,
       .dark main .shadow-md,
@@ -482,24 +460,24 @@
         border-color: rgba(148, 163, 184, 0.22) !important;
         background-color: #1f2937 !important;
       }
-
+      
       .dark .bg-gray-50,
       .dark .bg-gray-100 {
         background-color: #111827 !important;
       }
-
+      
       .dark .text-gray-900,
       .dark .text-gray-800,
       .dark .text-gray-700 {
         color: #f9fafb !important;
       }
-
+      
       .dark .text-gray-600,
       .dark .text-gray-500,
       .dark .text-gray-400 {
         color: #d1d5db !important;
       }
-
+      
       .dark main label,
       .dark main strong,
       .dark main th,
@@ -507,16 +485,16 @@
       .dark main span {
         color: inherit;
       }
-
+      
       .dark main label {
         color: #e5e7eb !important;
         font-weight: 700;
       }
-
+      
       .dark main strong {
         color: #f8fafc;
       }
-
+      
       .dark main .bg-blue-100,
       .dark main .bg-blue-50,
       .dark main .bg-indigo-100,
@@ -541,83 +519,83 @@
       .dark main .bg-gray-50 {
         border: 1px solid rgba(148, 163, 184, 0.22);
       }
-
+      
       .dark main .bg-blue-100,
       .dark main .bg-blue-50 {
         background-color: rgba(37, 99, 235, 0.2) !important;
       }
-
+      
       .dark main .bg-indigo-100,
       .dark main .bg-indigo-50 {
         background-color: rgba(79, 70, 229, 0.22) !important;
       }
-
+      
       .dark main .bg-purple-100,
       .dark main .bg-purple-50 {
         background-color: rgba(147, 51, 234, 0.22) !important;
       }
-
+      
       .dark main .bg-green-100,
       .dark main .bg-green-50 {
         background-color: rgba(22, 163, 74, 0.2) !important;
       }
-
+      
       .dark main .bg-yellow-100,
       .dark main .bg-yellow-50,
       .dark main .bg-orange-100,
       .dark main .bg-orange-50 {
         background-color: rgba(245, 158, 11, 0.22) !important;
       }
-
+      
       .dark main .bg-red-100,
       .dark main .bg-red-50 {
         background-color: rgba(220, 38, 38, 0.22) !important;
       }
-
+      
       .dark main .bg-pink-100,
       .dark main .bg-pink-50 {
         background-color: rgba(219, 39, 119, 0.2) !important;
       }
-
+      
       .dark main .bg-cyan-100,
       .dark main .bg-cyan-50 {
         background-color: rgba(8, 145, 178, 0.2) !important;
       }
-
+      
       .dark main .bg-teal-100,
       .dark main .bg-teal-50 {
         background-color: rgba(13, 148, 136, 0.2) !important;
       }
-
+      
       .dark main .bg-gray-100,
       .dark main .bg-gray-50 {
         background-color: rgba(51, 65, 85, 0.52) !important;
       }
-
+      
       .dark main .text-blue-600,
       .dark main .text-blue-700,
       .dark main .text-blue-800 {
         color: #93c5fd !important;
       }
-
+      
       .dark main .text-indigo-600,
       .dark main .text-indigo-700,
       .dark main .text-indigo-800 {
         color: #a5b4fc !important;
       }
-
+      
       .dark main .text-purple-600,
       .dark main .text-purple-700,
       .dark main .text-purple-800 {
         color: #d8b4fe !important;
       }
-
+      
       .dark main .text-green-600,
       .dark main .text-green-700,
       .dark main .text-green-800 {
         color: #86efac !important;
       }
-
+      
       .dark main .text-yellow-600,
       .dark main .text-yellow-700,
       .dark main .text-yellow-800,
@@ -626,43 +604,43 @@
       .dark main .text-orange-800 {
         color: #fde68a !important;
       }
-
+      
       .dark main .text-red-600,
       .dark main .text-red-700,
       .dark main .text-red-800 {
         color: #fca5a5 !important;
       }
-
+      
       .dark main .text-pink-600,
       .dark main .text-pink-700,
       .dark main .text-pink-800 {
         color: #f9a8d4 !important;
       }
-
+      
       .dark main .text-cyan-600,
       .dark main .text-cyan-700,
       .dark main .text-cyan-800 {
         color: #67e8f9 !important;
       }
-
+      
       .dark main .text-teal-600,
       .dark main .text-teal-700,
       .dark main .text-teal-800 {
         color: #5eead4 !important;
       }
-
+      
       .dark main .text-gray-600,
       .dark main .text-gray-700,
       .dark main .text-gray-800 {
         color: #e2e8f0 !important;
       }
-
+      
       .dark main .border-t,
       .dark main .border-b,
       .dark main .border {
         border-color: rgba(148, 163, 184, 0.28) !important;
       }
-
+      
       html:not(.dark) main input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([type='color']),
       html:not(.dark) main select,
       html:not(.dark) main textarea {
@@ -672,7 +650,7 @@
         box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(255, 255, 255, 0.7);
         font-weight: 600;
       }
-
+      
       html:not(.dark) main input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([type='color']):focus,
       html:not(.dark) main select:focus,
       html:not(.dark) main textarea:focus {
@@ -680,22 +658,22 @@
         border-color: #2563eb !important;
         box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
       }
-
+      
       html:not(.dark) main input::placeholder,
       html:not(.dark) main textarea::placeholder {
         color: #98a2b3;
       }
-
+      
       html:not(.dark) main .card-hover:hover {
         transform: translateY(-3px);
         box-shadow: 0 20px 42px rgba(15, 23, 42, 0.12) !important;
       }
-
+      
       html:not(.dark) main .card-hover {
         position: relative;
         overflow: hidden;
       }
-
+      
       html:not(.dark) main .card-hover::before {
         position: absolute;
         inset: 0 auto 0 0;
@@ -704,37 +682,37 @@
         background: linear-gradient(180deg, #2563eb, #0f9f6e);
         opacity: 0.85;
       }
-
+      
       html:not(.dark) main .bg-blue-50,
       html:not(.dark) main .bg-green-50,
       html:not(.dark) main .bg-yellow-50,
       html:not(.dark) main .bg-red-50 {
         border: 1px solid rgba(148, 163, 184, 0.22);
       }
-
+      
       html:not(.dark) main .bg-blue-50 {
         background-color: #eff6ff !important;
       }
-
+      
       html:not(.dark) main .bg-green-50 {
         background-color: #ecfdf5 !important;
       }
-
+      
       html:not(.dark) main .bg-yellow-50 {
         background-color: #fffbeb !important;
       }
-
+      
       html:not(.dark) main .bg-red-50 {
         background-color: #fef2f2 !important;
       }
-
+      
       html:not(.dark) main hr,
       html:not(.dark) main .border-t,
       html:not(.dark) main .border-b,
       html:not(.dark) main .border {
         border-color: var(--school-line) !important;
       }
-
+      
       html:not(.dark) main input[readonly],
       html:not(.dark) main input:disabled,
       html:not(.dark) main select:disabled,
@@ -743,7 +721,7 @@
         border-color: #cbd5e1 !important;
         color: #4b5563;
       }
-
+      
       .dark input,
       .dark select,
       .dark textarea {
@@ -751,12 +729,12 @@
         border-color: #4b5563;
         color: #f9fafb;
       }
-
+      
       .dark input::placeholder,
       .dark textarea::placeholder {
         color: #9ca3af;
       }
-
+      
       .dark table,
       .dark thead,
       .dark tbody,
@@ -766,42 +744,42 @@
         border-color: #374151 !important;
         color: #e5e7eb;
       }
-
+      
       .dark thead,
       .dark th {
         background-color: #374151;
         color: #f9fafb;
       }
-
+      
       .dark button.border,
       .dark a.border {
         border-color: #6b7280;
         color: #e5e7eb;
       }
-
+      
       .dark button.border:hover,
       .dark a.border:hover {
         background-color: #374151;
       }
-
+      
       .dark .shadow-md,
       .dark .shadow-lg,
       .dark .shadow-xl {
         box-shadow: 0 18px 35px rgba(0, 0, 0, 0.3);
       }
-
+      
       .dark main .rounded-full.bg-green-100,
       .dark main .rounded.bg-green-100 {
         background-color: rgba(22, 163, 74, 0.24) !important;
         border-color: rgba(74, 222, 128, 0.36) !important;
       }
-
+      
       .dark main .rounded-full.bg-blue-100,
       .dark main .rounded.bg-blue-100 {
         background-color: rgba(37, 99, 235, 0.24) !important;
         border-color: rgba(147, 197, 253, 0.34) !important;
       }
-
+      
       .dark main .rounded-full.bg-yellow-100,
       .dark main .rounded.bg-yellow-100,
       .dark main .rounded-full.bg-orange-100,
@@ -809,13 +787,13 @@
         background-color: rgba(245, 158, 11, 0.24) !important;
         border-color: rgba(253, 230, 138, 0.34) !important;
       }
-
+      
       .dark main .rounded-full.bg-red-100,
       .dark main .rounded.bg-red-100 {
         background-color: rgba(220, 38, 38, 0.24) !important;
         border-color: rgba(252, 165, 165, 0.34) !important;
       }
-
+      
       .dark main .rounded-full.bg-gray-100,
       .dark main .rounded.bg-gray-100 {
         background-color: rgba(51, 65, 85, 0.7) !important;
@@ -847,10 +825,19 @@
       
       .toast {
         position: fixed;
-        bottom: 24px;
-        right: 24px;
+        right: 12px;
+        bottom: 16px;
+        left: 12px;
         z-index: 50;
         animation: slideIn 0.3s ease;
+      }
+      
+      @media (min-width: 640px) {
+        .toast {
+          right: 24px;
+          bottom: 24px;
+          left: auto;
+        }
       }
       
       @keyframes slideIn {
@@ -911,6 +898,14 @@
 "
   >
 
+    <div
+      id="app-flash-messages"
+      class="hidden"
+      data-success="{{ flashMessages?.get('success') || '' }}"
+      data-error="{{ flashMessages?.get('error') || '' }}"
+    >
+    </div>
+
     <!-- Loading Overlay -->
     <div
       x-show="$store.loading.loading"
@@ -935,7 +930,7 @@
       'bg-blue-500': toastType === 'info',
       'bg-yellow-500': toastType === 'warning'
     }"
-        class="rounded-lg shadow-lg p-4 min-w-[300px]"
+        class="rounded-lg shadow-lg p-4 w-full sm:min-w-[300px]"
       >
         <div class="flex items-center">
           <i
@@ -990,7 +985,9 @@
     </main>
 
     @!include('partials/footer')
-    <script src="/js/app-translations.js?v=20260729-profile-preferences" defer></script>
+    <script src="/js/app-translations.js?v=20260729-profile-preferences" defer>
+
+    </script>
     @!include('partials/scripts')
 
   </body>

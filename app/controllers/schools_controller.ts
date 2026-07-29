@@ -1051,7 +1051,7 @@ export default class SchoolController {
       }
     })
 
-    session.flash('success', 'Enseignant modifie avec succes.')
+    session.flash('success', 'Enseignant modifié avec succès.')
     return response.redirect(`/schools/teachers/${teacher.id}`)
   }
 
@@ -1088,7 +1088,7 @@ export default class SchoolController {
       await teacher.user.save()
     })
 
-    return response.ok({ success: true, message: 'Enseignant desactive avec succes.' })
+    return response.ok({ success: true, message: 'Enseignant désactivé avec succès.' })
   }
 
   public async replaceTeacher({ auth, params, request, response, session }: HttpContext) {

@@ -53,25 +53,40 @@ export default class HttpExceptionHandler extends ExceptionHandler {
       if (this.wantsJson(ctx)) {
         return ctx.response.status(419).send({
           success: false,
-          message: 'Session expiree. Veuillez rafraichir la page puis reessayer.',
+          message: 'Session expirée. Veuillez rafraîchir la page puis réessayer.',
         })
       }
 
       ctx.session.flash(
         'error',
-        'Session expiree ou formulaire ouvert trop longtemps. Veuillez reessayer.'
+        'Session expirée ou formulaire ouvert trop longtemps. Veuillez réessayer.'
       )
 
       return ctx.response.redirect().back()
     }
 
     const status = Number(exception.status || 500)
+    const message =
+      exception.message ||
+      (status >= 500 ? 'Erreur interne du serveur.' : "L'action demandée n'a pas pu être exécutée.")
+
+    if (status >= 400 && status < 500 && ![401, 403, 404].includes(status)) {
+      if (this.wantsJson(ctx)) {
+        return ctx.response.status(status).send({
+          success: false,
+          message,
+        })
+      }
+
+      ctx.session.flash('error', message)
+      return ctx.response.redirect().back()
+    }
 
     if ([401, 403, 404].includes(status) || status >= 500) {
       if (this.wantsJson(ctx)) {
         return ctx.response.status(status).send({
           success: false,
-          message: status >= 500 ? 'Erreur interne du serveur.' : exception.message,
+          message: status >= 500 ? 'Erreur interne du serveur.' : message,
         })
       }
 
