@@ -666,6 +666,7 @@ export default class AuthController {
       role: user.role,
       roleLabel,
       avatarUrl: user.avatarUrl,
+      mustChangePassword: user.mustChangePassword,
       schoolName: user.school?.name,
       className: null,
       qualification: null,
@@ -817,16 +818,47 @@ export default class AuthController {
     const user = auth.getUserOrFail()
     const wantsHtml = String(request.header('accept') || '').includes('text/html')
 
-    const isValidPassword = await hash.verify(user.password, currentPassword)
-    if (!isValidPassword) {
+    if (!user.mustChangePassword && !currentPassword) {
+      const message = 'Le mot de passe actuel est requis'
+
       if (wantsHtml) {
-        session.flash('error', 'Mot de passe actuel incorrect')
+        session.flash('error', message)
         return response.redirect().back()
       }
 
       return response.badRequest({
         success: false,
-        message: 'Mot de passe actuel incorrect',
+        message,
+      })
+    }
+
+    if (!user.mustChangePassword) {
+      const isValidPassword = await hash.verify(user.password, currentPassword!)
+      if (!isValidPassword) {
+        if (wantsHtml) {
+          session.flash('error', 'Mot de passe actuel incorrect')
+          return response.redirect().back()
+        }
+
+        return response.badRequest({
+          success: false,
+          message: 'Mot de passe actuel incorrect',
+        })
+      }
+    }
+
+    const isSamePassword = await hash.verify(user.password, newPassword)
+    if (isSamePassword) {
+      const message = 'Le nouveau mot de passe doit etre different du mot de passe actuel.'
+
+      if (wantsHtml) {
+        session.flash('error', message)
+        return response.redirect().back()
+      }
+
+      return response.badRequest({
+        success: false,
+        message,
       })
     }
 

@@ -48,7 +48,7 @@ export const registerValidator = vine.create(
  */
 export const changePasswordValidator = vine.create(
   vine.object({
-    currentPassword: vine.string(),
+    currentPassword: vine.string().optional(),
     newPassword: vine
       .string()
       .minLength(8)

@@ -795,7 +795,7 @@ export default class InspectionController {
     })
 
     const message = password
-      ? "Le nom et le mot de passe de l'ecole ont ete mis a jour."
+      ? "Le nom et le mot de passe temporaire de l'ecole ont ete mis a jour. L'ecole devra definir son propre mot de passe a la prochaine connexion."
       : "Le nom de l'ecole a ete mis a jour."
 
     if (wantsJson) {
