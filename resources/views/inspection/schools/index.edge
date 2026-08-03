@@ -188,6 +188,16 @@
                     <a href="/inspection/schools/{{ school.id }}" class="text-primary hover:underline" title="Voir">
                       <i class="fas fa-eye"></i>
                     </a>
+                    <button
+                      type="button"
+                      data-school-id="{{ school.id }}"
+                      data-school-name="{{ school.name }}"
+                      onclick="openEditSchoolModal(this)"
+                      class="text-blue-600 hover:text-blue-800"
+                      title="Modifier le nom et le mot de passe"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
                     @if(school.status === 'pending')
                       <a
                         href="/inspection/schools/{{ school.id }}/approve"
@@ -237,6 +247,94 @@
       @include('partials/pagination')
     </div>
 
+    <div
+      id="editSchoolModal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 px-4 py-6"
+      aria-hidden="true"
+    >
+      <div class="w-full max-w-lg rounded-lg bg-white shadow-xl dark:bg-gray-800">
+        <div class="flex items-center justify-between border-b px-5 py-4 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Modifier l'&eacute;cole
+          </h3>
+          <button
+            type="button"
+            onclick="closeEditSchoolModal()"
+            class="text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
+            aria-label="Fermer"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form id="editSchoolForm" class="space-y-4 px-5 py-5">
+          <input type="hidden" id="editSchoolId" />
+
+          <div>
+            <label for="editSchoolName" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Nom de l'&eacute;cole
+            </label>
+            <input
+              type="text"
+              id="editSchoolName"
+              name="name"
+              required
+              minlength="2"
+              maxlength="255"
+              class="w-full rounded-lg border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label for="editSchoolPassword" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              id="editSchoolPassword"
+              name="password"
+              minlength="8"
+              maxlength="32"
+              autocomplete="new-password"
+              class="w-full rounded-lg border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              placeholder="Laisser vide pour conserver le mot de passe actuel"
+            />
+          </div>
+
+          <div>
+            <label for="editSchoolPasswordConfirmation" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Confirmation du mot de passe
+            </label>
+            <input
+              type="password"
+              id="editSchoolPasswordConfirmation"
+              name="passwordConfirmation"
+              minlength="8"
+              maxlength="32"
+              autocomplete="new-password"
+              class="w-full rounded-lg border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div class="flex justify-end gap-3 border-t pt-4 dark:border-gray-700">
+            <button
+              type="button"
+              onclick="closeEditSchoolModal()"
+              class="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              class="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-blue-700"
+            >
+              <i class="fas fa-save mr-2"></i>Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script>
       // Filtres
       const filterStatus = document.getElementById("filterStatus");
@@ -249,6 +347,18 @@
 
       const resetBtn = document.getElementById("resetFilters");
 
+      const editSchoolModal = document.getElementById("editSchoolModal");
+
+      const editSchoolForm = document.getElementById("editSchoolForm");
+
+      const editSchoolId = document.getElementById("editSchoolId");
+
+      const editSchoolName = document.getElementById("editSchoolName");
+
+      const editSchoolPassword = document.getElementById("editSchoolPassword");
+
+      const editSchoolPasswordConfirmation = document.getElementById("editSchoolPasswordConfirmation");
+
       applyBtn.addEventListener("click", () => {
         const params = new URLSearchParams();
         if (filterStatus.value) params.set("status", filterStatus.value);
@@ -259,6 +369,56 @@
 
       resetBtn.addEventListener("click", () => {
         window.location.href = "/inspection/schools";
+      });
+
+      function openEditSchoolModal(button) {
+        editSchoolId.value = button.dataset.schoolId;
+        editSchoolName.value = button.dataset.schoolName || "";
+        editSchoolPassword.value = "";
+        editSchoolPasswordConfirmation.value = "";
+        editSchoolModal.classList.remove("hidden");
+        editSchoolModal.classList.add("flex");
+        editSchoolModal.setAttribute("aria-hidden", "false");
+        editSchoolName.focus();
+      }
+
+      function closeEditSchoolModal() {
+        editSchoolModal.classList.add("hidden");
+        editSchoolModal.classList.remove("flex");
+        editSchoolModal.setAttribute("aria-hidden", "true");
+        editSchoolForm.reset();
+      }
+
+      editSchoolModal.addEventListener("click", (event) => {
+        if (event.target === editSchoolModal) closeEditSchoolModal();
+      });
+
+      editSchoolForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (editSchoolPassword.value && editSchoolPassword.value !== editSchoolPasswordConfirmation.value) {
+          alert("La confirmation du mot de passe ne correspond pas.");
+          return;
+        }
+
+        const response = await fetch(`/inspection/schools/${editSchoolId.value}/update-access`, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrfToken }}"
+          },
+          body: JSON.stringify({
+            name: editSchoolName.value,
+            password: editSchoolPassword.value,
+            passwordConfirmation: editSchoolPasswordConfirmation.value
+          })
+        });
+
+        if (!response.ok) return;
+
+        closeEditSchoolModal();
+        location.reload();
       });
 
       function toggleSuspend(schoolId, currentStatus) {

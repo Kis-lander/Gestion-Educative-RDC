@@ -731,6 +731,84 @@ export default class InspectionController {
     return response.ok({ success: true, status: school.status })
   }
 
+  public async updateSchoolAccess({ params, request, response, session }: HttpContext) {
+    const school = await School.findOrFail(params.id)
+    const name = String(request.input('name', '')).trim()
+    const password = String(request.input('password', '')).trim()
+    const passwordConfirmation = String(request.input('passwordConfirmation', '')).trim()
+    const wantsJson =
+      String(request.header('accept') || '').includes('application/json') ||
+      String(request.header('content-type') || '').includes('application/json')
+
+    const fail = (message: string) => {
+      if (wantsJson) {
+        return response.badRequest({
+          success: false,
+          message,
+        })
+      }
+
+      session.flash('error', message)
+      return response.redirect().back()
+    }
+
+    if (name.length < 2 || name.length > 255) {
+      return fail("Le nom de l'ecole doit contenir entre 2 et 255 caracteres.")
+    }
+
+    if (password && (password.length < 8 || password.length > 32)) {
+      return fail('Le nouveau mot de passe doit contenir entre 8 et 32 caracteres.')
+    }
+
+    if (password && password !== passwordConfirmation) {
+      return fail('La confirmation du mot de passe ne correspond pas.')
+    }
+
+    const duplicateSchool = await School.query()
+      .whereRaw('lower(name) = ?', [name.toLowerCase()])
+      .whereNot('id', school.id)
+      .first()
+
+    if (duplicateSchool) {
+      return fail('Une ecole avec ce nom existe deja.')
+    }
+
+    const director = password
+      ? await User.query().where('school_id', school.id).where('role', 'director').first()
+      : null
+
+    if (password && !director) {
+      return fail("Aucun compte directeur n'est lie a cette ecole.")
+    }
+
+    await db.transaction(async (trx) => {
+      school.useTransaction(trx)
+      school.name = name
+      await school.save()
+
+      if (password && director) {
+        director.useTransaction(trx)
+        director.password = password
+        director.mustChangePassword = true
+        await director.save()
+      }
+    })
+
+    const message = password
+      ? "Le nom et le mot de passe de l'ecole ont ete mis a jour."
+      : "Le nom de l'ecole a ete mis a jour."
+
+    if (wantsJson) {
+      return response.ok({
+        success: true,
+        message,
+      })
+    }
+
+    session.flash('success', message)
+    return response.redirect('/inspection/schools')
+  }
+
   public async deleteSchool({ params, request, response, session }: HttpContext) {
     const school = await School.findOrFail(params.id)
     const schoolName = school.name
