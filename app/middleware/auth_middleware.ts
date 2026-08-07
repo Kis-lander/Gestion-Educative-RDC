@@ -100,6 +100,7 @@ export default class SchoolRoleMiddleware {
     }
 
     const canChangeTemporaryPassword =
+      url === '/profile' ||
       url.startsWith('/profile/security') ||
       url.startsWith('/profile/change-password') ||
       url.startsWith('/api/v1/change-password') ||

@@ -895,6 +895,13 @@
     if (val) { document.documentElement.classList.add('dark'); localStorage.setItem('darkMode', 'true') }
     else { document.documentElement.classList.remove('dark'); localStorage.setItem('darkMode', 'false') }
   })
+  window.addEventListener('show-toast', event => {
+    toastMessage = event.detail?.message || ''
+    toastType = event.detail?.type || 'success'
+    showToast = Boolean(toastMessage)
+    clearTimeout(window.__actionToastTimer)
+    window.__actionToastTimer = setTimeout(() => showToast = false, 6500)
+  })
 "
   >
 

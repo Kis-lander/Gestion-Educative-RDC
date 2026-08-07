@@ -5,6 +5,26 @@
 
 <script>
   (() => {
+    const nativeFetch = window.fetch.bind(window);
+
+    window.fetch = async (...args) => {
+      const response = await nativeFetch(...args);
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json')) {
+        const payload = await response.clone().json().catch(() => null);
+        if (payload?.success === true && payload.message) {
+          window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { message: payload.message, type: 'success' },
+          }));
+        }
+      }
+
+      return response;
+    };
+  })();
+
+  (() => {
     const styleId = "global-scroll-effects";
 
     if (!document.getElementById(styleId)) {

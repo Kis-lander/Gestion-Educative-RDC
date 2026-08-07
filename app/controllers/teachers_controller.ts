@@ -732,7 +732,7 @@ export default class TeacherController {
       .preload('user')
       .preload('class')
       .firstOrFail()
-    if (!student.classId) throw new Error('Cet eleve n est pas associe a une classe')
+    if (!student.classId) throw new Error("Cet élève n'est pas associé à une classe.")
     await this.authorizeAttendanceClass(user, student.classId)
 
     const query = db.from('attendances').where('student_id', student.id).orderBy('date', 'desc')

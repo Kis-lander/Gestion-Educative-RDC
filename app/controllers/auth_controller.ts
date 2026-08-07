@@ -869,7 +869,7 @@ export default class AuthController {
 
     if (wantsHtml) {
       session.flash('success', 'Mot de passe changé avec succès.')
-      return response.redirect('/profile/security')
+      return response.redirect('/profile')
     }
 
     return response.ok({
