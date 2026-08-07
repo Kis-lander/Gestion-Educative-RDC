@@ -322,7 +322,12 @@
           <div class="p-8 text-center text-gray-500">
             <i class="fas fa-clipboard-list text-3xl mb-2 block"></i>
             Aucune inspection enregistrée
-      <button onclick="startInspection()" class="block mx-auto mt-3 text-primary hover:underline">Démarrer une inspection</button>
+            <a
+              href="/inspection/schools/{{ school.id }}/inspect"
+              class="block mx-auto mt-3 text-primary hover:underline"
+            >
+              Démarrer une inspection
+            </a>
           </div>
         @end
       </div>
@@ -335,10 +340,6 @@
 
       function sendMessageToDirector() {
         window.location.href = `/communication/messages/send?receiver_id={{ director?.id }}`;
-      }
-
-      function startInspection() {
-        window.location.href = `/inspection/schools/{{ school.id }}/inspect`;
       }
 
       function deleteCurrentSchool() {

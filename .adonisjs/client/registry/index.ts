@@ -228,6 +228,12 @@ const routes = {
     tokens: [{"old":"/inspection/schools/:id/reject","type":0,"val":"inspection","end":""},{"old":"/inspection/schools/:id/reject","type":0,"val":"schools","end":""},{"old":"/inspection/schools/:id/reject","type":1,"val":"id","end":""},{"old":"/inspection/schools/:id/reject","type":0,"val":"reject","end":""}],
     types: placeholder as Registry['inspections.reject_school']['types'],
   },
+  'inspections.update_school_access': {
+    methods: ["POST"],
+    pattern: '/inspection/schools/:id/update-access',
+    tokens: [{"old":"/inspection/schools/:id/update-access","type":0,"val":"inspection","end":""},{"old":"/inspection/schools/:id/update-access","type":0,"val":"schools","end":""},{"old":"/inspection/schools/:id/update-access","type":1,"val":"id","end":""},{"old":"/inspection/schools/:id/update-access","type":0,"val":"update-access","end":""}],
+    types: placeholder as Registry['inspections.update_school_access']['types'],
+  },
   'inspections.toggle_suspend_school': {
     methods: ["POST"],
     pattern: '/inspection/schools/:id/toggle-suspend',

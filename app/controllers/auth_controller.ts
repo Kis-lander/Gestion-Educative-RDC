@@ -140,6 +140,7 @@ export default class AuthController {
         lastName: user.lastName,
         fullName: user.fullName,
         phone: user.phone,
+        mustChangePassword: user.mustChangePassword,
         role: user.role,
         roleLabel: profileRoleLabel,
         avatarUrl: user.avatarUrl,
@@ -849,7 +850,7 @@ export default class AuthController {
 
     const isSamePassword = await hash.verify(user.password, newPassword)
     if (isSamePassword) {
-      const message = 'Le nouveau mot de passe doit etre different du mot de passe actuel.'
+      const message = 'Le nouveau mot de passe doit être différent du mot de passe actuel.'
 
       if (wantsHtml) {
         session.flash('error', message)
@@ -867,13 +868,13 @@ export default class AuthController {
     await user.save()
 
     if (wantsHtml) {
-      session.flash('success', 'Mot de passe change avec succes')
+      session.flash('success', 'Mot de passe changé avec succès.')
       return response.redirect('/profile/security')
     }
 
     return response.ok({
       success: true,
-      message: 'Mot de passe change avec succes',
+      message: 'Mot de passe changé avec succès.',
     })
   }
 

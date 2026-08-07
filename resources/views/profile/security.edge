@@ -59,7 +59,7 @@
       <!-- Changement mot de passe -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
         <h3 class="font-semibold text-lg border-b pb-2 mb-4">
-          {{ user.mustChangePassword ? 'Definir mon mot de passe' : 'Changer mon mot de passe' }}
+          {{ user.mustChangePassword ? 'Définir mon mot de passe' : 'Changer mon mot de passe' }}
         </h3>
 
         <form
@@ -73,7 +73,7 @@
           <div class="space-y-4">
             @if(user.mustChangePassword)
               <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-                Votre mot de passe temporaire doit etre remplace avant de continuer.
+                Votre mot de passe temporaire doit être remplacé avant de continuer.
               </div>
             @else
               <div>
@@ -145,7 +145,7 @@
               class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
               <i x-show="loading" class="fas fa-spinner fa-spin mr-2"></i>
-              {{ user.mustChangePassword ? 'Definir le mot de passe' : 'Changer le mot de passe' }}
+              {{ user.mustChangePassword ? 'Définir le mot de passe' : 'Changer le mot de passe' }}
         </button>
           </div>
         </form>

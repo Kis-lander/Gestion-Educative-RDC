@@ -753,11 +753,11 @@ export default class InspectionController {
     }
 
     if (name.length < 2 || name.length > 255) {
-      return fail("Le nom de l'ecole doit contenir entre 2 et 255 caracteres.")
+      return fail("Le nom de l'école doit contenir entre 2 et 255 caractères.")
     }
 
     if (password && (password.length < 8 || password.length > 32)) {
-      return fail('Le nouveau mot de passe doit contenir entre 8 et 32 caracteres.')
+      return fail('Le nouveau mot de passe doit contenir entre 8 et 32 caractères.')
     }
 
     if (password && password !== passwordConfirmation) {
@@ -770,7 +770,7 @@ export default class InspectionController {
       .first()
 
     if (duplicateSchool) {
-      return fail('Une ecole avec ce nom existe deja.')
+      return fail('Une école avec ce nom existe déjà.')
     }
 
     const director = password
@@ -778,7 +778,7 @@ export default class InspectionController {
       : null
 
     if (password && !director) {
-      return fail("Aucun compte directeur n'est lie a cette ecole.")
+      return fail("Aucun compte directeur n'est lié à cette école.")
     }
 
     await db.transaction(async (trx) => {
@@ -795,8 +795,8 @@ export default class InspectionController {
     })
 
     const message = password
-      ? "Le nom et le mot de passe temporaire de l'ecole ont ete mis a jour. L'ecole devra definir son propre mot de passe a la prochaine connexion."
-      : "Le nom de l'ecole a ete mis a jour."
+      ? "Le nom et le mot de passe temporaire de l'école ont été mis à jour. L'école devra définir son propre mot de passe à la prochaine connexion."
+      : "Le nom de l'école a été mis à jour."
 
     if (wantsJson) {
       return response.ok({

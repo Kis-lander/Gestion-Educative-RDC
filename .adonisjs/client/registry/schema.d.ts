@@ -451,6 +451,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['rejectSchool']>>>
     }
   }
+  'inspections.update_school_access': {
+    methods: ["POST"]
+    pattern: '/inspection/schools/:id/update-access'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['updateSchoolAccess']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/inspections_controller').default['updateSchoolAccess']>>>
+    }
+  }
   'inspections.toggle_suspend_school': {
     methods: ["POST"]
     pattern: '/inspection/schools/:id/toggle-suspend'

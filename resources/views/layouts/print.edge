@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>
-      {{ title || 'Document - Gestion Educative RDC' }}
+      {{ title || 'Document - Gestion Éducative RDC' }}
     </title>
     <style>
       * {
@@ -84,7 +84,7 @@
     @if(showPrintHeader !== false)
       <div class="print-header">
         <h2>
-          {{ schoolName || 'Gestion Educative RDC' }}
+          {{ schoolName || 'Gestion Éducative RDC' }}
         </h2>
         @if(documentTitle)
           <p>
@@ -100,7 +100,7 @@
     @if(showPrintFooter !== false)
       <div class="print-footer">
         <p>
-          Genere le {{ new Date().toLocaleDateString('fr-FR') }} - Gestion Educative RDC
+          Généré le {{ new Date().toLocaleDateString('fr-FR') }} - Gestion Éducative RDC
         </p>
       </div>
     @endif

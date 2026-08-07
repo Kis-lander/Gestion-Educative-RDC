@@ -906,6 +906,30 @@
     >
     </div>
 
+    @if(flashMessages?.get('success') || flashMessages?.get('error'))
+      <div
+        class="fixed left-4 right-4 top-20 z-[60] sm:left-auto sm:right-6 sm:w-full sm:max-w-md"
+        role="status"
+        aria-live="polite"
+        x-data="{ visible: true }"
+        x-show="visible"
+        x-transition
+        x-init="setTimeout(() => visible = false, 6500)"
+      >
+        <div
+          class="flex items-start gap-3 rounded-lg border p-4 shadow-lg {{ flashMessages?.get('error') ? 'border-red-200 bg-red-50 text-red-800' : 'border-green-200 bg-green-50 text-green-800' }}"
+        >
+          <i class="fas {{ flashMessages?.get('error') ? 'fa-circle-exclamation text-red-600' : 'fa-circle-check text-green-600' }} mt-0.5"></i>
+          <p class="flex-1 text-sm font-medium">
+            {{ flashMessages?.get('error') || flashMessages?.get('success') }}
+          </p>
+          <button type="button" class="shrink-0" aria-label="Fermer le message" @click="visible = false">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    @endif
+
     <!-- Loading Overlay -->
     <div
       x-show="$store.loading.loading"

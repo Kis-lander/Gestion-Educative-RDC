@@ -181,6 +181,7 @@ export interface ApiDefinition {
     approveAndGenerateCredentials: typeof routes['inspections.approve_and_generate_credentials']
     rejectSchoolRedirect: typeof routes['inspections.reject_school_redirect']
     rejectSchool: typeof routes['inspections.reject_school']
+    updateSchoolAccess: typeof routes['inspections.update_school_access']
     toggleSuspendSchool: typeof routes['inspections.toggle_suspend_school']
     deleteSchool: typeof routes['inspections.delete_school']
     inspectionTeachersPage: typeof routes['inspections.inspection_teachers_page']

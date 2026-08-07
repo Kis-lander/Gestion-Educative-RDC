@@ -41,6 +41,7 @@ export type ScannedRoutes = {
     'inspections.approve_and_generate_credentials': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.reject_school_redirect': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.reject_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.update_school_access': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.toggle_suspend_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.delete_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.inspection_teachers_page': { paramsTuple?: []; params?: {} }
@@ -1348,6 +1349,7 @@ export type ScannedRoutes = {
     'inspections.store_school_inspection': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.approve_and_generate_credentials': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.reject_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'inspections.update_school_access': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspections.toggle_suspend_school': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'inspection.communications.global.store': { paramsTuple?: []; params?: {} }
     'messages.send_school_communication': { paramsTuple?: []; params?: {} }
